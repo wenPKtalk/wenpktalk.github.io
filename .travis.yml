@@ -19,7 +19,7 @@ after_script:  #最后执行的命令
   - git push --force --quiet "https://${hexoblog_token}@${GH_REF}" main:gh-pages  #hexoblog_token与travis ci设置的环境变量名相同
 branches:
   only:
-    - master #触发持续集成的分支
+    - main #触发持续集成的分支
 env:
   global:
     - GH_REF: git@github.com:wenPKtalk/wenpktalk.github.io.git #就是github上存放博客最终文件的仓库地址末尾加上.git
