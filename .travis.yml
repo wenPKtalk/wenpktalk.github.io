@@ -10,7 +10,6 @@ script:
   - cd themes/tranquilpeak
   - git pull
   - npm install
-  - npm run prod
   - cd ../..
   - hexo clean  #清除
   - hexo g  #生成
