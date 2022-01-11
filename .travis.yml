@@ -1,0 +1,25 @@
+language: node_js
+node_js: stable  #要安装的node版本为当前的稳定版
+cache:
+  directories:
+    - node_modules  #要缓存的文件夹
+install:
+  # - npm install hexo-cli -g
+  - npm install
+script:
+  - hexo clean  #清除
+  - hexo g  #生成
+after_script:  #最后执行的命令
+  - cd ./public
+  - git init
+  - git config user.name "topsion"
+  - git config user.email "wensir_top@163.com"
+  - git add .
+  - git commit -m "automatic code deployment"
+  - git push --force --quiet "https://${hexoblog_token}@${GH_REF}" main:gh-pages  #hexoblog_token与travis ci设置的环境变量名相同
+branches:
+  only:
+    - master #触发持续集成的分支
+env:
+  global:
+    - GH_REF: git@github.com:wenPKtalk/wenpktalk.github.io.git #就是github上存放博客最终文件的仓库地址末尾加上.git
