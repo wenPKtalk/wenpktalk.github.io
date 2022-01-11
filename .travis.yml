@@ -7,6 +7,10 @@ install:
   # - npm install hexo-cli -g
   - npm install
 script:
+  - cd themes/tranquilpeak
+  - git pull
+  - npm install && npm run prod
+  - cd ../..
   - hexo clean  #清除
   - hexo g  #生成
 after_script:  #最后执行的命令
