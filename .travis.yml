@@ -5,10 +5,10 @@ cache:
     - node_modules  #要缓存的文件夹
 install:
   # - npm install hexo-cli -g
-  - npm install
   - cd themes/tranquilpeak
   - npm install && npm run prod
   - cd ../..
+  - npm install
 script:
   - hexo clean  #清除
   - hexo g  #生成
