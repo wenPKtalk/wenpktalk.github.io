@@ -3,6 +3,7 @@ node_js: stable  #要安装的node版本为当前的稳定版
 cache:
   directories:
     - node_modules  #要缓存的文件夹
+    - themes/tranquilpeak/node_modules
 install:
   # - npm install hexo-cli -g
   - cd themes/tranquilpeak
