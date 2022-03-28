@@ -38,14 +38,8 @@ jobs:
           npm install hexo-cli -g
           npm install
 
-      - name: Generate files
+      - name: Deploy
         run: |
           hexo clean
+          hexo g
           hexo deploy
-
-      - name: Deploy
-        uses: git@github.com:wenPKtalk/wenpktalk.github.io.git
-        with:
-          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-          BRANCH: gh-pages
-          FOLDER: public
