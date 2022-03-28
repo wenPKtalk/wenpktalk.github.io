@@ -32,9 +32,11 @@ jobs:
           git config --global user.email "wensir_top@163.com"
           git config --global user.name "topsion"
           cd themes/tranquilpeak
-          npm clean && npm install && npm run prod
+          rm package-lock.json
+          npm install && npm run prod
           cd ../..
-          npm clean && npm install
+          rm package-lock.json
+          npm install
           npm install hexo-cli -g
           npm install
 
