@@ -1,7 +1,7 @@
 ---
 title: Remove if...else...by Enum
 date: 2022-02-11 14:42:27
-tags: 
+tags: clean code
 ---
 
 # <center> 消除if-else之为Enum添加行为 </center>
