@@ -9,6 +9,8 @@ Welcome to [Hexo](https://hexo.io/)! This is your very first post. Check [docume
 
 ### Manage branches
 
+* Just update view
+
 * Code source: main
 * Static file: gh-pages
 
