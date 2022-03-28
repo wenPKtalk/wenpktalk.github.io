@@ -105,3 +105,4 @@ deploy:
   - type: git
     repo: git@github.com:wenPKtalk/wenpktalk.github.io.git
     branch: gh-pages
+    email: wensir_top@163.com
