@@ -18,7 +18,7 @@ jobs:
       - name: Prepare Node env
         uses: actions/setup-node@v1
         with:
-          node-version: '14'
+          node-version: 'stable'
 
       - name: Setup Hexo
         env:
