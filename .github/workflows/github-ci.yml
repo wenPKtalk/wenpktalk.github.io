@@ -39,7 +39,6 @@ jobs:
           npm install
           npm install hexo-cli -g
           npm install
-          sed -i "s/HEXO_DEPLOY_KEY/$/HEXO_DEPLOY_KEY/g" ./_config.yml
       - name: Deploy
         run: |
           hexo clean
