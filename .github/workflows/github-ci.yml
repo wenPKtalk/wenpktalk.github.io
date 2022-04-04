@@ -39,15 +39,10 @@ jobs:
           npm install
           npm install hexo-cli -g
           npm install
+          sed -i "s/HEXO_DEPLOY_KEY/HEXO_DEPLOY_KEY/g" ./_config.yml
 
-      - name: Build and Deploy
-          uses: theme-keep/hexo-deploy-github-pages-action@master
-          env:
-            PERSONAL_TOKEN: ${{ secrets.HEXO_DEPLOY_KEY }}
-
-            # The repository the action should deploy to.
-            PUBLISH_REPOSITORY: wenPKtalk/wenpktalk.github.io
-
-            # The branch the action should deploy to.
-            BRANCH: gh-pages
-            PUBLISH_DIR: ./public
+      - name: Deploy
+        run: |
+          hexo clean
+          hexo g
+          hexo deploy
