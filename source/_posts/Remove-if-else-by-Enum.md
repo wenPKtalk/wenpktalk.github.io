@@ -47,3 +47,8 @@ DownloadFileType.of(fileType).writeToLocal();
     
 ```
 
+### 代码训练
+
+附上我之前实现一个case的代码链接
+
+https://github.com/wenPKtalk/loofah
