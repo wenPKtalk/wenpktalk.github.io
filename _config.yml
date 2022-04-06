@@ -102,8 +102,6 @@ theme: tranquilpeak
 # Deployment
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
-  type: ''
-#  - type: git
-#    repo: https://HEXO_DEPLOY_KEY@github.com/wenPKtalk/wenpktalk.github.io.git
-#    branch: gh-pages
-#    email: wensir_top@163.com
+  type: git
+  repo: git@github.com:wenPKtalk/wenpktalk.github.io.git
+  branch: gh-pages
