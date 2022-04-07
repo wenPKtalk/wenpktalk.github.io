@@ -1,7 +1,7 @@
 ---
 title: 为什么SOLID仍然是现代软件架构的基石
 date: 2021-11-28 11:26:13
-tags: 软件工程, Translation
+tags: [软件工程, Translation]
 ---
 
 ## 概述
