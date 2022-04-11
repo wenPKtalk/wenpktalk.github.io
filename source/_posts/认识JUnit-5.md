@@ -24,3 +24,6 @@ Junit框架主要有三个核心组件：
 “Vintage”一词的基本意思是**经典**。因此，该子项目为在 JUnit 4 和 JUnit 3 中编写测试用例提供了广泛的支持。因此，该项目提供了向后兼容性。
 
 ![image-20220411204229226](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220411/20_42/image-20220411204229226.png)
+
+
+原文链接： https://www.educative.io/courses/java-unit-testing-with-junit-5/xV9mMjj74gE
