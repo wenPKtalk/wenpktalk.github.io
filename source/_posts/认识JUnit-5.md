@@ -1,5 +1,5 @@
 ---
-title: 认识Junit 5
+title: 认识JUnit 5
 date: 2022-04-11 18:51:36
 tags: Unit Test
 categories: Unit Test
@@ -7,7 +7,7 @@ categories: Unit Test
 
 ### JUnit 核心组件
 
-Junit框架主要有三个核心组件：
+JUnit框架主要有三个核心组件：
 
 #### JUnit Platform
 
@@ -17,7 +17,7 @@ Junit框架主要有三个核心组件：
 
 #### JUnit Jupiter
 
-它为在 Junit 5 中编写测试和扩展提供了新的编程模型和扩展模型。它有一个全新的注解，用于在 Junit 5 中编写测试用例。其中一些注解是`@BeforeEach`、`@AfterEach`、`@AfterAll`、`@BeforeAll` 等。它实现了 Junit Platform 提供的 TestEngine API，以便可以运行 Junit 5 测试。
+它为在 JUnit 5 中编写测试和扩展提供了新的编程模型和扩展模型。它有一个全新的注解，用于在 JUnit 5 中编写测试用例。其中一些注解是`@BeforeEach`、`@AfterEach`、`@AfterAll`、`@BeforeAll` 等。它实现了 JUnit Platform 提供的 TestEngine API，以便可以运行 JUnit 5 测试。
 
 #### JUnit Vintage
 
