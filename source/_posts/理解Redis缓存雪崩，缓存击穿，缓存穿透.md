@@ -1,7 +1,8 @@
 ---
 title: 理解Redis缓存雪崩，缓存击穿，缓存穿透
 date: 2020-11-05 10:07:13
-tags: redis
+tags: Redis
+categories: Redis 
 ---
 
 #### 一. 缓存雪崩
