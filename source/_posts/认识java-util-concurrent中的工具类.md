@@ -46,7 +46,7 @@ CopyOnWriteArraySet：同上CopyOnWriteArrayList
 
 **Queue形式的：**
 
-[外链图片转存失败,源站可能有防盗链机制,建议将图片保存下来直接上传(img-41LmCCfJ-1649682249808)(https://github.com/wenPKtalk/wentalk/blob/master/java/Queue%E7%B1%BB%E5%9B%BE.jpg)]
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220420/23_34/Queue%E7%B1%BB%E5%9B%BE.jpg" alt="Queue类图" style="zoom:50%;" />
 
 ArrayBlockQueue: 有界队列，需要显示的指定队列大小
 
@@ -62,6 +62,10 @@ PriorityBlockQueue: 无边界的优先级队列
 2. newSingleThreadExecutor()，它的特点在于工作线程数目被限制为 1，操作一个无界的工作队列，所以它保证了所有任务的都是被顺序执行，最多会有一个任务处于活动状态，并且不允许使用者改动线程池实例，因此可以避免其改变线程数目。
 3. newSingleThreadScheduledExecutor() 和 newScheduledThreadPool(int corePoolSize)，创建的是个 ScheduledExecutorService，可以进行定时或周期性的工作调度，区别在于单一工作线程还是多个工作线程。
 4. newWorkStealingPool(int parallelism)，这是一个经常被人忽略的线程池，Java 8 才加入这个创建方法，其内部会构建。
+
+### 四. 框架图
+
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220420/23_34/%E5%B9%B6%E5%8F%91%E5%9B%BE%E8%B0%B1.jpg" alt="并发图谱" style="zoom:50%;" />
 
 ### 参考作品
 
