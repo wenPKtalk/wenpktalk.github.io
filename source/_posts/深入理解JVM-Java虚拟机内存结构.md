@@ -1,7 +1,9 @@
+---
 title: 深入理解JVM-Java虚拟机内存结构
-date: 2020-08-11 07:29:04
+date: 2020-05-11 09:09:01
 tags: JVM
 categories: JVM
+---
 
 ### Java执行流转图
 
