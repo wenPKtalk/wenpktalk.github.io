@@ -32,7 +32,7 @@ categories: JVM
 
   > JVM Program counter 当前线程所执行的字节码的行号指示器，通过改变计数器的值，来选取下一行需要执行的指令。每个线程都有自己的程序计数器。所以程序计数器的结构如下:
 
-  <img src="https://img-blog.csdnimg.cn/20200918193834460.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70#pic_center" alt="Insert picture description here" style="zoom:50%;" />
+  <img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220520/08_54/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70.png" alt="Insert picture description here" style="zoom:50%;" />
 
   - 程序计数器只占用很小的内存空间，所以可以被忽略。它也是存储最快的空间。
   - JVM规定每个线程都有自己的程序计数器，它的生命周期就是随着线程的执行周期。
