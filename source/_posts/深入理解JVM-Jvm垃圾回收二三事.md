@@ -25,7 +25,7 @@ categories: JVM
 
    2. 无法解决循环引用造成内存泄漏。
 
-      <img src="https://static001.geekbang.org/resource/image/85/b9/8546a9b3c6660a31ae24bef0ef0a35b9.png" alt="img" style="zoom: 33%;" />
+      <img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220525/09_36/8546a9b3c6660a31ae24bef0ef0a35b9.png" alt="img" style="zoom: 33%;" />
 
       > 对象 a 与 b 相互引用，除此之外没有其他引用指向 a 或者 b。在这种情况下，a 和 b 实际上已经死了，但由于它们的引用计数器皆不为 0，在引用计数法的心中，这两个对象还活着。因此，这些循环引用对象所占据的空间将不可回收，从而造成了内存泄露。
 
@@ -41,3 +41,4 @@ categories: JVM
     4. 虚拟机栈（栈帧中本地变量表）中引用的对象
     5. 已经启动且未停职的线程。
 
+   
