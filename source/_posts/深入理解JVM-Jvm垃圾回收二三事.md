@@ -115,7 +115,7 @@ categories: JVM
 
 增量算法对基础算法的改进主要体现在该算法通过并发的方式，降低了 STW 的时间。下图是增量算法和基础的标记-清除算法在执行时间线上的对比，可以看到，增量算法的核心思想是：通过 GC 和应用程序交替执行的方式，来控制应用程序的最大暂停时间。
 
-<img src="https://ucc.alicdn.com/pic/developer-ecology/41cebbc1c50e499db9926d45d4fca7d0.png" alt="image.png" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220531/09_44/41cebbc1c50e499db9926d45d4fca7d0-20220531094441790.png" alt="image.png" style="zoom:33%;" />
 
 增量算法的「增量」部分，主要有「增量更新（Incremental Update）」和「增量拷贝（Incremental Copying）」两种，前者主要是做「标记」增量，后者是在做「复制」增量。
 
