@@ -139,9 +139,156 @@ categories: JVM
 
 ### JVM堆空间划分
 
+JVM首先采用分代算法将堆空间划分如下：
 
+1. 新生代
+   * 新生代又划分为一个eden区两个大小相同的survivor区
+2. 老年代
+
+默认情况下Java虚拟机采用的是动态分配策略，使用参数：XX:+UsePSAdaptiveSurvivorSizePolicy 据生成对象的速率，以及 Survivor 区的使用情况动态调整 Eden 区和 Survivor 区的比例。
+
+也可以通过参数 -XX:SurvivorRatio 来固定这个比例。但是需要注意的是，其中一个 Survivor 区会一直为空，因此比例越低浪费的堆空间将越高。
+
+<img src="https://static001.geekbang.org/resource/image/2c/e5/2cc29b8de676d3747416416a3523e4e5.png" alt="img" style="zoom:33%;" />
+
+通常来讲（除过逃逸分析是在栈上分配）：new 一个对象需要在Eden区划分一片内存作为对象的存储空间。由于堆空间是线程共享的，因此直接在这里边划空间是需要进行**同步**的。否则，将有可能出现两个对象共用一段内存的事故。为了解决多个线程在同时创建时可能造成的占用内存冲突引入了**TLAB**（Thread Local Allocation Buffer）技术
+
+具体来说，每个线程可以向 Java 虚拟机申请一段连续的内存，比如 2048 字节，作为线程私有的 TLAB。这个操作需要加锁，线程需要维护两个指针（实际上可能更多，但重要也就两个），一个指向 TLAB 中空余内存的起始位置，一个则指向 TLAB 末尾。
+
+#### Minor GC
+
+1. 当 Eden 区的空间耗尽了怎么办？这个时候 Java 虚拟机便会触发一次 Minor GC，来收集新生代的垃圾。
+
+2. 存活下来的对象，则会被送到 Survivor 区。前面提到，新生代共有两个 Survivor 区，我们分别用 from 和 to 来指代。其中 to 指向的 Survivior 区是空的。当发生 Minor GC 时，Eden 区和 from 指向的 Survivor 区中的存活对象会被复制到 to 指向的 Survivor 区中，然后交换 from 和 to 指针，以保证下一次 Minor GC 时，to 指向的 Survivor 区还是空的。
+
+3. Java 虚拟机会记录 Survivor 区中的对象一共被来回复制了几次。如果一个对象被复制的次数为 **15（对应虚拟机参数 -XX:+MaxTenuringThreshold）**，那么该对象将被晋升（promote）至老年代。
+
+4.  如果单个 Survivor 区已经被占用了 50%（对应虚拟机参数 -XX:TargetSurvivorRatio），那么较高复制次数的对象也会被晋升至老年代。
+
+5. 当发生 Minor GC 时，我们应用了标记 - 复制算法，将 Survivor 区中的老存活对象晋升到老年代，然后将剩下的存活对象和 Eden 区的存活对象复制到另一个 Survivor 区中。
+
+   理想情况下，Eden 区中的对象基本都死亡了，那么需要复制的数据将非常少，因此采用这种标记 - 复制算法的效果极好。Minor GC 的另外一个好处是不用对整个堆进行垃圾回收。但是，它却有一个问题，那就是老年代的对象可能引用新生代的对象。也就是说，在标记存活对象的时候，我们需要扫描老年代中的对象。如果该对象拥有对新生代对象的引用，那么这个引用也会被作为 GC Roots。
+
+   **这样一来，岂不是又做了一次全堆扫描呢？**
+
+##### 卡表
+
+HotSpot 给出的解决方案是一项叫做卡表（Card Table）的技术。
+
+1. 该技术将整个堆划分为一个个大小为 512 字节的卡，并且维护一个卡表，用来存储每张卡的一个标识位。
+
+2. 这个标识位代表对应的卡是否可能存有指向新生代对象的引用。如果可能存在，那么我们就认为这张卡是脏的。
+
+3. 在进行 Minor GC 的时候，我们便可以不用扫描整个老年代，而是在卡表中寻找脏卡，并将脏卡中的对象加入到 Minor GC 的 GC Roots 里。当完成所有脏卡的扫描之后，Java 虚拟机便会将所有脏卡的标识位清零。
+
+4. 由于 Minor GC 伴随着存活对象的复制，而复制需要更新指向该对象的引用。因此，在更新引用的同时，我们又会设置引用所在的卡的标识位。这个时候，我们可以确保脏卡中必定包含指向新生代对象的引用。
+
+5. 在 Minor GC 之前，我们并不能确保脏卡中包含指向新生代对象的引用。其原因和如何设置卡的标识位有关。
+
+6. 首先，如果想要保证每个可能有指向新生代对象引用的卡都被标记为脏卡，那么 Java 虚拟机需要截获每个引用型实例变量的写操作，并作出对应的写标识位操作。这个操作在解释执行器中比较容易实现。
+
+7. 但是在即时编译器生成的机器码中，则需要插入额外的逻辑。这也就是所谓的写屏障（write barrier，注意不要和 volatile 字段的写屏障混淆）。
+
+8. 写屏障需要尽可能地保持简洁。这是因为我们并不希望在每条引用型实例变量的写指令后跟着一大串注入的指令。因此，写屏障并不会判断更新后的引用是否指向新生代中的对象，而是宁可错杀，不可放过，一律当成可能指向新生代对象的引用。
+
+9. 这么一来，写屏障便可精简为下面的伪代码[1]。这里右移 9 位相当于除以 512，Java 虚拟机便是通过这种方式来从地址映射到卡表中的索引的。最终，这段代码会被编译成一条移位指令和一条存储指令。
+
+   ```c++
+   CARD_TABLE [this address >> 9] = DIRTY;
+   ```
+
+   
+
+10. 虽然写屏障不可避免地带来一些开销，但是它能够加大 Minor GC 的吞吐率（ 应用运行时间 /(应用运行时间 + 垃圾回收时间) ）。总的来说还是值得的。
+
+11. 不过，在高并发环境下，写屏障又带来了虚共享（false sharing）问题[2]。在介绍对象内存布局中我曾提到虚共享问题，讲的是几个 volatile 字段出现在同一缓存行里造成的虚共享。这里的虚共享则是卡表中不同卡的标识位之间的虚共享问题。
+
+12. 在 HotSpot 中，卡表是通过 byte 数组来实现的。对于一个 64 字节的缓存行来说，如果用它来加载部分卡表，那么它将对应 64 张卡，也就是 32KB 的内存。如果同时有两个 Java 线程，在这 32KB 内存中进行引用更新操作，那么也将造成存储卡表的同一部分的缓存行的写回、无效化或者同步操作，因而间接影响程序性能。为此，HotSpot 引入了一个新的参数 -XX:+UseCondCardMark，来尽量减少写卡表的操作。其伪代码如下所示：
+
+    ```c++
+    
+    if (CARD_TABLE [this address >> 9] != DIRTY) 
+      CARD_TABLE [this address >> 9] = DIRTY;
+    ```
+
+### 垃圾回收器
+
+#### 1. Serial收集器
+
+Serial收集器是最基础、历史最悠久的收集器，曾经（在JDK 1.3.1之前）是HotSpot虚拟机新生代收集器的唯一选择。这个收集器是一个单线程工作的收集器，但它的“单线 程”的意义并不仅仅是说明它只会使用一个处理器或一条收集线程去完成垃圾收集工作，更重要的是强调在它进行垃圾收集时，必须暂停其他所有工作线程，直到它收集结束。
+
+Serial/Serial Old收 集器的运行过程如下：
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkLay9aAFksP1VA4zXIPMOwU2FsmTNE8PeEcHbAMPl1k4YBib2fjapvhQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom: 67%;" />
+
+#### 2. ParNew收集器
+
+ParNew收集器实质上是Serial收集器的多线程并行版本，除了同时使用多条线程进行垃圾收集之外，其余的行为包括Serial收集器可用的所有控制参数（例如：-XX：SurvivorRatio、-XX：PretenureSizeThreshold、-XX：HandlePromotionFailure等）、收集算法、Stop The World、对象分配规则、回收策略等都与Serial收集器完全一致，在实现上这两种收集器也共用了相当多的代码。
+
+ParNew收集器的工作过程如图所示：
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkg5mqlDEQ6egDzOwlGXoT48DbFRdD6iaRRWwHJh6T9eoap4m1xcKGInA/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+
+#### 3. Parallel Scavenge收集器
+
+Parallel Scavenge收集器也是一款新生代收集器，它同样是基于标记-复制算法实现的收集器，也是能够并行收集的多线程收集器
+
+Parallel Scavenge收集器的目标则是达到一个可控制的吞吐量（Throughput）。由于与吞吐量关系密切，Parallel Scavenge收集器也经常被称作“吞吐量优先收集器”。
+
+Parallel Scavenge收集器提供了两个参数用于精确控制吞吐量，分别是控制最大垃圾收集停顿时间的-XX：MaxGCPauseMillis参数以及直接设置吞吐量大小的-XX：GCTimeRatio参数。
+
+#### 4. Serial Old收集器
+
+Serial Old是Serial收集器的老年代版本，它同样是一个单线程收集器，使用标记-整理算法。这个收集器的主要意义也是供客户端模式下的HotSpot虚拟机使用。如果在服务端模式下，它也可能有两种用途：一种是在JDK 5以及之前的版本中与Parallel Scavenge收集器搭配使用，另外一种就是作为CMS 收集器发生失败时的后备预案，在并发收集发生Concurrent Mode Failure时使用。这两点都将在后面的内容中继续讲解。
+
+Serial Old收集器的工作过程如图所示。
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkulNd6x3IMnkHEbZBoJpblghWiaOX3nShRLU0hmiaalweiaCwmHKC2RprQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+
+#### 5. Parallel Old收集器
+
+Parallel Old是Parallel Scavenge收集器的老年代版本，支持多线程并发收集，基于标记-整理算法实现。这个收集器是直到JDK 6时才开始提供的。Parallel Old收集器的工作过程如图所示。
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkSqlHr0B7MPLftF3KogFXooOn3FR3GZt3VcI9Tf6eic0lMBnE4FJDiblQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+
+#### 6. CMS收集器
+
+CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时间为目标的收集器。目前很大一部分的Java应用集中在互联网网站或者基于浏览器的B/S系统的服务端上，这类应用通常都会较为关注服务的响应速度，希望系统停顿时间尽可能短，以给用户带来良好的交互体验。CMS收集器就非常符合这类应用的需求。
+
+Concurrent Mark Sweep收集器运行过程如图：
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgk4mcVU2w3sNiaYibFA3wTRtl6r6tI5K2DAZJJy7lXpMicINAlicoS6k7eQg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+
+#### 7. Garbage First（G1）收集器
+
+G1是一款主要面向服务端应用的垃圾收集器，是目前垃圾回收器的前沿成果。HotSpot开发团队最初赋予它的期望是（在比较长期的）未来可以替换掉JDK 5中发布的CMS收集器。现在这个期望目标已经实现过半了，JDK 9发布之日，G1宣告取代Parallel Scavenge加Parallel Old组合，成为服务端模式下的默认垃圾收集器。
+
+G1收集器运行过程如图：
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkD7WRLalGInfJNJBAibS7tWAc691yj8Nj1k5wu1vHHIo2XbVU4rTZ2Og/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+
+#### 8. ZGC
+
+# ZGC 特征
+
+ZGC 收集器是一款基于 Region 内存布局的，(暂时) 不设分代的，使用了读屏障、染色指针和内存多重映射等技术来实现可并发的标记-整理算法的，以低延迟为首要目标的一款垃圾收集器。
+
+## 内存布局
+
+**ZGC 没有分代的概念**
+
+ZGC 的内存布局说起。与 Shenandoah 和 G1一样，ZGC 也采用基于 Region 的堆内存布局，但与它们不同的是 ， ZGC 的 Region 具 有 动 态 性 (动态创建和销毁 ， 以及动态的区域容量大小)。在 x64硬件平台下 ， ZGC 的 Region 可以具有大、中、小三类容量(如下图所示):
+
+- 小型 Region (Small Region )：容量固定为 2M， 存放小于 256K 的对象。
+- 中型 Region (Medium Region)：容量固定为 32M，放置大于等于256K但小于4M的对象。
+- 大型 Region (Large Region): 容量不固定，可以动态变化，但必须为2MB 的整数倍，用于放置 4MB或以上的大对象。
+
+<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d1e23544f9184dd68e16e8a36e6e9fc3~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp" alt="图片" style="zoom:50%;" />
+
+参考链接：https://juejin.cn/post/7095643412082196511
 
 ### 参考链接
 
 [垃圾回收算法是如何设计的？](https://developer.aliyun.com/article/777750?source=5176.11533457&userCode=e4nptrfl)
 
+[JVM 从入门到放弃之 ZGC 垃圾收集器](https://juejin.cn/post/7095643412082196511)
