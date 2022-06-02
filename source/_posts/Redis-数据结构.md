@@ -27,7 +27,7 @@ String类型的底层结构只有一个**简单动态字符串**，而List，Has
 
 为了实现快速访问Redis实现了一个**全局哈希表**保存所有键值对。一个哈希表就是一个数组，数组的每个元素称之为**哈希桶**。每个哈希桶中保存了键值对数据。**哈希桶中的值不保存值本身，而是指向具体的指针。也就是说不管是String还是集合类型，哈希桶中的元素都是指向它们的指针。**
 
-<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220601/09_38/1cc8eaed5d1ca4e3cdbaa5a3d48dfb5f.jpg" alt="img" style="zoom: 33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220602/14_10/1cc8eaed5d1ca4e3cdbaa5a3d48dfb5f-20220602141007055.jpg" alt="img" style="zoom: 33%;" />
 
 
 
