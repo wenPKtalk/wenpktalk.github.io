@@ -74,3 +74,4 @@ Redis会对哈希会对哈希表做Rehash操作，rehash也就是**增加Hash桶
 Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希表 1 中的第一个索引位置开始，顺带着将这个索引位置上的所有 entries 拷贝到哈希表 2 中；等处理下一个请求时，再顺带拷贝哈希表 1 中的下一个索引位置的 entries。如下图所示：
 
 <img src="https://static001.geekbang.org/resource/image/73/0c/73fb212d0b0928d96a0d7d6ayy76da0c.jpg" alt="img" style="zoom:33%;" />
+
