@@ -45,6 +45,8 @@ categories: network
 - 操作系统**准备数据**，把IO外部设备的数据，加载到**内核缓冲区**
 - 操作系统拷贝数据，即将内核缓冲区的数据，拷贝到用户进程缓冲区
 
+<img src="https://pic1.zhimg.com/v2-17f3abff4e49a2214f10f3815d91e15e_1440w.jpg?source=172ae18b" alt="彻底理解 IO多路复用" style="zoom: 67%;" />
+
 ### 阻塞I/O
 
 > 应用程序的进程发起**IO调用**，但是如果**内核的数据还没准备好**的话，那应用程序进程就一直在**阻塞等待**，一直等到内核数据准备好了，从内核拷贝到用户空间，才返回成功提示，此次IO操作，称之为**阻塞IO**。
@@ -54,11 +56,39 @@ categories: network
 * 阻塞I/O典型：阻塞socket，java BIO
 * 缺点：如果内核数据一直没准备好，那用户进程将一直阻塞，**浪费性能**，可以使用**非阻塞IO**优化。
 
-I/O多路复用是一种同步I/O模型，实现一个线程可以监视多个FD（文件句柄）；一旦某个文件句柄就绪，就能够通知应用程序进行相应的读写操作。没有文件句柄就绪时会阻塞应用程序，交出CPU。**多路指的是网络链接，复用指的是同一个线程（进程）**
+### 非阻塞I/O 模型
 
-[参考连接](https://zhuanlan.zhihu.com/p/150972878)
+> I/O多路复用是一种同步I/O模型，实现一个线程可以监视多个FD（文件句柄）；一旦某个文件句柄就绪，就能够通知应用程序进行相应的读写操作。没有文件句柄就绪时会阻塞应用程序，交出CPU。**多路指的是网络链接，复用指的是同一个线程（进程）**
 
-### I/O 模型
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazJbqiczZFFTqOUcT2NEhtBvqXic51aObic0MVZAGgockyiaOPaNScG41uAg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
 
-<img src="https://pic1.zhimg.com/v2-17f3abff4e49a2214f10f3815d91e15e_1440w.jpg?source=172ae18b" alt="彻底理解 IO多路复用" style="zoom: 67%;" />
+1. 应用进程向操作系统内核，发起recvfrom读取数据。
 
+2. 操作系统内核数据没有准备好，立即返回EWOULDBLOCK错误码。
+
+3. 应用进程轮训调用，继续向操作系统内核发起recvfrom读取数据。
+
+4. 操作系统内核数据准备好了，从内核缓冲区拷贝到用户空间。
+
+5. 完成调用，返回成功。
+
+   **缺点：**非阻塞IO模型，简称**NIO**，`Non-Blocking IO`。它相对于阻塞IO，虽然大幅提升了性能，但是它依然存在**性能问题**，即**频繁的轮询**，导致频繁的系统调用，同样会消耗大量的CPU资源。可以考虑**IO复用模型**，去解决这个问题。
+
+### I/O多路复用
+
+NIO利用无效的轮训会导致CPU资源消耗，解决这种无效轮训最好的方式就是通知机制，内核准备好数据后通知用户进程即可。
+
+IO多路复用的核心：**操作系统提供了一类函数：select, poll, epll 等同时监控多个fd操作，任何一个返回内核数据就绪，应用进程再发起recvfrom调用。**
+
+**文件描述符fd（file descriptor）解释：它是计算机科学中的一个术语，形式上是一个非负整数。当程序打开一个现有文件或者创建一个新文件时，内核向进程返回一个文件描述符。**
+
+#### I/O复用select模式
+
+> 应用进程通过调用select函数，可以同时监控多个fd，在select函数监控的fd中，只要有任何一个数据状态准备就绪了，select函数都会返回可读状态，这时应用再发起recvfrom调用。
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazqeEOD7MMqMd91a1eow5o3vicFxeMOuzEPwTnAJ0WjfSWwhyul9ysk5Q/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+
+**select缺点**
+
+* 监听IO最大连接数有限，在Linux系统上一般为1024
+* select函数返回后，是通过遍历fdset，找到就绪的fd。（仅仅知道有I/O发生，却不知道哪几个流，所以遍历所有流）
