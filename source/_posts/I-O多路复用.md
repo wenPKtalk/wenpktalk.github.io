@@ -92,3 +92,54 @@ IO多路复用的核心：**操作系统提供了一类函数：select, poll, ep
 
 * 监听IO最大连接数有限，在Linux系统上一般为1024
 * select函数返回后，是通过遍历fdset，找到就绪的fd。（仅仅知道有I/O发生，却不知道哪几个流，所以遍历所有流）
+
+因为存在连接数限制，所以后来又提出了poll。与select相比，poll解决了连接数的问题，但是select和poll一样，还是需要通过文件描述符来获取已经就绪的socket。如果同时连接的大量客户端，在一时刻只有极少数就绪状态，伴随着监视的描述符数量的增长，效率也会线性下降。
+
+### I/O多路复用之epoll
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iaziaLlvvmYpg1D4I3mMXTYCiaw0WYPFW4Gd6QdeQWvGkoVhVM6G0gc0DGg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+
+1. epoll先通过epoll_ctl()来注册一个fd（文件描述符）
+2. 当fd就绪时，内核会采用回调机制，迅速激活这个fd，当进程调用epoll_wait()时便得到通知。
+
+#### select poll epoll区别
+
+|              | select                                               | poll                                               | Epoll                                                        |
+| :----------- | :--------------------------------------------------- | :------------------------------------------------- | ------------------------------------------------------------ |
+| 底层数据结构 | 数组                                                 | 链表                                               | 红黑树和双链表                                               |
+| 获取就绪的fd | 遍历                                                 | 遍历                                               | 事件回调                                                     |
+| 事件复杂度   | O(n)                                                 | O(n)                                               | O(1)                                                         |
+| 最大连接数   | 1024                                                 | 无限制                                             | 无限制                                                       |
+| fd数据拷贝   | 每次调用select，需要将fd数据从用户空间拷贝到内核空间 | 每次调用poll，需要将fd数据从用户空间拷贝到内核空间 | 使用内存映射(mmap)，不需要从用户空间频繁拷贝fd数据到内核空间 |
+
+**epoll**明显优化了IO的执行效率，但在进程调用`epoll_wait()`时，仍然可能被阻塞。又提出了：等发出请求后，数据准备好通知，这就诞生了信号驱动IO模型。
+
+### 信号IO驱动模型
+
+> 信号驱动IO不再用主动询问的方式去确认数据是否就绪，而是向内核发送一个信号（调用signaction的时候建立一个sigio信号），然后应用用户进程可以去做别的事，不用阻塞。当内核数据准备好后，再通过SIGIO信号通知应用进程，数据准备好后的可读状态。应用用户进程收到信号后，立即调用recvfrom，去读取数据。
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazv95SUjibNibHbvjJ8RiaZ6UCLsJI0bvic4mhcjvMbTr6wiaJesRlr3tgGFQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+
+还不是完全的异步IO：数据复制到应用缓冲的时候，应用进程还是阻塞的。
+
+### 真正的异步IO(AIO)
+
+BIO，NIO和信号驱动，在数据从内核复制到缓冲区的时候都是阻塞的，都不算真正的异步IO。**AIO实现了全流程的非阻塞，就是应用进程发出系统调用后，是立即返回的，但是返回的不是处理结果，而是表示提交成功的意思。等到内核数据准备好，将数据拷贝到用户进程缓冲区，发送信号通知用户进程IO操作**
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iaz8ElghKVI5ibXFcooAicC1HjAwBZHRpqLia620oexRuw7hkjMLkb8gdJoQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+
+### 阻塞、非阻塞、同步、异步IO划分
+
+<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazq5KYaEL2z8IqS4E7M8AdWzpicBGx9nxxH4GAeY4nacATWkykDTGvfew/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+
+| IO模型            |            |
+| :---------------- | :--------- |
+| 阻塞I/O模型       | 同步阻塞   |
+| 非阻塞I/O模型     | 同步非阻塞 |
+| I/O多路复用模型   | 同步阻塞   |
+| 信号驱动I/O模型   | 同步非阻塞 |
+| 异步IO（AIO）模型 | 异步非阻塞 |
+
+### 参考连接
+
+https://mp.weixin.qq.com/s/77G2NxfjZlT-icfqrHCizQ
