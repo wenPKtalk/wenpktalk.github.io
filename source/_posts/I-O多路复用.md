@@ -11,7 +11,7 @@ categories: network
 
 冯诺依曼结构将计算机分为5个部分：运算器，控制器，存储器，输入设备，输出设备
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iaz3qr3GNYZzLKICjicyib6Gw4fyK2K3jJFcNQbehsv3O8PbCpAaicJic4m8Q/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_14/640.jpeg" alt="Image" style="zoom:33%;" />
 
 从计算机架构中看I/O就是：**涉及计算机核心与其他设备间数据迁移的过程，就是IO。就是从磁盘读取数据到内存，这算一次输入，对应的，将内存中的数据写入磁盘，就算输出。这就是IO的本质**。
 
@@ -37,7 +37,7 @@ categories: network
 
    2. 拷贝数据阶段：将数据从内核缓冲区拷贝到用户进程缓冲区
 
-      <img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazT9kWYbt1L2xibUrVOW05JFOsoDYrzNxB7eziasmxzsMBbbQakMLJOvKw/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+      <img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_15/640-20220628081512201.jpeg" alt="Image" style="zoom:33%;" />
 
 其实IO就是把进程的内部数据转移到外部设备，或者把外部设备的数据迁移到进程内部。外部设备一般指硬盘、socket通讯的网卡。一个完整的**IO过程**包括以下几个步骤：
 
@@ -45,7 +45,7 @@ categories: network
 - 操作系统**准备数据**，把IO外部设备的数据，加载到**内核缓冲区**
 - 操作系统拷贝数据，即将内核缓冲区的数据，拷贝到用户进程缓冲区
 
-<img src="https://pic1.zhimg.com/v2-17f3abff4e49a2214f10f3815d91e15e_1440w.jpg?source=172ae18b" alt="彻底理解 IO多路复用" style="zoom: 67%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_15/v2-17f3abff4e49a2214f10f3815d91e15e_1440w.jpg" alt="彻底理解 IO多路复用" style="zoom: 67%;" />
 
 ### 阻塞I/O
 
@@ -60,7 +60,7 @@ categories: network
 
 > I/O多路复用是一种同步I/O模型，实现一个线程可以监视多个FD（文件句柄）；一旦某个文件句柄就绪，就能够通知应用程序进行相应的读写操作。没有文件句柄就绪时会阻塞应用程序，交出CPU。**多路指的是网络链接，复用指的是同一个线程（进程）**
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazJbqiczZFFTqOUcT2NEhtBvqXic51aObic0MVZAGgockyiaOPaNScG41uAg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_15/640-20220628081538259.jpeg" alt="Image" style="zoom:33%;" />
 
 1. 应用进程向操作系统内核，发起recvfrom读取数据。
 
@@ -86,7 +86,7 @@ IO多路复用的核心：**操作系统提供了一类函数：select, poll, ep
 
 > 应用进程通过调用select函数，可以同时监控多个fd，在select函数监控的fd中，只要有任何一个数据状态准备就绪了，select函数都会返回可读状态，这时应用再发起recvfrom调用。
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazqeEOD7MMqMd91a1eow5o3vicFxeMOuzEPwTnAJ0WjfSWwhyul9ysk5Q/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_15/640-20220628081545278.jpeg" alt="Image" style="zoom:33%;" />
 
 **select缺点**
 
@@ -97,7 +97,7 @@ IO多路复用的核心：**操作系统提供了一类函数：select, poll, ep
 
 ### I/O多路复用之epoll
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iaziaLlvvmYpg1D4I3mMXTYCiaw0WYPFW4Gd6QdeQWvGkoVhVM6G0gc0DGg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_15/640-20220628081555035.jpeg" alt="Image" style="zoom:33%;" />
 
 1. epoll先通过epoll_ctl()来注册一个fd（文件描述符）
 2. 当fd就绪时，内核会采用回调机制，迅速激活这个fd，当进程调用epoll_wait()时便得到通知。
@@ -118,7 +118,7 @@ IO多路复用的核心：**操作系统提供了一类函数：select, poll, ep
 
 > 信号驱动IO不再用主动询问的方式去确认数据是否就绪，而是向内核发送一个信号（调用signaction的时候建立一个sigio信号），然后应用用户进程可以去做别的事，不用阻塞。当内核数据准备好后，再通过SIGIO信号通知应用进程，数据准备好后的可读状态。应用用户进程收到信号后，立即调用recvfrom，去读取数据。
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazv95SUjibNibHbvjJ8RiaZ6UCLsJI0bvic4mhcjvMbTr6wiaJesRlr3tgGFQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_16/640-20220628081608406.jpeg" alt="Image" style="zoom:33%;" />
 
 还不是完全的异步IO：数据复制到应用缓冲的时候，应用进程还是阻塞的。
 
@@ -126,11 +126,11 @@ IO多路复用的核心：**操作系统提供了一类函数：select, poll, ep
 
 BIO，NIO和信号驱动，在数据从内核复制到缓冲区的时候都是阻塞的，都不算真正的异步IO。**AIO实现了全流程的非阻塞，就是应用进程发出系统调用后，是立即返回的，但是返回的不是处理结果，而是表示提交成功的意思。等到内核数据准备好，将数据拷贝到用户进程缓冲区，发送信号通知用户进程IO操作**
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iaz8ElghKVI5ibXFcooAicC1HjAwBZHRpqLia620oexRuw7hkjMLkb8gdJoQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_16/640-20220628081615918.jpeg" alt="Image" style="zoom:33%;" />
 
 ### 阻塞、非阻塞、同步、异步IO划分
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PoF8jo1PmpznQic9871SM0Xlk5W1Kv5iazq5KYaEL2z8IqS4E7M8AdWzpicBGx9nxxH4GAeY4nacATWkykDTGvfew/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220628/08_16/640-20220628081622002.jpeg" alt="Image" style="zoom:33%;" />
 
 | IO模型            |            |
 | :---------------- | :--------- |
@@ -143,3 +143,4 @@ BIO，NIO和信号驱动，在数据从内核复制到缓冲区的时候都是�
 ### 参考连接
 
 https://mp.weixin.qq.com/s/77G2NxfjZlT-icfqrHCizQ
+
