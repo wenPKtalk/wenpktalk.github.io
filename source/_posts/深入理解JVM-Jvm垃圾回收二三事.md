@@ -63,7 +63,7 @@ categories: JVM
 
 把死亡对象所占据的内存标记为空闲内存，并记录在一个**空闲列表（Free List）**中。当需要新建对象时，内存管理便会从空闲列表中寻找空闲内存，并划分给新建对象。
 
-<img src="https://static001.geekbang.org/resource/image/f2/03/f225126be24826658ca5a899fcff5003.png" alt="img" style="zoom: 33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/f225126be24826658ca5a899fcff5003.png" alt="img" style="zoom: 33%;" />
 
 ##### 优点：
 
@@ -78,7 +78,7 @@ categories: JVM
 
 把存活的对象挪到内存的起始位置。
 
-<img src="https://static001.geekbang.org/resource/image/41/39/415ee8e4aef12ff076b42e41660dad39.png" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/415ee8e4aef12ff076b42e41660dad39.png" alt="img" style="zoom:33%;" />
 
 ##### 优点
 
@@ -92,7 +92,7 @@ categories: JVM
 
 把内存区域划分为两份，分别使用**from**和**to**来维护，并且只是用from指针指向的内存区域来分配内存。当发生垃圾回收时，便把存活对象复制到to指针指向的内存区域中，并且交换from指针和to指针指向的内容。
 
-<img src="https://static001.geekbang.org/resource/image/47/61/4749cad235deb1542d4ca3b232ebf261.png" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/4749cad235deb1542d4ca3b232ebf261.png" alt="img" style="zoom:33%;" />
 
 ##### 优点：
 
@@ -149,7 +149,7 @@ JVM首先采用分代算法将堆空间划分如下：
 
 也可以通过参数 -XX:SurvivorRatio 来固定这个比例。但是需要注意的是，其中一个 Survivor 区会一直为空，因此比例越低浪费的堆空间将越高。
 
-<img src="https://static001.geekbang.org/resource/image/2c/e5/2cc29b8de676d3747416416a3523e4e5.png" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/2cc29b8de676d3747416416a3523e4e5.png" alt="img" style="zoom:33%;" />
 
 通常来讲（除过逃逸分析是在栈上分配）：new 一个对象需要在Eden区划分一片内存作为对象的存储空间。由于堆空间是线程共享的，因此直接在这里边划空间是需要进行**同步**的。否则，将有可能出现两个对象共用一段内存的事故。为了解决多个线程在同时创建时可能造成的占用内存冲突引入了**TLAB**（Thread Local Allocation Buffer）技术
 
@@ -219,7 +219,7 @@ Serial收集器是最基础、历史最悠久的收集器，曾经（在JDK 1.3.
 
 Serial/Serial Old收 集器的运行过程如下：
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkLay9aAFksP1VA4zXIPMOwU2FsmTNE8PeEcHbAMPl1k4YBib2fjapvhQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom: 67%;" />
+![image-20220630213504099](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/image-20220630213504099.png)
 
 #### 2. ParNew收集器
 
@@ -227,7 +227,7 @@ ParNew收集器实质上是Serial收集器的多线程并行版本，除了同�
 
 ParNew收集器的工作过程如图所示：
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkg5mqlDEQ6egDzOwlGXoT48DbFRdD6iaRRWwHJh6T9eoap4m1xcKGInA/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+![image-20220630213452053](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_34/image-20220630213452053.png)
 
 #### 3. Parallel Scavenge收集器
 
@@ -243,13 +243,13 @@ Serial Old是Serial收集器的老年代版本，它同样是一个单线程收�
 
 Serial Old收集器的工作过程如图所示。
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkulNd6x3IMnkHEbZBoJpblghWiaOX3nShRLU0hmiaalweiaCwmHKC2RprQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+![image-20220630213437080](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_34/image-20220630213437080.png)
 
 #### 5. Parallel Old收集器
 
 Parallel Old是Parallel Scavenge收集器的老年代版本，支持多线程并发收集，基于标记-整理算法实现。这个收集器是直到JDK 6时才开始提供的。Parallel Old收集器的工作过程如图所示。
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkSqlHr0B7MPLftF3KogFXooOn3FR3GZt3VcI9Tf6eic0lMBnE4FJDiblQ/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+![image-20220630213424387](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_34/image-20220630213424387.png)
 
 #### 6. CMS收集器
 
@@ -257,7 +257,7 @@ CMS（Concurrent Mark Sweep）收集器是一种以获取最短回收停顿时�
 
 Concurrent Mark Sweep收集器运行过程如图：
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgk4mcVU2w3sNiaYibFA3wTRtl6r6tI5K2DAZJJy7lXpMicINAlicoS6k7eQg/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+![image-20220630213407564](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_34/image-20220630213407564.png)
 
 #### 7. Garbage First（G1）收集器
 
@@ -265,7 +265,7 @@ G1是一款主要面向服务端应用的垃圾收集器，是目前垃圾回收
 
 G1收集器运行过程如图：
 
-<img src="https://mmbiz.qpic.cn/mmbiz_png/PMZOEonJxWcUIaicKQYhj4gJuFZtKicDgkD7WRLalGInfJNJBAibS7tWAc691yj8Nj1k5wu1vHHIo2XbVU4rTZ2Og/640?wx_fmt=png&wxfrom=5&wx_lazy=1&wx_co=1" alt="Image" style="zoom:67%;" />
+![image-20220630213338954](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_33/image-20220630213338954.png)
 
 #### 8. ZGC
 
@@ -283,7 +283,7 @@ ZGC 的内存布局说起。与 Shenandoah 和 G1一样，ZGC 也采用基于 Re
 - 中型 Region (Medium Region)：容量固定为 32M，放置大于等于256K但小于4M的对象。
 - 大型 Region (Large Region): 容量不固定，可以动态变化，但必须为2MB 的整数倍，用于放置 4MB或以上的大对象。
 
-<img src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/d1e23544f9184dd68e16e8a36e6e9fc3~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp" alt="图片" style="zoom:50%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220630/21_35/d1e23544f9184dd68e16e8a36e6e9fc3~tplv-k3u1fbpfcp-zoom-in-crop-mark:1304:0:0:0.awebp" alt="图片" style="zoom:50%;" />
 
 参考链接：https://juejin.cn/post/7095643412082196511
 
