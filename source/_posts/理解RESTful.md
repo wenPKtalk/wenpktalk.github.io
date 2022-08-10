@@ -111,3 +111,11 @@ Fielding 认为，一套理想的、完全满足 REST 的系统应该满足以�
 李锟谈 Fielding 博士 REST 论文中文版发布：https://www.infoq.cn/article/2007/07/dlee-fielding-rest/
 
 Fielding论文：https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm
+
+### REST和RPC对比结论：
+
+无论是思想上，概念上，还是使用范围上，REST和RPC都不完全一样，本质上并不是同一个类型的东西。充其量是相似，在应用中会存在重合功能。
+
+1. 思想上差异：抽象目标不一样，REST是面向资源的编程思想，RPC是面向过程。
+2. 概念上：REST并不是一种远程服务调用协议，也可以说它就不是一种协议，只是一种风格。RPC是作为一种远程调用协议的存在。
+3. 试用范围：REST和RPC作为主流的两种远程调用方式，在使用上确实有重合之处。
