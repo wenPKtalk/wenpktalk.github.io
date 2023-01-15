@@ -143,6 +143,12 @@ Redis 之所以能快速操作键值对，一方面是因为 O(1) 复杂度的�
 
 当然，我们不能忘了复杂度较高的 List 类型，它的两种底层实现结构：双向链表和压缩列表的操作复杂度都是 O(N)。因此，我的建议是：因地制宜地使用 List 类型。例如，既然它的 POP/PUSH 效率很高，那么就将它主要用于 FIFO 队列场景，而不是作为一个可以随机读写的集合。
 
+### 实际开发中Redis各个数据结构的应用场景
+
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230115/16_39/image-20230115163957142.png" alt="image-20230115163957142" style="zoom: 25%;" />
+
+
+
 ### 引用
 
 [《Redis核心技术与实战》](https://time.geekbang.org/column/article/268253)
