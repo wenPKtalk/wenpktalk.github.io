@@ -210,6 +210,46 @@ class UserControllerTest extends ControllerBaseTest {
 }
 ```
 
+5. 使用ArgumentCaptor验证代码中间被stub掉方法的参数.
+
+   存在一种情况我们给serviceA中的methodA写单元测试的过程中，发现调用了serviceB的methodB方法，并且为serviceB方法new 了一个ObjectA对象作为调用serviceB.methodB的参数，如下：
+
+   ```java
+   public class ServiceA {
+     @Autowired
+     public ServiceB serviceB
+     
+     public void methodA() {
+       /*
+       * 其它业务代码 
+       */
+       for (i = 0; i < 3; i++ ){
+       	ObjectA objA = new ObjectA();
+         ObjcetB objB = serviceB.methodB("hello", objA);  
+       }
+       /*
+       * 其它业务代码 
+       */
+       
+     }
+   }
+   ```
+
+   此时在测试 methodA的时候，需要使用测试替身代替真实的serviceB.methodB(objA);调用，这个时候我们不能使用 Mockito.when(serviceB.methodB(eq("hello"), eq(new ObjectA())))来进行替换，因为new出来的对象是不同的对象所以stub不住。这个时候应该使用使用ArgumentCaptor进行捕获后验证，如下：
+
+   ```java
+   ArgumentCaptor<ObjectA> objACaptor = ArgumentCaptor.forClass(ObjectA.class);
+   //利用mockito.when().thenReturn()返回多个对象来stub循环中的三方调用
+   Mockito.when(serviceB.methodB(eq("hello"), objACaptor.caputre())).thenReturn(objB1, obj2, obj3);
+   //然后获取三次captor捕获的三个参数进行验证。
+   List<ObjectA> objAs = objACaptor.getValues();
+   //验证三次参数
+   Assertions.assertEquals(objAs(0), objB1);
+   Assertions.assertEquals(objAs(1), objB2);
+   Assertions.assertEquals(objAs(2), objB2);
+   
+   ```
+
 ### 相关链接
 
 Java编程技巧之单元测试用例编写流程：https://zhuanlan.zhihu.com/p/371759603
