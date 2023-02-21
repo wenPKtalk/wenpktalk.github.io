@@ -1,5 +1,5 @@
 ---
-title: docker里的mongo error: WT_ERROR: non-specific WiredTiger error"}解决方法
+title: docker里的WiredTiger error 解决方法.md
 date: 2023-02-17 18:30:42
 tags: DevOps
 categories: DevOps
