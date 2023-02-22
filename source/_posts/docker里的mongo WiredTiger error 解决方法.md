@@ -1,5 +1,5 @@
 ---
-title: docker里的WiredTiger error 解决方法.md
+title: docker里的mongo WiredTiger error 解决方法
 date: 2023-02-17 18:30:42
 tags: DevOps
 categories: DevOps
