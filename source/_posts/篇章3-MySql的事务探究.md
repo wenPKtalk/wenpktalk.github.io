@@ -51,3 +51,10 @@ D: Durability 持久性
 
 
 
+> InnoDB的undo log文件存储在MySQL数据目录下的ibdata文件中，这个文件包含了多种不同的数据结构和信息，其中包括了InnoDB的undo log。
+>
+> 具体来说，每个InnoDB表都有一个undo log，用于记录对该表进行的事务操作，如INSERT、UPDATE和DELETE。当需要回滚一个事务时，InnoDB会使用undo log中的信息来撤消该事务所做的更改。
+>
+> 在默认情况下，InnoDB的undo log被存储在ibdata文件的系统表空间中。如果使用了多个独立的表空间，每个表空间也会包含一个undo段，其中包含与该表空间关联的所有表的undo log。
+>
+> 值得注意的是，如果启用了innodb_undo_tablespaces选项，每个InnoDB表将会有一个独立的undo表空间文件，这些文件将会存储在指定的目录中，而不是在ibdata文件中。
