@@ -43,7 +43,7 @@ String类型的底层结构只有一个**简单动态字符串**，而List，Has
 
 Redis解决hash冲突的方式，就是链式hash（跟Java中的HashMap一样）。**同一个哈希桶中的多个元素用一个链表保存，它们之间依使用指针连接**
 
-<img src="https://static001.geekbang.org/resource/image/8a/28/8ac4cc6cf94968a502161f85d072e428.jpg" alt="img" style="zoom: 33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_40/8ac4cc6cf94968a502161f85d072e428.jpg" alt="img" style="zoom: 33%;" />
 
 ##### 缺点：
 
