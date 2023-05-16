@@ -17,7 +17,7 @@ categories: Redis
 4. Set：哈希表，整数数组
 5. Sorted Set：压缩列表，跳表
 
-<img src="https://static001.geekbang.org/resource/image/82/01/8219f7yy651e566d47cc9f661b399f01.jpg" alt="img" style="zoom: 25%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_36/8219f7yy651e566d47cc9f661b399f01.jpg" alt="img" style="zoom: 25%;" />
 
 String类型的底层结构只有一个**简单动态字符串**，而List，Hash，Set，Sorted Set都有两种底层实现结构。通常情况把这四种类型称为集合类型，特点是：**一个键对应了一个集合的数据。**
 
@@ -73,13 +73,13 @@ Redis会对哈希会对哈希表做Rehash操作，rehash也就是**增加Hash桶
 
 Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希表 1 中的第一个索引位置开始，顺带着将这个索引位置上的所有 entries 拷贝到哈希表 2 中；等处理下一个请求时，再顺带拷贝哈希表 1 中的下一个索引位置的 entries。如下图所示：
 
-<img src="https://static001.geekbang.org/resource/image/73/0c/73fb212d0b0928d96a0d7d6ayy76da0c.jpg" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_37/73fb212d0b0928d96a0d7d6ayy76da0c.jpg" alt="img" style="zoom:33%;" />
 
 ### 压缩列表
 
 压缩列表类似于一个数组，数组中的每一个元素都对应保存着一个数据，和数组不同的是，压缩列表在表头有三个字段zlbytes(列表长度), zltail(列表尾偏移量) 和 zllen(列表entry个数)，zlend(列表结束)
 
-<img src="https://static001.geekbang.org/resource/image/95/a0/9587e483f6ea82f560ff10484aaca4a0.jpg" alt="img" style="zoom:50%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_37/9587e483f6ea82f560ff10484aaca4a0.jpg" alt="img" style="zoom:50%;" />
 
 如果我们要查找定位第一个元素和最后一个元素，可以通过表头三个字段的长度直接定位，复杂度是 O(1)。
 
@@ -89,7 +89,7 @@ Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希�
 
 有序链表只能逐一查找元素，导致操作起来非常缓慢，于是就出现了跳表。具体来说，跳表在链表的基础上，**增加了多级索引，通过索引位置的几个跳转，实现数据的快速定位**。
 
-<img src="https://static001.geekbang.org/resource/image/1e/b4/1eca7135d38de2yy16681c2bbc4f3fb4.jpg" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_37/1eca7135d38de2yy16681c2bbc4f3fb4.jpg" alt="img" style="zoom:33%;" />
 
 1. 从第一个元素开始，每两个元素选一个出来作为索引。
 
@@ -101,7 +101,7 @@ Redis 仍然正常处理客户端请求，每处理一个请求时，从哈希�
 
 ### 数据结构时间复杂度
 
-<img src="https://static001.geekbang.org/resource/image/fb/f0/fb7e3612ddee8a0ea49b7c40673a0cf0.jpg" alt="img" style="zoom:33%;" />
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230516/10_37/fb7e3612ddee8a0ea49b7c40673a0cf0.jpg" alt="img" style="zoom:33%;" />
 
 #### 操作复杂度
 
