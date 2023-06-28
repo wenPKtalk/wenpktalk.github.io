@@ -131,3 +131,51 @@ class OrderService {
 
 采用这种方法，你可以将订单处理逻辑与调度程序解耦，可以在没有通过调度程序触发的情况下独立进行测试。
 
+4. 不要让“外部服务集成”对“应用核心”产生太大影响
+
+   从应用核心，我们可能需要与数据库、消息代理或第三方Web服务等进行通信。必须注意的是，业务逻辑执行器不应过度依赖于外部服务集成。
+
+   例如，假设你正在使用Spring Data JPA进行持久化，而你想从CustomerService中使用分页获取客户。
+
+   **坏味道：**
+
+   ```java
+   @Service
+   @Transactional
+   class CustomerService {
+      private final CustomerRepository customerRepository;
+   
+      PagedResult<Customer> getCustomers(Integer pageNo) {
+         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.of("name"));
+         Page<Customer> cusomersPage = customerRepository.findAll(pageable);
+         return convertToPagedResult(cusomersPage);
+      }
+   }
+   ```
+
+   **纠正：**
+
+   ```java
+   @Service
+   @Transactional
+   class CustomerService {
+      private final CustomerRepository customerRepository;
+   
+      PagedResult<Customer> getCustomers(Integer pageNo) {
+         return customerRepository.findAll(pageNo);
+      }
+   }
+   
+   @Repository
+   class JpaCustomerRepository {
+   
+      PagedResult<Customer> findAll(Integer pageNo) {
+         Pageable pageable = PageRequest.of(pageNo, PAGE_SIZE, Sort.of("name"));
+         return ...;
+      }
+   }
+   ```
+
+   这种方式下，任何持久化库的修改都只会影响到持久化层。
+
+   
