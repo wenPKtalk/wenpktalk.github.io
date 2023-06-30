@@ -17,7 +17,7 @@ tags: [Architecture]
 
 ![tomato-architecture.png](https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20230628/17_58/tomato-architecture.png)
 
-### 实施指南：
+### 实施指南（架构核心：关注点分离）：
 
 1. ### 按功能进行打包
   将代码按照功能分成不同的包是一种常见的模式，通常会根据技术层次（如 controllers, services, repositories等）进行划分。如果你正在构建一个专注于特定模块或业务能力的微服务，那么这种方法可能是可行的。
