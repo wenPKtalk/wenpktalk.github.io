@@ -178,4 +178,54 @@ class OrderService {
 
    这种方式下，任何持久化库的修改都只会影响到持久化层。
 
+5. 将领域（domain）逻辑处理放在领域对象中
+
+   如果一个方法仅仅影响领域对象中的状态或者是根据领域对象状态计算某些内容的方法，则该方法应该是属于领域对象。
+
+   **坏味道：**
+
+   ```java
+   class Cart {
+       List<LineItem> items;
+   }
+   
+   @Service
+   @Transactional
+   class CartService {
+   
+      CartDTO getCart(UUID cartId) {
+         Cart cart = cartRepository.getCart(cartId);
+         BigDecimal cartTotal = this.calculateCartTotal(cart);
+         ...
+      }
+      
+      private BigDecimal calculateCartTotal(Cart cart) {
+         ...
+      }
+   }
+   ```
+
+   **纠正：**
+
+   ```java
+   class Cart {
+       List<LineItem> items;
+   
+      public BigDecimal getTotal() {
+         ...
+      }
+   }
+   
+   @Service
+   @Transactional
+   class CartService {
+   
+      CartDTO getCart(UUID cartId) {
+         Cart cart = cartRepository.getCart(cartId);
+         BigDecimal cartTotal = cart.getTotal();
+         ...
+      }
+   }
+   ```
+
    
