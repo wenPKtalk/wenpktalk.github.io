@@ -1,7 +1,8 @@
 ---
 title: 番茄架构-Tomato Architecture
 date: 2023-06-27 23:07:42
-tags: [Architecture]
+tags: Architecture
+categories: Architecture
 ---
 
 > **番茄架构**是遵循**Common Sense Manifesto**的软件架构的一种方法
