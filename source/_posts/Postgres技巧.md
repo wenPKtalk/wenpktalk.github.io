@@ -214,3 +214,89 @@ CREATE INDEX CONCURRENTLY foobar ON foo (bar);
 \e
 ```
 
+### 为nulls设置一个值
+> 将null渲染为您指定的任何字符。对于更容易解析null和空文本非常方便。
+```sql
+\pset null 👻
+```
+
+### 将您的每个数据库的查询历史保存在本地
+> 将为每个**DBNAME**自动保存一个历史文件。
+```sql
+\set HISTFILE ~/.psql_history- :DBNAME
+```
+
+### 显示由内部psql命令发出的查询
+> 在命令行中为 psql 添加“-E”（或--echo-hidden）选项。此选项将显示内部 psql 命令生成的查询（例如“\dt mytable”）。这是了解系统目录的更酷的方法，或者可以重用由 psql 发出的查询在您自己的工具中。
+
+```sql
+psql -E
+```
+
+### 获取数据，只需数据。
+> 在命令行中向psql添加"-qtA"选项。这些选项将使psql以安静模式("-q")运行，仅返回元组("-t")以不对齐的方式("-A")。结合"-c"选项发送单个查询，如果您只想从Postgres获取数据，这对于您的脚本可能很有用。每行返回一行。
+
+```sql
+psql -qtA
+```
+
+### 以HTML表格的形式获取结果
+> 在命令行中为psql添加"-qtH"选项。这些选项将使psql以安静模式运行（"-q"），仅返回元组（"-t"）以HTML表格形式（"-H"）。结合"-c"选项发送单个查询，可以快速将查询结果嵌入到HTML页面中。
+
+```sql
+psql -qtH
+```
+
+### 搜索以前的查询使用 Ctrl + R
+> 按下Ctrl + R将启动搜索会话，然后您可以开始键入查询或命令的一部分，以找到并再次运行它。如果您使用注释标记特定查询，这可以帮助稍后进行搜索。
+```sql
+(reverse-i-search)
+```
+
+### 清除plsql屏幕
+> 将清除当前 psql 会话中的屏幕
+
+```sql
+\! clear
+```
+
+### 持续使用watch命令运行查询
+
+> 每2秒将自动运行上次的查询并显示输出。您也可以在watch后指定要运行的查询。
+
+```sql
+\watch
+```
+
+### 在交互模式下，当出现错误时回滚到上一个语句。
+
+> 当您在交互模式遇到错误时，系统会自动回滚到前一条命令之前的状态，使您可以像预期的那样继续工作。
+
+```sql
+\set ON_ERROR_ROLLBACK interactive
+```
+
+### 直接从psql导出CSV
+
+> 当使用查询时提供`--csv`值，该命令将运行特定查询并将CSV返回到标准输出。
+
+```sql
+psql <connection-string> --csv -c 'select * from test;'
+```
+
+### 在psql中运行来自文件的查询
+
+> 在 psql 中执行指定的文件。
+
+```sql 
+\i filename
+```
+
+### 在 psql 中提供清晰的边框
+
+> 在psql中，当你查询结果输出时，会给结果加上边框。
+
+```sql
+\pset border 2
+```
+
