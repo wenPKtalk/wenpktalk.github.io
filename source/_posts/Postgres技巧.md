@@ -315,3 +315,7 @@ psql <connection-string> --csv -c 'select * from test;'
 \pset border 2
 ```
 
+## Refer
+
+https://www.crunchydata.com/postgres-tips
+
