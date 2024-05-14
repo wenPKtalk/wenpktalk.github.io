@@ -102,9 +102,24 @@ ALTER DATABASE postgres SET log_lock_waits = 'on';
 ALTER DATABASE mydatabase SET statement_timeout = '60s';
 ```
 
-### 使用pg_stat_statements来查找使用最多资源的查询和进程。
+### 使用pg_stat_statements[需要安装]来查找使用最多资源的查询和进程。
 
 ```sql
+-- 安装pg_stat_statements
+-- Create the extension
+
+CREATE EXTENSION pg_stat_statements;
+
+-- Change in config
+
+alter system set shared_preload_libraries='pg_stat_statements';
+Restart
+
+-- systemctl restart postgresql
+-- Verify changes applied or not.
+
+select * from pg_file_Settings where name='shared_preload_libraries';
+
 SELECT
 	total_exec_time,
 	mean_exec_time as avg_ms,
