@@ -62,6 +62,8 @@ CallerRunsPolicy：在调用者线程执行
 DiscardPolicy：直接丢弃
 DiscardOldestPolicy：丢弃最早的任务
 
+![alt text](image.png)
+
 
 planUML描述如下：
 
