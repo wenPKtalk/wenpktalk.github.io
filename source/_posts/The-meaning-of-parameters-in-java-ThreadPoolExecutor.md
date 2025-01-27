@@ -62,7 +62,7 @@ CallerRunsPolicy：在调用者线程执行
 DiscardPolicy：直接丢弃
 DiscardOldestPolicy：丢弃最早的任务
 
-![alt text](image.png)
+![image.png](https://github.com/wenPKtalk/wenpktalk.github.io/blob/9965ec5a6944d4a596b836cf234240e07698fa8d/source/_posts/image.png)
 
 
 planUML描述如下：
