@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>Category: Clean Code - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{}</script>
+    <meta name="description" content="The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.(这个世界的问题在于聪明人充满疑惑而傻子却坚信不疑)">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Summary">
+<meta property="og:url" content="http://example.com/categories/Clean-Code/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.(这个世界的问题在于聪明人充满疑惑而傻子却坚信不疑)">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="1">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="1">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="1"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+    <section class="postShorten-group main-content-wrap">
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                            aria-label=": 如何写好函数"
+                        >
+                            如何写好函数
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-04-15T08:50:24+00:00">
+	
+		    Apr 15, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Clean-Code/">Clean Code</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h3 id="1-给函数起个好名字"><a href="#1-给函数起个好名字" class="headerlink" title="1. 给函数起个好名字"></a>1. 给函数起个好名字</h3><p>动词 + 关键词 ： 例如把JUnit中的assertEquals改成 assertExpectedEqualsActual(expected, actual)可能会更好些，大大减轻了记忆参数顺序的负担</p>
+<h3 id="2-函数参数"><a href="#2-函数参数" class="headerlink" title="2. 函数参数"></a>2. 函数参数</h3><p>最理想的参数数量是 0（零参函数）–》其次是1（单参函数）–》 再次是2 （双参函数）–》 应该尽量避免3（三参函数）</p>
+<p>如果函数看起来需要2个，3个或者3个以上参数，那说明其中一些需要封装成为类了。</p>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Circle <span class="title function_">makeCircle</span><span class="params">(<span class="type">double</span> x, <span class="type">double</span> y, <span class="type">double</span> radius)</span>;</span><br><span class="line">Circle <span class="title function_">makeCircle</span><span class="params">(Point center, <span class="type">double</span> radius)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>当一组参数被传递，就像上例中的x和y，往往就是该有自己名称的某个概念的一部分（学会将一组基本变量抽象成为对象）</p>
+<h3 id="3-改变输入参数，从而导致参数成为了输出参数"><a href="#3-改变输入参数，从而导致参数成为了输出参数" class="headerlink" title="3. 改变输入参数，从而导致参数成为了输出参数"></a>3. 改变输入参数，从而导致参数成为了输出参数</h3><p><em>这一点在java在写业务代码时经常会碰到，改变了输入参数，造成很多迷惑行为</em></p>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//给字符串添加Report添加footer</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">appendFooter</span><span class="params">(StringBuffer report)</span>;</span><br></pre></td></tr></table></figure>
+<p>如果不添加注释会产生疑惑：是给report追加东西还是，把report添加到其它东西上？所以写成如下会比较好理解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">report.appendFooter();</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-杜绝标识参数"><a href="#4-杜绝标识参数" class="headerlink" title="4. 杜绝标识参数"></a>4. 杜绝标识参数</h3><p>标识参数(True|False)非常丑陋。使用标记参数做了两件事情，则应该拆分它。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">render(<span class="type">boolean</span> isSuite) =&gt; renderForSuite() , renderForSingleTest()</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-提取try-catch块"><a href="#5-提取try-catch块" class="headerlink" title="5. 提取try/catch块"></a>5. 提取try/catch块</h3><p>try/catch块在函数中很丑陋，将包裹在try/catch中的代码提取出来，减少try/catch的臃肿程度。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">writeToClient</span><span class="params">(HttpServletResponse response, String filePath)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ServletOutputStream</span> <span class="variable">os</span> <span class="operator">=</span> response.getOutputStream();</span><br><span class="line">             <span class="type">InputStream</span> <span class="variable">stream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file))&#123;</span><br><span class="line">             <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">             response.setContentLength((<span class="type">int</span>)file.length());</span><br><span class="line">            <span class="type">int</span> <span class="variable">length</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="type">byte</span>[] buff = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">while</span> ((length = stream.read(buff)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                os.write(buff, <span class="number">0</span>, length);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;Download happened error&quot;</span>, e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!file.delete()) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;The file &#123;&#125; is failed to be deleted!&quot;</span>, filePath);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>提取try中的业务代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">writeToClient</span><span class="params">(HttpServletResponse response, String filePath)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ServletOutputStream</span> <span class="variable">os</span> <span class="operator">=</span> response.getOutputStream();</span><br><span class="line">             <span class="type">InputStream</span> <span class="variable">stream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file))&#123;</span><br><span class="line">          </span><br><span class="line">            doWrite(os, stream, reponse, filePath)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;Download happened error&quot;</span>, e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!file.delete()) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;The file &#123;&#125; is failed to be deleted!&quot;</span>, filePath);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doWrite</span><span class="params">(ServletOutputStream os, </span></span><br><span class="line"><span class="params">                     InputStream stream, </span></span><br><span class="line"><span class="params">                     HttpServletResponse response,</span></span><br><span class="line"><span class="params">                     String filePath)</span>&#123;</span><br><span class="line">   <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">   response.setContentLength((<span class="type">int</span>)file.length());</span><br><span class="line">   <span class="type">int</span> <span class="variable">length</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">   <span class="type">byte</span>[] buff = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">   <span class="keyword">while</span> ((length = stream.read(buff)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">     os.write(buff, <span class="number">0</span>, length);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-理解OO"><a href="#4-理解OO" class="headerlink" title="4. 理解OO"></a>4. 理解OO</h3><p>面向对象的设计有一个原则（我最初是从 Grady Booch 那里听到的）：“如果觉得设计太复杂，那就生成更多对象。”这种说法既违反直觉，又简单得可笑，但我发现它很有用（“生成更多对象”通常等同于“再增加一层抽象”）。总的来说，如果发现有些地方代码很乱，就要考虑用哪种类可以清理代码。通常清理代码带来的副作用是使系统更灵活并且结构更好。</p>
+<h3 id="5-清理火车代码"><a href="#5-清理火车代码" class="headerlink" title="5. 清理火车代码"></a>5. 清理火车代码</h3><p>杜绝过长的调用链如：</p>
+<p>隐藏委托关系（Hide Delegate）</p>
+<p>迪米特法则（Law of Demeter），这个原则是这样说的：</p>
+<ol>
+<li>每个单元对其它单元只拥有有限的知识，而且这些单元是与当前单元有紧密联系的；</li>
+<li>每个单元只能与其朋友交谈，不与陌生人交谈；</li>
+<li>只与自己最直接的朋友交谈。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">book.getAuthor().getName();</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构后：</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Book</span> &#123; </span><br><span class="line">  ... </span><br><span class="line">  <span class="keyword">public</span> String <span class="title function_">getAuthorName</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.author.getName(); </span><br><span class="line">  &#125; </span><br><span class="line">  ...&#125;</span><br><span class="line"><span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> book.getAuthorName();</span><br></pre></td></tr></table></figure>
+
+<p>要想摆脱初级程序员的水平，就要先从少暴露细节开始。声明完一个类的字段之后，请停下生成 getter 的手，转而让大脑开始工作，思考这个类应该提供的行为。</p>
+<p><strong>基本类型偏执</strong></p>
+<p>对于返回值，和参数能封装为类就封装为类；</p>
+<p>比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">getPrice</span><span class="params">()</span> &#123; ...&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">double</span> <span class="variable">price</span> <span class="operator">=</span> <span class="built_in">this</span>.getPrice();</span><br><span class="line"><span class="keyword">if</span>(price &lt;= <span class="number">0</span>)&#123;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;价格不能为0&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构：封装为对象后</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Price</span>&#123;</span><br><span class="line">  <span class="type">double</span> price;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Price</span><span class="params">(<span class="keyword">final</span> <span class="type">double</span> price)</span> &#123; </span><br><span class="line">    <span class="keyword">if</span> (price &lt;= <span class="number">0</span>) &#123; </span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;价格不能为0&quot;</span>);</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="built_in">this</span>.price = price; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2022/02/11/Remove-if-else-by-Enum/"
+                            aria-label=": Remove if...else...by Enum"
+                        >
+                            Remove if...else...by Enum
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2022-02-11T14:42:27+00:00">
+	
+		    Feb 11, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Clean-Code/">Clean Code</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h1 id="消除if-else之为Enum添加行为"><a href="#消除if-else之为Enum添加行为" class="headerlink" title=" 消除if-else之为Enum添加行为 "></a><center> 消除if-else之为Enum添加行为 </center></h1><h2 id="场景描述"><a href="#场景描述" class="headerlink" title="场景描述"></a>场景描述</h2><p>Java提供枚举类给了开发者更可读的代码实现，我们可以将很多字段作为枚举类型。并且赋予枚举类行为，可以省略掉根据枚举类判断而实现不同行为的众多if…else…</p>
+<blockquote>
+<p>如下是根据参数而下载不同类型的文件的枚举代码，给每个枚举类型添加了响应的代码</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">enum</span> <span class="title class_">DownloadFileType</span> &#123;</span><br><span class="line">    CSV &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeToLocal</span><span class="params">()</span> &#123;</span><br><span class="line">            exportUtil.writeCsv();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;,</span><br><span class="line">    EXCEL &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">writeToLocal</span><span class="params">()</span> &#123;</span><br><span class="line">            exportUtil.writeExcel();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">void</span> <span class="title function_">writeToLocal</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> DownloadFileType <span class="title function_">of</span><span class="params">(String fileType)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Arrays.stream(DownloadFileType.values())</span><br><span class="line">                .filter(type -&gt; type.toString().equals(fileType.toUpperCase(Locale.ROOT)))</span><br><span class="line">                .findFirst()</span><br><span class="line">                .orElse(EXCEL);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>调用方可以免除掉if…else  只需要获取到下载的类型来执行不同的写入。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//write to local tmp dir</span></span><br><span class="line"><span class="comment">//fileType: &quot;excel&quot; or &quot;csv&quot;</span></span><br><span class="line">DownloadFileType.of(fileType).writeToLocal();</span><br><span class="line">    </span><br></pre></td></tr></table></figure>
+
+<h3 id="代码训练"><a href="#代码训练" class="headerlink" title="代码训练"></a>代码训练</h3><p>附上我之前实现一个case的代码链接</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/wenPKtalk/loofah">https://github.com/wenPKtalk/loofah</a></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2022/02/11/Remove-if-else-by-Enum/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    <div class="pagination-bar">
+    <ul class="pagination">
+        
+        
+        <li class="pagination-number">page 1 of 1</li>
+    </ul>
+</div>
+
+</section>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

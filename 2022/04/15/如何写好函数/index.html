@@ -1,0 +1,724 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>如何写好函数 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"1. 给函数起个好名字动词 + 关键词 ： 例如把JUnit中的assertEquals改成 assertExpectedEqualsActual(expected, actual)可能会更好些，大大减轻了记忆参数顺序的负担\n2. 函数参数最理想的参数数量是 0（零参函数）–》其次是1（单参函数）–》 再次是2 （双参函数）–》 应该尽量避免3（三参函数）\n如果函数看起来需要2个，3个或者3个以上参数，那说明其中一些需要封装成为类了。\n例如：\n12Circle makeCircle(double x, double y, double radius);Circle makeCircle(Point center, double radius);\n\n当一组参数被传递，就像上例中的x和y，往往就是该有自己名称的某个概念的一部分（学会将一组基本变量抽象成为对象）\n3. 改变输入参数，从而导致参数成为了输出参数这一点在java在写业务代码时经常会碰到，改变了输入参数，造成很多迷惑行为\n例如：\n12//给字符串添加Report添加footerpublic void appendFooter(StringBuffer report);\n如果不添加注释会产生疑惑：是给report追加东西还是，把report添加到其它东西上？所以写成如下会比较好理解\n1report.appendFooter();\n\n4. 杜绝标识参数标识参数(True|False)非常丑陋。使用标记参数做了两件事情，则应该拆分它。\n1render(boolean isSuite) =&gt; renderForSuite() , renderForSingleTest()\n\n5. 提取try/catch块try/catch块在函数中很丑陋，将包裹在try/catch中的代码提取出来，减少try/catch的臃肿程度。\n123456789101112131415161718private void writeToClient(HttpServletResponse response, String filePath) &#123;        try (ServletOutputStream os = response.getOutputStream();             InputStream stream = new FileInputStream(file))&#123;             File file = new File(filePath);             response.setContentLength((int)file.length());            int length = 0;            byte[] buff = new byte[1024];            while ((length = stream.read(buff)) &gt; 0) &#123;                os.write(buff, 0, length);            &#125;        &#125; catch (IOException e) &#123;            log.error(&quot;Download happened error&quot;, e);        &#125; finally &#123;            if (!file.delete()) &#123;                log.error(&quot;The file &#123;&#125; is failed to be deleted!&quot;, filePath);            &#125;        &#125;    &#125;\n\n提取try中的业务代码：\n1234567891011121314151617181920212223242526private void writeToClient(HttpServletResponse response, String filePath) &#123;        try (ServletOutputStream os = response.getOutputStream();             InputStream stream = new FileInputStream(file))&#123;                      doWrite(os, stream, reponse, filePath)        &#125; catch (IOException e) &#123;            log.error(&quot;Download happened error&quot;, e);        &#125; finally &#123;            if (!file.delete()) &#123;                log.error(&quot;The file &#123;&#125; is failed to be deleted!&quot;, filePath);            &#125;        &#125;    &#125;private void doWrite(ServletOutputStream os,                      InputStream stream,                      HttpServletResponse response,                     String filePath)&#123;   File file = new File(filePath);   response.setContentLength((int)file.length());   int length = 0;   byte[] buff = new byte[1024];   while ((length = stream.read(buff)) &gt; 0) &#123;     os.write(buff, 0, length);   &#125;&#125;\n\n4. 理解OO面向对象的设计有一个原则（我最初是从 Grady Booch 那里听到的）：“如果觉得设计太复杂，那就生成更多对象。”这种说法既违反直觉，又简单得可笑，但我发现它很有用（“生成更多对象”通常等同于“再增加一层抽象”）。总的来说，如果发现有些地方代码很乱，就要考虑用哪种类可以清理代码。通常清理代码带来的副作用是使系统更灵活并且结构更好。\n5. 清理火车代码杜绝过长的调用链如：\n隐藏委托关系（Hide Delegate）\n迪米特法则（Law of Demeter），这个原则是这样说的：\n\n每个单元对其它单元只拥有有限的知识，而且这些单元是与当前单元有紧密联系的；\n每个单元只能与其朋友交谈，不与陌生人交谈；\n只与自己最直接的朋友交谈。\n\n12345678910book.getAuthor().getName();//重构后：class Book &#123;   ...   public String getAuthorName() &#123;     return this.author.getName();   &#125;   ...&#125;String name = book.getAuthorName();\n\n要想摆脱初级程序员的水平，就要先从少暴露细节开始。声明完一个类的字段之后，请停下生成 getter 的手，转而让大脑开始工作，思考这个类应该提供的行为。\n基本类型偏执\n对于返回值，和参数能封装为类就封装为类；\n比如：\n1234567891011121314151617public double getPrice() &#123; ...&#125;double price = this.getPrice();if(price &lt;= 0)&#123;  throw new RuntimeException(&quot;价格不能为0&quot;);&#125;//重构：封装为对象后class Price&#123;  double price;  public Price(final double price) &#123;     if (price &lt;= 0) &#123;       throw new RuntimeException(&quot;价格不能为0&quot;);    &#125;     this.price = price;   &#125;&#125;\n\n","dateCreated":"2022-04-15T08:50:24+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2022-04-15T08:50:24+00:00","description":"","headline":"如何写好函数","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/","keywords":"Clean Code"}</script>
+    <meta name="description" content="1. 给函数起个好名字动词 + 关键词 ： 例如把JUnit中的assertEquals改成 assertExpectedEqualsActual(expected, actual)可能会更好些，大大减轻了记忆参数顺序的负担 2. 函数参数最理想的参数数量是 0（零参函数）–》其次是1（单参函数）–》 再次是2 （双参函数）–》 应该尽量避免3（三参函数） 如果函数看起来需要2个，3个或者3个以上">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="如何写好函数">
+<meta property="og:url" content="http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="1. 给函数起个好名字动词 + 关键词 ： 例如把JUnit中的assertEquals改成 assertExpectedEqualsActual(expected, actual)可能会更好些，大大减轻了记忆参数顺序的负担 2. 函数参数最理想的参数数量是 0（零参函数）–》其次是1（单参函数）–》 再次是2 （双参函数）–》 应该尽量避免3（三参函数） 如果函数看起来需要2个，3个或者3个以上">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2022-04-15T08:50:24.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.902Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Clean Code">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            如何写好函数
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-04-15T08:50:24+00:00">
+	
+		    Apr 15, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Clean-Code/">Clean Code</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h3 id="1-给函数起个好名字"><a href="#1-给函数起个好名字" class="headerlink" title="1. 给函数起个好名字"></a>1. 给函数起个好名字</h3><p>动词 + 关键词 ： 例如把JUnit中的assertEquals改成 assertExpectedEqualsActual(expected, actual)可能会更好些，大大减轻了记忆参数顺序的负担</p>
+<h3 id="2-函数参数"><a href="#2-函数参数" class="headerlink" title="2. 函数参数"></a>2. 函数参数</h3><p>最理想的参数数量是 0（零参函数）–》其次是1（单参函数）–》 再次是2 （双参函数）–》 应该尽量避免3（三参函数）</p>
+<p>如果函数看起来需要2个，3个或者3个以上参数，那说明其中一些需要封装成为类了。</p>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Circle <span class="title function_">makeCircle</span><span class="params">(<span class="type">double</span> x, <span class="type">double</span> y, <span class="type">double</span> radius)</span>;</span><br><span class="line">Circle <span class="title function_">makeCircle</span><span class="params">(Point center, <span class="type">double</span> radius)</span>;</span><br></pre></td></tr></table></figure>
+
+<p>当一组参数被传递，就像上例中的x和y，往往就是该有自己名称的某个概念的一部分（学会将一组基本变量抽象成为对象）</p>
+<h3 id="3-改变输入参数，从而导致参数成为了输出参数"><a href="#3-改变输入参数，从而导致参数成为了输出参数" class="headerlink" title="3. 改变输入参数，从而导致参数成为了输出参数"></a>3. 改变输入参数，从而导致参数成为了输出参数</h3><p><em>这一点在java在写业务代码时经常会碰到，改变了输入参数，造成很多迷惑行为</em></p>
+<p>例如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//给字符串添加Report添加footer</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">appendFooter</span><span class="params">(StringBuffer report)</span>;</span><br></pre></td></tr></table></figure>
+<p>如果不添加注释会产生疑惑：是给report追加东西还是，把report添加到其它东西上？所以写成如下会比较好理解</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">report.appendFooter();</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-杜绝标识参数"><a href="#4-杜绝标识参数" class="headerlink" title="4. 杜绝标识参数"></a>4. 杜绝标识参数</h3><p>标识参数(True|False)非常丑陋。使用标记参数做了两件事情，则应该拆分它。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">render(<span class="type">boolean</span> isSuite) =&gt; renderForSuite() , renderForSingleTest()</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-提取try-catch块"><a href="#5-提取try-catch块" class="headerlink" title="5. 提取try/catch块"></a>5. 提取try/catch块</h3><p>try/catch块在函数中很丑陋，将包裹在try/catch中的代码提取出来，减少try/catch的臃肿程度。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">writeToClient</span><span class="params">(HttpServletResponse response, String filePath)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ServletOutputStream</span> <span class="variable">os</span> <span class="operator">=</span> response.getOutputStream();</span><br><span class="line">             <span class="type">InputStream</span> <span class="variable">stream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file))&#123;</span><br><span class="line">             <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">             response.setContentLength((<span class="type">int</span>)file.length());</span><br><span class="line">            <span class="type">int</span> <span class="variable">length</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">            <span class="type">byte</span>[] buff = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">            <span class="keyword">while</span> ((length = stream.read(buff)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                os.write(buff, <span class="number">0</span>, length);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;Download happened error&quot;</span>, e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!file.delete()) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;The file &#123;&#125; is failed to be deleted!&quot;</span>, filePath);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>提取try中的业务代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">writeToClient</span><span class="params">(HttpServletResponse response, String filePath)</span> &#123;</span><br><span class="line">        <span class="keyword">try</span> (<span class="type">ServletOutputStream</span> <span class="variable">os</span> <span class="operator">=</span> response.getOutputStream();</span><br><span class="line">             <span class="type">InputStream</span> <span class="variable">stream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">FileInputStream</span>(file))&#123;</span><br><span class="line">          </span><br><span class="line">            doWrite(os, stream, reponse, filePath)</span><br><span class="line">        &#125; <span class="keyword">catch</span> (IOException e) &#123;</span><br><span class="line">            log.error(<span class="string">&quot;Download happened error&quot;</span>, e);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (!file.delete()) &#123;</span><br><span class="line">                log.error(<span class="string">&quot;The file &#123;&#125; is failed to be deleted!&quot;</span>, filePath);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title function_">doWrite</span><span class="params">(ServletOutputStream os, </span></span><br><span class="line"><span class="params">                     InputStream stream, </span></span><br><span class="line"><span class="params">                     HttpServletResponse response,</span></span><br><span class="line"><span class="params">                     String filePath)</span>&#123;</span><br><span class="line">   <span class="type">File</span> <span class="variable">file</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">File</span>(filePath);</span><br><span class="line">   response.setContentLength((<span class="type">int</span>)file.length());</span><br><span class="line">   <span class="type">int</span> <span class="variable">length</span> <span class="operator">=</span> <span class="number">0</span>;</span><br><span class="line">   <span class="type">byte</span>[] buff = <span class="keyword">new</span> <span class="title class_">byte</span>[<span class="number">1024</span>];</span><br><span class="line">   <span class="keyword">while</span> ((length = stream.read(buff)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">     os.write(buff, <span class="number">0</span>, length);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-理解OO"><a href="#4-理解OO" class="headerlink" title="4. 理解OO"></a>4. 理解OO</h3><p>面向对象的设计有一个原则（我最初是从 Grady Booch 那里听到的）：“如果觉得设计太复杂，那就生成更多对象。”这种说法既违反直觉，又简单得可笑，但我发现它很有用（“生成更多对象”通常等同于“再增加一层抽象”）。总的来说，如果发现有些地方代码很乱，就要考虑用哪种类可以清理代码。通常清理代码带来的副作用是使系统更灵活并且结构更好。</p>
+<h3 id="5-清理火车代码"><a href="#5-清理火车代码" class="headerlink" title="5. 清理火车代码"></a>5. 清理火车代码</h3><p>杜绝过长的调用链如：</p>
+<p>隐藏委托关系（Hide Delegate）</p>
+<p>迪米特法则（Law of Demeter），这个原则是这样说的：</p>
+<ol>
+<li>每个单元对其它单元只拥有有限的知识，而且这些单元是与当前单元有紧密联系的；</li>
+<li>每个单元只能与其朋友交谈，不与陌生人交谈；</li>
+<li>只与自己最直接的朋友交谈。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">book.getAuthor().getName();</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构后：</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Book</span> &#123; </span><br><span class="line">  ... </span><br><span class="line">  <span class="keyword">public</span> String <span class="title function_">getAuthorName</span><span class="params">()</span> &#123; </span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">this</span>.author.getName(); </span><br><span class="line">  &#125; </span><br><span class="line">  ...&#125;</span><br><span class="line"><span class="type">String</span> <span class="variable">name</span> <span class="operator">=</span> book.getAuthorName();</span><br></pre></td></tr></table></figure>
+
+<p>要想摆脱初级程序员的水平，就要先从少暴露细节开始。声明完一个类的字段之后，请停下生成 getter 的手，转而让大脑开始工作，思考这个类应该提供的行为。</p>
+<p><strong>基本类型偏执</strong></p>
+<p>对于返回值，和参数能封装为类就封装为类；</p>
+<p>比如：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">double</span> <span class="title function_">getPrice</span><span class="params">()</span> &#123; ...&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">double</span> <span class="variable">price</span> <span class="operator">=</span> <span class="built_in">this</span>.getPrice();</span><br><span class="line"><span class="keyword">if</span>(price &lt;= <span class="number">0</span>)&#123;</span><br><span class="line">  <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;价格不能为0&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//重构：封装为对象后</span></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">Price</span>&#123;</span><br><span class="line">  <span class="type">double</span> price;</span><br><span class="line">  <span class="keyword">public</span> <span class="title function_">Price</span><span class="params">(<span class="keyword">final</span> <span class="type">double</span> price)</span> &#123; </span><br><span class="line">    <span class="keyword">if</span> (price &lt;= <span class="number">0</span>) &#123; </span><br><span class="line">      <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">RuntimeException</span>(<span class="string">&quot;价格不能为0&quot;</span>);</span><br><span class="line">    &#125; </span><br><span class="line">    <span class="built_in">this</span>.price = price; </span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Clean-Code/" rel="tag">Clean Code</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/04/26/%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E6%8C%87%E5%8C%97/"
+                    data-tooltip="程序员修炼指北"
+                    aria-label="PREVIOUS: 程序员修炼指北"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/04/11/%E8%AE%A4%E8%AF%86JUnit-5/"
+                    data-tooltip="认识JUnit 5"
+                    aria-label="NEXT: 认识JUnit 5"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/04/26/%E7%A8%8B%E5%BA%8F%E5%91%98%E4%BF%AE%E7%82%BC%E6%8C%87%E5%8C%97/"
+                    data-tooltip="程序员修炼指北"
+                    aria-label="PREVIOUS: 程序员修炼指北"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/04/11/%E8%AE%A4%E8%AF%86JUnit-5/"
+                    data-tooltip="认识JUnit 5"
+                    aria-label="NEXT: 认识JUnit 5"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2022/04/15/%E5%A6%82%E4%BD%95%E5%86%99%E5%A5%BD%E5%87%BD%E6%95%B0/';
+              
+            this.page.identifier = '2022/04/15/如何写好函数/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

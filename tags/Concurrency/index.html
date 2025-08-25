@@ -1,0 +1,538 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>Tag: Concurrency - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{}</script>
+    <meta name="description" content="The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.(这个世界的问题在于聪明人充满疑惑而傻子却坚信不疑)">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Summary">
+<meta property="og:url" content="http://example.com/tags/Concurrency/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="The whole problem with the world is that fools and fanatics are always so certain of themselves, and wiser people so full of doubts.(这个世界的问题在于聪明人充满疑惑而傻子却坚信不疑)">
+<meta property="og:locale" content="en_US">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="1">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="1">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="1"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+    <section class="postShorten-group main-content-wrap">
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                            aria-label=": The meaning of parameters in java ThreadPoolExecutor"
+                        >
+                            The meaning of parameters in java ThreadPoolExecutor
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2024-12-17T14:45:54+00:00">
+	
+		    Dec 17, 2024
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <p>corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is set<br>maximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.<br>unit : the time unit for the keepAliveTime argument<br>workQueue: the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method.<br>handler: the handler to use when execution is blocked because the thread bounds and queue capacities are reache</p>
+<ol>
+<li>corePoolSize（核心线程数）</li>
+</ol>
+<p>线程池中会始终保持的最小线程数<br>即使这些线程处于空闲状态，也不会被销毁（除非设置了allowCoreThreadTimeOut为true）<br>这些线程响应速度最快，因为不需要创建新线程</p>
+<ol start="2">
+<li>maximumPoolSize（最大线程数）</li>
+</ol>
+<p>线程池允许创建的最大线程数<br>当工作队列满了，且当前线程数小于maximumPoolSize时，会创建新线程<br>超过这个数量的任务会触发拒绝策略</p>
+<ol start="3">
+<li>keepAliveTime（空闲线程存活时间）</li>
+</ol>
+<p>非核心线程空闲超过这个时间后会被销毁<br>如果allowCoreThreadTimeOut为true，核心线程也会受这个参数影响<br>用于减少资源浪费</p>
+<ol start="4">
+<li>unit（时间单位）</li>
+</ol>
+<p>keepAliveTime的时间单位<br>可以是SECONDS、MINUTES等TimeUnit枚举值</p>
+<ol start="5">
+<li>workQueue（工作队列）</li>
+</ol>
+<p>用于存放待执行的任务<br>常用队列类型：</p>
+<p>ArrayBlockingQueue：有界队列<br>LinkedBlockingQueue：无界队列<br>SynchronousQueue：无缓冲的等待队列<br>PriorityBlockingQueue：优先级队列</p>
+<ol start="6">
+<li>handler（拒绝策略）</li>
+</ol>
+<p>当队列满且线程数达到maximumPoolSize时的处理策略<br>默认策略类型：</p>
+<p>AbortPolicy：抛出异常（默认）<br>CallerRunsPolicy：在调用者线程执行<br>DiscardPolicy：直接丢弃<br>DiscardOldestPolicy：丢弃最早的任务</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png" alt="Process UML"></p>
+<p>planUML描述如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">@startuml</span><br><span class="line">title ThreadPoolExecutor执行流程</span><br><span class="line"></span><br><span class="line">skinparam backgroundColor #FFFFFF</span><br><span class="line">skinparam handwritten false</span><br><span class="line"></span><br><span class="line">start</span><br><span class="line"></span><br><span class="line">:提交新任务;</span><br><span class="line"></span><br><span class="line">if (当前线程数 &lt; 核心线程数?) then (是)</span><br><span class="line">  :创建新的核心线程;</span><br><span class="line">  :执行任务;</span><br><span class="line">else (否)</span><br><span class="line">  if (工作队列未满?) then (是)</span><br><span class="line">    :将任务放入工作队列;</span><br><span class="line">    note right</span><br><span class="line">      队列类型:</span><br><span class="line">      - ArrayBlockingQueue (有界)</span><br><span class="line">      - LinkedBlockingQueue (无界)</span><br><span class="line">      - SynchronousQueue (同步)</span><br><span class="line">      - PriorityBlockingQueue (优先级)</span><br><span class="line">    end note</span><br><span class="line">  else (否)</span><br><span class="line">    if (当前线程数 &lt; 最大线程数?) then (是)</span><br><span class="line">      :创建新的临时线程;</span><br><span class="line">      note right</span><br><span class="line">        临时线程在空闲超过</span><br><span class="line">        keepAliveTime后销毁</span><br><span class="line">      end note</span><br><span class="line">      :执行任务;</span><br><span class="line">    else (否)</span><br><span class="line">      :执行拒绝策略;</span><br><span class="line">      note right</span><br><span class="line">        拒绝策略:</span><br><span class="line">        - AbortPolicy (默认)</span><br><span class="line">        - CallerRunsPolicy</span><br><span class="line">        - DiscardPolicy</span><br><span class="line">        - DiscardOldestPolicy</span><br><span class="line">      end note</span><br><span class="line">    endif</span><br><span class="line">  endif</span><br><span class="line">endif</span><br><span class="line"></span><br><span class="line">fork</span><br><span class="line">  :核心线程池;</span><br><span class="line">  note right: 保持运行</span><br><span class="line">fork again</span><br><span class="line">  :临时线程池;</span><br><span class="line">  note right: 空闲超时销毁</span><br><span class="line">fork again</span><br><span class="line">  :等待队列;</span><br><span class="line">  note right: 任务缓存</span><br><span class="line">end fork</span><br><span class="line"></span><br><span class="line">stop</span><br><span class="line"></span><br><span class="line">legend right</span><br><span class="line">  参数说明:</span><br><span class="line">  ====</span><br><span class="line">  corePoolSize: 核心线程数</span><br><span class="line">  maximumPoolSize: 最大线程数</span><br><span class="line">  keepAliveTime: 空闲线程存活时间</span><br><span class="line">  workQueue: 工作队列</span><br><span class="line">  handler: 拒绝策略</span><br><span class="line">endlegend</span><br><span class="line"></span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    
+    <article class="postShorten postShorten--thumbnailimg-bottom">
+        <div class="postShorten-wrap">
+            
+            <div class="postShorten-header">
+                <h1 class="postShorten-title">
+                    
+                        <a
+                            class="link-unstyled"
+                            href="/2019/03/13/%E8%AE%A4%E8%AF%86java-util-concurrent%E4%B8%AD%E7%9A%84%E5%B7%A5%E5%85%B7%E7%B1%BB/"
+                            aria-label=": 认识java.util.concurrent中的工具类"
+                        >
+                            认识java.util.concurrent中的工具类
+                        </a>
+                    
+                </h1>
+                <div class="postShorten-meta">
+    <time datetime="2019-03-13T21:00:17+00:00">
+	
+		    Mar 13, 2019
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Concurrency/">Concurrency</a>
+
+
+    
+</div>
+
+            </div>
+            
+                <div class="postShorten-content">
+                    <h3 id="一-同步结构"><a href="#一-同步结构" class="headerlink" title="一. 同步结构"></a>一. 同步结构</h3><p>提供了比synchronized更加高级的同步结构：countDownLatch、CyclicBarrier、Semaphore等，可以实现更加丰富的多线程操作。</p>
+<ol>
+<li><p>Semaphore：作为资源控制器限制同时进行工作的线程数量，java版本的信号量实现。</p>
+<p><a target="_blank" rel="noopener" href="https://github.com/wenPKtalk/mutithread/blob/master/src/main/java/current_demo/AbnormalSemaphoreSample.java">通过Semaphore实现车站调度demo</a></p>
+</li>
+<li><p>CountDownLatch：允许一个或者多个线程等待某些操作完成。</p>
+</li>
+<li><p>CyclicBarrier：一种辅助性的同步结构，语序多个线程等待到达某个屏障。</p>
+<p>CountDownLatch和CyclicBarrier的区别：</p>
+<p>i. CountDownLatch是不可以重置，所以无法重用，而CyclicBarrier则没有这种限制，可以重用。</p>
+<p>ii. CountDownLatch的基本操作组合是countDown/await。调用await的线程阻塞等待countDown足够的次数，不管你是在一个线程还是多个线程里countDown,只要次数足够即可。CountDownLatch操作的是事件。</p>
+<p>iii. CyclicBarrier的基本操作组合，则就是await,当所有的伙伴（parties）都调用了await,才会继续进行任务，并自动进行重置。注意，正常情况下，CyclicBarrier的重置都是自动发生的，如果我们调用reset方法，单还有线程在等待，就会导致等待线程发生干扰，抛出BrokenBarrierException异常。CyclicBarrier侧重点是线程，而不是调用事件， <strong>它的典型应用场景是用来等待并发线程结束。</strong></p>
+</li>
+</ol>
+<h3 id="二-线程安全容器"><a href="#二-线程安全容器" class="headerlink" title="二. 线程安全容器"></a>二. 线程安全容器</h3><p><strong>java.util.concurrent 包提供的容器（Queue、List、Set）、Map，从命名上可以大概区分为 Concurrent*、CopyOnWrite和 Blocking</strong></p>
+<p><strong>Map形式的：</strong></p>
+<ol>
+<li><p>ConcurrentHashMap：jdk8以前使用分段锁，jdk8后采用CAS</p>
+</li>
+<li><p>ConcunrrentSkipListMap：</p>
+</li>
+<li><p>ConcurrentSkipListMap：是TreeMap的线程安全版本。</p>
+</li>
+</ol>
+<p><strong>List形式的：</strong></p>
+<p>CopyOnWriteArrayList：通过快照实现，适用于读多写少的场景。在对其实例进行修改操作（add/remove等）会新建一个数据并修改，修改完毕之后，再将原来的引用指向新的数组。</p>
+<p><strong>Set形式的：</strong></p>
+<p>CopyOnWriteArraySet：同上CopyOnWriteArrayList</p>
+<p><strong>Queue形式的：</strong></p>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220420/23_34/Queue%E7%B1%BB%E5%9B%BE.jpg" alt="Queue类图" style="zoom:50%;" />
+
+<p>ArrayBlockQueue: 有界队列，需要显示的指定队列大小</p>
+<p>LinkedBlockQueue: 被认为无界，其实有</p>
+<p><strong>我在介绍 ReentrantLock 的条件变量用法的时候分析过 ArrayBlockingQueue，不知道你有没有注意到，其条件变量与 LinkedBlockingQueue 版本的实现是有区别的。notEmpty、notFull 都是同一个再入锁的条件变量，而 LinkedBlockingQueue 则改进了锁操作的粒度，头、尾操作使用不同的锁，所以在通用场景下，它的吞吐量相对要更好一些。</strong>  — 引用</p>
+<p>PriorityBlockQueue: 无边界的优先级队列</p>
+<h3 id="三-强大的Executor框架"><a href="#三-强大的Executor框架" class="headerlink" title="三. 强大的Executor框架"></a>三. 强大的Executor框架</h3><ol>
+<li>newCachedThreadPool()，它是一种用来处理大量短时间工作任务的线程池，具有几个鲜明特点：它会试图缓存线程并重用，当无缓存线程可用时，就会创建新的工作线程；如果线程闲置的时间超过 60 秒，则被终止并移出缓存；长时间闲置时，这种线程池，不会消耗什么资源。其内部使用 SynchronousQueue 作为工作队列。</li>
+<li>newSingleThreadExecutor()，它的特点在于工作线程数目被限制为 1，操作一个无界的工作队列，所以它保证了所有任务的都是被顺序执行，最多会有一个任务处于活动状态，并且不允许使用者改动线程池实例，因此可以避免其改变线程数目。</li>
+<li>newSingleThreadScheduledExecutor() 和 newScheduledThreadPool(int corePoolSize)，创建的是个 ScheduledExecutorService，可以进行定时或周期性的工作调度，区别在于单一工作线程还是多个工作线程。</li>
+<li>newWorkStealingPool(int parallelism)，这是一个经常被人忽略的线程池，Java 8 才加入这个创建方法，其内部会构建。</li>
+</ol>
+<h3 id="四-框架图"><a href="#四-框架图" class="headerlink" title="四. 框架图"></a>四. 框架图</h3><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220420/23_34/%E5%B9%B6%E5%8F%91%E5%9B%BE%E8%B0%B1.jpg" alt="并发图谱" style="zoom:50%;" />
+
+<h3 id="参考作品"><a href="#参考作品" class="headerlink" title="参考作品"></a>参考作品</h3><p>《Java Core 卷一》</p>
+<p>JUC常用4大并发工具类 <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Ixz8V0oMHyRvCzJ3EsZkFA">https://mp.weixin.qq.com/s/Ixz8V0oMHyRvCzJ3EsZkFA</a></p>
+<p>Java并发干货 <a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s/Sxnf5teW1vehkhBfkV7E-g">https://mp.weixin.qq.com/s/Sxnf5teW1vehkhBfkV7E-g</a></p>
+
+                    
+                        
+
+
+                    
+                    
+                        <p>
+                            <a
+                                href="/2019/03/13/%E8%AE%A4%E8%AF%86java-util-concurrent%E4%B8%AD%E7%9A%84%E5%B7%A5%E5%85%B7%E7%B1%BB/#post-footer"
+                                class="postShorten-excerpt_link link"
+                                aria-label=""
+                            >
+                                Comment and share
+                            </a>
+                        </p>
+                    
+                </div>
+            
+        </div>
+        
+    </article>
+    
+    <div class="pagination-bar">
+    <ul class="pagination">
+        
+        
+        <li class="pagination-number">page 1 of 1</li>
+    </ul>
+</div>
+
+</section>
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+
+
+
+    </body>
+</html>

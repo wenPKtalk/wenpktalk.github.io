@@ -1,0 +1,728 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>理解Redis缓存雪崩，缓存击穿，缓存穿透 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"一. 缓存雪崩\n“雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。\n出现原因：\n\n给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。\n\nredis服务宕机。\n\n\n解决方案：\n提前预案: \n\n给redis过期时间加随机值预防大面积的缓存同时过期失效。\nredis集群高可用可用，哨兵机制。\n\n兜底方案:3. 服务熔断，服务降级。监控到缓存服务不可用时直接返回，或者限制流量直接请求到数据库层。\n二. 缓存击穿相交于缓存雪崩大范围或整体缓存不可用缓存击穿则是指某个热点key过期，导致的缓存失效。常常是一部分热点数据，如秒杀产品的库存数据。\n出现原因：热点数据过期，或者被其他手段删除。\n解决方案：\n\n对于热点数据缓存时不设置过期时间。\n\n第一个请求发现热点数据不在redis缓存中，可以先阻塞其他请求，等到第一个请求将数据库数据读出来并缓存到redis后再唤醒其他请求从缓存服务中读取热点数据。\n\n\n﻿\n三. 缓存穿透缓存穿透则是另外一个层面，指的时请求所访问的数据既不在缓存中，也不在数据库中。如果应用持续有大量请求访问数据，就会同时给缓存和数据库带来巨大压力。\n出现原因：\n\n业务层误操作访问到了不会存在的数据。\n\n恶意请求攻击\n\n\n解决方案：\n\n第一个请求发现热点数据不在redis缓存中和数据库中，可以先阻塞其他请求，缓存一个缺省值返回。\n利用redis提供的布隆过滤器。\n前端有效值校验。\n\n四. 总结缓存雪崩 ，缓存击穿均属于缓存失效的一种异常缓存雪崩影响范围大于缓存击穿。缓存穿透则是数据本身就不在整个数据存储层。\n","dateCreated":"2020-11-05T10:07:13+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2020-11-05T10:07:13+00:00","description":"","headline":"理解Redis缓存雪崩，缓存击穿，缓存穿透","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/","keywords":"Redis"}</script>
+    <meta name="description" content="一. 缓存雪崩 “雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。 出现原因：  给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。  redis服务宕机。   解决方案： 提前预案:   给redis过期时间加随机值预防大面积的缓存同时过期失效。 redis集">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="理解Redis缓存雪崩，缓存击穿，缓存穿透">
+<meta property="og:url" content="http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="一. 缓存雪崩 “雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。 出现原因：  给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。  redis服务宕机。   解决方案： 提前预案:   给redis过期时间加随机值预防大面积的缓存同时过期失效。 redis集">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png">
+<meta property="article:published_time" content="2020-11-05T10:07:13.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.903Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            理解Redis缓存雪崩，缓存击穿，缓存穿透
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-11-05T10:07:13+00:00">
+	
+		    Nov 05, 2020
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Redis/">Redis</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h4 id="一-缓存雪崩"><a href="#一-缓存雪崩" class="headerlink" title="一. 缓存雪崩"></a>一. 缓存雪崩</h4><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png" alt="image-20220406193747187"></p>
+<p>“雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。</p>
+<p><strong>出现原因：</strong></p>
+<ol>
+<li><p>给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。</p>
+</li>
+<li><p>redis服务宕机。</p>
+</li>
+</ol>
+<p><strong>解决方案：</strong></p>
+<p>提前预案: </p>
+<ol>
+<li>给redis过期时间加随机值预防大面积的缓存同时过期失效。</li>
+<li>redis集群高可用可用，哨兵机制。</li>
+</ol>
+<p>兜底方案:<br>3. 服务熔断，服务降级。监控到缓存服务不可用时直接返回，或者限制流量直接请求到数据库层。</p>
+<h4 id="二-缓存击穿"><a href="#二-缓存击穿" class="headerlink" title="二. 缓存击穿"></a>二. 缓存击穿</h4><p>相交于缓存雪崩大范围或整体缓存不可用缓存击穿则是指某个热点key过期，导致的缓存失效。常常是一部分热点数据，如秒杀产品的库存数据。</p>
+<p><strong>出现原因：</strong><br>热点数据过期，或者被其他手段删除。</p>
+<p><strong>解决方案：</strong></p>
+<ol>
+<li><p>对于热点数据缓存时不设置过期时间。</p>
+</li>
+<li><p>第一个请求发现热点数据不在redis缓存中，可以先阻塞其他请求，等到第一个请求将数据库数据读出来并缓存到redis后再唤醒其他请求从缓存服务中读取热点数据。</p>
+</li>
+</ol>
+<p>﻿</p>
+<h4 id="三-缓存穿透"><a href="#三-缓存穿透" class="headerlink" title="三. 缓存穿透"></a>三. 缓存穿透</h4><p>缓存穿透则是另外一个层面，指的时请求所访问的数据既不在缓存中，也不在数据库中。如果应用持续有大量请求访问数据，就会同时给缓存和数据库带来巨大压力。</p>
+<p><strong>出现原因：</strong></p>
+<ol>
+<li><p>业务层误操作访问到了不会存在的数据。</p>
+</li>
+<li><p>恶意请求攻击</p>
+</li>
+</ol>
+<p><strong>解决方案：</strong></p>
+<ol>
+<li>第一个请求发现热点数据不在redis缓存中和数据库中，可以先阻塞其他请求，缓存一个缺省值返回。</li>
+<li>利用redis提供的布隆过滤器。</li>
+<li>前端有效值校验。</li>
+</ol>
+<h4 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h4><p><strong>缓存雪崩</strong> ，<strong>缓存击穿</strong>均属于缓存失效的一种异常缓存雪崩影响范围大于缓存击穿。<strong>缓存穿透</strong>则是数据本身就不在整个数据存储层。</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Redis/" rel="tag">Redis</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2021/05/12/%E4%BB%8EReactor%E6%A8%A1%E5%BC%8F%E8%AE%A4%E8%AF%86Netty/"
+                    data-tooltip="从Reactor模式认识Netty"
+                    aria-label="PREVIOUS: 从Reactor模式认识Netty"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    data-tooltip="理解RESTful"
+                    aria-label="NEXT: 理解RESTful"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2021/05/12/%E4%BB%8EReactor%E6%A8%A1%E5%BC%8F%E8%AE%A4%E8%AF%86Netty/"
+                    data-tooltip="从Reactor模式认识Netty"
+                    aria-label="PREVIOUS: 从Reactor模式认识Netty"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    data-tooltip="理解RESTful"
+                    aria-label="NEXT: 理解RESTful"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/';
+              
+            this.page.identifier = '2020/11/05/理解Redis缓存雪崩，缓存击穿，缓存穿透/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

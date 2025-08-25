@@ -1,0 +1,717 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>The meaning of parameters in java ThreadPoolExecutor - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is setmaximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.unit : the time unit for the keepAliveTime argumentworkQueue: the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method.handler: the handler to use when execution is blocked because the thread bounds and queue capacities are reache\n\ncorePoolSize（核心线程数）\n\n线程池中会始终保持的最小线程数即使这些线程处于空闲状态，也不会被销毁（除非设置了allowCoreThreadTimeOut为true）这些线程响应速度最快，因为不需要创建新线程\n\nmaximumPoolSize（最大线程数）\n\n线程池允许创建的最大线程数当工作队列满了，且当前线程数小于maximumPoolSize时，会创建新线程超过这个数量的任务会触发拒绝策略\n\nkeepAliveTime（空闲线程存活时间）\n\n非核心线程空闲超过这个时间后会被销毁如果allowCoreThreadTimeOut为true，核心线程也会受这个参数影响用于减少资源浪费\n\nunit（时间单位）\n\nkeepAliveTime的时间单位可以是SECONDS、MINUTES等TimeUnit枚举值\n\nworkQueue（工作队列）\n\n用于存放待执行的任务常用队列类型：\nArrayBlockingQueue：有界队列LinkedBlockingQueue：无界队列SynchronousQueue：无缓冲的等待队列PriorityBlockingQueue：优先级队列\n\nhandler（拒绝策略）\n\n当队列满且线程数达到maximumPoolSize时的处理策略默认策略类型：\nAbortPolicy：抛出异常（默认）CallerRunsPolicy：在调用者线程执行DiscardPolicy：直接丢弃DiscardOldestPolicy：丢弃最早的任务\n\nplanUML描述如下：\n1234567891011121314151617181920212223242526272829303132333435363738394041424344454647484950515253545556575859606162636465666768@startumltitle ThreadPoolExecutor执行流程skinparam backgroundColor #FFFFFFskinparam handwritten falsestart:提交新任务;if (当前线程数 &lt; 核心线程数?) then (是)  :创建新的核心线程;  :执行任务;else (否)  if (工作队列未满?) then (是)    :将任务放入工作队列;    note right      队列类型:      - ArrayBlockingQueue (有界)      - LinkedBlockingQueue (无界)      - SynchronousQueue (同步)      - PriorityBlockingQueue (优先级)    end note  else (否)    if (当前线程数 &lt; 最大线程数?) then (是)      :创建新的临时线程;      note right        临时线程在空闲超过        keepAliveTime后销毁      end note      :执行任务;    else (否)      :执行拒绝策略;      note right        拒绝策略:        - AbortPolicy (默认)        - CallerRunsPolicy        - DiscardPolicy        - DiscardOldestPolicy      end note    endif  endifendiffork  :核心线程池;  note right: 保持运行fork again  :临时线程池;  note right: 空闲超时销毁fork again  :等待队列;  note right: 任务缓存end forkstoplegend right  参数说明:  ====  corePoolSize: 核心线程数  maximumPoolSize: 最大线程数  keepAliveTime: 空闲线程存活时间  workQueue: 工作队列  handler: 拒绝策略endlegend@enduml","dateCreated":"2024-12-17T14:45:54+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2024-12-17T14:45:54+00:00","description":"","headline":"The meaning of parameters in java ThreadPoolExecutor","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/","keywords":"Java, Concurrency"}</script>
+    <meta name="description" content="corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is setmaximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime wh">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="The meaning of parameters in java ThreadPoolExecutor">
+<meta property="og:url" content="http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is setmaximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime wh">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png">
+<meta property="article:published_time" content="2024-12-17T14:45:54.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.901Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Java">
+<meta property="article:tag" content="Concurrency">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            The meaning of parameters in java ThreadPoolExecutor
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2024-12-17T14:45:54+00:00">
+	
+		    Dec 17, 2024
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Java/">Java</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <p>corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is set<br>maximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.<br>unit : the time unit for the keepAliveTime argument<br>workQueue: the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method.<br>handler: the handler to use when execution is blocked because the thread bounds and queue capacities are reache</p>
+<ol>
+<li>corePoolSize（核心线程数）</li>
+</ol>
+<p>线程池中会始终保持的最小线程数<br>即使这些线程处于空闲状态，也不会被销毁（除非设置了allowCoreThreadTimeOut为true）<br>这些线程响应速度最快，因为不需要创建新线程</p>
+<ol start="2">
+<li>maximumPoolSize（最大线程数）</li>
+</ol>
+<p>线程池允许创建的最大线程数<br>当工作队列满了，且当前线程数小于maximumPoolSize时，会创建新线程<br>超过这个数量的任务会触发拒绝策略</p>
+<ol start="3">
+<li>keepAliveTime（空闲线程存活时间）</li>
+</ol>
+<p>非核心线程空闲超过这个时间后会被销毁<br>如果allowCoreThreadTimeOut为true，核心线程也会受这个参数影响<br>用于减少资源浪费</p>
+<ol start="4">
+<li>unit（时间单位）</li>
+</ol>
+<p>keepAliveTime的时间单位<br>可以是SECONDS、MINUTES等TimeUnit枚举值</p>
+<ol start="5">
+<li>workQueue（工作队列）</li>
+</ol>
+<p>用于存放待执行的任务<br>常用队列类型：</p>
+<p>ArrayBlockingQueue：有界队列<br>LinkedBlockingQueue：无界队列<br>SynchronousQueue：无缓冲的等待队列<br>PriorityBlockingQueue：优先级队列</p>
+<ol start="6">
+<li>handler（拒绝策略）</li>
+</ol>
+<p>当队列满且线程数达到maximumPoolSize时的处理策略<br>默认策略类型：</p>
+<p>AbortPolicy：抛出异常（默认）<br>CallerRunsPolicy：在调用者线程执行<br>DiscardPolicy：直接丢弃<br>DiscardOldestPolicy：丢弃最早的任务</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png" alt="Process UML"></p>
+<p>planUML描述如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">@startuml</span><br><span class="line">title ThreadPoolExecutor执行流程</span><br><span class="line"></span><br><span class="line">skinparam backgroundColor #FFFFFF</span><br><span class="line">skinparam handwritten false</span><br><span class="line"></span><br><span class="line">start</span><br><span class="line"></span><br><span class="line">:提交新任务;</span><br><span class="line"></span><br><span class="line">if (当前线程数 &lt; 核心线程数?) then (是)</span><br><span class="line">  :创建新的核心线程;</span><br><span class="line">  :执行任务;</span><br><span class="line">else (否)</span><br><span class="line">  if (工作队列未满?) then (是)</span><br><span class="line">    :将任务放入工作队列;</span><br><span class="line">    note right</span><br><span class="line">      队列类型:</span><br><span class="line">      - ArrayBlockingQueue (有界)</span><br><span class="line">      - LinkedBlockingQueue (无界)</span><br><span class="line">      - SynchronousQueue (同步)</span><br><span class="line">      - PriorityBlockingQueue (优先级)</span><br><span class="line">    end note</span><br><span class="line">  else (否)</span><br><span class="line">    if (当前线程数 &lt; 最大线程数?) then (是)</span><br><span class="line">      :创建新的临时线程;</span><br><span class="line">      note right</span><br><span class="line">        临时线程在空闲超过</span><br><span class="line">        keepAliveTime后销毁</span><br><span class="line">      end note</span><br><span class="line">      :执行任务;</span><br><span class="line">    else (否)</span><br><span class="line">      :执行拒绝策略;</span><br><span class="line">      note right</span><br><span class="line">        拒绝策略:</span><br><span class="line">        - AbortPolicy (默认)</span><br><span class="line">        - CallerRunsPolicy</span><br><span class="line">        - DiscardPolicy</span><br><span class="line">        - DiscardOldestPolicy</span><br><span class="line">      end note</span><br><span class="line">    endif</span><br><span class="line">  endif</span><br><span class="line">endif</span><br><span class="line"></span><br><span class="line">fork</span><br><span class="line">  :核心线程池;</span><br><span class="line">  note right: 保持运行</span><br><span class="line">fork again</span><br><span class="line">  :临时线程池;</span><br><span class="line">  note right: 空闲超时销毁</span><br><span class="line">fork again</span><br><span class="line">  :等待队列;</span><br><span class="line">  note right: 任务缓存</span><br><span class="line">end fork</span><br><span class="line"></span><br><span class="line">stop</span><br><span class="line"></span><br><span class="line">legend right</span><br><span class="line">  参数说明:</span><br><span class="line">  ====</span><br><span class="line">  corePoolSize: 核心线程数</span><br><span class="line">  maximumPoolSize: 最大线程数</span><br><span class="line">  keepAliveTime: 空闲线程存活时间</span><br><span class="line">  workQueue: 工作队列</span><br><span class="line">  handler: 拒绝策略</span><br><span class="line">endlegend</span><br><span class="line"></span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure>
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Concurrency/" rel="tag">Concurrency</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/Java/" rel="tag">Java</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/04/03/Create-a-custom-Extension-based-on-Mockito-and-inject-mock-field/"
+                    data-tooltip="Create a custom Extension based on Mockito and inject mock field"
+                    aria-label="PREVIOUS: Create a custom Extension based on Mockito and inject mock field"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2024/09/12/OrbStack-%E5%AE%89%E8%A3%85mongo5%E9%81%87%E5%88%B0%E7%9A%84%E9%94%99%E8%AF%AF%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/"
+                    data-tooltip="OrbStack 安装mongo5遇到的错误和解决方法"
+                    aria-label="NEXT: OrbStack 安装mongo5遇到的错误和解决方法"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2025/04/03/Create-a-custom-Extension-based-on-Mockito-and-inject-mock-field/"
+                    data-tooltip="Create a custom Extension based on Mockito and inject mock field"
+                    aria-label="PREVIOUS: Create a custom Extension based on Mockito and inject mock field"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2024/09/12/OrbStack-%E5%AE%89%E8%A3%85mongo5%E9%81%87%E5%88%B0%E7%9A%84%E9%94%99%E8%AF%AF%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/"
+                    data-tooltip="OrbStack 安装mongo5遇到的错误和解决方法"
+                    aria-label="NEXT: OrbStack 安装mongo5遇到的错误和解决方法"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/';
+              
+            this.page.identifier = '2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

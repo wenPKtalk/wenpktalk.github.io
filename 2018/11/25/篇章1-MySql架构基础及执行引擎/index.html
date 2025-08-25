@@ -1,0 +1,725 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>篇章1-MySql架构基础及执行引擎 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"MySQL的架构示意：\n\nMySQL大体分为两层：Server 层和存储引擎层\n\n\nserver层: 连接器，查询缓存，分析器，优化器等，涵盖MySQL的大多数核心服务功能，一级所有内置函数（如日期，时间，数学和加密函数等），所有夸存储引起的功能都在这一层实现，比如：存过，触发器，视图等。\n存储引擎负责数据的存储和提取：innoDB,MyISAM,Memory等 MySql5.5.5版本开始默认为InnoDB\n\n\n\n个层次分工：\n连接器：顾名思义连接器负责跟客户端建立连接、获取权限、维持和管理连接你可以在 show processlist 命令中看到它。Command列显示为Sleep则表示该连接为空闲链接。  \n查询缓存：连接建立完成后，你就可以执行 select 语句了。执行逻辑第二步查询缓存。优势：提高查询效率，适合表数据不经常做更新的。劣势：一张表有更新机会清空缓存，命中率会很低。使用参数 query_cache_type 设置成 DEMAND这样对应默认的SQL语句是不适用查询缓存的，显示指定的时候才会查询缓存如下：1select SQL_CACHE * FROM T WHERE ID = 10;\n分析器：如果没有命中缓存则开始对SQL语句进行解析，生成解析树。\n经过了分析器，MySQL 就知道你要做什么了。在开始执行之前得经过优化器的处理，包括表里有多个索引时决定使用哪个索引；一个语句有多表关联的时候决定各个表的连接顺序；比如：\nmysql&gt; select * from t1 join t2 using(ID)  where t1.c=10 and t2.d=20;  \n\n既可以先从表 t1 里面取出 c=10 的记录的 ID 值，再根据 ID 值关联到表 t2，再判断 t2 里面 d 的值是否等于20。\n也可以先从表 t2 里面取出 d=20 的记录的 ID 值,再根据 ID 值关联到 t1，再判断 t1 里面 c 的值是是否等于 10。\n\n\n\n\n后边仔细分析对索引的选择5. 执行器：MySql通过分析器知道了你要做什么，通过优化器知道了该怎么做，于是就进入了之情器阶段开始执行语句。如以下语句的执行过程：\n12mysql&gt; select * from T where ID=10;\n执行器会根据表定义的引擎取调用这个引擎所提供的接口。比如我们例句中提供的表T，ID无索引则会：  \n\n\n调用InnoDB引擎接口取这个表的第一行，判断ID是否为10，如果不是则跳过，如果是则将这行存在结果集中；\n调用引擎接口取“下一行”，重复相同的判断逻辑，指导取到这个表的最后一行。\n执行器将上述遍历过程中所有满足的条件行组成记录集作为结果返回给客户端。\n\n\n至此这个语句执行就完成了。对于有索引的表，执行的逻辑也差不多。第一次调用的是“满足条件得第一行“这个接口，之后循环取“满足条件的下一行”这个接口。 这些接口都是存储殷勤中定义好的。** rows_examined **：表示语句扫描了多少行，这个值就是执行器每次调用引擎获取数据行时累加的。在某些场景下，执行器调用一次，在引擎内部则扫描了多行，因此引擎扫描行数跟rows_examined（调用次数可能小于扫描行数）并不是完全相同的\n\n阅读《MySQL实战45讲》\n\n","dateCreated":"2018-11-25T16:35:40+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2018-11-25T16:35:40+00:00","description":"","headline":"篇章1-MySql架构基础及执行引擎","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/","keywords":"Database, Mysql"}</script>
+    <meta name="description" content="MySQL的架构示意：  MySQL大体分为两层：Server 层和存储引擎层   server层: 连接器，查询缓存，分析器，优化器等，涵盖MySQL的大多数核心服务功能，一级所有内置函数（如日期，时间，数学和加密函数等），所有夸存储引起的功能都在这一层实现，比如：存过，触发器，视图等。 存储引擎负责数据的存储和提取：innoDB,MyISAM,Memory等 MySql5.5.5版本开始默认为">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="篇章1-MySql架构基础及执行引擎">
+<meta property="og:url" content="http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="MySQL的架构示意：  MySQL大体分为两层：Server 层和存储引擎层   server层: 连接器，查询缓存，分析器，优化器等，涵盖MySQL的大多数核心服务功能，一级所有内置函数（如日期，时间，数学和加密函数等），所有夸存储引起的功能都在这一层实现，比如：存过，触发器，视图等。 存储引擎负责数据的存储和提取：innoDB,MyISAM,Memory等 MySql5.5.5版本开始默认为">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220412/16_39/0d2070e8f84c4801adbfa03bda1f98d9.png">
+<meta property="article:published_time" content="2018-11-25T16:35:40.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.903Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Database">
+<meta property="article:tag" content="Mysql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220412/16_39/0d2070e8f84c4801adbfa03bda1f98d9.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            篇章1-MySql架构基础及执行引擎
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2018-11-25T16:35:40+00:00">
+	
+		    Nov 25, 2018
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Mysql/">Mysql</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h3 id="MySQL的架构示意："><a href="#MySQL的架构示意：" class="headerlink" title="MySQL的架构示意："></a>MySQL的架构示意：</h3><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220412/16_39/0d2070e8f84c4801adbfa03bda1f98d9.png" alt="img"></p>
+<blockquote>
+<p>MySQL大体分为两层：Server 层和存储引擎层</p>
+<blockquote>
+<ol>
+<li>server层: 连接器，查询缓存，分析器，优化器等，涵盖MySQL的大多数核心服务功能，一级所有内置函数（如日期，时间，数学和加密函数等），所有夸存储引起的功能都在这一层实现，比如：存过，触发器，视图等。</li>
+<li>存储引擎负责数据的存储和提取：innoDB,MyISAM,Memory等 MySql5.5.5版本开始默认为InnoDB</li>
+</ol>
+</blockquote>
+</blockquote>
+<h3 id="个层次分工："><a href="#个层次分工：" class="headerlink" title="个层次分工："></a>个层次分工：</h3><ol>
+<li>连接器：顾名思义连接器负责跟客户端建立连接、获取权限、维持和管理连接<br>你可以在 show processlist 命令中看到它。Command列显示为Sleep则表示该连接为空闲链接。  </li>
+<li>查询缓存：连接建立完成后，你就可以执行 select 语句了。执行逻辑第二步查询缓存。<br>优势：提高查询效率，适合表数据不经常做更新的。<br>劣势：一张表有更新机会清空缓存，命中率会很低。<br>使用参数 query_cache_type 设置成 DEMAND这样对应默认的SQL语句是不适用查询缓存的，显示指定的时候才会查询缓存如下：<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> SQL_CACHE <span class="operator">*</span> <span class="keyword">FROM</span> T <span class="keyword">WHERE</span> ID <span class="operator">=</span> <span class="number">10</span>;</span><br></pre></td></tr></table></figure></li>
+<li>分析器：如果没有命中缓存则开始对SQL语句进行解析，生成解析树。</li>
+<li>经过了分析器，MySQL 就知道你要做什么了。在开始执行之前得经过优化器的处理，包括表里有多个索引时决定使用哪个索引；一个语句有多表关联的时候决定各个表的连接顺序；<br>比如：<blockquote>
+<p>mysql&gt; select * from t1 join t2 using(ID)  where t1.c=10 and t2.d=20;  </p>
+<ol>
+<li>既可以先从表 t1 里面取出 c=10 的记录的 ID 值，再根据 ID 值关联到表 t2，再判断 t2 里面 d 的值是否等于20。</li>
+<li>也可以先从表 t2 里面取出 d=20 的记录的 ID 值,再根据 ID 值关联到 t1，再判断 t1 里面 c 的值是是否等于 10。</li>
+</ol>
+</blockquote>
+</li>
+</ol>
+<p><em>后边仔细分析对索引的选择</em><br>5. 执行器：MySql通过分析器知道了你要做什么，通过优化器知道了该怎么做，于是就进入了之情器阶段开始执行语句。<br>如以下语句的执行过程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mysql&gt; select * from T where ID=10;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>执行器会根据表定义的引擎取调用这个引擎所提供的接口。比如我们例句中提供的表T，ID无索引则会：  </p>
+<blockquote>
+<ol>
+<li>调用InnoDB引擎接口取这个表的第一行，判断ID是否为10，如果不是则跳过，如果是则将这行存在结果集中；</li>
+<li>调用引擎接口取“下一行”，重复相同的判断逻辑，指导取到这个表的最后一行。</li>
+<li>执行器将上述遍历过程中所有满足的条件行组成记录集作为结果返回给客户端。</li>
+</ol>
+</blockquote>
+<p>至此这个语句执行就完成了。<br>对于有索引的表，执行的逻辑也差不多。第一次调用的是<strong>“满足条件得第一行“这个接口，之后循环取“满足条件的下一行”这个接口。</strong> 这些接口都是存储殷勤中定义好的。<br>** rows_examined **：表示语句扫描了多少行，这个值就是执行器每次调用引擎获取数据行时累加的。<br><strong>在某些场景下，执行器调用一次，在引擎内部则扫描了多行，因此引擎扫描行数跟rows_examined（调用次数可能小于扫描行数）并不是完全相同的</strong></p>
+<blockquote>
+<p>阅读《MySQL实战45讲》</p>
+</blockquote>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Database/" rel="tag">Database</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/Mysql/" rel="tag">Mysql</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2018/11/26/%E7%AF%87%E7%AB%A02-MySql%E4%B8%A4%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84%E6%97%A5%E5%BF%97redolog%E5%92%8Cbinlog/"
+                    data-tooltip="篇章2-MySql两个重要的日志redolog和binlog"
+                    aria-label="PREVIOUS: 篇章2-MySql两个重要的日志redolog和binlog"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2018/05/24/Java%E9%97%AE%E9%A2%98%E6%94%B6%E9%9B%86/"
+                    data-tooltip="Java问题收集"
+                    aria-label="NEXT: Java问题收集"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2018/11/26/%E7%AF%87%E7%AB%A02-MySql%E4%B8%A4%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84%E6%97%A5%E5%BF%97redolog%E5%92%8Cbinlog/"
+                    data-tooltip="篇章2-MySql两个重要的日志redolog和binlog"
+                    aria-label="PREVIOUS: 篇章2-MySql两个重要的日志redolog和binlog"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2018/05/24/Java%E9%97%AE%E9%A2%98%E6%94%B6%E9%9B%86/"
+                    data-tooltip="Java问题收集"
+                    aria-label="NEXT: Java问题收集"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/';
+              
+            this.page.identifier = '2018/11/25/篇章1-MySql架构基础及执行引擎/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

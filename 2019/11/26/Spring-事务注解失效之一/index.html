@@ -1,0 +1,738 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>Spring 事务注解失效之一 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"\n​    Spring针对事务的管理是通过动态代理实现的，那么事务要进行传播首先必须要是被代理的方法之间，这是Spring事务传播的前提。比如：如果在同一个service里两个方法：方法A，方法B上都加了Transactional()\n并且用方法A直接调用了方法B此时方法B上的注解Transactional并不生效（具体原因会新增文章说明跟动态代理的机制有关）。\n\n1234567891011121314//示例1public class ClassA&#123;    //方法A    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)    a()&#123;        ...        b();//此时b方法上添加的事务注解并不生效    &#125;     //方法B    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)    b()&#123;        ...    &#125;&#125;\n\n事务传播生效示例123456789101112131415161718192021222324//示例2public class ClassA&#123;    @Autowired    private ClassB classB;    //方法A    @Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)    a()&#123;        ...        classB.c();//此时c方法上添加的事务注解会生效    &#125;     //方法B    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)    b()&#123;        ...    &#125;&#125;public class ClassB&#123;    @Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)    c()&#123;        ...       c();    &#125;&#125;\n\nSpring 事务传播属性对比\n\n\n\n属性\n说明\n对比\n\n\n\nPROPAGATION_REQUIRED\n如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择，默认选择。\n常用的\n\n\nPROPAGATION_SUPPORTS\n支持当前事务，如果当前没有事务，就以非事务方式执行。\n\n\n\nPROPAGATION_MANDATORY\n使用当前的事务，如果当前没有事务，就抛出异常。\n当业务方法被设置为PROPAGATION_MANDATORY时，它就不能被非事务的业务方法调用。如将ClassB.c() 设置为PROPAGATION_MANDATORY，如果展现层的Action直接调用c()方法，将引发一个异常。正确的情况是： c()方法必须被另一个带事务的业务方法调用比如示例2。  PROPAGATION_MANDATORY的方法一般都是被其它业务方法间接调用的。\n\n\nPROPAGATION_REQUIRES_NEW\n新建事务，如果当前存在事务，把当前事务挂起。\n\n\n\nPROPAGATION_NOT_SUPPORTED\n以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。\n当方法被设置为PROPAGATION_NOT_SUPPORTED时，外层业务方法的事务会被挂起，当内部方法运行完成后，外层方法的事务重新运行。如果外层方法没有事务，直接运行，不需要做任何其它的事。\n\n\nPROPAGATION_NEVER\n以非事务方式执行，如果当前存在事务，则抛出异常。\n当业务方法被设置为PROPAGATION_NEVER时，它将不能被拥有事务的其它业务方法调用。假设ClassB.c() ()设置为PROPAGATION_NEVER，当Class.a()拥有一个事务时，c()方法将抛出异常。所以PROPAGATION_NEVER方法一般是被直接调用的如示例1。\n\n\nPROPAGATION_NESTED\n如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与PROPAGATION_REQUIRED类似的操作。\nPROPAGATION_NESTED和PROPAGATION_REQUIRES_NEW的区别在于：PROPAGATION_REQUIRES_NEW 启动一个新的、和外层事务无关的“内部”事务。该事务拥有自己的独立隔离级别和锁，不依赖于外部事务，独立地提交和回滚。当内部事务开始执行时，外部事务 将被挂起，内务事务结束时，外部事务才继续执行。将创建一个全新的事务，它和外层事务没有任何关系.而 PROPAGATION_NESTED 将创建一个依赖于外层事务的子事务，当外层事务提交或回滚时，子事务也会连带提交和回滚。\n\n\n","dateCreated":"2019-11-26T14:59:01+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2019-11-26T14:59:01+00:00","description":"","headline":"Spring 事务注解失效之一","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/","keywords":"Spring"}</script>
+    <meta name="description" content="​    Spring针对事务的管理是通过动态代理实现的，那么事务要进行传播首先必须要是被代理的方法之间，这是Spring事务传播的前提。比如：如果在同一个service里两个方法：方法A，方法B上都加了Transactional() 并且用方法A直接调用了方法B此时方法B上的注解Transactional并不生效（具体原因会新增文章说明跟动态代理的机制有关）。  123456789101112">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="Spring 事务注解失效之一">
+<meta property="og:url" content="http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="​    Spring针对事务的管理是通过动态代理实现的，那么事务要进行传播首先必须要是被代理的方法之间，这是Spring事务传播的前提。比如：如果在同一个service里两个方法：方法A，方法B上都加了Transactional() 并且用方法A直接调用了方法B此时方法B上的注解Transactional并不生效（具体原因会新增文章说明跟动态代理的机制有关）。  123456789101112">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2019-11-26T14:59:01.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.901Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Spring">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            Spring 事务注解失效之一
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2019-11-26T14:59:01+00:00">
+	
+		    Nov 26, 2019
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Spring/">Spring</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <blockquote>
+<p>​    Spring针对事务的管理是通过动态代理实现的，<strong>那么事务要进行传播首先必须要是被代理的方法之间</strong>，这是Spring事务传播的前提。比如：如果在同一个service里两个方法：方法A，方法B上都加了Transactional()</p>
+<p>并且用方法A直接调用了方法B此时方法B上的注解Transactional并不生效（具体原因会新增文章说明跟动态代理的机制有关）。</p>
+</blockquote>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//示例1</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassA</span>&#123;</span><br><span class="line">    <span class="comment">//方法A</span></span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)</span></span><br><span class="line">    a()&#123;</span><br><span class="line">        ...</span><br><span class="line">        b();<span class="comment">//此时b方法上添加的事务注解并不生效</span></span><br><span class="line">    &#125;</span><br><span class="line">     <span class="comment">//方法B</span></span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)</span></span><br><span class="line">    b()&#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="事务传播生效示例"><a href="#事务传播生效示例" class="headerlink" title="事务传播生效示例"></a>事务传播生效示例</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//示例2</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassA</span>&#123;</span><br><span class="line">    <span class="meta">@Autowired</span></span><br><span class="line">    <span class="keyword">private</span> ClassB classB;</span><br><span class="line">    <span class="comment">//方法A</span></span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRED,rollbackFor = Exception.class)</span></span><br><span class="line">    a()&#123;</span><br><span class="line">        ...</span><br><span class="line">        classB.c();<span class="comment">//此时c方法上添加的事务注解会生效</span></span><br><span class="line">    &#125;</span><br><span class="line">     <span class="comment">//方法B</span></span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)</span></span><br><span class="line">    b()&#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ClassB</span>&#123;</span><br><span class="line">    <span class="meta">@Transactional(propagation = Propagation.REQUIRES_NEW,rollbackFor = Exception.class)</span></span><br><span class="line">    c()&#123;</span><br><span class="line">        ...</span><br><span class="line">       c();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>Spring 事务传播属性对比</p>
+<table>
+<thead>
+<tr>
+<th align="left">属性</th>
+<th align="left">说明</th>
+<th align="left">对比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left">PROPAGATION_REQUIRED</td>
+<td align="left">如果当前没有事务，就新建一个事务，如果已经存在一个事务中，加入到这个事务中。这是最常见的选择，默认选择。</td>
+<td align="left">常用的</td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_SUPPORTS</td>
+<td align="left">支持当前事务，如果当前没有事务，就以非事务方式执行。</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_MANDATORY</td>
+<td align="left">使用当前的事务，如果当前没有事务，就抛出异常。</td>
+<td align="left">当业务方法被设置为PROPAGATION_MANDATORY时，它就不能被非事务的业务方法调用。如将ClassB.c() 设置为PROPAGATION_MANDATORY，如果展现层的Action直接调用c()方法，将引发一个异常。正确的情况是： <br/>c()方法必须被另一个带事务的业务方法调用比如示例2。  PROPAGATION_MANDATORY的方法一般都是被其它业务方法间接调用的。</td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_REQUIRES_NEW</td>
+<td align="left">新建事务，如果当前存在事务，把当前事务挂起。</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_NOT_SUPPORTED</td>
+<td align="left">以非事务方式执行操作，如果当前存在事务，就把当前事务挂起。</td>
+<td align="left">当方法被设置为PROPAGATION_NOT_SUPPORTED时，外层业务方法的事务会被挂起，当内部方法运行完成后，外层方法的事务重新运行。如果外层方法没有事务，直接运行，不需要做任何其它的事。</td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_NEVER</td>
+<td align="left">以非事务方式执行，如果当前存在事务，则抛出异常。</td>
+<td align="left">当业务方法被设置为PROPAGATION_NEVER时，它将不能被拥有事务的其它业务方法调用。假设ClassB.c() <br/>()设置为PROPAGATION_NEVER，当Class.a()拥有一个事务时，c()方法将抛出异常。所以PROPAGATION_NEVER方法一般是被直接调用的如示例1。</td>
+</tr>
+<tr>
+<td align="left">PROPAGATION_NESTED</td>
+<td align="left">如果当前存在事务，则在嵌套事务内执行。如果当前没有事务，则执行与PROPAGATION_REQUIRED类似的操作。</td>
+<td align="left">PROPAGATION_NESTED和PROPAGATION_REQUIRES_NEW的区别在于：PROPAGATION_REQUIRES_NEW 启动一个新的、和外层事务无关的“内部”事务。该事务拥有自己的独立隔离级别和锁，不依赖于外部事务，独立地提交和回滚。当内部事务开始执行时，外部事务 将被挂起，内务事务结束时，外部事务才继续执行。将创建一个全新的事务，它和外层事务没有任何关系.而 PROPAGATION_NESTED 将创建一个依赖于外层事务的子事务，当外层事务提交或回滚时，子事务也会连带提交和回滚。</td>
+</tr>
+</tbody></table>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Spring/" rel="tag">Spring</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/05/03/%E5%85%B3%E4%BA%8E%E5%86%99%E5%8D%9A%E5%AE%A2/"
+                    data-tooltip="关于写博客"
+                    aria-label="PREVIOUS: 关于写博客"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019/04/30/%E5%90%8E%E7%AB%AF%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"
+                    data-tooltip="后端问题排查常用命令"
+                    aria-label="NEXT: 后端问题排查常用命令"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/05/03/%E5%85%B3%E4%BA%8E%E5%86%99%E5%8D%9A%E5%AE%A2/"
+                    data-tooltip="关于写博客"
+                    aria-label="PREVIOUS: 关于写博客"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2019/04/30/%E5%90%8E%E7%AB%AF%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/"
+                    data-tooltip="后端问题排查常用命令"
+                    aria-label="NEXT: 后端问题排查常用命令"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2019/11/26/Spring-%E4%BA%8B%E5%8A%A1%E6%B3%A8%E8%A7%A3%E5%A4%B1%E6%95%88%E4%B9%8B%E4%B8%80/';
+              
+            this.page.identifier = '2019/11/26/Spring-事务注解失效之一/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

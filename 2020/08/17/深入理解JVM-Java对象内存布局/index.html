@@ -1,0 +1,751 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>深入理解JVM-Java对象内存布局 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"Java创建对象的5种方式\n\n\n创建方式\n原理\n\n\n\nnew关键字\n通过调用构造器\n\n\n反射\n（同 new 关键字）\n\n\nObject.clone\n通过复制已有数据，来初始化新建对象实例\n\n\n反序列化\n（同 Object.clone）\n\n\nUnsafe.allocateInstance\n没有初始化实例字段\n\n\nJava对构造器的约束：\n\n如果一个类没有任何构造器的话，会自动添加一个无参构造器。\n子类的构造器需要调用父类的构造器。如果父类存在无参数构造器的话，该调用可以是隐式的，也就是说 Java 编译器会自动添加对父类构造器的调用。但是，如果父类没有无参数构造器，那么子类的构造器则需要显式地调用父类带参数的构造器。\n显式调用又可分为两种，一是直接使用“super”关键字调用父类构造器，二是使用“this”关键字调用同一个类中的其他构造器。无论是直接的显式调用，还是间接的显式调用，都需要作为构造器的第一条语句，以便优先初始化继承而来的父类字段。（不过这可以通过调用其他生成参数的方法，或者字节码注入来绕开。）\n通过 new 指令新建出来的对象，它的内存其实涵盖了所有父类中的实例字段。也就是说，虽然子类无法访问父类的私有实例字段，或者子类的实例字段隐藏了父类的同名实例字段，但是子类的实例还是会为这些父类实例字段分配内存的。\n\n对象内存占用分布\n每个对象都有一个对象头（Object header）\n由标记字段（Mark Word）和类型指针所构成。其中：mark word用以存储Java虚拟机有关该对象的运行数据：hash码，GC信息以及锁信息，而类型指针则是指向该对象的类。\n12345|--------------------------------------------------------------||                     Object Header (128 bits)                 ||------------------------------------|-------------------------||        Mark Word (64 bits)         | Klass pointer (64 bits) ||------------------------------------|-------------------------|\n为了尽量较少对象的内存使用量，64位Java虚拟机引入压缩指针（-XX: +UseCompressedOops，默认开启），将Java对象指针压缩成为32位。\n12345|--------------------------------------------------------------||                     Object Header (96 bits)                  ||------------------------------------|-------------------------||        Mark Word (64 bits)         | Klass pointer (32 bits) ||------------------------------------|-------------------------|\n数组对象\n12345|---------------------------------------------------------------------------------||                                 Object Header (128 bits)                        ||--------------------------------|-----------------------|------------------------||        Mark Word(64bits)       | Klass pointer(32bits) |  array length(32bits)  ||--------------------------------|-----------------------|------------------------|\n\n压缩指针\n将堆中原本 64 位的 Java 对象指针压缩成 32 位的。\n\n原理：\n默认情况下，Java 虚拟机堆中对象的起始地址需要对齐至 8 的倍数（内存对齐-XX:ObjectAlignmentInBytes，默认值为 8）。如果一个对象用不到 8N 个字节，那么空白的那部分空间就浪费掉了。这些浪费掉的空间我们称之为对象间的填充（padding）。\n就算是关闭了压缩指针，Java 虚拟机还是会进行内存对齐。此外，内存对齐不仅存在于对象与对象之间，也存在于对象中的字段之间。比如说，Java 虚拟机要求 long 字段、double 字段，以及非压缩指针状态下的引用字段地址为 8 的倍数。\n字段内存对齐的其中一个原因，是让字段只出现在同一 CPU 的缓存行中。如果字段不是对齐的，那么就有可能出现跨缓存行的字段。也就是说，该字段的读取可能需要替换两个缓存行，而该字段的存储也会同时污染两个缓存行。这两种情况对程序的执行效率而言都是不利的。\n字段重排列字段重排列，顾名思义，就是 Java 虚拟机重新分配字段的先后顺序，以达到内存对齐的目的。Java 虚拟机中有三种排列方法（对应 Java 虚拟机选项 -XX:FieldsAllocationStyle，默认值为 1）\n\n如果一个字段占据 C 个字节，那么该字段的偏移量需要对齐至 NC。\n\n这里偏移量指的是字段地址与对象的起始地址差值。以 long 类为例，它仅有一个 long 类型的实例字段。在使用了压缩指针的 64 位虚拟机中，尽管对象头的大小为 12 个字节，该 long 类型字段的偏移量也只能是 16，而中间空着的 4 个字节便会被浪费掉。\n\n\n子类所继承字段的偏移量，需要与父类对应字段的偏移量保持一致。\n\n在具体实现中，Java 虚拟机还会对齐子类字段的起始位置。对于使用了压缩指针的 64 位虚拟机，子类第一个字段需要对齐至 4N；而对于关闭了压缩指针的 64 位虚拟机，子类第一个字段则需要对齐至 8N。\n\n\n\nJava 8 还引入了一个新的注释 @Contended，用来解决对象字段之间的虚共享（false sharing）问题。这个注释也会影响到字段的排列。虚共享是怎么回事呢？\n假设两个线程分别访问同一对象中不同的 volatile 字段，逻辑上它们并没有共享内容，因此不需要同步。然而，如果这两个字段恰好在同一个缓存行中，那么对这些字段的写操作会导致缓存行的写回，也就造成了实质上的共享。Java 虚拟机会让不同的 @Contended 字段处于独立的缓存行中，因此你会看到大量的空间被浪费掉。具体的分布算法属于实现细节，注意使用虚拟机选项 -XX:-RestrictContended。如果你在 Java 9 以上版本试验的话，在使用 javac 编译时需要添加 –add-exports java.base/jdk.internal.vm.annotation=ALL-UNNAME\n","dateCreated":"2020-08-17T22:06:46+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2020-08-17T22:06:46+00:00","description":"","headline":"深入理解JVM-Java对象内存布局","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/","keywords":"JVM"}</script>
+    <meta name="description" content="Java创建对象的5种方式   创建方式 原理    new关键字 通过调用构造器   反射 （同 new 关键字）   Object.clone 通过复制已有数据，来初始化新建对象实例   反序列化 （同 Object.clone）   Unsafe.allocateInstance 没有初始化实例字段   Java对构造器的约束：  如果一个类没有任何构造器的话，会自动添加一个无参构造器。 子">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="深入理解JVM-Java对象内存布局">
+<meta property="og:url" content="http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Java创建对象的5种方式   创建方式 原理    new关键字 通过调用构造器   反射 （同 new 关键字）   Object.clone 通过复制已有数据，来初始化新建对象实例   反序列化 （同 Object.clone）   Unsafe.allocateInstance 没有初始化实例字段   Java对构造器的约束：  如果一个类没有任何构造器的话，会自动添加一个无参构造器。 子">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-08-17T22:06:46.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.902Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            深入理解JVM-Java对象内存布局
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-08-17T22:06:46+00:00">
+	
+		    Aug 17, 2020
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/JVM/">JVM</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h3 id="Java创建对象的5种方式"><a href="#Java创建对象的5种方式" class="headerlink" title="Java创建对象的5种方式"></a>Java创建对象的5种方式</h3><table>
+<thead>
+<tr>
+<th>创建方式</th>
+<th>原理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>new关键字</td>
+<td>通过调用构造器</td>
+</tr>
+<tr>
+<td>反射</td>
+<td>（同 new 关键字）</td>
+</tr>
+<tr>
+<td>Object.clone</td>
+<td>通过复制已有数据，来初始化新建对象实例</td>
+</tr>
+<tr>
+<td>反序列化</td>
+<td>（同 Object.clone）</td>
+</tr>
+<tr>
+<td>Unsafe.allocateInstance</td>
+<td>没有初始化实例字段</td>
+</tr>
+</tbody></table>
+<p>Java对构造器的约束：</p>
+<ul>
+<li>如果一个类没有任何构造器的话，会自动添加一个无参构造器。</li>
+<li>子类的构造器需要调用父类的构造器。如果父类存在无参数构造器的话，该调用可以是隐式的，也就是说 Java 编译器会自动添加对父类构造器的调用。但是，如果父类没有无参数构造器，那么子类的构造器则需要显式地调用父类带参数的构造器。</li>
+<li>显式调用又可分为两种，一是直接使用“super”关键字调用父类构造器，二是使用“this”关键字调用同一个类中的其他构造器。无论是直接的显式调用，还是间接的显式调用，都需要作为构造器的第一条语句，以便优先初始化继承而来的父类字段。（不过这可以通过调用其他生成参数的方法，或者字节码注入来绕开。）</li>
+<li>通过 new 指令新建出来的对象，它的内存其实涵盖了所有父类中的实例字段。也就是说，虽然子类无法访问父类的私有实例字段，或者子类的实例字段隐藏了父类的同名实例字段，但是子类的实例还是会为这些父类实例字段分配内存的。</li>
+</ul>
+<h3 id="对象内存占用分布"><a href="#对象内存占用分布" class="headerlink" title="对象内存占用分布"></a>对象内存占用分布</h3><ol>
+<li><p>每个对象都有一个对象头（Object header）</p>
+<p>由标记字段（Mark Word）和类型指针所构成。其中：mark word用以存储Java虚拟机有关该对象的运行数据：hash码，GC信息以及锁信息，而类型指针则是指向该对象的类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|--------------------------------------------------------------|</span><br><span class="line">|                     Object Header (128 bits)                 |</span><br><span class="line">|------------------------------------|-------------------------|</span><br><span class="line">|        Mark Word (64 bits)         | Klass pointer (64 bits) |</span><br><span class="line">|------------------------------------|-------------------------|</span><br></pre></td></tr></table></figure></li>
+<li><p>为了尽量较少对象的内存使用量，64位Java虚拟机引入压缩指针（-XX: +UseCompressedOops，默认开启），将Java对象指针压缩成为32位。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|--------------------------------------------------------------|</span><br><span class="line">|                     Object Header (96 bits)                  |</span><br><span class="line">|------------------------------------|-------------------------|</span><br><span class="line">|        Mark Word (64 bits)         | Klass pointer (32 bits) |</span><br><span class="line">|------------------------------------|-------------------------|</span><br></pre></td></tr></table></figure></li>
+<li><p>数组对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|---------------------------------------------------------------------------------|</span><br><span class="line">|                                 Object Header (128 bits)                        |</span><br><span class="line">|--------------------------------|-----------------------|------------------------|</span><br><span class="line">|        Mark Word(64bits)       | Klass pointer(32bits) |  array length(32bits)  |</span><br><span class="line">|--------------------------------|-----------------------|------------------------|</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="压缩指针"><a href="#压缩指针" class="headerlink" title="压缩指针"></a>压缩指针</h4><blockquote>
+<p>将堆中原本 64 位的 Java 对象指针压缩成 32 位的。</p>
+</blockquote>
+<p>原理：</p>
+<p>默认情况下，Java 虚拟机堆中对象的起始地址需要对齐至 8 的倍数（<strong>内存对齐</strong>-XX:ObjectAlignmentInBytes，默认值为 8）。如果一个对象用不到 8N 个字节，那么空白的那部分空间就浪费掉了。这些浪费掉的空间我们称之为<strong>对象间的填充（padding）</strong>。</p>
+<p><strong>就算是关闭了压缩指针，Java 虚拟机还是会进行内存对齐。此外，内存对齐不仅存在于对象与对象之间，也存在于对象中的字段之间。比如说，Java 虚拟机要求 long 字段、double 字段，以及非压缩指针状态下的引用字段地址为 8 的倍数。</strong></p>
+<p>字段内存对齐的其中一个原因，是让字段只出现在同一 <strong>CPU 的缓存行</strong>中。如果字段不是对齐的，那么就有可能出现跨缓存行的字段。也就是说，<strong>该字段的读取可能需要替换两个缓存行，而该字段的存储也会同时污染两个缓存行。这两种情况对程序的执行效率而言都是不利的</strong>。</p>
+<h4 id="字段重排列"><a href="#字段重排列" class="headerlink" title="字段重排列"></a>字段重排列</h4><p>字段重排列，顾名思义，就是 Java 虚拟机重新分配字段的先后顺序，以达到内存对齐的目的。Java 虚拟机中有三种排列方法（对应 Java 虚拟机选项 -XX:FieldsAllocationStyle，默认值为 1）</p>
+<ol>
+<li><p>如果一个字段占据 C 个字节，那么该字段的偏移量需要对齐至 NC。</p>
+<blockquote>
+<p>这里偏移量指的是字段地址与对象的起始地址差值。以 long 类为例，它仅有一个 long 类型的实例字段。在使用了压缩指针的 64 位虚拟机中，尽管对象头的大小为 12 个字节，该 long 类型字段的偏移量也只能是 16，而中间空着的 4 个字节便会被浪费掉。</p>
+</blockquote>
+</li>
+<li><p>子类所继承字段的偏移量，需要与父类对应字段的偏移量保持一致。</p>
+<blockquote>
+<p>在具体实现中，Java 虚拟机还会对齐子类字段的起始位置。对于使用了压缩指针的 64 位虚拟机，子类第一个字段需要对齐至 4N；而对于关闭了压缩指针的 64 位虚拟机，子类第一个字段则需要对齐至 8N。</p>
+</blockquote>
+</li>
+</ol>
+<p>Java 8 还引入了一个新的注释 @Contended，用来解决对象字段之间的<strong>虚共享（false sharing）</strong>问题。这个注释也会影响到字段的排列。虚共享是怎么回事呢？</p>
+<p>假设两个线程分别访问同一对象中不同的 volatile 字段，逻辑上它们并没有共享内容，因此不需要同步。然而，如果这两个字段恰好在<strong>同一个缓存行</strong>中，那么对这些字段的写操作会导致缓存行的写回，也就造成了实质上的共享。Java 虚拟机会让不同的 @Contended 字段处于独立的缓存行中，因此你会看到大量的空间被浪费掉。具体的分布算法属于实现细节，注意使用虚拟机选项 -XX:-RestrictContended。如果你在 Java 9 以上版本试验的话，在使用 javac 编译时需要添加 –add-exports java.base/jdk.internal.vm.annotation=ALL-UNNAME</p>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/JVM/" rel="tag">JVM</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/"
+                    data-tooltip="深入理解JVM-Jvm垃圾回收二三事"
+                    aria-label="PREVIOUS: 深入理解JVM-Jvm垃圾回收二三事"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    data-tooltip="深入理解JVM-Java代码如何运行"
+                    aria-label="NEXT: 深入理解JVM-Java代码如何运行"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/"
+                    data-tooltip="深入理解JVM-Jvm垃圾回收二三事"
+                    aria-label="PREVIOUS: 深入理解JVM-Jvm垃圾回收二三事"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    data-tooltip="深入理解JVM-Java代码如何运行"
+                    aria-label="NEXT: 深入理解JVM-Java代码如何运行"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/';
+              
+            this.page.identifier = '2020/08/17/深入理解JVM-Java对象内存布局/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

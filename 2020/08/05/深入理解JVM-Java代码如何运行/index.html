@@ -1,0 +1,734 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>深入理解JVM-Java代码如何运行 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"\nJava作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？\n\n认识JRE和JDKJRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。\nJDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊断工具。\nJava虚拟机具体是如何运行Java字节码的\n执行Java代码首先要将它编译成class文件加载到Java虚拟机中。\n加载后的Java类会被存放于方法区（Method Area）中。\n实际运行时虚拟机会执行方法区中的代码。\nJava虚拟机会在内存中划分出堆和栈来存储运行时数据。\nJava虚拟机会将栈细分为：\n面向Java方法的Java方法栈（也叫Java虚拟机栈）。\n面向本地方法的本地方法栈（用C++写的Native方法）。\n以及存放各个线程执行位置的PC寄存器。\n\n\n\n\n\n\n\n\n运行过程当中，每当调用进入一个Java方法，Java虚拟机会在当前线程的Java方法栈中生成一个栈帧，用于存放局部变量以及字节码的操作数。这个栈帧大小是提前计算好的，而且Java虚拟机不要求栈帧在内存空间里连续分布。\n\n退出执行方法时，不管是正常还是异常都会弹出当前线程栈帧，并舍弃。\n\n硬件执行是需要Java虚拟机将字节码翻译成为机器码：\n\n解释执行：逐条将字节码翻译成为机器码并执行。优势：无需等待编译。\n即时编译（Just-In-Time Compilation,  JIT）：即将一个方法中包含的所有字节码编译成为机器码后再执行。优势：实际运行速度更快\n\n\n\nHotSpot采用的是混合模式：会对热点代码进行即时编译（JIT）。\nJava虚拟机的运行效率二八定律：即时编译建立在程序符合二八定律的假设上，即百分之二十的代码占据了百分之八十的计算资源。\n对于大部分不常用的代码，无需耗费时间将其编译成机器码，而是采取解释执行。\n对于近占据小部分的热点代码，可以将其编译成为机器码。\n即时编译器：C1,C2和Graal(Java10引入)\nC1编译器：又叫Client编译器，面向的是对启动性能有要求的客户端GUI程序，采用的优化手段较少。\nC2编译器：又叫Server编译器，面向的是对峰值性能有要求的服务器端程序，采用的优化手段较为复杂。编译时间长，但是生成的代码执行效率高。\nJava7开始HotSpot默认采用的是分层编译：热点方法首先会被C1编译，而后热点中的热点会被C2进一步编译。\n总结\nJava虚拟机Jvm：提供了可移植性：一次书写，处处运行。\n代替我们管理了内存。\n为了提高效率采用了混合编译。\n\n","dateCreated":"2020-08-05T08:25:43+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2020-08-05T08:25:43+00:00","description":"","headline":"深入理解JVM-Java代码如何运行","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/","keywords":"JVM"}</script>
+    <meta name="description" content="Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？  认识JRE和JDKJRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。 JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="深入理解JVM-Java代码如何运行">
+<meta property="og:url" content="http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？  认识JRE和JDKJRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。 JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_57/5ee351091464de78eed75438b6f9183b.png">
+<meta property="article:published_time" content="2020-08-05T08:25:43.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.902Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            深入理解JVM-Java代码如何运行
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-08-05T08:25:43+00:00">
+	
+		    Aug 05, 2020
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/JVM/">JVM</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <blockquote>
+<p>Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？</p>
+</blockquote>
+<h3 id="认识JRE和JDK"><a href="#认识JRE和JDK" class="headerlink" title="认识JRE和JDK"></a>认识JRE和JDK</h3><p>JRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。</p>
+<p>JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊断工具。</p>
+<h3 id="Java虚拟机具体是如何运行Java字节码的"><a href="#Java虚拟机具体是如何运行Java字节码的" class="headerlink" title="Java虚拟机具体是如何运行Java字节码的"></a>Java虚拟机具体是如何运行Java字节码的</h3><ol>
+<li>执行Java代码首先要将它编译成class文件加载到Java虚拟机中。</li>
+<li>加载后的Java类会被存放于方法区（Method Area）中。</li>
+<li>实际运行时虚拟机会执行方法区中的代码。</li>
+<li>Java虚拟机会在内存中划分出堆和栈来存储运行时数据。<ul>
+<li>Java虚拟机会将栈细分为：<ol>
+<li>面向Java方法的Java方法栈（也叫Java虚拟机栈）。</li>
+<li>面向本地方法的本地方法栈（用C++写的Native方法）。</li>
+<li>以及存放各个线程执行位置的PC寄存器。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png" alt="img" style="zoom: 33%;" />
+
+<ol start="5">
+<li><p>运行过程当中，每当调用进入一个Java方法，Java虚拟机会在当前线程的Java方法栈中生成一个栈帧，用于存放局部变量以及字节码的操作数。这个栈帧大小是提前计算好的，而且Java虚拟机不要求栈帧在内存空间里连续分布。</p>
+</li>
+<li><p>退出执行方法时，不管是正常还是异常都会弹出当前线程栈帧，并舍弃。</p>
+</li>
+<li><p>硬件执行是需要Java虚拟机将字节码翻译成为机器码：</p>
+<ol>
+<li>解释执行：逐条将字节码翻译成为机器码并执行。<strong>优势：无需等待编译。</strong></li>
+<li>即时编译（Just-In-Time Compilation,  <strong>JIT</strong>）：即将一个方法中包含的所有字节码编译成为机器码后再执行。<strong>优势：实际运行速度更快</strong></li>
+</ol>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_57/5ee351091464de78eed75438b6f9183b.png" alt="img" style="zoom:33%;" /></li>
+</ol>
+<p><strong>HotSpot采用的是混合模式：会对热点代码进行即时编译（JIT）。</strong></p>
+<h3 id="Java虚拟机的运行效率"><a href="#Java虚拟机的运行效率" class="headerlink" title="Java虚拟机的运行效率"></a>Java虚拟机的运行效率</h3><p><strong>二八定律：</strong>即时编译建立在程序符合二八定律的假设上，即百分之二十的代码占据了百分之八十的计算资源。</p>
+<p>对于大部分不常用的代码，无需耗费时间将其编译成机器码，而是采取解释执行。</p>
+<p>对于近占据小部分的热点代码，可以将其编译成为机器码。</p>
+<p><strong>即时编译器：</strong>C1,C2和Graal(Java10引入)</p>
+<p>C1编译器：又叫Client编译器，面向的是对启动性能有要求的客户端GUI程序，采用的优化手段较少。</p>
+<p>C2编译器：又叫Server编译器，面向的是对峰值性能有要求的服务器端程序，采用的优化手段较为复杂。编译时间长，但是生成的代码执行效率高。</p>
+<p>Java7开始HotSpot默认采用的是<strong>分层编译</strong>：热点方法首先会被C1编译，而后热点中的热点会被C2进一步编译。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>Java虚拟机Jvm：提供了可移植性：一次书写，处处运行。</li>
+<li>代替我们管理了内存。</li>
+<li>为了提高效率采用了混合编译。</li>
+</ol>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/JVM/" rel="tag">JVM</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    data-tooltip="深入理解JVM-Java对象内存布局"
+                    aria-label="PREVIOUS: 深入理解JVM-Java对象内存布局"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/05/23/%E7%90%86%E8%A7%A3RPC/"
+                    data-tooltip="理解RPC"
+                    aria-label="NEXT: 理解RPC"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/"
+                    data-tooltip="深入理解JVM-Java对象内存布局"
+                    aria-label="PREVIOUS: 深入理解JVM-Java对象内存布局"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/05/23/%E7%90%86%E8%A7%A3RPC/"
+                    data-tooltip="理解RPC"
+                    aria-label="NEXT: 理解RPC"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/';
+              
+            this.page.identifier = '2020/08/05/深入理解JVM-Java代码如何运行/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

@@ -1,0 +1,767 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>理解RESTful - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"纠葛的问题：REST和RPC的对比？思想上，概念上，使用范围 RPC和REST都完全不一样，本质上并不是同一类东西，只有部分功能重合。REST和RPC在思想上存在差异的核心是：抽象目标不一样，也就是面向资源的编程思想和面向过程的编程思想之间的差异。REST：本质上不是一种协议，而是一种风格。\n理解RESTREST 概念的提出来自于罗伊·菲尔丁（Roy Fielding）在 2000 年发表的博士论文：《Architectural Styles and the Design of Network-based Sorftware Architectures》。\nREST全称为：Representational State Transfer 即表征状态转移。\n为何常常使用HTTP搭配RESTREST实际上是HTT(Hyper Text Transfer，超文本传输)的进一步抽象，就想是接口和实现类之间的关系。（即REST是接口，HTT是实现）。\n\nRepresentation 表征 （对Resource的转换）：\n浏览器向客户端请求资源的HTML格式，那么返回的这个HTML我们就可以称之为：表征。也可以理解为MVC模式中的：表示层。\n\nState 状态：\n特定语境中产生的上下文信息称之为“状态”。注意Stateful 和 Stateless是针对的服务端没有记录上下文。浏览器每次携带上下文来请求服务端，比如：JWT技术\n\nTransfer 转移:\n服务端通过浏览器提供的信息，由当前的表示层转移到新的标识层，这就被成为：表征状态转移。\n\n\n如何评价一个系统是否符合RESTful ？Fielding 认为，一套理想的、完全满足 REST 的系统应该满足以下六个特征。\n\n服务端与客户端分离（Client-Server）\n\n无状态（Stateless）\nREST希望服务器不能负责维护状态，每一次从客户端发送的请求中，应该包括所有必要的上下文信息，会话信息也由客户端保存维护。服务器端依据客户端传递的状态信息来进行业务处理，并且驱动整个应用的状态变迁。提升了系统的可见性、可靠性和可伸缩性（大多数系统达不到这个要求，越复杂，越大型的系统越是如此。）\n\n可缓存（Cacheability）\nREST希望客户端和中间的通讯传递者（代理）可以将部分服务端应答缓存起来。通过良好的缓存机制，减少客户端和服务端的交互。\n\n分层系统（Layered System）\n不是传统的MVC这样的分层。而是指客户端一般不需要知道是否直接链接到了最终的服务器，或者是链接到了路径上的中间服务器。中间服务器可以通过负载均衡和共享缓存机制，提高系统的可扩展性。这样也便于缓存，伸缩和安全策略的部署。\n\n统一接口（Uniform Interface）\nREST希望开发者面向资源编程，希望软件系统设计重点放放在抽象系统有哪些资源上，而不是抽象系统该有哪些行为上。\n举例：\n\n几乎每个系统都会有登录和注销功能，如果你登录对应的是login() 注销对应于loginout()。那么如果面向资源可以理解成为：登录是PUT session 注销是DELETE session，这样你只需要设计一种“session”资源即可。查询登录用户使用GET session。\n\nFelding给出三个建议：\n\n系统要做到每次请求中都包含资源的ID，所有操作都通过ID完成。\n每个资源都应该有自描述信息。\n通过超文本来驱动应用状态的转移。\n\n\n按需代码（Code-On-Demand）\n\n\nRESTful带来的优点\n降低了服务接口的学习成本\n它把资源的标准操作都映射到了标准的HTTP方法上（GET，PUT，POST，DELETE）对每个资源的语义一致。无需额外定义。\n\n资源天然具有集合与层次结构\n1GET /book/&#123;bookId&#125;/chapter/&#123;chapterNumber&#125;\n\n天热的集合与层次关系。\n\nRESTful绑定于HTTP协议\n面向资源编程并不是必须构筑在 HTTP 之上。\n但是HTTP 协议已经有效运作了 30 年，与其相关的技术基础设施已是千锤百炼，无比成熟。而它的坏处自然就是，当你想去考虑那些 HTTP 不提供的特性时，就束手无策了。\n\n\nRESTful缺点\n面向资源只适合做CRUD，只有面向过程，面向对象编程才能处理真正复杂的业务逻辑。\n\nREST与HTTP完全绑定，不适用于要求高性能传输场景当中。\n面向资源编程与协议无关，但是 REST（特指 Fielding 论文中所定义的 REST，而不是泛指面向资源的思想）的确依赖着 HTTP 协议的标准方法、状态码和协议头等各个方面。\n\nREST 不利于事务支持。\n\nREST 没有传输可靠性支持。\n应对传输可靠性最简单粗暴的做法，就是把消息再重发一遍。这种简单处理能够成立的前提，是服务具有幂等性（Idempotency），也就是说服务被重复执行多次的效果与执行一次是相等的。\n\nREST 缺乏对资源进行“部分”和“批量”的处理能力。\n就是缺少对资源的“部分”操作的支持。要解决批量操作这类问题，目前一种从理论上看还比较优秀的解决方案是GraphQL（但实际使用人数并不多）。GraphQL 是由 Facebook 提出并开源的一种面向资源 API 的数据查询语言。它和 SQL 一样，挂了个“查询语言”的名字，但其实 CRUD 都能做。\n\n\n参考链接周志明的软件架构课：https://time.geekbang.org/column/article/317164\n李锟谈 Fielding 博士 REST 论文中文版发布：https://www.infoq.cn/article/2007/07/dlee-fielding-rest/\nFielding论文：https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm\nREST和RPC对比结论：无论是思想上，概念上，还是使用范围上，REST和RPC都不完全一样，本质上并不是同一个类型的东西。充其量是相似，在应用中会存在重合功能。\n\n思想上差异：抽象目标不一样，REST是面向资源的编程思想，RPC是面向过程。\n概念上：REST并不是一种远程服务调用协议，也可以说它就不是一种协议，只是一种风格。RPC是作为一种远程调用协议的存在。\n试用范围：REST和RPC作为主流的两种远程调用方式，在使用上确实有重合之处。\n\n","dateCreated":"2020-09-24T09:10:41+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2020-09-24T09:10:41+00:00","description":"","headline":"理解RESTful","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/","keywords":"Architecture"}</script>
+    <meta name="description" content="纠葛的问题：REST和RPC的对比？思想上，概念上，使用范围 RPC和REST都完全不一样，本质上并不是同一类东西，只有部分功能重合。REST和RPC在思想上存在差异的核心是：抽象目标不一样，也就是面向资源的编程思想和面向过程的编程思想之间的差异。REST：本质上不是一种协议，而是一种风格。 理解RESTREST 概念的提出来自于罗伊·菲尔丁（Roy Fielding）在 2000 年发表的博士论">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="理解RESTful">
+<meta property="og:url" content="http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="纠葛的问题：REST和RPC的对比？思想上，概念上，使用范围 RPC和REST都完全不一样，本质上并不是同一类东西，只有部分功能重合。REST和RPC在思想上存在差异的核心是：抽象目标不一样，也就是面向资源的编程思想和面向过程的编程思想之间的差异。REST：本质上不是一种协议，而是一种风格。 理解RESTREST 概念的提出来自于罗伊·菲尔丁（Roy Fielding）在 2000 年发表的博士论">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2020-09-24T09:10:41.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.903Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Architecture">
+<meta name="twitter:card" content="summary">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            理解RESTful
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2020-09-24T09:10:41+00:00">
+	
+		    Sep 24, 2020
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Architecture/">Architecture</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h3 id="纠葛的问题：REST和RPC的对比？"><a href="#纠葛的问题：REST和RPC的对比？" class="headerlink" title="纠葛的问题：REST和RPC的对比？"></a>纠葛的问题：REST和RPC的对比？</h3><p>思想上，概念上，使用范围 RPC和REST都完全不一样，本质上并不是同一类东西，只有部分功能重合。<strong>REST和RPC在思想上存在差异的核心是：抽象目标不一样，也就是面向资源的编程思想和面向过程的编程思想之间的差异。</strong><br>REST：本质上不是一种协议，而是一种风格。</p>
+<h3 id="理解REST"><a href="#理解REST" class="headerlink" title="理解REST"></a>理解REST</h3><p>REST 概念的提出来自于罗伊·菲尔丁（Roy Fielding）在 2000 年发表的博士论文：<a target="_blank" rel="noopener" href="https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">《Architectural Styles and the Design of Network-based Sorftware Architectures》</a>。</p>
+<p>REST全称为：<strong>Representational State Transfer 即表征状态转移。</strong></p>
+<h3 id="为何常常使用HTTP搭配REST"><a href="#为何常常使用HTTP搭配REST" class="headerlink" title="为何常常使用HTTP搭配REST"></a>为何常常使用HTTP搭配REST</h3><p><strong>REST实际上是HTT(Hyper Text Transfer，超文本传输)的进一步抽象，就想是接口和实现类之间的关系。（即REST是接口，HTT是实现）</strong>。</p>
+<ul>
+<li><p>Representation 表征 （对Resource的转换）：</p>
+<p>浏览器向客户端请求资源的HTML格式，那么返回的这个HTML我们就可以称之为：表征。也可以理解为MVC模式中的：表示层。</p>
+</li>
+<li><p>State 状态：</p>
+<p>特定语境中产生的上下文信息称之为“状态”。注意Stateful 和 Stateless是针对的服务端没有记录上下文。浏览器每次携带上下文来请求服务端，比如：JWT技术</p>
+</li>
+<li><p>Transfer 转移:</p>
+<p>服务端通过浏览器提供的信息，由当前的表示层转移到新的标识层，这就被成为：表征状态转移。</p>
+</li>
+</ul>
+<h3 id="如何评价一个系统是否符合RESTful-？"><a href="#如何评价一个系统是否符合RESTful-？" class="headerlink" title="如何评价一个系统是否符合RESTful ？"></a>如何评价一个系统是否符合RESTful ？</h3><p>Fielding 认为，一套理想的、完全满足 REST 的系统应该满足以下六个特征。</p>
+<ol>
+<li><p>服务端与客户端分离（Client-Server）</p>
+</li>
+<li><p>无状态（Stateless）</p>
+<p>REST希望服务器不能负责维护状态，每一次从客户端发送的请求中，应该包括所有必要的上下文信息，会话信息也由客户端保存维护。服务器端依据客户端传递的状态信息来进行业务处理，并且驱动整个应用的状态变迁。提升了系统的可见性、可靠性和可伸缩性（大多数系统达不到这个要求，越复杂，越大型的系统越是如此。）</p>
+</li>
+<li><p>可缓存（Cacheability）</p>
+<p>REST希望客户端和中间的通讯传递者（代理）可以将部分服务端应答缓存起来。通过良好的缓存机制，减少客户端和服务端的交互。</p>
+</li>
+<li><p>分层系统（Layered System）</p>
+<p>不是传统的MVC这样的分层。而是指客户端一般不需要知道是否直接链接到了最终的服务器，或者是链接到了路径上的中间服务器。中间服务器可以通过负载均衡和共享缓存机制，提高系统的可扩展性。这样也便于缓存，伸缩和安全策略的部署。</p>
+</li>
+<li><p>统一接口（Uniform Interface）</p>
+<p>REST希望开发者面向资源编程，<strong>希望软件系统设计重点放放在抽象系统有哪些资源上，而不是抽象系统该有哪些行为上。</strong></p>
+<p>举例：</p>
+<blockquote>
+<p>几乎每个系统都会有登录和注销功能，如果你登录对应的是login() 注销对应于loginout()。那么如果面向资源可以理解成为：登录是PUT session 注销是DELETE session，这样你只需要设计一种“session”资源即可。查询登录用户使用GET session。</p>
+</blockquote>
+<p>Felding给出三个建议：</p>
+<ol>
+<li>系统要做到每次请求中都包含资源的ID，所有操作都通过ID完成。</li>
+<li>每个资源都应该有自描述信息。</li>
+<li>通过超文本来驱动应用状态的转移。</li>
+</ol>
+</li>
+<li><p>按需代码（Code-On-Demand）</p>
+</li>
+</ol>
+<h3 id="RESTful带来的优点"><a href="#RESTful带来的优点" class="headerlink" title="RESTful带来的优点"></a>RESTful带来的优点</h3><ol>
+<li><p>降低了服务接口的学习成本</p>
+<p>它把资源的标准操作都映射到了标准的HTTP方法上（GET，PUT，POST，DELETE）对每个资源的语义一致。无需额外定义。</p>
+</li>
+<li><p>资源天然具有集合与层次结构</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">GET /book/&#123;bookId&#125;/chapter/&#123;chapterNumber&#125;</span><br></pre></td></tr></table></figure>
+
+<p>天热的集合与层次关系。</p>
+</li>
+<li><p>RESTful绑定于HTTP协议</p>
+<p>面向资源编程并不是必须构筑在 HTTP 之上。</p>
+<p>但是HTTP 协议已经有效运作了 30 年，与其相关的技术基础设施已是千锤百炼，无比成熟。而它的坏处自然就是，当你想去考虑那些 HTTP 不提供的特性时，就束手无策了。</p>
+</li>
+</ol>
+<h3 id="RESTful缺点"><a href="#RESTful缺点" class="headerlink" title="RESTful缺点"></a>RESTful缺点</h3><ol>
+<li><p>面向资源只适合做CRUD，只有面向过程，面向对象编程才能处理真正复杂的业务逻辑。</p>
+</li>
+<li><p>REST与HTTP完全绑定，不适用于要求高性能传输场景当中。</p>
+<p>面向资源编程与协议无关，但是 REST（特指 Fielding 论文中所定义的 REST，而不是泛指面向资源的思想）的确依赖着 HTTP 协议的标准方法、状态码和协议头等各个方面。</p>
+</li>
+<li><p>REST 不利于事务支持。</p>
+</li>
+<li><p>REST 没有传输可靠性支持。</p>
+<p>应对传输可靠性最简单粗暴的做法，就是把消息再重发一遍。这种简单处理能够成立的前提，是服务具有幂等性（Idempotency），也就是说服务被重复执行多次的效果与执行一次是相等的。</p>
+</li>
+<li><p>REST 缺乏对资源进行“部分”和“批量”的处理能力。</p>
+<p>就是缺少对资源的“部分”操作的支持。要解决批量操作这类问题，目前一种从理论上看还比较优秀的解决方案是GraphQL（但实际使用人数并不多）。GraphQL 是由 Facebook 提出并开源的一种面向资源 API 的数据查询语言。它和 SQL 一样，挂了个“查询语言”的名字，但其实 CRUD 都能做。</p>
+</li>
+</ol>
+<h3 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h3><p>周志明的软件架构课：<a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/317164">https://time.geekbang.org/column/article/317164</a></p>
+<p>李锟谈 Fielding 博士 REST 论文中文版发布：<a target="_blank" rel="noopener" href="https://www.infoq.cn/article/2007/07/dlee-fielding-rest/">https://www.infoq.cn/article/2007/07/dlee-fielding-rest/</a></p>
+<p>Fielding论文：<a target="_blank" rel="noopener" href="https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm">https://www.ics.uci.edu/~fielding/pubs/dissertation/top.htm</a></p>
+<h3 id="REST和RPC对比结论："><a href="#REST和RPC对比结论：" class="headerlink" title="REST和RPC对比结论："></a>REST和RPC对比结论：</h3><p>无论是思想上，概念上，还是使用范围上，REST和RPC都不完全一样，本质上并不是同一个类型的东西。充其量是相似，在应用中会存在重合功能。</p>
+<ol>
+<li>思想上差异：抽象目标不一样，REST是面向资源的编程思想，RPC是面向过程。</li>
+<li>概念上：REST并不是一种远程服务调用协议，也可以说它就不是一种协议，只是一种风格。RPC是作为一种远程调用协议的存在。</li>
+<li>试用范围：REST和RPC作为主流的两种远程调用方式，在使用上确实有重合之处。</li>
+</ol>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Architecture/" rel="tag">Architecture</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    data-tooltip="理解Redis缓存雪崩，缓存击穿，缓存穿透"
+                    aria-label="PREVIOUS: 理解Redis缓存雪崩，缓存击穿，缓存穿透"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/"
+                    data-tooltip="深入理解JVM-Jvm垃圾回收二三事"
+                    aria-label="NEXT: 深入理解JVM-Jvm垃圾回收二三事"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/"
+                    data-tooltip="理解Redis缓存雪崩，缓存击穿，缓存穿透"
+                    aria-label="PREVIOUS: 理解Redis缓存雪崩，缓存击穿，缓存穿透"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/"
+                    data-tooltip="深入理解JVM-Jvm垃圾回收二三事"
+                    aria-label="NEXT: 深入理解JVM-Jvm垃圾回收二三事"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2020/09/24/%E7%90%86%E8%A7%A3RESTful/';
+              
+            this.page.identifier = '2020/09/24/理解RESTful/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>

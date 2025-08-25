@@ -1,0 +1,780 @@
+
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="generator" content="Summary">
+    <title>数据库事务的来龙去脉-本地事务 - Summary</title>
+    <meta name="author" content="Topsion">
+    
+    
+    
+    <script type="application/ld+json">{"@context":"http://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg"},"articleBody":"引言事务管理是日常开发过程中绕不开的技术，引入事务的目的是为了保证数据持久化过程中的 一致性(Consistency) 。事务的概念最初是源于数据库，但今天的信息系统中，所有需要保证数据正确性（一致性）的场景下，包括但不限于数据库、缓存、事务内存、消息、队列、对象文件存储等等，都有可能会涉及到事务处理。这篇总结主要是总结清楚事务的来龙去脉，无关具体的某个中间件。深度推荐《周志明的软件架构课》\n定义事务的ACID\n原子性（Atomic）同一业务处理过程中，事务保证了多项对数据的修改，要么全部成功，要么全部失败。\n隔离性（Isolation）在不同的业务处理过程中，事务保证了各自读写的业务数据相互不可见，不会彼此影响。\n持久性（Durability）事务保证了当业务处理完成后，事务提交后能够被持久化，不会丢失。\n一致性（Consistency）一致性。利用A, I, D 保证了业务数据的一致性。\n\nA,  I, D是手段，C 是目的。 ACID更像是凑单词。\n本地事务（局部事务）Local Transaction\n本地事务是指仅操作特定单一事务资源，不需要全局事务管理器进行协调的事务。\n\n本地事务是最基础的一种事务处理方案，通常只适用于单个服务使用单个数据源的场景，它是直接依赖于数据源（通常是数据库系统）本身的事务能力来工作的。\n\n本地事务的开启、终止、提交、回滚、嵌套、设置隔离级别、乃至与应用代码贴近的传播方式，全部都要依赖底层数据库的支持。\n\n例如：Spring提供的事务注解，如果数据库引擎不支持那么这个注解也是无意义的。\n1234@Transactional(propagation = Propagation.REQUIRED, //传播方式               rollbackFor = Exception.class, //回滚异常               isolation = ISOLATION_REPEATABLE_READ //隔离级别              )\n\n原子性和持久性扩展知识：ARIES 理论，现代主流数据库的事务实现都受到该理论的影响\n原子性和持久性密切相关，原子性保证了事务的多个操作要么都生效要么都不生效，不会存在中间状态。持久性则保证了事务一旦生效则不会因为任何原因而导致其修改的内容被撤销或者丢失。\n崩溃回复（Crash Recovery）\n未提交事务：程序还没修改完一系列整个业务数据，数据库已经将其中一个或者两个数据的变动写入了磁盘，此时崩溃，一旦重启后，数据库必须想办法得知崩溃前发生过一次不完整的购物操作，将已经修改过的数据从磁盘中恢复成为之前没有改过的样子。\n已提交事务：程序已经修改完了所有数据，数据还没将全部的数据写入磁盘，此时出现崩溃。重启之后数据库必须知道崩溃前发生过一次的完整操作，将还没来得及写入磁盘的数据重新写入。保证持久性。\n\n这种数据恢复操作被称作是：崩溃恢复。\nCommit Logging为了能够顺利完成崩溃恢复，那么需要记录下数据操作的全部信息：比如修改的什么数据，位于哪个内存页和磁盘块中，从什么值改成了什么值等等，以顺序追加的文件写入方式记录的磁盘中（顺序写磁盘是高效的）。只有日志记录全部落盘，见到代表事务成功提交的“Commit Record”，数据库才会根据日志上的信息真正的对数据进行修改。修改完成后在日志中加一条“End Record”标识已经完成持久化，这种实现方式被称为“Commit Logging”\n\n另外一种实现：Shadow Paging\nSQLite Version 3采用这种方式实现。\n将原来数据复制一份副本也可以称之为临时数据，原来数据保持不变，在副本数据上进行操作。再修改完成后改变“两份数据的指针”。\nShadow Paging 相对简单，但涉及到隔离性与锁时，Shadow Paging 实现的事务并发能力相对有限，因此在高性能的数据库中应用不多。\n\nCommit Logging保证持久性：日志一旦写入Commit Logging，那么整个事务就是成功的。即使崩溃，重启后根据日志进行恢复现场，继续修改即可。\nCommit Logging保证原子性：如果日志没有写入成功就发生崩溃，重启后会看到一部分没有Commit Logging的数据，那么将这部分数据标识为回滚状态即可，整个事务就像没有发生过。保证了原子性。\nCommit Logging 存在一个巨大的缺陷：所有对数据的真实修改都必须发生在事务提交、日志写入了 Commit Record 之后，即使事务提交前磁盘 I/O 有足够空闲、即使某个事务修改的数据量非常庞大，占用大量的内存缓冲，无论何种理由，都决不允许在事务提交之前就开始修改磁盘上的数据，这一点对提升数据库的性能是很不利的。\nWrite-Ahead Logging（先写日志）为了修复Commit Logging缺陷ARIES 提出了“Write-Ahead Logging”的日志改进方案，其名字里所谓的“提前写入”（Write-Ahead），就是允许在事务提交之前，提前写入变动数据的意思。\nWrite-Ahead Logging 先将何时写入变动数据，按照事务提交时点为界，分为了 FORCE 和 STEAL 两类：\n\nFORCE：当事务提交后，要求变动数据必须同时完成写入—则称为 FORCE，如果不强制变动数据必须同时完成写入—则称为 NO-FORCE。现实中绝大多数数据库采用的都是 NO-FORCE 策略，只要有了日志，变动数据随时可以持久化，从优化磁盘 I/O 性能考虑，没有必要强制数据写入立即进行。\nSTEAL：在事务提交前，允许变动数据提前写入则称为 STEAL，不允许则称为 NO-STEAL。从优化磁盘 I/O 性能考虑，允许数据提前写入，有利于利用空闲 I/O 资源，也有利于节省数据库缓存区的内存。\n\nCommit Logging允许NO-FORCE但是不允许STEAL。因为在事务提交前写入了一部分数据，如果发生崩溃，那么提前写入的数据就变成了脏数据。\nWrite-Ahead Logging允许NO-FORCE也允许STEAL，给出的解决办法是增加了Undo Log日志。当数据写入磁盘前，必须先记录Undo Log,写明修改了什么值并生成对应的回滚段。以便事务再发生崩溃恢复的时候根据Undo Log对提前写入的数据变动进行擦除。\nUndo Log 现在一般被翻译为“回滚日志”，此前记录的用于崩溃恢复时重演数据变动的日志，就相应被命名为 Redo Log，一般翻译为“重做日志”。\nWrite-Ahead Logging 在崩溃恢复时，会以此经历以下三个阶段：\n\n分析阶段（Analysis）：从最后一次检查点Checkpoint（从这个检查点之前所有的数据都成功落盘）开始扫描日志，找出所有没有End Record的事务，组成待恢复的事务集合（一般包括 Transaction Table 和 Dirty Page Table）；\n重做阶段（Redo）：这个阶段依据分析阶段产生的待恢复的事务集合来重演历史（Repeat History）找出所有的包含Commit Record的日志，将它们写入磁盘，写入完成后追加一个End Record，然后移除待恢复 集合。\n回滚阶段（Undo）：该阶段处理经过分析、重做阶段后剩余的恢复事务集合，此时剩下的都是需要回滚的事务（被称为 Loser），根据 Undo Log 中的信息回滚这些事务。\n\n数据库按照“是否允许 FORCE 和 STEAL”可以产生四种组合，从优化磁盘 I/O 的角度看，NO-FORCE 加 STEAL 组合的性能无疑是最高的；从算法实现与日志的角度看，NO-FORCE 加 STEAL 组合的复杂度无疑是最高的。这四种组合与 Undo Log、Redo Log 之间的具体关系如下图所示：\n\n隔离性隔离性保证了每个事务各自读写的相互独立性。主要是为了解决事务并发问题，有并发的地方就有锁。\n\n写锁（Write Lock 也叫排他锁eXclusive Lock，简写X-Lock）：只有持有写锁的事务才能对数据进行写入操作，数据加写锁时，其它事务不能写入数据，也不能施加读锁（写锁禁止其他事务施加读锁，而不是禁止事务读取数据。）。\n\n读锁（Read Lock 也叫共享锁Shared Lock，简写S-Lock）：多个事务可以对同一个数据添加读锁，添加了读锁后就不能添加写锁，所以事务不能对数据进行写入，但仍然可以读取。对持有读锁的事务，如果该事务只有一个读锁就可以直接升级为写锁，然后写入数据。\n\n范围锁（Range Lock）对某个范围数据直接添加排他锁，在这个范围的数据不能被读取，也不能被写入。如 select * from books where price &lt; 100 for update;\n\n请注意“范围不能写入”与“一批数据不能写入”的差别，也就是我们不要把范围锁理解成一组排他锁的集合。加了范围锁后，不仅无法修改该范围内已有的数据，也不能在该范围内新增或删除任何数据，这是一组排他锁的集合无法做到的。\n\n\n\n可串行化（Serializable）对事务所有读、写的数据全都加上读锁、写锁和范围锁即可（这种可串行化的实现方案称为 Two-Phase Lock）。\n强度最高的隔离性。粗粒度锁，事务顺序执行那么就不会互相产生影响。但是吞吐量最低。\n可重复读（Repeatable Read）可重复读的意思是对事务所涉及到的数据加读锁和写锁，并且一直持续到事务结束，但是不再添加范围锁。\n缺点：在可读事务中的幻读问题（MySQL 中的InnoDB在只读事务中不存在幻读问题，只在读写事务提升为当前读后存在这个问题）如下读事务：\n123456789/* 时间顺序：1，事务： T1 */SELECT count(1) FROM books WHERE price &lt; 100  /* 时间顺序：2，事务： T2 */INSERT INTO books(name,price) VALUES (&#x27;深入理解Java虚拟机&#x27;,90)   /* 时间顺序：3，事务： T1  会查出来 T2 插入的数据，但是InnoDB不会*/SELECT count(1) FROM books WHERE price &lt; 100        \n\n\n\n读提交（Read Committed）读提交会对事务涉及到的数据加写锁，会一直持续到事务结束，加的读锁会在读完之后立马释放。\n读提交有了不可重复读—-对同一行数据两次查询得到了不同的结果。\n原因是读已提交的隔离级别缺乏贯穿整个事务周期的读锁，无法禁止读取过的数据发生变化。\n读未提交（Read UnCommitted）读未提交只会对事务所涉及到的数据加写锁，不会加读锁。\n读未提交有了脏读—-一个事务读到了另外一个事务未提交的数据\n\n其实，不同隔离级别以及幻读、脏读等问题都只是表面现象，它们是各种锁在不同加锁时间上组合应用所产生的结果，锁才是根本的原因。除了锁之外，以上对四种隔离级别的介绍还有一个共同特点，就是一个事务在读数据过程中，受另外一个写数据的事务影响而破坏了隔离性。针对这种“一个事务读 + 另一个事务写”的隔离问题，有一种名为“多版本并发控制”（Multi-Version Concurrency Control，MVCC）的无锁优化方案被主流的商业数据库广泛采用。\n\n多版本并发控制MVCC（Multi-Version Concurrency Control）无锁化。MVCC是一种读取优化策略，它的“无锁”是特指读取数据时不需要加锁。\nMVCC只针对读+写的场景优化，如果是两个事务同时修改数据，即写+写的场景那么几乎没有什么优化的空间\nMVCC 的基本思路是对数据库的任何修改都不会直接覆盖之前的数据，而是产生一个新版副本与老版本共存，以此达到读取时可以完全不加锁的目的。这句话里的“版本”是个关键词，你不妨将其理解为数据库中每一行记录都存在两个看不见的字段：CREATE_VERSION 和 DELETE_VERSION，这两个字段记录的值都是事务 ID（事务 ID 是一个全局严格递增的数值），然后：\n\n数据被插入时：CREATE_VERSION 记录插入数据的事务 ID，DELETE_VERSION 为空。\n数据被删除时：DELETE_VERSION 记录删除数据的事务 ID，CREATE_VERSION 为空。\n数据被修改时：将修改视为“删除旧数据，插入新数据”，即先将原有数据复制一份，原有数据的 DELETE_VERSION 记录修改数据的事务 ID，CREATE_VERSION 为空。复制出来的新数据的 CREATE_VERSION 记录修改数据的事务 ID，DELETE_VERSION 为空。\n\n\n隔离级别是可重复读：总是读取 CREATE_VERSION 小于或等于当前事务 ID 的记录，在这个前提下，如果数据仍有多个版本，则取最新（事务 ID 最大）的。\n隔离级别是读已提交：总是取最新的版本即可，即最近被 Commit 的那个版本的数据记录。\n\n","dateCreated":"2022-06-28T08:34:13+00:00","dateModified":"2025-08-25T15:47:34+00:00","datePublished":"2022-06-28T08:34:13+00:00","description":"","headline":"数据库事务的来龙去脉-本地事务","image":[],"mainEntityOfPage":{"@type":"WebPage","@id":"http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"},"publisher":{"@type":"Organization","name":"Topsion","sameAs":["https://github.com/wenPKtalk","https://stackoverflow.com/users/15967860/topsion","https://www.linkedin.com/feed/"],"image":"avatar.jpg","logo":{"@type":"ImageObject","url":"avatar.jpg"}},"url":"http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/","keywords":"Transcation, Database"}</script>
+    <meta name="description" content="引言事务管理是日常开发过程中绕不开的技术，引入事务的目的是为了保证数据持久化过程中的 一致性(Consistency) 。事务的概念最初是源于数据库，但今天的信息系统中，所有需要保证数据正确性（一致性）的场景下，包括但不限于数据库、缓存、事务内存、消息、队列、对象文件存储等等，都有可能会涉及到事务处理。这篇总结主要是总结清楚事务的来龙去脉，无关具体的某个中间件。深度推荐《周志明的软件架构课》 定义">
+<meta property="og:type" content="blog">
+<meta property="og:title" content="数据库事务的来龙去脉-本地事务">
+<meta property="og:url" content="http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="引言事务管理是日常开发过程中绕不开的技术，引入事务的目的是为了保证数据持久化过程中的 一致性(Consistency) 。事务的概念最初是源于数据库，但今天的信息系统中，所有需要保证数据正确性（一致性）的场景下，包括但不限于数据库、缓存、事务内存、消息、队列、对象文件存储等等，都有可能会涉及到事务处理。这篇总结主要是总结清楚事务的来龙去脉，无关具体的某个中间件。深度推荐《周志明的软件架构课》 定义">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220705/09_36/image-20220705093501892.png">
+<meta property="article:published_time" content="2022-06-28T08:34:13.000Z">
+<meta property="article:modified_time" content="2025-08-25T15:47:34.902Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Transcation">
+<meta property="article:tag" content="Database">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220705/09_36/image-20220705093501892.png">
+    
+    
+        
+    
+    
+        <meta property="og:image" content="http://example.com/assets/images/avatar.jpg"/>
+    
+    
+    
+    
+    <!--STYLES-->
+    
+<link rel="stylesheet" href="/assets/css/style-yaeygdlgk8x4rqd5mp0jrkosoe3fmfokggmiu05rmpel4wjoxmvp5s6gestz.min.css">
+
+    <!--STYLES END-->
+    
+
+    
+
+    
+        
+    
+</head>
+
+    <body>
+        <div id="blog">
+            <!-- Define author's picture -->
+
+
+    
+        
+            
+        
+    
+
+<header id="header" data-behavior="4">
+    <i id="btn-open-sidebar" class="fa fa-lg fa-bars"></i>
+    <div class="header-title">
+        <a
+            class="header-title-link"
+            href="/"
+            aria-label=""
+        >
+            Summary
+        </a>
+    </div>
+    
+        
+            <a
+                class="header-right-picture "
+                href="#about"
+                aria-label="Open the link: /#about"
+            >
+        
+        
+            <img class="header-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+        </a>
+    
+</header>
+
+            <!-- Define author's picture -->
+
+
+
+        
+    
+
+<nav id="sidebar" data-behavior="4">
+    <div class="sidebar-container">
+        
+            <div class="sidebar-profile">
+                <a
+                    href="/#about"
+                    aria-label="Read more about the author"
+                >
+                    <img class="sidebar-profile-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+                </a>
+                <h4 class="sidebar-profile-name">Topsion</h4>
+                
+                    <h5 class="sidebar-profile-bio"><p>Fullstack Developer</p>
+</h5>
+                
+            </div>
+        
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/"
+                            
+                            rel="noopener"
+                            title="Home"
+                        >
+                        <i class="sidebar-button-icon fa fa-home" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Home</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-categories"
+                            
+                            rel="noopener"
+                            title="Categories"
+                        >
+                        <i class="sidebar-button-icon fa fa-bookmark" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Categories</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-tags"
+                            
+                            rel="noopener"
+                            title="Tags"
+                        >
+                        <i class="sidebar-button-icon fa fa-tags" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Tags</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/all-archives"
+                            
+                            rel="noopener"
+                            title="Archives"
+                        >
+                        <i class="sidebar-button-icon fa fa-archive" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Archives</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link open-algolia-search"
+                            href="#search"
+                            
+                            rel="noopener"
+                            title="Search"
+                        >
+                        <i class="sidebar-button-icon fa fa-search" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Search</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="#about"
+                            
+                            rel="noopener"
+                            title="About"
+                        >
+                        <i class="sidebar-button-icon fa fa-question" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">About</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://github.com/wenPKtalk"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="GitHub"
+                        >
+                        <i class="sidebar-button-icon fab fa-github" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">GitHub</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://stackoverflow.com/users/15967860/topsion"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="Stack Overflow"
+                        >
+                        <i class="sidebar-button-icon fab fa-stack-overflow" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">Stack Overflow</span>
+                    </a>
+            </li>
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="https://www.linkedin.com/feed/"
+                            
+                                target="_blank"
+                            
+                            rel="noopener"
+                            title="LinkedIn"
+                        >
+                        <i class="sidebar-button-icon fab fa-linkedin" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">LinkedIn</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+            <ul class="sidebar-buttons">
+            
+                <li class="sidebar-button">
+                    
+                        <a
+                            class="sidebar-button-link "
+                            href="/atom.xml"
+                            
+                            rel="noopener"
+                            title="RSS"
+                        >
+                        <i class="sidebar-button-icon fa fa-rss" aria-hidden="true"></i>
+                        <span class="sidebar-button-desc">RSS</span>
+                    </a>
+            </li>
+            
+        </ul>
+        
+    </div>
+</nav>
+
+            
+            <div id="main" data-behavior="4"
+                 class="
+                        hasCoverMetaIn
+                        ">
+                
+<article class="post">
+    
+    
+        <div class="post-header main-content-wrap text-left">
+    
+        <h1 class="post-title">
+            数据库事务的来龙去脉-本地事务
+        </h1>
+    
+    
+        <div class="post-meta">
+    <time datetime="2022-06-28T08:34:13+00:00">
+	
+		    Jun 28, 2022
+    	
+    </time>
+    
+        <span>in </span>
+        
+    <a class="category-link" href="/categories/Database/">Database</a>
+
+
+    
+</div>
+
+    
+</div>
+
+    
+    <div class="post-content markdown">
+        <div class="main-content-wrap">
+            <h3 id="引言"><a href="#引言" class="headerlink" title="引言"></a>引言</h3><p>事务管理是日常开发过程中绕不开的技术，引入事务的目的是为了保证数据持久化过程中的 <strong>一致性(Consistency)</strong> 。事务的概念最初是源于数据库，但今天的信息系统中，所有需要保证数据正确性（一致性）的场景下，包括但不限于数据库、缓存、事务内存、消息、队列、对象文件存储等等，都有可能会涉及到事务处理。这篇总结主要是总结清楚事务的来龙去脉，无关具体的某个中间件。深度推荐<a target="_blank" rel="noopener" href="https://time.geekbang.org/column/article/319481">《周志明的软件架构课》</a></p>
+<h3 id="定义事务的ACID"><a href="#定义事务的ACID" class="headerlink" title="定义事务的ACID"></a>定义事务的ACID</h3><ul>
+<li>原子性（Atomic）同一业务处理过程中，事务保证了多项对数据的修改，要么全部成功，要么全部失败。</li>
+<li>隔离性（Isolation）在不同的业务处理过程中，事务保证了各自读写的业务数据相互不可见，不会彼此影响。</li>
+<li>持久性（Durability）事务保证了当业务处理完成后，事务提交后能够被持久化，不会丢失。</li>
+<li>一致性（Consistency）一致性。利用A, I, D 保证了业务数据的一致性。</li>
+</ul>
+<p><strong>A,  I, D是手段，C 是目的。</strong> ACID更像是凑单词。</p>
+<h3 id="本地事务（局部事务）Local-Transaction"><a href="#本地事务（局部事务）Local-Transaction" class="headerlink" title="本地事务（局部事务）Local Transaction"></a>本地事务（局部事务）Local Transaction</h3><ul>
+<li><p>本地事务是指仅操作特定单一事务资源，不需要<strong>全局事务管理器</strong>进行协调的事务。</p>
+</li>
+<li><p>本地事务是最基础的一种事务处理方案，通常只适用于单个服务使用单个数据源的场景，它是直接依赖于数据源（通常是数据库系统）本身的事务能力来工作的。</p>
+</li>
+<li><p>本地事务的开启、终止、提交、回滚、嵌套、设置隔离级别、乃至与应用代码贴近的传播方式，全部都要依赖底层数据库的支持。</p>
+</li>
+<li><p>例如：Spring提供的事务注解，如果数据库引擎不支持那么这个注解也是无意义的。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Transactional(propagation = Propagation.REQUIRED, //传播方式</span></span><br><span class="line"><span class="meta">               rollbackFor = Exception.class, //回滚异常</span></span><br><span class="line"><span class="meta">               isolation = ISOLATION_REPEATABLE_READ //隔离级别</span></span><br><span class="line"><span class="meta">              )</span></span><br></pre></td></tr></table></figure></li>
+</ul>
+<h3 id="原子性和持久性"><a href="#原子性和持久性" class="headerlink" title="原子性和持久性"></a>原子性和持久性</h3><p>扩展知识：ARIES 理论，现代主流数据库的事务实现都受到该理论的影响</p>
+<p>原子性和持久性密切相关，原子性保证了事务的多个操作要么都生效要么都不生效，不会存在中间状态。持久性则保证了事务一旦生效则不会因为任何原因而导致其修改的内容被撤销或者丢失。</p>
+<h4 id="崩溃回复（Crash-Recovery）"><a href="#崩溃回复（Crash-Recovery）" class="headerlink" title="崩溃回复（Crash Recovery）"></a>崩溃回复（Crash Recovery）</h4><ul>
+<li><strong>未提交事务：</strong>程序还没修改完一系列整个业务数据，数据库已经将其中一个或者两个数据的变动写入了磁盘，此时崩溃，一旦重启后，数据库必须想办法得知崩溃前发生过一次不完整的购物操作，将已经修改过的数据从磁盘中恢复成为之前没有改过的样子。</li>
+<li><strong>已提交事务：</strong>程序已经修改完了所有数据，数据还没将全部的数据写入磁盘，此时出现崩溃。重启之后数据库必须知道崩溃前发生过一次的完整操作，将还没来得及写入磁盘的数据重新写入。保证持久性。</li>
+</ul>
+<p>这种数据恢复操作被称作是：崩溃恢复。</p>
+<h5 id="Commit-Logging"><a href="#Commit-Logging" class="headerlink" title="Commit Logging"></a>Commit Logging</h5><p>为了能够顺利完成崩溃恢复，那么需要记录下数据操作的全部信息：比如修改的什么数据，位于哪个内存页和磁盘块中，从什么值改成了什么值等等，以<strong>顺序追加</strong>的文件写入方式记录的磁盘中（<strong>顺序写磁盘是高效的</strong>）。只有日志记录全部落盘，见到代表事务成功提交的“Commit Record”，数据库才会根据日志上的信息真正的对数据进行修改。修改完成后在日志中加一条“End Record”标识已经完成持久化，这种实现方式被称为“Commit Logging”</p>
+<blockquote>
+<p><strong>另外一种实现：Shadow Paging</strong></p>
+<p>SQLite Version 3采用这种方式实现。</p>
+<p>将原来数据复制一份副本也可以称之为临时数据，原来数据保持不变，在副本数据上进行操作。再修改完成后改变“两份数据的指针”。</p>
+<p>Shadow Paging 相对简单，但涉及到隔离性与锁时，Shadow Paging 实现的事务并发能力相对有限，因此在高性能的数据库中应用不多。</p>
+</blockquote>
+<p>Commit Logging保证持久性：日志一旦写入Commit Logging，那么整个事务就是成功的。即使崩溃，重启后根据日志进行恢复现场，继续修改即可。</p>
+<p>Commit Logging保证原子性：如果日志没有写入成功就发生崩溃，重启后会看到一部分没有Commit Logging的数据，那么将这部分数据标识为回滚状态即可，整个事务就像没有发生过。保证了原子性。</p>
+<p><strong>Commit Logging 存在一个巨大的缺陷</strong>：所有对数据的真实修改都必须发生在事务提交、日志写入了 Commit Record 之后，即使事务提交前磁盘 I/O 有足够空闲、即使某个事务修改的数据量非常庞大，占用大量的内存缓冲，无论何种理由，都决不允许在事务提交之前就开始修改磁盘上的数据，这一点对提升数据库的性能是很不利的。</p>
+<h5 id="Write-Ahead-Logging（先写日志）"><a href="#Write-Ahead-Logging（先写日志）" class="headerlink" title="Write-Ahead Logging（先写日志）"></a>Write-Ahead Logging（先写日志）</h5><p><strong>为了修复Commit Logging缺陷</strong>ARIES 提出了“Write-Ahead Logging”的日志改进方案，其名字里所谓的“提前写入”（Write-Ahead），就是允许在事务提交之前，提前写入变动数据的意思。</p>
+<p>Write-Ahead Logging 先将何时写入变动数据，按照事务提交时点为界，分为了 FORCE 和 STEAL 两类：</p>
+<ul>
+<li>FORCE：当事务提交后，要求变动数据必须同时完成写入—则称为 FORCE，如果不强制变动数据必须同时完成写入—则称为 NO-FORCE。现实中绝大多数数据库采用的都是 NO-FORCE 策略，只要有了日志，变动数据随时可以持久化，从优化磁盘 I/O 性能考虑，没有必要强制数据写入立即进行。</li>
+<li>STEAL：在事务提交前，允许变动数据提前写入则称为 STEAL，不允许则称为 NO-STEAL。从优化磁盘 I/O 性能考虑，允许数据提前写入，有利于利用空闲 I/O 资源，也有利于节省数据库缓存区的内存。</li>
+</ul>
+<p>Commit Logging允许NO-FORCE但是不允许STEAL。因为在事务提交前写入了一部分数据，如果发生崩溃，那么提前写入的数据就变成了脏数据。</p>
+<p>Write-Ahead Logging允许NO-FORCE也允许STEAL，给出的解决办法是增加了<strong>Undo Log</strong>日志。当数据写入磁盘前，必须先记录Undo Log,写明修改了什么值并生成对应的回滚段。以便事务再发生崩溃恢复的时候根据Undo Log对提前写入的数据变动进行擦除。</p>
+<p><strong>Undo Log 现在一般被翻译为“回滚日志”，此前记录的用于崩溃恢复时重演数据变动的日志，就相应被命名为 Redo Log，一般翻译为“重做日志”。</strong></p>
+<p>Write-Ahead Logging 在崩溃恢复时，会以此经历以下三个阶段：</p>
+<ol>
+<li><strong>分析阶段（Analysis）：</strong>从最后一次检查点Checkpoint（从这个检查点之前所有的数据都成功落盘）开始扫描日志，找出所有没有End Record的事务，组成待恢复的事务集合（一般包括 Transaction Table 和 Dirty Page Table）；</li>
+<li><strong>重做阶段（Redo）：</strong>这个阶段依据分析阶段产生的待恢复的事务集合来重演历史（Repeat History）找出所有的包含Commit Record的日志，将它们写入磁盘，写入完成后追加一个End Record，然后移除待恢复 集合。</li>
+<li><strong>回滚阶段（Undo）：</strong>该阶段处理经过分析、重做阶段后剩余的恢复事务集合，此时剩下的都是需要回滚的事务（被称为 Loser），根据 Undo Log 中的信息回滚这些事务。</li>
+</ol>
+<p>数据库按照“是否允许 FORCE 和 STEAL”可以产生四种组合，从优化磁盘 I/O 的角度看，NO-FORCE 加 STEAL 组合的性能无疑是最高的；从算法实现与日志的角度看，NO-FORCE 加 STEAL 组合的复杂度无疑是最高的。这四种组合与 Undo Log、Redo Log 之间的具体关系如下图所示：</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220705/09_36/image-20220705093501892.png" alt="image-20220705093501892"></p>
+<h3 id="隔离性"><a href="#隔离性" class="headerlink" title="隔离性"></a>隔离性</h3><p>隔离性保证了每个事务各自读写的相互独立性。主要是为了解决事务并发问题，有并发的地方就有锁。</p>
+<ul>
+<li><p>写锁（Write Lock 也叫排他锁eXclusive Lock，简写X-Lock）：只有持有写锁的事务才能对数据进行写入操作，数据加写锁时，其它事务不能写入数据，也不能施加读锁（<strong>写锁禁止其他事务施加读锁，而不是禁止事务读取数据。</strong>）。</p>
+</li>
+<li><p>读锁（Read Lock 也叫共享锁Shared Lock，简写S-Lock）：多个事务可以对同一个数据添加读锁，添加了读锁后就不能添加写锁，所以事务不能对数据进行写入，但仍然可以读取。对持有读锁的事务，如果该事务只有一个读锁就可以直接升级为写锁，然后写入数据。</p>
+</li>
+<li><p>范围锁（Range Lock）对某个范围数据直接添加排他锁，在这个范围的数据不能被读取，也不能被写入。如 select * from books where price &lt; 100 for update;</p>
+<blockquote>
+<p>请注意“范围不能写入”与“一批数据不能写入”的差别，也就是我们不要把范围锁理解成一组排他锁的集合。加了范围锁后，不仅无法修改该范围内已有的数据，也不能在该范围内新增或删除任何数据，这是一组排他锁的集合无法做到的。</p>
+</blockquote>
+</li>
+</ul>
+<h4 id="可串行化（Serializable）"><a href="#可串行化（Serializable）" class="headerlink" title="可串行化（Serializable）"></a>可串行化（Serializable）</h4><p>对事务所有读、写的数据全都加上读锁、写锁和范围锁即可（这种可串行化的实现方案称为 Two-Phase Lock）。</p>
+<p>强度最高的隔离性。粗粒度锁，事务顺序执行那么就不会互相产生影响。但是吞吐量最低。</p>
+<h4 id="可重复读（Repeatable-Read）"><a href="#可重复读（Repeatable-Read）" class="headerlink" title="可重复读（Repeatable Read）"></a>可重复读（Repeatable Read）</h4><p>可重复读的意思是对事务所涉及到的数据加读锁和写锁，并且一直持续到事务结束，但是不再添加范围锁。</p>
+<p><strong>缺点：在可读事务中的幻读问题（MySQL 中的InnoDB在只读事务中不存在幻读问题，只在读写事务提升为当前读后存在这个问题）如下读事务：</strong></p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/* 时间顺序：1，事务： T1 */</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">count</span>(<span class="number">1</span>) <span class="keyword">FROM</span> books <span class="keyword">WHERE</span> price <span class="operator">&lt;</span> <span class="number">100</span>  </span><br><span class="line"></span><br><span class="line"><span class="comment">/* 时间顺序：2，事务： T2 */</span></span><br><span class="line"><span class="keyword">INSERT INTO</span> books(name,price) <span class="keyword">VALUES</span> (<span class="string">&#x27;深入理解Java虚拟机&#x27;</span>,<span class="number">90</span>)  </span><br><span class="line"></span><br><span class="line"> <span class="comment">/* 时间顺序：3，事务： T1  会查出来 T2 插入的数据，但是InnoDB不会*/</span></span><br><span class="line"><span class="keyword">SELECT</span> <span class="built_in">count</span>(<span class="number">1</span>) <span class="keyword">FROM</span> books <span class="keyword">WHERE</span> price <span class="operator">&lt;</span> <span class="number">100</span>        </span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="读提交（Read-Committed）"><a href="#读提交（Read-Committed）" class="headerlink" title="读提交（Read Committed）"></a>读提交（Read Committed）</h4><p>读提交会对事务涉及到的数据加写锁，会一直持续到事务结束，加的读锁会在读完之后立马释放。</p>
+<p><strong>读提交有了不可重复读—-对同一行数据两次查询得到了不同的结果。</strong></p>
+<p>原因是读已提交的隔离级别缺乏贯穿整个事务周期的读锁，无法禁止读取过的数据发生变化。</p>
+<h4 id="读未提交（Read-UnCommitted）"><a href="#读未提交（Read-UnCommitted）" class="headerlink" title="读未提交（Read UnCommitted）"></a>读未提交（Read UnCommitted）</h4><p>读未提交只会对事务所涉及到的数据加写锁，不会加读锁。</p>
+<p><strong>读未提交有了脏读—-一个事务读到了另外一个事务未提交的数据</strong></p>
+<blockquote>
+<p><strong>其实，不同隔离级别以及幻读、脏读等问题都只是表面现象，它们是各种锁在不同加锁时间上组合应用所产生的结果，锁才是根本的原因。除了锁之外，以上对四种隔离级别的介绍还有一个共同特点，就是一个事务在读数据过程中，受另外一个写数据的事务影响而破坏了隔离性。针对这种“一个事务读 + 另一个事务写”的隔离问题，有一种名为“多版本并发控制”（Multi-Version Concurrency Control，MVCC）的无锁优化方案被主流的商业数据库广泛采用。</strong></p>
+</blockquote>
+<h4 id="多版本并发控制MVCC（Multi-Version-Concurrency-Control）无锁化。"><a href="#多版本并发控制MVCC（Multi-Version-Concurrency-Control）无锁化。" class="headerlink" title="多版本并发控制MVCC（Multi-Version Concurrency Control）无锁化。"></a>多版本并发控制MVCC（Multi-Version Concurrency Control）无锁化。</h4><p><strong>MVCC是一种读取优化策略，它的“无锁”是特指读取数据时不需要加锁。</strong></p>
+<p><strong>MVCC只针对读+写的场景优化，如果是两个事务同时修改数据，即写+写的场景那么几乎没有什么优化的空间</strong></p>
+<p>MVCC 的基本思路是对数据库的任何修改都不会直接覆盖之前的数据，而是产生一个新版副本与老版本共存，以此达到读取时可以完全不加锁的目的。这句话里的“版本”是个关键词，你不妨将其理解为数据库中每一行记录都存在两个看不见的字段：CREATE_VERSION 和 DELETE_VERSION，这两个字段记录的值都是事务 ID（事务 ID 是一个全局严格递增的数值），然后：</p>
+<ol>
+<li>数据被插入时：CREATE_VERSION 记录插入数据的事务 ID，DELETE_VERSION 为空。</li>
+<li>数据被删除时：DELETE_VERSION 记录删除数据的事务 ID，CREATE_VERSION 为空。</li>
+<li>数据被修改时：将修改视为“删除旧数据，插入新数据”，即先将原有数据复制一份，原有数据的 DELETE_VERSION 记录修改数据的事务 ID，CREATE_VERSION 为空。复制出来的新数据的 CREATE_VERSION 记录修改数据的事务 ID，DELETE_VERSION 为空。</li>
+</ol>
+<ul>
+<li><strong>隔离级别是可重复读：</strong>总是读取 CREATE_VERSION 小于或等于当前事务 ID 的记录，在这个前提下，如果数据仍有多个版本，则取最新（事务 ID 最大）的。</li>
+<li><strong>隔离级别是读已提交：</strong>总是取最新的版本即可，即最近被 Commit 的那个版本的数据记录。</li>
+</ul>
+
+            
+
+
+        </div>
+    </div>
+    <div id="post-footer" class="post-footer main-content-wrap">
+        
+            <div class="post-footer-tags">
+                <span class="text-color-light text-small">TAGGED IN</span><br/>
+                
+    <a class="tag tag--primary tag--small t-none-link" href="/tags/Database/" rel="tag">Database</a> <a class="tag tag--primary tag--small t-none-link" href="/tags/Transcation/" rel="tag">Transcation</a>
+
+            </div>
+        
+        
+            <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/07/08/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%892-%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%BC%94%E8%BF%9B/"
+                    data-tooltip="数据库事务的来龙去脉2-分布式事务的演进"
+                    aria-label="PREVIOUS: 数据库事务的来龙去脉2-分布式事务的演进"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/06/16/I-O%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/"
+                    data-tooltip="理解I/O模型"
+                    aria-label="NEXT: 理解I/O模型"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+        
+        
+            
+                <div id="disqus_thread">
+    <noscript>Please enable JavaScript to view the <a target="_blank" rel="noopener" href="//disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+            
+        
+    </div>
+</article>
+
+
+
+                <footer id="footer" class="main-content-wrap">
+    <span class="copyrights">
+        Copyrights &copy; 2025 Topsion. All Rights Reserved.
+    </span>
+</footer>
+
+            </div>
+            
+                <div id="bottom-bar" class="post-bottom-bar" data-behavior="4">
+                    <div class="post-actions-wrap">
+    <nav>
+        <ul class="post-actions post-action-nav">
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/07/08/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%892-%E5%88%86%E5%B8%83%E5%BC%8F%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%BC%94%E8%BF%9B/"
+                    data-tooltip="数据库事务的来龙去脉2-分布式事务的演进"
+                    aria-label="PREVIOUS: 数据库事务的来龙去脉2-分布式事务的演进"
+                >
+                    
+                        <i class="fa fa-angle-left" aria-hidden="true"></i>
+                        <span class="hide-xs hide-sm text-small icon-ml">PREVIOUS</span>
+                    </a>
+            </li>
+            <li class="post-action">
+                
+                    
+                <a
+                    class="post-action-btn btn btn--default tooltip--top"
+                    href="/2022/06/16/I-O%E5%A4%9A%E8%B7%AF%E5%A4%8D%E7%94%A8/"
+                    data-tooltip="理解I/O模型"
+                    aria-label="NEXT: 理解I/O模型"
+                >
+                    
+                        <span class="hide-xs hide-sm text-small icon-mr">NEXT</span>
+                        <i class="fa fa-angle-right" aria-hidden="true"></i>
+                    </a>
+            </li>
+        </ul>
+    </nav>
+    <ul class="post-actions post-action-share">
+        <li class="post-action hide-lg hide-md hide-sm">
+            <a
+                class="post-action-btn btn btn--default btn-open-shareoptions"
+                href="#btn-open-shareoptions"
+                aria-label="Share this post"
+            >
+                <i class="fa fa-share-alt" aria-hidden="true"></i>
+            </a>
+        </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Facebook"
+                    aria-label="Share on Facebook"
+                >
+                    <i class="fab fa-facebook" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://twitter.com/intent/tweet?text=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Twitter"
+                    aria-label="Share on Twitter"
+                >
+                    <i class="fab fa-twitter" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+            
+            
+            <li class="post-action hide-xs">
+                <a
+                    class="post-action-btn btn btn--default"
+                    target="new" href="https://plus.google.com/share?url=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                    title="Share on Google+"
+                    aria-label="Share on Google+"
+                >
+                    <i class="fab fa-google-plus" aria-hidden="true"></i>
+                </a>
+            </li>
+        
+        
+            
+                <li class="post-action">
+                    <a
+                        class="post-action-btn btn btn--default"
+                        href="#disqus_thread"
+                        aria-label="Leave a comment"
+                    >
+                        <i class="fa fa-comment"></i>
+                    </a>
+                </li>
+            
+        
+        <li class="post-action">
+            
+                <a class="post-action-btn btn btn--default" href="#" aria-label="Back to top">
+            
+                <i class="fa fa-list" aria-hidden="true"></i>
+            </a>
+        </li>
+    </ul>
+</div>
+
+
+                </div>
+                
+    <div id="share-options-bar" class="share-options-bar" data-behavior="4">
+        <i id="btn-close-shareoptions" class="fa fa-times"></i>
+        <ul class="share-options">
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://www.facebook.com/sharer/sharer.php?u=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                        aria-label="Share on Facebook"
+                    >
+                        <i class="fab fa-facebook" aria-hidden="true"></i><span>Share on Facebook</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://twitter.com/intent/tweet?text=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                        aria-label="Share on Twitter"
+                    >
+                        <i class="fab fa-twitter" aria-hidden="true"></i><span>Share on Twitter</span>
+                    </a>
+                </li>
+            
+                
+                
+                <li class="share-option">
+                    <a
+                        class="share-option-btn"
+                        target="new"
+                        href="https://plus.google.com/share?url=http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/"
+                        aria-label="Share on Google+"
+                    >
+                        <i class="fab fa-google-plus" aria-hidden="true"></i><span>Share on Google+</span>
+                    </a>
+                </li>
+            
+        </ul>
+    </div>
+
+
+            
+        </div>
+        
+
+
+    
+        
+    
+
+<div id="about">
+    <div id="about-card">
+        <div id="about-btn-close">
+            <i class="fa fa-times"></i>
+        </div>
+        
+            <img id="about-card-picture" src="/assets/images/avatar.jpg" alt="Author&#39;s picture"/>
+        
+            <h4 id="about-card-name">Topsion</h4>
+        
+            <div id="about-card-bio"><p>Fullstack Developer</p>
+</div>
+        
+        
+            <div id="about-card-job">
+                <i class="fa fa-briefcase"></i>
+                <br/>
+                <p>Coder</p>
+
+            </div>
+        
+        
+            <div id="about-card-location">
+                <i class="fa fa-map-marker-alt"></i>
+                <br/>
+                Xi&#39;an China
+            </div>
+        
+    </div>
+</div>
+
+        
+        
+<div id="cover" style="background-image:url('/assets/images/cover.jpg');"></div>
+        <!--SCRIPTS-->
+
+<script src="/assets/js/script-q2wtdh1f7oaxzdmuuvsc1uyl8fnwcg5dz7kgztdayssvj6qd6o7u5zwralwk.min.js"></script>
+
+<!--SCRIPTS END-->
+
+
+    
+        <script>
+          var disqus_config = function() {
+            this.page.url = 'http://example.com/2022/06/28/%E6%95%B0%E6%8D%AE%E5%BA%93%E4%BA%8B%E5%8A%A1%E7%9A%84%E6%9D%A5%E9%BE%99%E5%8E%BB%E8%84%89/';
+              
+            this.page.identifier = '2022/06/28/数据库事务的来龙去脉/';
+              
+          };
+          (function() {
+            var d = document, s = d.createElement('script');
+            var disqus_shortname = 'summary blog';
+            s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+
+            s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+          })();
+        </script>
+    
+
+
+
+
+    </body>
+</html>
