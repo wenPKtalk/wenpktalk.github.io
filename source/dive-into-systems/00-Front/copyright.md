@@ -1,17 +1,19 @@
 ---
-disableNunjucks: true
 title: "版权"
-source: https://diveintosystems.org/book/copyright.html
-book: "Dive Into Systems (Suzanne J. Matthews, Tia Newhall, Kevin C. Webb)"
+original: https://diveintosystems.org/book/copyright.html
+credit: "Dive Into Systems (Suzanne J. Matthews, Tia Newhall, Kevin C. Webb)"
 license: "CC BY-NC-ND 4.0 — 原书版权归作者所有"
+book: dive-into-systems
+chapter: 00-Front
+order: 1
+disableNunjucks: true
 ---
 
-> **说明**
+> [!WARNING] 说明
 > 本文是个人学习用的**非官方**中英对照译文，原文：<https://diveintosystems.org/book/copyright.html>。
 > 原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），**请勿公开传播本译文**。
 > 标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。
 
-# 版权
 
 *Copyright*
 
@@ -27,10 +29,10 @@ license: "CC BY-NC-ND 4.0 — 原书版权归作者所有"
 
 > This work is licensed under the [Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International](https://creativecommons.org/licenses/by-nc-nd/4.0/).
 
-> **译注 · 这份译文为什么只能自用**
+> [!NOTE] 译注 · 这份译文为什么只能自用
 > 「禁止演绎」（NoDerivatives）意味着不能公开传播基于本书的改编作品，翻译属于改编。所以这份中英对照译文只用于个人学习，请勿公开发布或转发。
 
-![Creative Commons BY-NC-ND License](images/copyright.png)
+![Creative Commons BY-NC-ND License](/dive-into-systems/00-Front/images/copyright.png)
 
 # 免责声明
 

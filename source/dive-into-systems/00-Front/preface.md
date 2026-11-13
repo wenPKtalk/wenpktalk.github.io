@@ -1,17 +1,19 @@
 ---
-disableNunjucks: true
 title: "前言"
-source: https://diveintosystems.org/book/preface.html
-book: "Dive Into Systems (Suzanne J. Matthews, Tia Newhall, Kevin C. Webb)"
+original: https://diveintosystems.org/book/preface.html
+credit: "Dive Into Systems (Suzanne J. Matthews, Tia Newhall, Kevin C. Webb)"
 license: "CC BY-NC-ND 4.0 — 原书版权归作者所有"
+book: dive-into-systems
+chapter: 00-Front
+order: 3
+disableNunjucks: true
 ---
 
-> **说明**
+> [!WARNING] 说明
 > 本文是个人学习用的**非官方**中英对照译文，原文：<https://diveintosystems.org/book/preface.html>。
 > 原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），**请勿公开传播本译文**。
 > 标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。
 
-# 前言
 
 *Preface*
 
@@ -71,7 +73,7 @@ license: "CC BY-NC-ND 4.0 — 原书版权归作者所有"
 
 > Although as a whole the book provides a vertical slice through the computer, the book chapters are written as independently as possible so that an instructor can mix and match chapters for their particular needs. The chapter dependency graph is shown below, though individual sections within chapters may not have as deep a dependency hierarchy as the entire chapter.
 
-![Chapters 1 and 4 are independent of other chapters. Chapters 2, 3, 5, and 6-10 depend on chapter 1. Chapters 5 and 13 additionally depend on chapter 4. The remaining chapters depend on a combination of the above chapters.](images/chaptdeps.png)
+![Chapters 1 and 4 are independent of other chapters. Chapters 2, 3, 5, and 6-10 depend on chapter 1. Chapters 5 and 13 additionally depend on chapter 4. The remaining chapters depend on a combination of the above chapters.](/dive-into-systems/00-Front/images/chaptdeps.png)
 
 *图示：第 1 章和第 4 章不依赖其他章节。第 2、3、5 章以及第 6–10 章依赖第 1 章。第 5 章和第 13 章还依赖第 4 章。其余各章依赖上述章节的某种组合。*
 
@@ -127,7 +129,7 @@ license: "CC BY-NC-ND 4.0 — 原书版权归作者所有"
 
 > - Chapter 15, *Advanced Parallel Systems and Programming Models*: Introduces the basics of distributed memory systems and the Message Passing Interface (MPI), hardware accelerators and CUDA, and cloud computing and MapReduce.
 
-> **译注**
+> [!NOTE] 译注
 > 本书网页版还有两个附录：附录 1「面向 Java 程序员的第 1 章」（Chapter 1 for Java Programmers），附录 2「使用 Unix」（Using Unix），本译本一并翻译。
 
 ### 本书的使用示例

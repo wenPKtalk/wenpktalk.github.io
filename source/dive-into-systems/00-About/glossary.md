@@ -1,9 +1,10 @@
 ---
-title: "译名表与翻译约定"
+title: "译名表与翻译约定（全书统一）"
+book: dive-into-systems
+chapter: 00-About
+order: 1
 disableNunjucks: true
 ---
-
-# 译名表与翻译约定（全书统一）
 
 ## 约定
 - 中文在前、英文原文由 book.py 自动以引用块附在后面；只写中文译文。
