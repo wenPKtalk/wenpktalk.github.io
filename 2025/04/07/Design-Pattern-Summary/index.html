@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Design Pattern Summary · Summary</title>
+  <meta name="description" content="设计模式概览1. Singleton（单例模式）类别：创建型（Creational）说明：确保一个类只有一个实例，并提供全局访问点。使用场景：当需要确保只有一个实例时（例如，数据库连接、配置管理）。独特性：限制实例化为单一对象。常见用例：日志记录、线程池、缓存、配置设置。UML图： 2. Factory Method（工厂方法模式）类别：创建型说明：提供一个接口用于创建对象，但让子类决定创建对象的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Design Pattern Summary · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2025/04/07/Design-Pattern-Summary/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="设计模式概览1. Singleton（单例模式）类别：创建型（Creational）说明：确保一个类只有一个实例，并提供全局访问点。使用场景：当需要确保只有一个实例时（例如，数据库连接、配置管理）。独特性：限制实例化为单一对象。常见用例：日志记录、线程池、缓存、配置设置。UML图： 2. Factory Method（工厂方法模式）类别：创建型说明：提供一个接口用于创建对象，但让子类决定创建对象的">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407152734-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407172852-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173021-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173147-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173247-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173343-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173502-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173619-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173704-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173746-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173857-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173955-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174040-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174120-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174208-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174241-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174319-2025-04-07.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174354-2025-04-07.png">
+<meta property="article:published_time" content="2025-04-07T07:23:23.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Design Pattern">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407152734-2025-04-07.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">Design Pattern Summary</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2025-04-07T07:23:23.000Z">2025-04-07</time>
+      <span>· 约 6 分钟</span>
+      
+      
+        <a class="badge" href="/tags/Design-Pattern/">Design Pattern</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h2 id="设计模式概览"><a href="#设计模式概览" class="headerlink" title="设计模式概览"></a>设计模式概览</h2><h3 id="1-Singleton（单例模式）"><a href="#1-Singleton（单例模式）" class="headerlink" title="1. Singleton（单例模式）"></a>1. Singleton（单例模式）</h3><p>类别：创建型（Creational）<br>说明：确保一个类只有一个实例，并提供全局访问点。<br>使用场景：当需要确保只有一个实例时（例如，数据库连接、配置管理）。<br>独特性：限制实例化为单一对象。<br>常见用例：日志记录、线程池、缓存、配置设置。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407152734-2025-04-07.png" alt="20250407152734-2025-04-07"></p>
+<h3 id="2-Factory-Method（工厂方法模式）"><a href="#2-Factory-Method（工厂方法模式）" class="headerlink" title="2. Factory Method（工厂方法模式）"></a>2. Factory Method（工厂方法模式）</h3><p>类别：创建型<br>说明：提供一个接口用于创建对象，但让子类决定创建对象的具体类型。<br>使用场景：当对象创建逻辑需要集中管理且动态时。<br>独特性：将对象创建逻辑封装在一个方法中。<br>常见用例：框架、库、依赖注入。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407172852-2025-04-07.png" alt="20250407172852-2025-04-07"></p>
+<h3 id="3-Abstract-Factory（抽象工厂模式）"><a href="#3-Abstract-Factory（抽象工厂模式）" class="headerlink" title="3. Abstract Factory（抽象工厂模式）"></a>3. Abstract Factory（抽象工厂模式）</h3><p>类别：创建型<br>说明：创建一组相关或依赖对象的接口，而无需指定具体类。<br>使用场景：当需要动态创建多个相关对象家族时。<br>独特性：封装多个工厂方法。<br>常见用例：跨平台UI工具包、插件架构、创建复杂对象（例如文档、UI组件、HTTP请求）。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173021-2025-04-07.png" alt="20250407173021-2025-04-07"></p>
+<h3 id="4-Builder（建造者模式）"><a href="#4-Builder（建造者模式）" class="headerlink" title="4. Builder（建造者模式）"></a>4. Builder（建造者模式）</h3><p>类别：创建型<br>说明：将对象的构造过程与其表示分离，允许分步创建。<br>使用场景：当对象构造逻辑复杂时。<br>独特性：允许分步构建对象。<br>常见用例：游戏开发（例如克隆敌人）、对象池。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173147-2025-04-07.png" alt="20250407173147-2025-04-07"></p>
+<h3 id="5-Prototype（原型模式）"><a href="#5-Prototype（原型模式）" class="headerlink" title="5. Prototype（原型模式）"></a>5. Prototype（原型模式）</h3><p>类别：创建型<br>说明：通过复制原型实例来创建对象。<br>使用场景：当对象创建成本高且克隆更高效时。<br>独特性：通过克隆现有对象创建。<br>常见用例：游戏开发（例如克隆敌人）、对象池。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173247-2025-04-07.png" alt="20250407173247-2025-04-07"></p>
+<h3 id="6-Adapter（适配器模式）"><a href="#6-Adapter（适配器模式）" class="headerlink" title="6. Adapter（适配器模式）"></a>6. Adapter（适配器模式）</h3><p>类别：结构型（Structural）<br>说明：允许不兼容的接口协同工作。<br>使用场景：当需要整合遗留代码或第三方API时。<br>独特性：作为不兼容接口之间的桥梁。<br>常见用例：连接遗留系统、API兼容性。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173343-2025-04-07.png" alt="20250407173343-2025-04-07"></p>
+<h3 id="7-Decorator（装饰者模式）"><a href="#7-Decorator（装饰者模式）" class="headerlink" title="7. Decorator（装饰者模式）"></a>7. Decorator（装饰者模式）</h3><p>类别：结构型<br>说明：动态地为对象添加行为，而无需修改其类。<br>使用场景：当需要动态扩展功能时。<br>独特性：包装对象以添加行为。<br>常见用例：日志记录、缓存、权限、安全包装。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173502-2025-04-07.png" alt="20250407173502-2025-04-07"></p>
+<h3 id="8-Facade（外观模式）"><a href="#8-Facade（外观模式）" class="headerlink" title="8. Facade（外观模式）"></a>8. Facade（外观模式）</h3><p>类别：结构型<br>说明：为子系统中的一组接口提供统一的接口。<br>使用场景：当需要简化复杂子系统供客户端使用时。<br>独特性：隐藏复杂性，提供简单接口。<br>常见用例：API网关、复杂库、应用程序。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173619-2025-04-07.png" alt="20250407173619-2025-04-07"></p>
+<h3 id="9-Proxy（代理模式）"><a href="#9-Proxy（代理模式）" class="headerlink" title="9. Proxy（代理模式）"></a>9. Proxy（代理模式）</h3><p>类别：结构型<br>说明：为另一个对象提供代理或占位符以控制访问。<br>使用场景：当需要控制对象访问时（例如，延迟初始化、安全、远程访问）。<br>独特性：作为受控访问的中间人。<br>常见用例：延迟加载、安全代理、远程代理。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173704-2025-04-07.png" alt="20250407173704-2025-04-07"></p>
+<h3 id="10-Bridge（桥接模式）"><a href="#10-Bridge（桥接模式）" class="headerlink" title="10. Bridge（桥接模式）"></a>10. Bridge（桥接模式）</h3><p>类别：结构型<br>说明：将抽象与实现解耦，使两者可以独立变化。<br>使用场景：当抽象和实现需要独立扩展时。<br>独特性：分离抽象与实现。<br>常见用例：跨平台GUI框架、设备驱动。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173746-2025-04-07.png" alt="20250407173746-2025-04-07"></p>
+<h3 id="11-Composite（组合模式）"><a href="#11-Composite（组合模式）" class="headerlink" title="11. Composite（组合模式）"></a>11. Composite（组合模式）</h3><p>类别：结构型<br>说明：允许以统一方式处理单个对象和对象组合。<br>使用场景：当处理树形结构时，组件和组合需要一致处理。<br>独特性：表示部分-整体层次。<br>常见用例：文件系统、UI元素。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173857-2025-04-07.png" alt="20250407173857-2025-04-07"></p>
+<h3 id="12-Observer（观察者模式）"><a href="#12-Observer（观察者模式）" class="headerlink" title="12. Observer（观察者模式）"></a>12. Observer（观察者模式）</h3><p>类别：行为型（Behavioral）<br>说明：定义对象间一对多的依赖关系，当状态变化时通知所有依赖对象。<br>使用场景：当多个对象需要对状态变化做出反应时。<br>独特性：封装事件驱动通信。<br>常见用例：事件处理、UI框架、发布-订阅系统。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407173955-2025-04-07.png" alt="20250407173955-2025-04-07"></p>
+<h3 id="13-Strategy（策略模式）"><a href="#13-Strategy（策略模式）" class="headerlink" title="13. Strategy（策略模式）"></a>13. Strategy（策略模式）</h3><p>类别：行为型<br>说明：定义一组算法家族，使其可互换。<br>使用场景：当需要在运行时选择行为时。<br>独特性：封装可互换算法。<br>常见用例：排序算法、验证策略。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174040-2025-04-07.png" alt="20250407174040-2025-04-07"></p>
+<h3 id="14-Command（命令模式）"><a href="#14-Command（命令模式）" class="headerlink" title="14. Command（命令模式）"></a>14. Command（命令模式）</h3><p>类别：行为型<br>说明：将请求封装为对象，允许参数化客户端。<br>使用场景：当需要撤销&#x2F;重做功能或排队请求时。<br>独特性：将请求封装为对象。<br>常见用例：事务系统、撤销&#x2F;重做、远程操作。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174120-2025-04-07.png" alt="20250407174120-2025-04-07"></p>
+<h3 id="15-State（状态模式）"><a href="#15-State（状态模式）" class="headerlink" title="15. State（状态模式）"></a>15. State（状态模式）</h3><p>类别：行为型<br>说明：允许对象在其内部状态改变时改变行为。<br>使用场景：当对象行为随状态变化时。<br>独特性：封装状态特定行为。<br>常见用例：状态机、工作流管理。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174208-2025-04-07.png" alt="20250407174208-2025-04-07"></p>
+<h3 id="16-Mediator（中介者模式）"><a href="#16-Mediator（中介者模式）" class="headerlink" title="16. Mediator（中介者模式）"></a>16. Mediator（中介者模式）</h3><p>类别：行为型<br>说明：定义一个对象，封装对象间的交互。<br>使用场景：当需要减少对象间的直接依赖时。<br>独特性：集中通信。<br>常见用例：聊天室、事件处理、消息系统。<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174241-2025-04-07.png" alt="20250407174241-2025-04-07"></p>
+<h3 id="17-Chain-of-Responsibility（责任链模式）"><a href="#17-Chain-of-Responsibility（责任链模式）" class="headerlink" title="17. Chain of Responsibility（责任链模式）"></a>17. Chain of Responsibility（责任链模式）</h3><p>类别：行为型<br>说明：将请求沿处理者链传递，直到一个处理者处理它。<br>使用场景：当请求处理者需要动态处理时。<br>独特性：允许动态处理者委托。<br>常见用例：日志框架、事件传播。<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174319-2025-04-07.png" alt="20250407174319-2025-04-07"></p>
+<h3 id="18-Template-Method（模板方法模式）"><a href="#18-Template-Method（模板方法模式）" class="headerlink" title="18. Template Method（模板方法模式）"></a>18. Template Method（模板方法模式）</h3><p>类别：行为型<br>说明：定义算法骨架，子类按步骤填充。<br>使用场景：当需要强制执行一系列步骤但允许灵活性时。<br>独特性：封装算法结构。<br>常见用例：框架、算法定制。<br>UML图：<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407174354-2025-04-07.png" alt="20250407174354-2025-04-07"></p>
+<p>工厂模式名称和别名的由来</p>
+<ol>
+<li>简单工厂（Simple Factory）<br>名称由来：被称为“简单”是因为它是最基础的工厂模式，逻辑简单，集中在一个类中。<br>别名：有时称为“静态工厂”（Static Factory），因为创建方法通常是静态的。<br>原因：它不属于GoF的23种模式，但因其简单性和实用性被广泛使用。</li>
+<li>工厂方法（Factory Method）<br>名称由来：强调“方法”这一核心概念，工厂方法模式通过定义一个方法（factoryMethod()）来创建对象，具体实现由子类决定。<br>别名：有时称为“虚拟构造器”（Virtual Constructor），因为它通过多态性“构造”对象。<br>原因：通过方法的多态性实现对象的创建，符合面向对象设计原则。</li>
+<li>抽象工厂（Abstract Factory）<br>名称由来：被称为“抽象”是因为它定义了一个抽象接口（或抽象类）来创建一组对象，具体工厂实现由子类提供。<br>别名：有时称为“工具包”（Kit），因为它提供了一套创建相关对象的工具。<br>原因：它抽象了产品家族的创建，适合需要创建一组相关对象的场景。<br>总结<br>工厂模式对比：<br>简单工厂：最简单，但扩展性差，适合小型系统。<br>工厂方法：关注单一产品，扩展性好，符合开放-封闭原则。<br>抽象工厂：处理产品家族，适合复杂对象创建场景。<br>名称由来：工厂模式名称反映了其核心特点（简单性、方法、抽象性），别名则源于其功能或实现方式（如静态工厂、虚拟构造器、工具包）。<br>UML图：通过类图展示了每种设计模式的结构和关系，帮助理解其实现方式和适用场景。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>创建型模式（Singleton, Factory Method, Abstract Factory, Builder, Prototype）：关注对象创建，解决实例化问题，适合需要动态或复杂对象创建的场景。<br>结构型模式（Adapter, Decorator, Facade, Proxy, Bridge, Composite）：关注对象和类的组织，简化结构或扩展功能，适合处理复杂系统或接口兼容性。<br>行为型模式（Observer, Strategy, Command, State, Mediator, Chain of Responsibility, Template Method）：关注对象间的交互和职责分配，适合动态行为或事件驱动系统。</p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%BE%E8%AE%A1%E6%A8%A1%E5%BC%8F%E6%A6%82%E8%A7%88"><span class="toc-text">设计模式概览</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-Singleton%EF%BC%88%E5%8D%95%E4%BE%8B%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">1. Singleton（单例模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-Factory-Method%EF%BC%88%E5%B7%A5%E5%8E%82%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">2. Factory Method（工厂方法模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-Abstract-Factory%EF%BC%88%E6%8A%BD%E8%B1%A1%E5%B7%A5%E5%8E%82%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">3. Abstract Factory（抽象工厂模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-Builder%EF%BC%88%E5%BB%BA%E9%80%A0%E8%80%85%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">4. Builder（建造者模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-Prototype%EF%BC%88%E5%8E%9F%E5%9E%8B%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">5. Prototype（原型模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-Adapter%EF%BC%88%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">6. Adapter（适配器模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-Decorator%EF%BC%88%E8%A3%85%E9%A5%B0%E8%80%85%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">7. Decorator（装饰者模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-Facade%EF%BC%88%E5%A4%96%E8%A7%82%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">8. Facade（外观模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9-Proxy%EF%BC%88%E4%BB%A3%E7%90%86%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">9. Proxy（代理模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10-Bridge%EF%BC%88%E6%A1%A5%E6%8E%A5%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">10. Bridge（桥接模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-Composite%EF%BC%88%E7%BB%84%E5%90%88%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">11. Composite（组合模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#12-Observer%EF%BC%88%E8%A7%82%E5%AF%9F%E8%80%85%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">12. Observer（观察者模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#13-Strategy%EF%BC%88%E7%AD%96%E7%95%A5%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">13. Strategy（策略模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-Command%EF%BC%88%E5%91%BD%E4%BB%A4%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">14. Command（命令模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-State%EF%BC%88%E7%8A%B6%E6%80%81%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">15. State（状态模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-Mediator%EF%BC%88%E4%B8%AD%E4%BB%8B%E8%80%85%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">16. Mediator（中介者模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-Chain-of-Responsibility%EF%BC%88%E8%B4%A3%E4%BB%BB%E9%93%BE%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">17. Chain of Responsibility（责任链模式）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#18-Template-Method%EF%BC%88%E6%A8%A1%E6%9D%BF%E6%96%B9%E6%B3%95%E6%A8%A1%E5%BC%8F%EF%BC%89"><span class="toc-text">18. Template Method（模板方法模式）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

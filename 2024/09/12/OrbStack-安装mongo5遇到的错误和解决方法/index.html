@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OrbStack 安装mongo5遇到的错误和解决方法 · Summary</title>
+  <meta name="description" content="Macos m2上使用OrbStack docker 安装mongo5.0+背景macOS(m2) 从 desktop-docker 切换到OrbStack，使用mongo6.0镜像利用如下docker-compose.yml启动的时候会报错 1234567891011121314version: &#x27;3&#x27;services:  mongo:    image: mongo:6.0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OrbStack 安装mongo5遇到的错误和解决方法 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2024/09/12/OrbStack-%E5%AE%89%E8%A3%85mongo5%E9%81%87%E5%88%B0%E7%9A%84%E9%94%99%E8%AF%AF%E5%92%8C%E8%A7%A3%E5%86%B3%E6%96%B9%E6%B3%95/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Macos m2上使用OrbStack docker 安装mongo5.0+背景macOS(m2) 从 desktop-docker 切换到OrbStack，使用mongo6.0镜像利用如下docker-compose.yml启动的时候会报错 1234567891011121314version: &#x27;3&#x27;services:  mongo:    image: mongo:6.0">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2024-09-12T10:04:17.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="docker">
+<meta property="article:tag" content="orbstack">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">OrbStack 安装mongo5遇到的错误和解决方法</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2024-09-12T10:04:17.000Z">2024-09-12</time>
+      <span>· 约 2 分钟</span>
+      
+        · <a href="/categories/devOps/">devOps</a>
+      
+      
+        <a class="badge" href="/tags/docker/">docker</a>
+      
+        <a class="badge" href="/tags/orbstack/">orbstack</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="Macos-m2上使用OrbStack-docker-安装mongo5-0"><a href="#Macos-m2上使用OrbStack-docker-安装mongo5-0" class="headerlink" title="Macos m2上使用OrbStack docker 安装mongo5.0+"></a>Macos m2上使用OrbStack docker 安装mongo5.0+</h3><h3 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h3><p>macOS(m2) 从 desktop-docker 切换到OrbStack，使用mongo6.0镜像利用如下docker-compose.yml启动的时候会报错</p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mongo:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mongo:6.0</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mongo</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;27017:27017&quot;</span> </span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">~/orbDocker/mongo/configdb:/data/configdb</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">~/orbDocker/mongo/db:/data/db</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">MONGO_INITDB_ROOT_USERNAME:</span> <span class="string">root</span></span><br><span class="line">      <span class="attr">MONGO_INITDB_ROOT_PASSWORD:</span> <span class="string">root</span></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p><code>docker-compose up</code></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">[+] Running 0/0</span><br><span class="line"> ⠋ Network mongo_default  Creating                                                                                                                       0.1s</span><br><span class="line">[+] Running 2/2d orphan containers ([mongo-mongo-express-1]) for this project. If you removed or renamed this service in your compose file, you can run this c ✔ Network mongo_default  Created                                                                                                                        0.1s</span><br><span class="line"> ✔ Container mongo        Created                                                                                                                        0.1s</span><br><span class="line">Attaching to mongo</span><br><span class="line">mongo  |</span><br><span class="line">mongo  | WARNING: MongoDB 5.0+ requires a CPU with AVX support, and your current system does not appear to have that!</span><br><span class="line">mongo  |   see https://jira.mongodb.org/browse/SERVER-54407</span><br><span class="line">mongo  |   see also https://www.mongodb.com/community/forums/t/mongodb-5-0-cpu-intel-g4650-compatibility/116610/2</span><br><span class="line">mongo  |   see also https://github.com/docker-library/mongo/issues/485#issuecomment-891991814</span><br><span class="line">mongo  |</span><br><span class="line">mongo  | /usr/local/bin/docker-entrypoint.sh: line 416:    28 Illegal instruction     &quot;$&#123;mongodHackedArgs[@]&#125;&quot; --fork</span><br><span class="line">mongo exited with code 132</span><br></pre></td></tr></table></figure>
+
+
+
+<p>修复给docker-compose.yml配置<code>platform: linux/arm64</code></p>
+<figure class="highlight yaml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">version:</span> <span class="string">&#x27;3&#x27;</span></span><br><span class="line"><span class="attr">services:</span></span><br><span class="line">  <span class="attr">mongo:</span></span><br><span class="line">    <span class="attr">image:</span> <span class="string">mongo:6.0</span></span><br><span class="line">    <span class="attr">platform:</span> <span class="string">linux/arm64</span></span><br><span class="line">    <span class="attr">container_name:</span> <span class="string">mongo</span></span><br><span class="line">    <span class="attr">ports:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">&quot;27017:27017&quot;</span> </span><br><span class="line">    <span class="attr">volumes:</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">~/orbDocker/mongo/configdb:/data/configdb</span></span><br><span class="line">      <span class="bullet">-</span> <span class="string">~/orbDocker/mongo/db:/data/db</span></span><br><span class="line">    <span class="attr">environment:</span></span><br><span class="line">      <span class="attr">MONGO_INITDB_ROOT_USERNAME:</span> <span class="string">root</span></span><br><span class="line">      <span class="attr">MONGO_INITDB_ROOT_PASSWORD:</span> <span class="string">root</span></span><br><span class="line"></span><br></pre></td></tr></table></figure></div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Macos-m2%E4%B8%8A%E4%BD%BF%E7%94%A8OrbStack-docker-%E5%AE%89%E8%A3%85mongo5-0"><span class="toc-text">Macos m2上使用OrbStack docker 安装mongo5.0+</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%83%8C%E6%99%AF"><span class="toc-text">背景</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

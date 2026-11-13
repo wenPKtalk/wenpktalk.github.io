@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>理解RPC · Summary</title>
+  <meta name="description" content="什么是RPC(Remote procedure call) Remote procedure call is the synchronous language-level transfer of control between programs in address spaces whose primary communication is a narrow channel.—— Bruce Ja">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解RPC · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2020/05/23/%E7%90%86%E8%A7%A3RPC/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="什么是RPC(Remote procedure call) Remote procedure call is the synchronous language-level transfer of control between programs in address spaces whose primary communication is a narrow channel.—— Bruce Ja">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-05-23T01:10:41.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.795Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Architecture">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">理解RPC</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2020-05-23T01:10:41.000Z">2020-05-23</time>
+      <span>· 约 2 分钟</span>
+      
+        · <a href="/categories/Architecture/">Architecture</a>
+      
+      
+        <a class="badge" href="/tags/Architecture/">Architecture</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="什么是RPC-Remote-procedure-call"><a href="#什么是RPC-Remote-procedure-call" class="headerlink" title="什么是RPC(Remote procedure call)"></a>什么是RPC(Remote procedure call)</h3><blockquote>
+<p>Remote procedure call is the synchronous language-level transfer of control between programs in address spaces whose primary communication is a narrow channel.—— Bruce Jay Nelson，Remote Procedure Call，Xerox PARC，1981</p>
+</blockquote>
+<p>RPC是一种语言级别的通讯协议，它允许运行于一台计算机上的程序以某种管道作为通讯媒介（即某种网络传输协议），去调用另外一个地址空间（通常为网络上的另外一台计算机）。</p>
+<h3 id="所有RPC协议都需要解决哪些问题？"><a href="#所有RPC协议都需要解决哪些问题？" class="headerlink" title="所有RPC协议都需要解决哪些问题？"></a>所有RPC协议都需要解决哪些问题？</h3><p>基于 TCP&#x2F;IP 网络的、支持 C 语言的 RPC 协议，后来也被称为是ONC RPC（Open Network Computing RPC&#x2F;Sun RPC）。这两个RPC鼻祖。</p>
+<ol>
+<li>如何表示数据</li>
+<li>如何传递数据</li>
+<li>如何标识方法</li>
+</ol>
+<h4 id="如何表示数据"><a href="#如何表示数据" class="headerlink" title="如何表示数据"></a>如何表示数据</h4><p>将交互双方涉及的数据，转换为某种事先约定好的中立数据流格式来传输，将数据流转换回不同语言中对应的数据类型来使用，<strong>即序列化与反序列化</strong></p>
+<h4 id="如何传递数据"><a href="#如何传递数据" class="headerlink" title="如何传递数据"></a>如何传递数据</h4><p>这里“传递数据”通常指的是应用层协议，实际传输一般是基于标准的 TCP、UDP 等传输层协议来完成的。</p>
+<h4 id="如何标识方法"><a href="#如何标识方法" class="headerlink" title="如何标识方法"></a>如何标识方法</h4><p>标识调用方法入口，能够找到这个方法。</p>
+<h3 id="已经实现的RPC框架"><a href="#已经实现的RPC框架" class="headerlink" title="已经实现的RPC框架"></a>已经实现的RPC框架</h3><p>RPC 框架有明显朝着更高层次（不仅仅负责调用远程服务，还管理远程服务）与插件化方向发展的趋势，不再选择自己去解决表示数据、传递数据和表示方法这三个问题，而是将全部或者一部分问题设计为扩展点，实现核心能力的可配置，再辅以外围功能，如负载均衡、服务注册、可观察性等方面的支持。这一类框架的代表，有 Facebook 的 Thrift 和阿里的 Dubbo（现在两者都是 Apache 的）。尤其是断更多年后重启的 Dubbo 表现得更为明显，它默认有自己的传输协议（Dubbo 协议），同时也支持其他协议，它默认采用 Hessian 2 作为序列化器，如果你有 JSON 的需求，可以替换为 Fastjson；如果你对性能有更高的需求，可以替换为Kryo、FST、Protocol Buffers 等；如果你不想依赖其他包，直接使用 JDK 自带的序列化器也可以。这种设计，就在一定程度上缓解了 RPC 框架必须取舍，难以完美的缺憾。</p>
+<p>RMI（Sun&#x2F;Oracle）、Thrift（Facebook&#x2F;Apache）、Dubbo（阿里巴巴 &#x2F;Apache）、gRPC（Google）、Motan2（新浪）、Finagle（Twitter）、brpc（百度）、.NET Remoting（微软）、Arvo（Hadoop）、JSON-RPC 2.0（公开规范，JSON-RPC 工作组）</p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AFRPC-Remote-procedure-call"><span class="toc-text">什么是RPC(Remote procedure call)</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%80%E6%9C%89RPC%E5%8D%8F%E8%AE%AE%E9%83%BD%E9%9C%80%E8%A6%81%E8%A7%A3%E5%86%B3%E5%93%AA%E4%BA%9B%E9%97%AE%E9%A2%98%EF%BC%9F"><span class="toc-text">所有RPC协议都需要解决哪些问题？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B7%B2%E7%BB%8F%E5%AE%9E%E7%8E%B0%E7%9A%84RPC%E6%A1%86%E6%9E%B6"><span class="toc-text">已经实现的RPC框架</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

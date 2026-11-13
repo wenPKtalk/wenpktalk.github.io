@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>后端问题排查常用命令 · Summary</title>
+  <meta name="description" content="linux篇资源查看 查看内存剩余空间 123456free -m -s 2 -c 20 -t  # 内存剩余空间 以M为输出，两秒更新一次，更新20次# 输出            total        used        free      shared  buff&#x2F;cache   availableMem:          62838       35817        7814">
+<meta property="og:type" content="article">
+<meta property="og:title" content="后端问题排查常用命令 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2019/04/30/%E5%90%8E%E7%AB%AF%E9%97%AE%E9%A2%98%E6%8E%92%E6%9F%A5%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="linux篇资源查看 查看内存剩余空间 123456free -m -s 2 -c 20 -t  # 内存剩余空间 以M为输出，两秒更新一次，更新20次# 输出            total        used        free      shared  buff&#x2F;cache   availableMem:          62838       35817        7814">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2019-04-30T13:09:55.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DevOps">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">后端问题排查常用命令</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2019-04-30T13:09:55.000Z">2019-04-30</time>
+      <span>· 约 4 分钟</span>
+      
+        · <a href="/categories/DevOps/">DevOps</a>
+      
+      
+        <a class="badge" href="/tags/DevOps/">DevOps</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="linux篇"><a href="#linux篇" class="headerlink" title="linux篇"></a>linux篇</h3><h4 id="资源查看"><a href="#资源查看" class="headerlink" title="资源查看"></a>资源查看</h4><ol>
+<li><p>查看内存剩余空间</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">free -m -s 2 -c 20 -t  <span class="comment"># 内存剩余空间 以M为输出，两秒更新一次，更新20次</span></span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line">            total        used        free      shared  buff/cache   available</span><br><span class="line">Mem:          62838       35817        7814       13366       19206       13099</span><br><span class="line">Swap:             0           0           0</span><br><span class="line">Total:        62838       35817        7814</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看nginx中生效的conf文件所在目录(docker 需s要进入容器)</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">nginx -t </span><br><span class="line"><span class="comment"># 输出</span></span><br><span class="line">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span><br><span class="line">nginx: configuration file /etc/nginx/nginx.conf <span class="built_in">test</span> is successful</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看磁盘空间大小</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">df</span> -h <span class="comment"># -h: human缩写，以易读的方式显示结果（即带单位：比如M/G，如果不加这个参数，显示的数字以B为单位）</span></span><br><span class="line"><span class="built_in">df</span> -i： 以inode模式来显示磁盘使用情况，显示inode信息而非块使用量。</span><br><span class="line"><span class="built_in">df</span> --total：显示所有的信息。</span><br><span class="line"></span><br><span class="line"><span class="comment">#/opt/app/todeav/config#df -h</span></span><br><span class="line">Filesystem            Size  Used Avail Use% Mounted on</span><br><span class="line">/dev/mapper/VolGroup00-LogVol00</span><br><span class="line">2.0G  711M  1.2G  38% /</span><br><span class="line">/dev/mapper/vg1-lv2    20G  3.8G   15G  21% /opt/applog</span><br><span class="line">/dev/mapper/vg1-lv1    20G   13G  5.6G  70% /opt/app</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看当前目录所占空间大小</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">du -sh  # -h 人性化显示 -s 递归整个目录的大小</span><br><span class="line">du -ah： 显示目录，其下目录和文件占用的磁盘空间大小，带单位。</span><br><span class="line">du -c： 显示几个目录或文件占用的磁盘空间大小，还要统计它们的总和。</span><br><span class="line">du -sh： 查看当前目录总共占的容量，而不单独列出各子项占用的容量。</span><br><span class="line">du -l：在统计目录占用磁盘空间大小时，把硬链接也统计进来。</span><br><span class="line">du -lh --max-depth=1：查看当前目录下一级子文件和子目录占用的磁盘容量。</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看当前目录下所有子文件夹排序后的大小</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">du -sh `ls` | sort  # 注意不是单引号`</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>内存</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">free -h</span><br><span class="line">free -h：显示内存状态。</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="打包命令"><a href="#打包命令" class="headerlink" title="打包命令"></a>打包命令</h4><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">tar -cvf etc.tar /etc <span class="comment"># 仅打包，不压缩！-c :打包选项 -v :显示打包进度 -f :使用档案文件</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="docker-篇"><a href="#docker-篇" class="headerlink" title="docker 篇"></a>docker 篇</h3><ol>
+<li><p>进入容器</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker <span class="built_in">exec</span> -it [containerId|serviceName] /bin/bash</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看运行容器资源占用情况</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker stats [contatinerId|serviceName]</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>查看容器内日志</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker logs -f -n 100 [contatinerId|serviceName] | grep -n10 &#x27;ERROR&#x27; #输出容器运行日志，使用grep查找关键字后10行内容</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>拷贝容器里的文件到本地</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">docker cp contatinerId:/tmp   /home/tmp</span><br></pre></td></tr></table></figure>
+
+</li>
+<li><p>dump docker中</p>
+</li>
+</ol>
+<h3 id="Java-常用排查工具"><a href="#Java-常用排查工具" class="headerlink" title="Java 常用排查工具"></a>Java 常用排查工具</h3><h4 id="jstat"><a href="#jstat" class="headerlink" title="jstat"></a>jstat</h4><p>官网连接：<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/technotes/tools/#monitor">https://docs.oracle.com/javase/8/docs/technotes/tools/#monitor</a></p>
+<blockquote>
+<p>jstat 工具允许以固定的监控频次输出JVM的各种监控指标，比如使用-gcutil输出GC和内存占用汇总信息，每隔5秒输出一次，输出100次，可以看到Young GC比较频繁：</p>
+</blockquote>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">jstat -gcutil [pid] [毫秒次]  [多少次]</span><br><span class="line"></span><br><span class="line">S0     S1     E      O      M     CCS    YGC     YGCT    FGC    FGCT     GCT</span><br><span class="line">  0.00   0.00   8.00   0.00  17.91  20.19      0    0.000     0    0.000    0.000</span><br><span class="line">  0.00   0.00   8.00   0.00  17.91  20.19      0    0.000     0    0.000    0.000</span><br><span class="line">  0.00   0.00   8.00   0.00  17.91  20.19      0    0.000     0    0.000    0.000</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p> 其中，S0 表示 Survivor0 区占用百分比，S1 表示 Survivor1 区占用百分比，E 表示 Eden 区占用百分比，O 表示老年代占用百分比，M 表示元数据区占用百分比，YGC 表示年轻代回收次数，YGCT 表示年轻代回收耗时，FGC 表示老年代回收次数，FGCT 表示老年代回收耗时。</p>
+</blockquote>
+<h4 id="jstack"><a href="#jstack" class="headerlink" title="jstack"></a>jstack</h4><p>将输出的线程栈导入<a target="_blank" rel="noopener" href="https://fastthread.io/">https://fastthread.io/</a> 进行可视化分析</p>
+<h3 id="电子书"><a href="#电子书" class="headerlink" title="电子书"></a>电子书</h3><p><a target="_blank" rel="noopener" href="https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html">Linux Tools Quick Tutorial</a> </p>
+<p><a target="_blank" rel="noopener" href="https://yeasy.gitbook.io/docker_practice/">Docker 命令实战</a></p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#linux%E7%AF%87"><span class="toc-text">linux篇</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#docker-%E7%AF%87"><span class="toc-text">docker 篇</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java-%E5%B8%B8%E7%94%A8%E6%8E%92%E6%9F%A5%E5%B7%A5%E5%85%B7"><span class="toc-text">Java 常用排查工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%B5%E5%AD%90%E4%B9%A6"><span class="toc-text">电子书</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

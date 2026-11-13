@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Java多版本管理工具SDKMAN · Summary</title>
+  <meta name="description" content="作为一名Javaer领到电脑的第一件事就是需要配置Java环境，以及切换不同的JDK版本来进行日常开发，Node开发有nvm，python开发有pyenv, Java也提供了响应的工具sdkman（Linux, Unix, MacOS）。同时sdkman也可以管理Scala、Gradle、Maven等等软件不同的版本。  安装 SDKMan 要开始使用 SDKMan，首先需要在你的系统上安装它。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java多版本管理工具SDKMAN · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2023/07/02/Java%E5%A4%9A%E7%89%88%E6%9C%AC%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7SDKMAN/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="作为一名Javaer领到电脑的第一件事就是需要配置Java环境，以及切换不同的JDK版本来进行日常开发，Node开发有nvm，python开发有pyenv, Java也提供了响应的工具sdkman（Linux, Unix, MacOS）。同时sdkman也可以管理Scala、Gradle、Maven等等软件不同的版本。  安装 SDKMan 要开始使用 SDKMan，首先需要在你的系统上安装它。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2023-07-01T16:05:06.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Tools">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">Java多版本管理工具SDKMAN</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2023-07-01T16:05:06.000Z">2023-07-02</time>
+      <span>· 约 3 分钟</span>
+      
+      
+        <a class="badge" href="/tags/Tools/">Tools</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><blockquote>
+<p>作为一名Javaer领到电脑的第一件事就是需要配置Java环境，以及切换不同的JDK版本来进行日常开发，Node开发有nvm，python开发有pyenv, Java也提供了响应的工具sdkman（Linux, Unix, MacOS）。同时sdkman也可以管理Scala、Gradle、Maven等等软件不同的版本。</p>
+</blockquote>
+<h2 id="安装-SDKMan-要开始使用-SDKMan，"><a href="#安装-SDKMan-要开始使用-SDKMan，" class="headerlink" title="安装 SDKMan 要开始使用 SDKMan，"></a>安装 SDKMan 要开始使用 SDKMan，</h2><p>首先需要在你的系统上安装它。SDKMan 支持 Windows、macOS 和 Linux 等操作系统。 </p>
+<h3 id="在-macOS-和-Linux-上安装"><a href="#在-macOS-和-Linux-上安装" class="headerlink" title="在 macOS 和 Linux 上安装"></a>在 macOS 和 Linux 上安装</h3><p>在终端中执行以下命令来安装 SDKMan： </p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&quot;https://get.sdkman.io&quot;</span> | bash </span><br><span class="line"><span class="comment"># 或者 </span></span><br><span class="line">curl -s <span class="string">&quot;https://get.sdkman.io&quot;</span> | ZSH</span><br></pre></td></tr></table></figure>
+
+<p>执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">source</span> <span class="string">&quot;<span class="variable">$HOME</span>/.sdkman/bin/sdkman-init.sh&quot;</span></span><br><span class="line">$ sdk version</span><br><span class="line"><span class="comment"># 如下，如果显示版本则代表成功</span></span><br><span class="line">  sdkman 5.18.2</span><br></pre></td></tr></table></figure>
+
+<h3 id="在-Windows-上安装"><a href="#在-Windows-上安装" class="headerlink" title="在 Windows 上安装"></a>在 Windows 上安装</h3><p>在 Windows 上，你可以使用 Git Bash 或 Cygwin 等工具来安装和使用 SDKMan。首先，下载并安装 Git Bash 或 Cygwin，并确保它们在系统的 PATH 环境变量中。然后，在 Git Bash 或 Cygwin 终端中执行以下命令来安装 SDKMan：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -s <span class="string">&quot;https://get.sdkman.io&quot;</span> | bash</span><br></pre></td></tr></table></figure>
+
+<h2 id="使用-SDKMan"><a href="#使用-SDKMan" class="headerlink" title="使用 SDKMan"></a>使用 SDKMan</h2><p>一旦你安装好了 SDKMan，就可以开始使用它来管理你的开发工具了。</p>
+<h3 id="安装工具"><a href="#安装工具" class="headerlink" title="安装工具"></a>安装工具</h3><p>使用 SDKMan 安装一个开发工具非常简单。比如，要安装最新版本的 Java，只需要在终端中执行以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sdk lis java <span class="comment">#显示出java所有版本</span></span><br><span class="line">sdk install java 17.0.3-oracle</span><br></pre></td></tr></table></figure>
+
+<h3 id="切换版本"><a href="#切换版本" class="headerlink" title="切换版本"></a>切换版本</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdk use java 17.0.3-oracle</span><br></pre></td></tr></table></figure>
+
+<h3 id="升级工具"><a href="#升级工具" class="headerlink" title="升级工具"></a>升级工具</h3><p>SDKMan 也提供了升级已安装工具的功能。要升级某个已安装的工具，只需要执行以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdk upgrade &lt;tool&gt;</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>&lt;tool&gt;</code> 是你想要升级的工具名称，比如 <code>java</code>、<code>scala</code>等。</p>
+<h3 id="列出可用版本"><a href="#列出可用版本" class="headerlink" title="列出可用版本"></a>列出可用版本</h3><p>如果你想查看某个工具的所有可用版本，可以使用以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdk list &lt;tool&gt;</span><br></pre></td></tr></table></figure>
+
+<p>这将列出该工具所有可用的版本号供你选择。</p>
+<h3 id="删除工具"><a href="#删除工具" class="headerlink" title="删除工具"></a>删除工具</h3><p>如果你想删除某个已安装的工具，可以使用以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdk uninstall &lt;tool&gt; &lt;version&gt;</span><br></pre></td></tr></table></figure>
+
+<p>其中 <code>&lt;tool&gt;</code> 是工具的名称，<code>&lt;version&gt;</code> 是要删除的版本号。</p>
+<h2 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h2><p>SDKMan 是一个非常实用的开发工具管理工具，可以帮助开发人员轻松安装、升级和切换不同版本的开发工具。它简化了我们在不同项目中使用不同工具版本的过程，让开发变得更加便捷和高效。</p>
+<p>如果你还没有尝试过 SDKMan，我强烈推荐你去官方网站（<a target="_blank" rel="noopener" href="https://sdkman.io/%EF%BC%89%E4%BA%86%E8%A7%A3%E6%9B%B4%E5%A4%9A%E4%BF%A1%E6%81%AF%EF%BC%8C%E5%B9%B6%E5%9C%A8%E4%BD%A0%E7%9A%84%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E4%B8%AD%E5%AE%89%E8%A3%85%E5%92%8C%E4%BD%BF%E7%94%A8%E5%AE%83%E3%80%82%E7%9B%B8%E4%BF%A1%E5%AE%83%E4%BC%9A%E6%88%90%E4%B8%BA%E4%BD%A0%E7%9A%84%E5%A5%BD%E5%B8%AE%E6%89%8B%EF%BC%81">https://sdkman.io/）了解更多信息，并在你的开发环境中安装和使用它。相信它会成为你的好帮手！</a></p>
+<p>ChatGpt真强大这篇文章是它写的。</p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AE%89%E8%A3%85-SDKMan-%E8%A6%81%E5%BC%80%E5%A7%8B%E4%BD%BF%E7%94%A8-SDKMan%EF%BC%8C"><span class="toc-text">安装 SDKMan 要开始使用 SDKMan，</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8-macOS-%E5%92%8C-Linux-%E4%B8%8A%E5%AE%89%E8%A3%85"><span class="toc-text">在 macOS 和 Linux 上安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8-Windows-%E4%B8%8A%E5%AE%89%E8%A3%85"><span class="toc-text">在 Windows 上安装</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%BF%E7%94%A8-SDKMan"><span class="toc-text">使用 SDKMan</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%89%E8%A3%85%E5%B7%A5%E5%85%B7"><span class="toc-text">安装工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%87%E6%8D%A2%E7%89%88%E6%9C%AC"><span class="toc-text">切换版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%87%E7%BA%A7%E5%B7%A5%E5%85%B7"><span class="toc-text">升级工具</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%97%E5%87%BA%E5%8F%AF%E7%94%A8%E7%89%88%E6%9C%AC"><span class="toc-text">列出可用版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%A0%E9%99%A4%E5%B7%A5%E5%85%B7"><span class="toc-text">删除工具</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BB%93%E8%AF%AD"><span class="toc-text">结语</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

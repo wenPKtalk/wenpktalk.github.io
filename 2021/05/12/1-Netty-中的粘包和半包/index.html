@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1.Netty 中的粘包和半包 · Summary</title>
+  <meta name="description" content="粘包原因 发送方每次写入数据 &lt; 套接字缓冲区大小 接受方读取套接字缓冲区数据不够及时  半包原因 发送方每次写入数据 &gt; 套接字缓冲区大小 发送方的数据大于协议的MTU（Maximum Transmission Unit 最大传输单元）必须拆包  根本原因TCP是流式协议，消息无边际 udp像邮寄包裹，虽然是一次运输多个，但是每个包裹都有“界限”，一个一个签收，所以无粘包，拆包问题。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="1.Netty 中的粘包和半包 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2021/05/12/1-Netty-%E4%B8%AD%E7%9A%84%E7%B2%98%E5%8C%85%E5%92%8C%E5%8D%8A%E5%8C%85/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="粘包原因 发送方每次写入数据 &lt; 套接字缓冲区大小 接受方读取套接字缓冲区数据不够及时  半包原因 发送方每次写入数据 &gt; 套接字缓冲区大小 发送方的数据大于协议的MTU（Maximum Transmission Unit 最大传输单元）必须拆包  根本原因TCP是流式协议，消息无边际 udp像邮寄包裹，虽然是一次运输多个，但是每个包裹都有“界限”，一个一个签收，所以无粘包，拆包问题。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-12T14:00:44.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Netty">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/netty/">Netty 系列</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2021/05/12/1-Netty-%E4%B8%AD%E7%9A%84%E7%B2%98%E5%8C%85%E5%92%8C%E5%8D%8A%E5%8C%85/" class="current" aria-current="page">1.Netty 中的粘包和半包</a></li><li><a href="/2021/05/16/2-Netty%E4%B8%AD%E6%98%AF%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96%E5%86%85%E5%AD%98%E7%9A%84/">2.Netty中是如何优化内存的</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/netty/">Netty 系列</a>
+        
+      </nav>
+      <span class="book-position">第 1 / 2 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">1.Netty 中的粘包和半包</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2021-05-12T14:00:44.000Z">2021-05-12</time>
+      <span>· 约 1 分钟</span>
+      
+        · <a href="/categories/Netty/">Netty</a>
+      
+      
+        <a class="badge" href="/tags/Netty/">Netty</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="粘包原因"><a href="#粘包原因" class="headerlink" title="粘包原因"></a>粘包原因</h3><ul>
+<li>发送方每次写入数据 &lt; 套接字缓冲区大小</li>
+<li>接受方读取套接字缓冲区数据不够及时</li>
+</ul>
+<h3 id="半包原因"><a href="#半包原因" class="headerlink" title="半包原因"></a>半包原因</h3><ul>
+<li>发送方每次写入数据 &gt; 套接字缓冲区大小</li>
+<li>发送方的数据大于协议的MTU（Maximum Transmission Unit 最大传输单元）必须拆包</li>
+</ul>
+<h3 id="根本原因"><a href="#根本原因" class="headerlink" title="根本原因"></a>根本原因</h3><p><strong>TCP是流式协议，消息无边际</strong></p>
+<p>udp像邮寄包裹，虽然是一次运输多个，但是每个包裹都有“界限”，一个一个签收，所以无粘包，拆包问题。</p>
+<h3 id="解决方式"><a href="#解决方式" class="headerlink" title="解决方式"></a>解决方式</h3><ol>
+<li>改成短链接：一次链接发送一个数据包</li>
+<li>封装成数据帧（fram）<ol>
+<li>固定长度—空间浪费</li>
+<li>分割符—内容里出现分隔符时需要转义</li>
+<li>固定长度字段存储内容长度信息—长度理论上有限制，需提前预知可能的最大长度，从而定义长度占用字节数  <strong>推荐</strong></li>
+<li>其它 如json里的{}</li>
+</ol>
+</li>
+</ol>
+<h3 id="netty解码方式"><a href="#netty解码方式" class="headerlink" title="netty解码方式"></a>netty解码方式</h3><p>假设我们把解决粘包&#x2F;半包的问题的常用三种解码器叫一次解码</p>
+<ul>
+<li>固定长度  FixedLengthFrameDecoder  </li>
+<li>分割符   DelimiterBasedFrameDecoder </li>
+<li>固定长度字段存内容长度信心 LengthFieldBasedFrameDecoder    LengthFieldPrepender</li>
+</ul>
+<p>二次解码：将字节转换成为实际使用的对象</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      <span></span>
+      
+        <a class="pager-link pager-next" href="/2021/05/16/2-Netty%E4%B8%AD%E6%98%AF%E5%A6%82%E4%BD%95%E4%BC%98%E5%8C%96%E5%86%85%E5%AD%98%E7%9A%84/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.Netty中是如何优化内存的</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%B2%98%E5%8C%85%E5%8E%9F%E5%9B%A0"><span class="toc-text">粘包原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8D%8A%E5%8C%85%E5%8E%9F%E5%9B%A0"><span class="toc-text">半包原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%A0%B9%E6%9C%AC%E5%8E%9F%E5%9B%A0"><span class="toc-text">根本原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%86%B3%E6%96%B9%E5%BC%8F"><span class="toc-text">解决方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#netty%E8%A7%A3%E7%A0%81%E6%96%B9%E5%BC%8F"><span class="toc-text">netty解码方式</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

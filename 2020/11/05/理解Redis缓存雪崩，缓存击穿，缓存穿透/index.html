@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>理解Redis缓存雪崩，缓存击穿，缓存穿透 · Summary</title>
+  <meta name="description" content="一. 缓存雪崩 “雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。 出现原因：  给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。  redis服务宕机。   解决方案： 提前预案:   给redis过期时间加随机值预防大面积的缓存同时过期失效。 redis集">
+<meta property="og:type" content="article">
+<meta property="og:title" content="理解Redis缓存雪崩，缓存击穿，缓存穿透 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2020/11/05/%E7%90%86%E8%A7%A3Redis%E7%BC%93%E5%AD%98%E9%9B%AA%E5%B4%A9%EF%BC%8C%E7%BC%93%E5%AD%98%E5%87%BB%E7%A9%BF%EF%BC%8C%E7%BC%93%E5%AD%98%E7%A9%BF%E9%80%8F/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="一. 缓存雪崩 “雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。 出现原因：  给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。  redis服务宕机。   解决方案： 提前预案:   给redis过期时间加随机值预防大面积的缓存同时过期失效。 redis集">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png">
+<meta property="article:published_time" content="2020-11-05T02:07:13.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.795Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Redis">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">理解Redis缓存雪崩，缓存击穿，缓存穿透</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2020-11-05T02:07:13.000Z">2020-11-05</time>
+      <span>· 约 2 分钟</span>
+      
+        · <a href="/categories/Redis/">Redis</a>
+      
+      
+        <a class="badge" href="/tags/Redis/">Redis</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h4 id="一-缓存雪崩"><a href="#一-缓存雪崩" class="headerlink" title="一. 缓存雪崩"></a>一. 缓存雪崩</h4><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220407/10_31/image-20220406193747187.png" alt="image-20220406193747187"></p>
+<p>“雪崩来临的时候没有一片雪花是无辜的”。缓存雪崩就是大范围甚至于整个redis提供的缓存服务不可用了，进而导致所有的请求都直接到了数据库，甚至于击垮整个服务链路。造成整个服务不可用。</p>
+<p><strong>出现原因：</strong></p>
+<ol>
+<li><p>给缓存设置了过期时间，且大范围的缓存数据的过期时间一致。</p>
+</li>
+<li><p>redis服务宕机。</p>
+</li>
+</ol>
+<p><strong>解决方案：</strong></p>
+<p>提前预案: </p>
+<ol>
+<li>给redis过期时间加随机值预防大面积的缓存同时过期失效。</li>
+<li>redis集群高可用可用，哨兵机制。</li>
+</ol>
+<p>兜底方案:<br>3. 服务熔断，服务降级。监控到缓存服务不可用时直接返回，或者限制流量直接请求到数据库层。</p>
+<h4 id="二-缓存击穿"><a href="#二-缓存击穿" class="headerlink" title="二. 缓存击穿"></a>二. 缓存击穿</h4><p>相交于缓存雪崩大范围或整体缓存不可用缓存击穿则是指某个热点key过期，导致的缓存失效。常常是一部分热点数据，如秒杀产品的库存数据。</p>
+<p><strong>出现原因：</strong><br>热点数据过期，或者被其他手段删除。</p>
+<p><strong>解决方案：</strong></p>
+<ol>
+<li><p>对于热点数据缓存时不设置过期时间。</p>
+</li>
+<li><p>第一个请求发现热点数据不在redis缓存中，可以先阻塞其他请求，等到第一个请求将数据库数据读出来并缓存到redis后再唤醒其他请求从缓存服务中读取热点数据。</p>
+</li>
+</ol>
+<p>﻿</p>
+<h4 id="三-缓存穿透"><a href="#三-缓存穿透" class="headerlink" title="三. 缓存穿透"></a>三. 缓存穿透</h4><p>缓存穿透则是另外一个层面，指的时请求所访问的数据既不在缓存中，也不在数据库中。如果应用持续有大量请求访问数据，就会同时给缓存和数据库带来巨大压力。</p>
+<p><strong>出现原因：</strong></p>
+<ol>
+<li><p>业务层误操作访问到了不会存在的数据。</p>
+</li>
+<li><p>恶意请求攻击</p>
+</li>
+</ol>
+<p><strong>解决方案：</strong></p>
+<ol>
+<li>第一个请求发现热点数据不在redis缓存中和数据库中，可以先阻塞其他请求，缓存一个缺省值返回。</li>
+<li>利用redis提供的布隆过滤器。</li>
+<li>前端有效值校验。</li>
+</ol>
+<h4 id="四-总结"><a href="#四-总结" class="headerlink" title="四. 总结"></a>四. 总结</h4><p><strong>缓存雪崩</strong> ，<strong>缓存击穿</strong>均属于缓存失效的一种异常缓存雪崩影响范围大于缓存击穿。<strong>缓存穿透</strong>则是数据本身就不在整个数据存储层。</p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Java如何断言集合结果集 · Summary</title>
+  <meta name="description" content="场景当被测试方法返回结果是集合，我们应该使用哪个断言，如果一个一个元素比较会比较麻烦。所以使用其他包下的断言。 代码示例被测试代码如下，是一组经典的合并两个Map&lt;String, List&gt;的代码(可以直接使用当成工具方法，注意引入Guava包)： 1234567891011public Map&lt;String, List&lt;Object&gt;&gt; mergeTwoGro">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java如何断言集合结果集 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2022/04/07/Java%E5%A6%82%E4%BD%95%E7%BB%99%E6%96%AD%E8%A8%80%E9%9B%86%E5%90%88%E7%BB%93%E6%9E%9C%E9%9B%86/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="场景当被测试方法返回结果是集合，我们应该使用哪个断言，如果一个一个元素比较会比较麻烦。所以使用其他包下的断言。 代码示例被测试代码如下，是一组经典的合并两个Map&lt;String, List&gt;的代码(可以直接使用当成工具方法，注意引入Guava包)： 1234567891011public Map&lt;String, List&lt;Object&gt;&gt; mergeTwoGro">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2022-04-07T02:46:27.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Unit Test">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">Java如何断言集合结果集</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2022-04-07T02:46:27.000Z">2022-04-07</time>
+      <span>· 约 3 分钟</span>
+      
+        · <a href="/categories/Unit-Test/">Unit Test</a>
+      
+      
+        <a class="badge" href="/tags/Unit-Test/">Unit Test</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="场景"><a href="#场景" class="headerlink" title="场景"></a>场景</h3><p>当被测试方法返回结果是集合，我们应该使用哪个断言，如果一个一个元素比较会比较麻烦。所以使用其他包下的断言。</p>
+<h3 id="代码示例"><a href="#代码示例" class="headerlink" title="代码示例"></a>代码示例</h3><p>被测试代码如下，是一组经典的合并两个Map&lt;String, List<Object>&gt;的代码(可以直接使用当成工具方法，注意引入Guava包)：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="type">Map</span>&lt;String, List&lt;Object&gt;&gt; <span class="title function_">mergeTwoGroupedMapCollection</span><span class="params">(Map&lt;String, List&lt;Object&gt;&gt; groupedCollectionOne,</span></span><br><span class="line"><span class="params">                                                     Map&lt;String, List&lt;Object&gt;&gt; groupedCollectionTwo)</span> &#123;</span><br><span class="line">        <span class="type">Map</span>&lt;String, List&lt;Object&gt;&gt; <span class="variable">mapGlobal</span> <span class="operator">=</span> Maps.newHashMap();</span><br><span class="line">        mapGlobal.putAll(groupedCollectionOne);</span><br><span class="line">        groupedCollectionTwo.forEach((k, v) -&gt; mapGlobal.merge(k, v, (v1, v2) -&gt; &#123;</span><br><span class="line">            <span class="type">List</span>&lt;Object&gt; <span class="variable">data</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(v1);</span><br><span class="line">            data.addAll(v2);</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;&gt;(data);</span><br><span class="line">        &#125;));</span><br><span class="line">        <span class="keyword">return</span> mapGlobal;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+
+
+<p>测试如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.junit.jupiter.api.Assertions.assertAll;</span><br><span class="line"><span class="keyword">import</span> <span class="keyword">static</span> org.junit.jupiter.api.Assertions.assertIterableEquals;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Test</span></span><br><span class="line">    <span class="meta">@DisplayName(&quot;should merge multiple map when given two map has grouped by&quot;)</span></span><br><span class="line">    <span class="type">void</span> <span class="title function_">mergeTwoGroupedMapCollection</span><span class="params">()</span> &#123;</span><br><span class="line">        <span class="type">MergedCollection</span> <span class="variable">mergedCollection</span> <span class="operator">=</span> MergedCollection.builder().build();</span><br><span class="line">        <span class="type">Map</span>&lt;String, List&lt;Object&gt;&gt; <span class="variable">groupedOne</span> <span class="operator">=</span> Maps.newHashMap();</span><br><span class="line">        groupedOne.put(<span class="string">&quot;a&quot;</span>, Lists.newArrayList(<span class="string">&quot;a1&quot;</span>, <span class="string">&quot;a2&quot;</span>, <span class="string">&quot;a3&quot;</span>));</span><br><span class="line">        groupedOne.put(<span class="string">&quot;b&quot;</span>, Lists.newArrayList(<span class="string">&quot;b1&quot;</span>, <span class="string">&quot;b2&quot;</span>, <span class="string">&quot;b3&quot;</span>));</span><br><span class="line">        groupedOne.put(<span class="string">&quot;c&quot;</span>, Lists.newArrayList(<span class="string">&quot;c1&quot;</span>, <span class="string">&quot;c2&quot;</span>, <span class="string">&quot;c3&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span>&lt;String, List&lt;Object&gt;&gt; <span class="variable">groupedTwo</span> <span class="operator">=</span> Maps.newHashMap();</span><br><span class="line">        groupedTwo.put(<span class="string">&quot;c&quot;</span>, Lists.newArrayList(<span class="string">&quot;c3&quot;</span>, <span class="string">&quot;c4&quot;</span>, <span class="string">&quot;c5&quot;</span>, <span class="string">&quot;c6&quot;</span>, <span class="string">&quot;c7&quot;</span>));</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span>&lt;String, List&lt;Object&gt;&gt; <span class="variable">newGrouped</span> <span class="operator">=</span> mergedCollection.mergeTwoGroupedMapCollection(groupedOne, groupedTwo);</span><br><span class="line">        <span class="type">List</span>&lt;Object&gt; <span class="variable">except_a</span> <span class="operator">=</span> ImmutableList.of(<span class="string">&quot;a1&quot;</span>, <span class="string">&quot;a2&quot;</span>, <span class="string">&quot;a3&quot;</span>);</span><br><span class="line">        <span class="type">List</span>&lt;Object&gt; <span class="variable">except_b</span> <span class="operator">=</span> ImmutableList.of(<span class="string">&quot;b1&quot;</span>, <span class="string">&quot;b2&quot;</span>, <span class="string">&quot;b3&quot;</span>);</span><br><span class="line">        <span class="type">List</span>&lt;Object&gt; <span class="variable">except_c</span> <span class="operator">=</span> ImmutableList.of(<span class="string">&quot;c1&quot;</span>, <span class="string">&quot;c2&quot;</span>, <span class="string">&quot;c3&quot;</span>, <span class="string">&quot;c3&quot;</span>, <span class="string">&quot;c4&quot;</span>, <span class="string">&quot;c5&quot;</span>, <span class="string">&quot;c6&quot;</span>, <span class="string">&quot;c7&quot;</span>);</span><br><span class="line">        assertAll(<span class="string">&quot;all elements&quot;</span>,</span><br><span class="line">                ()-&gt;assertIterableEquals(except_a, newGrouped.get(<span class="string">&quot;a&quot;</span>)),</span><br><span class="line">                ()-&gt;assertIterableEquals(except_b, newGrouped.get(<span class="string">&quot;b&quot;</span>)),</span><br><span class="line">                ()-&gt;assertIterableEquals(except_c, newGrouped.get(<span class="string">&quot;c&quot;</span>))</span><br><span class="line">        );</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>对于这种工具性的方法，必须添加更小粒度的测试。以便于在重构的时候能够保证代码正确性，和理解上下文逻辑。哪如果是私有方法呢？<strong>测试大于封装</strong></p>
+</div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF"><span class="toc-text">场景</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BB%A3%E7%A0%81%E7%A4%BA%E4%BE%8B"><span class="toc-text">代码示例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

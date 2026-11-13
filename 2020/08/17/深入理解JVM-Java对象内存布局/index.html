@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深入理解JVM-Java对象内存布局 · Summary</title>
+  <meta name="description" content="Java创建对象的5种方式   创建方式 原理    new关键字 通过调用构造器   反射 （同 new 关键字）   Object.clone 通过复制已有数据，来初始化新建对象实例   反序列化 （同 Object.clone）   Unsafe.allocateInstance 没有初始化实例字段   Java对构造器的约束：  如果一个类没有任何构造器的话，会自动添加一个无参构造器。 子">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解JVM-Java对象内存布局 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Java创建对象的5种方式   创建方式 原理    new关键字 通过调用构造器   反射 （同 new 关键字）   Object.clone 通过复制已有数据，来初始化新建对象实例   反序列化 （同 Object.clone）   Unsafe.allocateInstance 没有初始化实例字段   Java对构造器的约束：  如果一个类没有任何构造器的话，会自动添加一个无参构造器。 子">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-17T14:06:46.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/jvm/">深入理解 JVM</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2020/05/07/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E7%B1%BB%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8A%A0%E8%BD%BD/">深入理解JVM-Java类如何被加载</a></li><li><a href="/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">深入理解JVM-Java虚拟机内存结构</a></li><li><a href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/">深入理解JVM-Java代码如何运行</a></li><li><a href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" class="current" aria-current="page">深入理解JVM-Java对象内存布局</a></li><li><a href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/">深入理解JVM-Jvm垃圾回收二三事</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/jvm/">深入理解 JVM</a>
+        
+      </nav>
+      <span class="book-position">第 4 / 5 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">深入理解JVM-Java对象内存布局</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2020-08-17T14:06:46.000Z">2020-08-17</time>
+      <span>· 约 5 分钟</span>
+      
+        · <a href="/categories/JVM/">JVM</a>
+      
+      
+        <a class="badge" href="/tags/JVM/">JVM</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="Java创建对象的5种方式"><a href="#Java创建对象的5种方式" class="headerlink" title="Java创建对象的5种方式"></a>Java创建对象的5种方式</h3><table>
+<thead>
+<tr>
+<th>创建方式</th>
+<th>原理</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>new关键字</td>
+<td>通过调用构造器</td>
+</tr>
+<tr>
+<td>反射</td>
+<td>（同 new 关键字）</td>
+</tr>
+<tr>
+<td>Object.clone</td>
+<td>通过复制已有数据，来初始化新建对象实例</td>
+</tr>
+<tr>
+<td>反序列化</td>
+<td>（同 Object.clone）</td>
+</tr>
+<tr>
+<td>Unsafe.allocateInstance</td>
+<td>没有初始化实例字段</td>
+</tr>
+</tbody></table>
+<p>Java对构造器的约束：</p>
+<ul>
+<li>如果一个类没有任何构造器的话，会自动添加一个无参构造器。</li>
+<li>子类的构造器需要调用父类的构造器。如果父类存在无参数构造器的话，该调用可以是隐式的，也就是说 Java 编译器会自动添加对父类构造器的调用。但是，如果父类没有无参数构造器，那么子类的构造器则需要显式地调用父类带参数的构造器。</li>
+<li>显式调用又可分为两种，一是直接使用“super”关键字调用父类构造器，二是使用“this”关键字调用同一个类中的其他构造器。无论是直接的显式调用，还是间接的显式调用，都需要作为构造器的第一条语句，以便优先初始化继承而来的父类字段。（不过这可以通过调用其他生成参数的方法，或者字节码注入来绕开。）</li>
+<li>通过 new 指令新建出来的对象，它的内存其实涵盖了所有父类中的实例字段。也就是说，虽然子类无法访问父类的私有实例字段，或者子类的实例字段隐藏了父类的同名实例字段，但是子类的实例还是会为这些父类实例字段分配内存的。</li>
+</ul>
+<h3 id="对象内存占用分布"><a href="#对象内存占用分布" class="headerlink" title="对象内存占用分布"></a>对象内存占用分布</h3><ol>
+<li><p>每个对象都有一个对象头（Object header）</p>
+<p>由标记字段（Mark Word）和类型指针所构成。其中：mark word用以存储Java虚拟机有关该对象的运行数据：hash码，GC信息以及锁信息，而类型指针则是指向该对象的类。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|--------------------------------------------------------------|</span><br><span class="line">|                     Object Header (128 bits)                 |</span><br><span class="line">|------------------------------------|-------------------------|</span><br><span class="line">|        Mark Word (64 bits)         | Klass pointer (64 bits) |</span><br><span class="line">|------------------------------------|-------------------------|</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>为了尽量较少对象的内存使用量，64位Java虚拟机引入压缩指针（-XX: +UseCompressedOops，默认开启），将Java对象指针压缩成为32位。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|--------------------------------------------------------------|</span><br><span class="line">|                     Object Header (96 bits)                  |</span><br><span class="line">|------------------------------------|-------------------------|</span><br><span class="line">|        Mark Word (64 bits)         | Klass pointer (32 bits) |</span><br><span class="line">|------------------------------------|-------------------------|</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>数组对象</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">|---------------------------------------------------------------------------------|</span><br><span class="line">|                                 Object Header (128 bits)                        |</span><br><span class="line">|--------------------------------|-----------------------|------------------------|</span><br><span class="line">|        Mark Word(64bits)       | Klass pointer(32bits) |  array length(32bits)  |</span><br><span class="line">|--------------------------------|-----------------------|------------------------|</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h4 id="压缩指针"><a href="#压缩指针" class="headerlink" title="压缩指针"></a>压缩指针</h4><blockquote>
+<p>将堆中原本 64 位的 Java 对象指针压缩成 32 位的。</p>
+</blockquote>
+<p>原理：</p>
+<p>默认情况下，Java 虚拟机堆中对象的起始地址需要对齐至 8 的倍数（<strong>内存对齐</strong>-XX:ObjectAlignmentInBytes，默认值为 8）。如果一个对象用不到 8N 个字节，那么空白的那部分空间就浪费掉了。这些浪费掉的空间我们称之为<strong>对象间的填充（padding）</strong>。</p>
+<p><strong>就算是关闭了压缩指针，Java 虚拟机还是会进行内存对齐。此外，内存对齐不仅存在于对象与对象之间，也存在于对象中的字段之间。比如说，Java 虚拟机要求 long 字段、double 字段，以及非压缩指针状态下的引用字段地址为 8 的倍数。</strong></p>
+<p>字段内存对齐的其中一个原因，是让字段只出现在同一 <strong>CPU 的缓存行</strong>中。如果字段不是对齐的，那么就有可能出现跨缓存行的字段。也就是说，<strong>该字段的读取可能需要替换两个缓存行，而该字段的存储也会同时污染两个缓存行。这两种情况对程序的执行效率而言都是不利的</strong>。</p>
+<h4 id="字段重排列"><a href="#字段重排列" class="headerlink" title="字段重排列"></a>字段重排列</h4><p>字段重排列，顾名思义，就是 Java 虚拟机重新分配字段的先后顺序，以达到内存对齐的目的。Java 虚拟机中有三种排列方法（对应 Java 虚拟机选项 -XX:FieldsAllocationStyle，默认值为 1）</p>
+<ol>
+<li><p>如果一个字段占据 C 个字节，那么该字段的偏移量需要对齐至 NC。</p>
+<blockquote>
+<p>这里偏移量指的是字段地址与对象的起始地址差值。以 long 类为例，它仅有一个 long 类型的实例字段。在使用了压缩指针的 64 位虚拟机中，尽管对象头的大小为 12 个字节，该 long 类型字段的偏移量也只能是 16，而中间空着的 4 个字节便会被浪费掉。</p>
+</blockquote>
+</li>
+<li><p>子类所继承字段的偏移量，需要与父类对应字段的偏移量保持一致。</p>
+<blockquote>
+<p>在具体实现中，Java 虚拟机还会对齐子类字段的起始位置。对于使用了压缩指针的 64 位虚拟机，子类第一个字段需要对齐至 4N；而对于关闭了压缩指针的 64 位虚拟机，子类第一个字段则需要对齐至 8N。</p>
+</blockquote>
+</li>
+</ol>
+<p>Java 8 还引入了一个新的注释 @Contended，用来解决对象字段之间的<strong>虚共享（false sharing）</strong>问题。这个注释也会影响到字段的排列。虚共享是怎么回事呢？</p>
+<p>假设两个线程分别访问同一对象中不同的 volatile 字段，逻辑上它们并没有共享内容，因此不需要同步。然而，如果这两个字段恰好在<strong>同一个缓存行</strong>中，那么对这些字段的写操作会导致缓存行的写回，也就造成了实质上的共享。Java 虚拟机会让不同的 @Contended 字段处于独立的缓存行中，因此你会看到大量的空间被浪费掉。具体的分布算法属于实现细节，注意使用虚拟机选项 -XX:-RestrictContended。如果你在 Java 9 以上版本试验的话，在使用 javac 编译时需要添加 –add-exports java.base&#x2F;jdk.internal.vm.annotation&#x3D;ALL-UNNAME</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">深入理解JVM-Java代码如何运行</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">深入理解JVM-Jvm垃圾回收二三事</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java%E5%88%9B%E5%BB%BA%E5%AF%B9%E8%B1%A1%E7%9A%845%E7%A7%8D%E6%96%B9%E5%BC%8F"><span class="toc-text">Java创建对象的5种方式</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%8D%A0%E7%94%A8%E5%88%86%E5%B8%83"><span class="toc-text">对象内存占用分布</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

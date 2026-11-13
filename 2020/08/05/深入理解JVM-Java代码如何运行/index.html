@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深入理解JVM-Java代码如何运行 · Summary</title>
+  <meta name="description" content="Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？  认识JRE和JDKJRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。 JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解JVM-Java代码如何运行 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？  认识JRE和JDKJRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。 JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_57/5ee351091464de78eed75438b6f9183b.png">
+<meta property="article:published_time" content="2020-08-05T00:25:43.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/jvm/">深入理解 JVM</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2020/05/07/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E7%B1%BB%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8A%A0%E8%BD%BD/">深入理解JVM-Java类如何被加载</a></li><li><a href="/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">深入理解JVM-Java虚拟机内存结构</a></li><li><a href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/" class="current" aria-current="page">深入理解JVM-Java代码如何运行</a></li><li><a href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/">深入理解JVM-Java对象内存布局</a></li><li><a href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/">深入理解JVM-Jvm垃圾回收二三事</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/jvm/">深入理解 JVM</a>
+        
+      </nav>
+      <span class="book-position">第 3 / 5 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">深入理解JVM-Java代码如何运行</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2020-08-05T00:25:43.000Z">2020-08-05</time>
+      <span>· 约 3 分钟</span>
+      
+        · <a href="/categories/JVM/">JVM</a>
+      
+      
+        <a class="badge" href="/tags/JVM/">JVM</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><blockquote>
+<p>Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？</p>
+</blockquote>
+<h3 id="认识JRE和JDK"><a href="#认识JRE和JDK" class="headerlink" title="认识JRE和JDK"></a>认识JRE和JDK</h3><p>JRE（Java Runtime Environment）：Java运行时环境。Java的所有执行都离不开JRE。JRE包含了Java虚拟机和Java核心类库等。</p>
+<p>JDK（Java Development Kit）：Java开发工具包。同样包含了JRE，并且还附带了一系列开发，诊断工具。</p>
+<h3 id="Java虚拟机具体是如何运行Java字节码的"><a href="#Java虚拟机具体是如何运行Java字节码的" class="headerlink" title="Java虚拟机具体是如何运行Java字节码的"></a>Java虚拟机具体是如何运行Java字节码的</h3><ol>
+<li>执行Java代码首先要将它编译成class文件加载到Java虚拟机中。</li>
+<li>加载后的Java类会被存放于方法区（Method Area）中。</li>
+<li>实际运行时虚拟机会执行方法区中的代码。</li>
+<li>Java虚拟机会在内存中划分出堆和栈来存储运行时数据。<ul>
+<li>Java虚拟机会将栈细分为：<ol>
+<li>面向Java方法的Java方法栈（也叫Java虚拟机栈）。</li>
+<li>面向本地方法的本地方法栈（用C++写的Native方法）。</li>
+<li>以及存放各个线程执行位置的PC寄存器。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ol>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_38/ab5c3523af08e0bf2f689c1d6033ef77.png" alt="img" style="zoom: 33%;" />
+
+<ol start="5">
+<li><p>运行过程当中，每当调用进入一个Java方法，Java虚拟机会在当前线程的Java方法栈中生成一个栈帧，用于存放局部变量以及字节码的操作数。这个栈帧大小是提前计算好的，而且Java虚拟机不要求栈帧在内存空间里连续分布。</p>
+</li>
+<li><p>退出执行方法时，不管是正常还是异常都会弹出当前线程栈帧，并舍弃。</p>
+</li>
+<li><p>硬件执行是需要Java虚拟机将字节码翻译成为机器码：</p>
+<ol>
+<li>解释执行：逐条将字节码翻译成为机器码并执行。<strong>优势：无需等待编译。</strong></li>
+<li>即时编译（Just-In-Time Compilation,  <strong>JIT</strong>）：即将一个方法中包含的所有字节码编译成为机器码后再执行。<strong>优势：实际运行速度更快</strong></li>
+</ol>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220505/08_57/5ee351091464de78eed75438b6f9183b.png" alt="img" style="zoom:33%;" /></li>
+</ol>
+<p><strong>HotSpot采用的是混合模式：会对热点代码进行即时编译（JIT）。</strong></p>
+<h3 id="Java虚拟机的运行效率"><a href="#Java虚拟机的运行效率" class="headerlink" title="Java虚拟机的运行效率"></a>Java虚拟机的运行效率</h3><p><strong>二八定律：</strong>即时编译建立在程序符合二八定律的假设上，即百分之二十的代码占据了百分之八十的计算资源。</p>
+<p>对于大部分不常用的代码，无需耗费时间将其编译成机器码，而是采取解释执行。</p>
+<p>对于近占据小部分的热点代码，可以将其编译成为机器码。</p>
+<p><strong>即时编译器：</strong>C1,C2和Graal(Java10引入)</p>
+<p>C1编译器：又叫Client编译器，面向的是对启动性能有要求的客户端GUI程序，采用的优化手段较少。</p>
+<p>C2编译器：又叫Server编译器，面向的是对峰值性能有要求的服务器端程序，采用的优化手段较为复杂。编译时间长，但是生成的代码执行效率高。</p>
+<p>Java7开始HotSpot默认采用的是<strong>分层编译</strong>：热点方法首先会被C1编译，而后热点中的热点会被C2进一步编译。</p>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><ol>
+<li>Java虚拟机Jvm：提供了可移植性：一次书写，处处运行。</li>
+<li>代替我们管理了内存。</li>
+<li>为了提高效率采用了混合编译。</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">深入理解JVM-Java虚拟机内存结构</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">深入理解JVM-Java对象内存布局</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86JRE%E5%92%8CJDK"><span class="toc-text">认识JRE和JDK</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%85%B7%E4%BD%93%E6%98%AF%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8CJava%E5%AD%97%E8%8A%82%E7%A0%81%E7%9A%84"><span class="toc-text">Java虚拟机具体是如何运行Java字节码的</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%9A%84%E8%BF%90%E8%A1%8C%E6%95%88%E7%8E%87"><span class="toc-text">Java虚拟机的运行效率</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-text">总结</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

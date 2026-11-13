@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>篇章4-MySQL索引（一） · Summary</title>
+  <meta name="description" content="经常听到别人讲数据库就像书的目录一样，是为了提高查询效率，那么索引实现和书的目录区别又是什么？  一、索引的常见模型 哈希表 有序数组 搜索树（InnoDB采用的是N叉B+树InnoDB引擎使用的数据结构后边重点介绍）  二、各模型分析1. 哈希表模型图解 如图所示：跟java中的hashMap数据结构一致   图中，User2 和 User4 根据身份证号算出来的值都是 N，但没关系，后面还">
+<meta property="og:type" content="article">
+<meta property="og:title" content="篇章4-MySQL索引（一） · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2018/12/03/%E7%AF%87%E7%AB%A04-MySQL%E7%B4%A2%E5%BC%95%EF%BC%88%E4%B8%80%EF%BC%89/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="经常听到别人讲数据库就像书的目录一样，是为了提高查询效率，那么索引实现和书的目录区别又是什么？  一、索引的常见模型 哈希表 有序数组 搜索树（InnoDB采用的是N叉B+树InnoDB引擎使用的数据结构后边重点介绍）  二、各模型分析1. 哈希表模型图解 如图所示：跟java中的hashMap数据结构一致   图中，User2 和 User4 根据身份证号算出来的值都是 N，但没关系，后面还">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/22_59/1384695-20181210215947282-1781397207.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/22_59/1384695-20181210220024095-1874773450.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210221413226-1135037815.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210222604489-96063926.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210222643511-541601281.png">
+<meta property="article:published_time" content="2018-12-03T01:57:59.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.795Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Database">
+<meta property="article:tag" content="Mysql">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/22_59/1384695-20181210215947282-1781397207.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/mysql/">MySQL 原理</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2018/11/25/%E7%AF%87%E7%AB%A01-MySql%E6%9E%B6%E6%9E%84%E5%9F%BA%E7%A1%80%E5%8F%8A%E6%89%A7%E8%A1%8C%E5%BC%95%E6%93%8E/">篇章1-MySql架构基础及执行引擎</a></li><li><a href="/2018/11/26/%E7%AF%87%E7%AB%A02-MySql%E4%B8%A4%E4%B8%AA%E9%87%8D%E8%A6%81%E7%9A%84%E6%97%A5%E5%BF%97redolog%E5%92%8Cbinlog/">篇章2-MySql两个重要的日志redolog和binlog</a></li><li><a href="/2018/12/01/%E7%AF%87%E7%AB%A03-MySql%E7%9A%84%E4%BA%8B%E5%8A%A1%E6%8E%A2%E7%A9%B6/">篇章3-MySql的事务探究</a></li><li><a href="/2018/12/03/%E7%AF%87%E7%AB%A04-MySQL%E7%B4%A2%E5%BC%95%EF%BC%88%E4%B8%80%EF%BC%89/" class="current" aria-current="page">篇章4-MySQL索引（一）</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/mysql/">MySQL 原理</a>
+        
+      </nav>
+      <span class="book-position">第 4 / 4 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">篇章4-MySQL索引（一）</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2018-12-03T01:57:59.000Z">2018-12-03</time>
+      <span>· 约 7 分钟</span>
+      
+        · <a href="/categories/Mysql/">Mysql</a>
+      
+      
+        <a class="badge" href="/tags/Database/">Database</a>
+      
+        <a class="badge" href="/tags/Mysql/">Mysql</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><blockquote>
+<p> 经常听到别人讲数据库就像书的目录一样，是为了提高查询效率，那么索引实现和书的目录区别又是什么？</p>
+</blockquote>
+<h3 id="一、索引的常见模型"><a href="#一、索引的常见模型" class="headerlink" title="一、索引的常见模型"></a>一、索引的常见模型</h3><ol>
+<li>哈希表</li>
+<li>有序数组</li>
+<li>搜索树（<strong>InnoDB采用的是N叉B+树InnoDB引擎使用的数据结构后边重点介绍</strong>）<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/22_59/1384695-20181210215947282-1781397207.png" alt="img"></li>
+</ol>
+<h3 id="二、各模型分析"><a href="#二、各模型分析" class="headerlink" title="二、各模型分析"></a>二、各模型分析</h3><h5 id="1-哈希表模型图解"><a href="#1-哈希表模型图解" class="headerlink" title="1. 哈希表模型图解"></a>1. 哈希表模型图解</h5><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/22_59/1384695-20181210220024095-1874773450.png" alt="img"></p>
+<p>如图所示：跟java中的hashMap数据结构一致</p>
+<blockquote>
+<ol>
+<li>图中，User2 和 User4 根据身份证号算出来的值都是 N，但没关系，后面还跟了一个链表。假设，这时候你要查 ID_card_n2 对应的名字是什么，处理步骤就是：首先，将 ID_card_n2 通过哈希函数算出 N；然后，按顺序遍历，找到 User2。</li>
+<li>需要注意的是，图中四个 ID_card_n 的值并不是递增的，这样做的好处是增加新的 User 时速度会很快，只需要往后追加。但缺点是，因为不是有序的，所以哈希索引做区间查询的速度是很慢的。</li>
+<li>你可以设想下，如果你现在要找身份证号在 [ID_card_X, ID_card_Y] 这个区间的所有用户，就必须全部扫描一遍了。<br>由上可以推断：哈希表这种结构适用于只有等值查询的场景，比如 Memcached 及其他一些 NoSQL 引擎。</li>
+</ol>
+</blockquote>
+<h5 id="2-有序数组模型图解（等值查询和区间查询效率都很高）"><a href="#2-有序数组模型图解（等值查询和区间查询效率都很高）" class="headerlink" title="2. 有序数组模型图解（等值查询和区间查询效率都很高）"></a>2. 有序数组模型图解（等值查询和区间查询效率都很高）</h5><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210221413226-1135037815.png" alt="img"></p>
+<p><strong>优点：</strong></p>
+<blockquote>
+<ol>
+<li>这里我们假设身份证号没有重复，这个数组就是按照身份证号递增的顺序保存的。这时候如果你要查 ID_card_n2 对应的名字，用二分法就可以快速得到，这个时间复杂度是 O(log(N))。</li>
+<li>同时很显然，这个索引结构支持范围查询。你要查身份证号在 [ID_card_X, ID_card_Y] 区间的 User，可以先用二分法找到 ID_card_X（如果不存在 ID_card_X，就找到大于 ID_card_X 的第一个 User），然后向右遍历，直到查到第一个大于 ID_card_Y 的身份证号，退出循环。如果仅仅看查询效率，有序数组就是最好的数据结构了。<br><strong>缺点：</strong><br>但是，在需要更新数据的时候就麻烦了，你往中间插入一个记录就必须得挪动后面所有的记录，成本太高。有序数组索引只适用于静态存储引擎。</li>
+</ol>
+</blockquote>
+<h5 id="3-二叉搜索树模型图解（等值查询和区间查询效率都很高）"><a href="#3-二叉搜索树模型图解（等值查询和区间查询效率都很高）" class="headerlink" title="3. 二叉搜索树模型图解（等值查询和区间查询效率都很高）"></a>3. 二叉搜索树模型图解（等值查询和区间查询效率都很高）</h5><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210222604489-96063926.png" alt="img"></p>
+<p><strong>优点：</strong></p>
+<blockquote>
+<ol>
+<li>二叉搜索树的特点是：每个节点的左儿子小于父节点，父节点又小于右儿子。这样如果你要查 ID_card_n2 的话，按照图中的搜索顺序就是按照 UserA -&gt; UserC -&gt; UserF -&gt; User2 这个路径得到。这个时间复杂度是 O(log(N))。</li>
+<li>当然为了维持 O(log(N)) 的查询复杂度，你就需要保持这棵树是平衡二叉树。为了做这个保证，更新的时间复杂度也是 O(log(N))。树可以有二叉，也可以有多叉。多叉树就是每个节点有多个儿子，儿子之间的大小保证从左到右递增。二叉树是搜索效率最高的</li>
+</ol>
+</blockquote>
+<p><strong>缺点：</strong><br>但是实际上大多数的数据库存储却并不使用二叉树。其原因是，索引不止存在内存中，还要写到磁盘上。你可以想象一下一棵 100 万节点的平衡二叉树，树高 20。一次查询可能需要访问 20 个数据块。在机械硬盘时代，从磁盘随机读一个数据块需要 10 ms 左右的寻址时间。也就是说，对于一个 100 万行的表，如果使用二叉树来存储，单独访问一个行可能需要 20 个 10 ms 的时间，这个查询可真够慢的。</p>
+<h5 id="4-N叉B-树（N差不多是1200）"><a href="#4-N叉B-树（N差不多是1200）" class="headerlink" title="4. N叉B+树（N差不多是1200）"></a>4. N叉B+树（N差不多是1200）</h5><blockquote>
+<ol>
+<li>每一个索引在InnoDB中都是一棵B+树</li>
+<li>这个 N 差不多是 1200。这棵树高是 4 的时候，就可以存 1200 的 3 次方个值，这已经 17 亿了。考虑到树根的数据块总是在内存中的，一个 10 亿行的表上一个整数字段的索引，查找一个值最多只需要访问 3 次磁盘。其实，树的第二层也有很大概率在内存中，那么访问磁盘的平均次数就更少了。</li>
+</ol>
+</blockquote>
+<h3 id="三、InnoDB索引模型案例分析"><a href="#三、InnoDB索引模型案例分析" class="headerlink" title="三、InnoDB索引模型案例分析"></a>三、InnoDB索引模型案例分析</h3><p>假设，我们有一个主键列为 ID 的表，表中有字段 k，并且在 k 上有索引。</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mysql<span class="operator">&gt;</span> <span class="keyword">create table</span> T(</span><br><span class="line">id <span class="type">int</span> <span class="keyword">primary key</span>, </span><br><span class="line">k <span class="type">int</span> <span class="keyword">not null</span>, </span><br><span class="line">name <span class="type">varchar</span>(<span class="number">16</span>),</span><br><span class="line">index (k))engine<span class="operator">=</span>InnoDB;</span><br></pre></td></tr></table></figure>
+
+<p>表中 R1~R5 的 (ID,k) 值分别为 (100,1)、(200,2)、(300,3)、(500,5) 和 (600,6)，两棵树的示例示意图如下。<br><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220413/23_00/1384695-20181210222643511-541601281.png" alt="img"></p>
+<ol>
+<li>主键索引的叶子节点存的是整行数据。在 InnoDB 里，主键索引也被称为<strong>聚簇索引（clustered index）</strong>。</li>
+<li>非主键索引的叶子节点内容是主键的值。在 InnoDB 里，非主键索引也被称为<strong>二级索引（secondary index）</strong>。<br>基于主键索引和普通索引的查询有什么区别？</li>
+</ol>
+<ul>
+<li>如果语句是 select * from T where ID&#x3D;500，即主键查询方式，则只需要搜索 ID 这棵 B+ 树；</li>
+<li>如果语句是 select * from T where k&#x3D;5，即普通索引查询方式，则需要先搜索 k 索引树，得到 ID 的值为 500，再到 ID 索引树搜索一次。这个过程称为<strong>回表</strong>。<br>也就是说，<strong>基于非主键索引的查询需要多扫描一棵索引树</strong>（回表）<strong>。因此，我们在应用中应该尽量使用主键查询</strong>。</li>
+</ul>
+<h3 id="四、InnoDB索引维护"><a href="#四、InnoDB索引维护" class="headerlink" title="四、InnoDB索引维护"></a>四、InnoDB索引维护</h3><ol>
+<li>B+ 树为了维护索引有序性，在插入新值的时候需要做必要的维护。以上面这个图为例，如果插入新的行 ID 值为 700，则只需要在 R5 的记录后面插入一个新记录。如果新插入的 ID 值为 400，就相对麻烦了，需要逻辑上挪动后面的数据，空出位置。</li>
+<li>而更糟的情况是，如果 R5 所在的数据页已经满了，根据 B+ 树的算法，这时候需要申请一个新的数据页，然后挪动部分数据过去。这个过程称为页分裂。在这种情况下，性能自然会受影响。</li>
+<li>除了性能外，页分裂操作还影响数据页的利用率。原本放在一个页的数据，现在分到两个页中，整体空间利用率降低大约 50%。</li>
+<li>当然有分裂就有合并。当相邻两个页由于删除了数据，利用率很低之后，会将数据页做合并。合并的过程，可以认为是分裂过程的逆过程。</li>
+<li>你可能在一些建表规范里面见到过类似的描述，要求建表语句里一定要有自增主键。当然事无绝对，我们来分析一下哪些场景下应该使用自增主键，而哪些场景下不应该？</li>
+</ol>
+<blockquote>
+<ol>
+<li>自增主键是指自增列上定义的主键，在建表语句中一般是这么定义的： NOT NULL PRIMARY KEY AUTO_INCREMENT。</li>
+<li>插入新记录的时候可以不指定 ID 的值，系统会获取当前 ID 最大值加 1 作为下一条记录的 ID 值。</li>
+<li>也就是说，自增主键的插入数据模式，正符合了我们前面提到的递增插入的场景。每次插入一条新记录，都是追加操作，都不涉及到挪动其他记录，也不会触发叶子节点的分裂。</li>
+<li>而有业务逻辑的字段做主键，则往往不容易保证有序插入，这样写数据成本相对较高。</li>
+<li>除了考虑性能外，我们还可以从存储空间的角度来看。假设你的表中确实有一个唯一字段，比如字符串类型的身份证号，那应该用身份证号做主键，还是用自增字段做主键呢？</li>
+<li>由于每个非主键索引的叶子节点上都是主键的值。如果用身份证号做主键，那么每个二级索引的叶子节点占用约 20 个字节，而如果用整型做主键，则只要 4 个字节，如果是长整型（bigint）则是 8 个字节。</li>
+<li>显然，主键长度越小，普通索引的叶子节点就越小，普通索引占用的空间也就越小。</li>
+<li>所以，从性能和存储空间方面考量，自增主键往往是更合理的选择。</li>
+</ol>
+</blockquote>
+<p>6.有没有什么场景适合用业务字段直接做主键的呢？还是有的。比如，有些业务的场景需求是这样的：<br>只有一个索引；该索引必须是唯一索引。<br>由于没有其他索引，所以也就不用考虑其他索引的叶子节点大小的问题。这时候我们就要优先考虑上一段提到的“尽量使用主键查询”原则，直接将这个索引设置为主键，可以避免每次查询需要搜索两棵树。</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2018/12/01/%E7%AF%87%E7%AB%A03-MySql%E7%9A%84%E4%BA%8B%E5%8A%A1%E6%8E%A2%E7%A9%B6/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">篇章3-MySql的事务探究</span>
+        </a>
+      
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E7%B4%A2%E5%BC%95%E7%9A%84%E5%B8%B8%E8%A7%81%E6%A8%A1%E5%9E%8B"><span class="toc-text">一、索引的常见模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%BA%8C%E3%80%81%E5%90%84%E6%A8%A1%E5%9E%8B%E5%88%86%E6%9E%90"><span class="toc-text">二、各模型分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E4%B8%89%E3%80%81InnoDB%E7%B4%A2%E5%BC%95%E6%A8%A1%E5%9E%8B%E6%A1%88%E4%BE%8B%E5%88%86%E6%9E%90"><span class="toc-text">三、InnoDB索引模型案例分析</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9B%9B%E3%80%81InnoDB%E7%B4%A2%E5%BC%95%E7%BB%B4%E6%8A%A4"><span class="toc-text">四、InnoDB索引维护</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

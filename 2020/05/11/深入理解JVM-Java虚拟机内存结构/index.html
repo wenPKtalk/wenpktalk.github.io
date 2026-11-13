@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深入理解JVM-Java虚拟机内存结构 · Summary</title>
+  <meta name="description" content="Java执行流转图  Java8内存布局  JVM内存与本地内存的区别 JVM内存 受JVM内存大小限制，当大小超过参数设置的大小就会报OOM   本地内存 本地内存不受虚拟机内存参数限制，只受物理容量限制 虽然不受参数限制，但是如果内存占用超过了物理内存大小，也会报OOM    Java运行时数据区域  程序计数器(PC Registers) JVM Program counter 当前线程所执">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解JVM-Java虚拟机内存结构 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="Java执行流转图  Java8内存布局  JVM内存与本地内存的区别 JVM内存 受JVM内存大小限制，当大小超过参数设置的大小就会报OOM   本地内存 本地内存不受虚拟机内存参数限制，只受物理容量限制 虽然不受参数限制，但是如果内存占用超过了物理内存大小，也会报OOM    Java运行时数据区域  程序计数器(PC Registers) JVM Program counter 当前线程所执">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/07_38/0*aO7jvEaMLhADKTqa.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/07_40/640.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/09_02/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220520/08_54/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70.png">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/09_29/640-20220511092947711.png">
+<meta property="article:published_time" content="2020-05-11T01:09:01.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.795Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/07_38/0*aO7jvEaMLhADKTqa.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/jvm/">深入理解 JVM</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2020/05/07/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E7%B1%BB%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8A%A0%E8%BD%BD/">深入理解JVM-Java类如何被加载</a></li><li><a href="/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/" class="current" aria-current="page">深入理解JVM-Java虚拟机内存结构</a></li><li><a href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/">深入理解JVM-Java代码如何运行</a></li><li><a href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/">深入理解JVM-Java对象内存布局</a></li><li><a href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/">深入理解JVM-Jvm垃圾回收二三事</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/jvm/">深入理解 JVM</a>
+        
+      </nav>
+      <span class="book-position">第 2 / 5 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">深入理解JVM-Java虚拟机内存结构</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2020-05-11T01:09:01.000Z">2020-05-11</time>
+      <span>· 约 4 分钟</span>
+      
+        · <a href="/categories/JVM/">JVM</a>
+      
+      
+        <a class="badge" href="/tags/JVM/">JVM</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><h3 id="Java执行流转图"><a href="#Java执行流转图" class="headerlink" title="Java执行流转图"></a>Java执行流转图</h3><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/07_38/0*aO7jvEaMLhADKTqa.png" alt="img"  />
+
+<h3 id="Java8内存布局"><a href="#Java8内存布局" class="headerlink" title="Java8内存布局"></a>Java8内存布局</h3><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/07_40/640.png" alt="Image" style="zoom: 67%;" />
+
+<h3 id="JVM内存与本地内存的区别"><a href="#JVM内存与本地内存的区别" class="headerlink" title="JVM内存与本地内存的区别"></a>JVM内存与本地内存的区别</h3><ul>
+<li><h4 id="JVM内存"><a href="#JVM内存" class="headerlink" title="JVM内存"></a>JVM内存</h4><ul>
+<li>受JVM内存大小限制，当大小超过参数设置的大小就会报OOM</li>
+</ul>
+</li>
+<li><h4 id="本地内存"><a href="#本地内存" class="headerlink" title="本地内存"></a>本地内存</h4><ul>
+<li>本地内存不受虚拟机内存参数限制，只受物理容量限制</li>
+<li>虽然不受参数限制，但是如果内存占用超过了物理内存大小，也会报OOM</li>
+</ul>
+</li>
+</ul>
+<h3 id="Java运行时数据区域"><a href="#Java运行时数据区域" class="headerlink" title="Java运行时数据区域"></a>Java运行时数据区域</h3><p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/09_02/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70.png" alt="Insert picture description here"></p>
+<ul>
+<li><h4 id="程序计数器-PC-Registers"><a href="#程序计数器-PC-Registers" class="headerlink" title="程序计数器(PC Registers)"></a>程序计数器(PC Registers)</h4><blockquote>
+<p>JVM Program counter 当前线程所执行的字节码的行号指示器，通过改变计数器的值，来选取下一行需要执行的指令。每个线程都有自己的程序计数器。所以程序计数器的结构如下:</p>
+</blockquote>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220520/08_54/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzM3OTI0OTA1,size_16,color_FFFFFF,t_70.png" alt="Insert picture description here" style="zoom:50%;" />
+
+<ul>
+<li>程序计数器只占用很小的内存空间，所以可以被忽略。它也是存储最快的空间。</li>
+<li>JVM规定每个线程都有自己的程序计数器，它的生命周期就是随着线程的执行周期。</li>
+<li>线程中任何时候都只有一个叫做当前方法。程序计数器里存储了当前线程正在执行的方法的指令地址。如果是本地方法正在执行则是undefined value。</li>
+<li>程序的分支，循环，跳转，异常处理都需要程序计数器控制。</li>
+<li>当字节码解释器工作时，它通过改变这个计数器的值来选择下一条要执行的字节码指令。</li>
+<li>程序计数器是对物理寄存器的抽象。</li>
+<li>它是 Java 虚拟机规范中唯一没有指定任何 outOtMemoryError 条件的区域。 （没有 GC，OOM）</li>
+<li><a target="_blank" rel="noopener" href="https://www.codetd.com/en/article/11818366">参考原文</a></li>
+</ul>
+</li>
+<li><h4 id="虚拟机栈-JVM-Stacks"><a href="#虚拟机栈-JVM-Stacks" class="headerlink" title="虚拟机栈(JVM Stacks)"></a>虚拟机栈(JVM Stacks)</h4><blockquote>
+<p>虚拟机栈是线程私有的，随线程毁灭，结构示意图：</p>
+</blockquote>
+<img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures@master/blog/20220511/09_29/640-20220511092947711.png" alt="Image" style="zoom:50%;" /></li>
+</ul>
+<blockquote>
+<p> 每个方法被执行的时候，都会在虚拟机栈中同步创建一个栈帧（stack frame）</p>
+</blockquote>
+<p> 每个栈帧的包含: 局部变量表中存储着方法里的java基本数据类型, 局部变量表, 操作数栈, 动态连接, 方法返回地址</p>
+<ul>
+<li>线程创建入栈，线程结束出栈。</li>
+</ul>
+<p>虚拟机栈可能会抛出两种异常：</p>
+<pre><code>- 如果线程请求的栈深度大于虚拟机所规定的栈深度，则会抛出StackOverFlowError即栈溢出
+- 如果虚拟机的栈容量可以动态扩展，那么当虚拟机栈申请不到内存时会抛出OutOfMemoryError即OOM内存溢出
+</code></pre>
+<ul>
+<li><h4 id="本地方法栈"><a href="#本地方法栈" class="headerlink" title="本地方法栈"></a>本地方法栈</h4><ul>
+<li>线程私有执行native方法</li>
+</ul>
+</li>
+<li><h4 id="Java堆"><a href="#Java堆" class="headerlink" title="Java堆"></a>Java堆</h4><ul>
+<li>对象实例<ul>
+<li>类初始化生成的对象</li>
+<li>基本类型的数组也是对象实例</li>
+</ul>
+</li>
+<li>字符串常量池<ul>
+<li>字符串常量池原本存放于方法区，jdk7开始放置于堆中</li>
+<li>字符串常量池存储的是string对象的直接引用，而不是直接存放的对象，是一张string table</li>
+</ul>
+</li>
+<li>静态变量<ul>
+<li>静态变量是有static修饰的变量，jdk7时从方法区迁移至堆中</li>
+</ul>
+</li>
+<li>线程分配缓冲区（Thread Local Allocation Buffer）<ul>
+<li>线程私有，但是不影响java堆的共性</li>
+<li>增加线程分配缓冲区是为了提升对象分配时的效率</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="方法区（Method-Area）"><a href="#方法区（Method-Area）" class="headerlink" title="方法区（Method Area）"></a>方法区（Method Area）</h3><p>方法区是所有线程共享的内存，在java8以前是放在JVM内存中的，由永久代实现，受JVM内存大小参数的限制，在java8中移除了永久代的内容，方法区由元空间(Meta Space)实现，并直接放到了本地内存中，不受JVM参数的限制（当然，如果物理内存被占满了，方法区也会报OOM），并且将原来放在方法区的字符串常量池和静态变量都转移到了Java堆中，方法区与其他区域不同的地方在于，方法区在编译期间和类加载完成后的内容有少许不同，不过总的来说分为这两部分：</p>
+<ul>
+<li><h4 id="类元信息"><a href="#类元信息" class="headerlink" title="类元信息"></a>类元信息</h4><ul>
+<li>类元信息在类编译期间放入方法区，里面放置了类的基本信息，包括类的版本、字段、方法、接口以及常量池表（Constant Pool Table）</li>
+<li>常量池表（Constant Pool Table）存储了类在编译期间生成的字面量、符号引用(什么是字面量？什么是符号引用？)，这些信息在类加载完后会被解析到运行时常量池中</li>
+</ul>
+</li>
+<li><h4 id="运行时常量池（Runtime-Constant-Pool）"><a href="#运行时常量池（Runtime-Constant-Pool）" class="headerlink" title="运行时常量池（Runtime Constant Pool）"></a>运行时常量池（Runtime Constant Pool）</h4><ul>
+<li>运行时常量池主要存放在类加载后被解析的字面量与符号引用，但不止这些</li>
+<li>运行时常量池具备动态性，可以添加数据，比较多的使用就是String类的intern()方法</li>
+</ul>
+</li>
+</ul>
+<h3 id="直接内存"><a href="#直接内存" class="headerlink" title="直接内存"></a>直接内存</h3><p>在jdk1.4中加入了NIO（New Input&#x2F;Putput）类，引入了一种基于通道（channel）与缓冲区（buffer）的新IO方式，它可以使用native函数直接分配堆外内存，然后通过存储在java堆中的DirectByteBuffer对象作为这块内存的引用进行操作，这样可以在一些场景下大大提高IO性能，避免了在java堆和native堆来回复制数据。</p>
+<h3 id="FAQ"><a href="#FAQ" class="headerlink" title="FAQ"></a>FAQ</h3><h4 id="类常量池、运行时常量池、字符串常量池有什么关系？有什么区别？"><a href="#类常量池、运行时常量池、字符串常量池有什么关系？有什么区别？" class="headerlink" title="类常量池、运行时常量池、字符串常量池有什么关系？有什么区别？"></a>类常量池、运行时常量池、字符串常量池有什么关系？有什么区别？</h4><p>类常量池与运行时常量池都存储在方法区，而字符串常量池在jdk7时就已经从方法区迁移到了java堆中。</p>
+<p>在类编译过程中，会把类元信息放到方法区，类元信息的其中一部分便是类常量池，主要存放字面量和符号引用，而字面量的一部分便是文本字符，在类加载时将字面量和符号引用解析为直接引用存储在运行时常量池；对于文本字符来说，它们会在解析时查找字符串常量池，查出这个文本字符对应的字符串对象的直接引用，将直接引用存储在运行时常量池；字符串常量池存储的是字符串对象的引用，而不是字符串本身。</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2020/05/07/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E7%B1%BB%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8A%A0%E8%BD%BD/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">深入理解JVM-Java类如何被加载</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">深入理解JVM-Java代码如何运行</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#Java%E6%89%A7%E8%A1%8C%E6%B5%81%E8%BD%AC%E5%9B%BE"><span class="toc-text">Java执行流转图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java8%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80"><span class="toc-text">Java8内存布局</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#JVM%E5%86%85%E5%AD%98%E4%B8%8E%E6%9C%AC%E5%9C%B0%E5%86%85%E5%AD%98%E7%9A%84%E5%8C%BA%E5%88%AB"><span class="toc-text">JVM内存与本地内存的区别</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Java%E8%BF%90%E8%A1%8C%E6%97%B6%E6%95%B0%E6%8D%AE%E5%8C%BA%E5%9F%9F"><span class="toc-text">Java运行时数据区域</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%96%B9%E6%B3%95%E5%8C%BA%EF%BC%88Method-Area%EF%BC%89"><span class="toc-text">方法区（Method Area）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%9B%B4%E6%8E%A5%E5%86%85%E5%AD%98"><span class="toc-text">直接内存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#FAQ"><span class="toc-text">FAQ</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

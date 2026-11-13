@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The meaning of parameters in java ThreadPoolExecutor · Summary</title>
+  <meta name="description" content="corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is setmaximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime wh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The meaning of parameters in java ThreadPoolExecutor · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2024/12/17/The-meaning-of-parameters-in-java-ThreadPoolExecutor/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is setmaximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime wh">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png">
+<meta property="article:published_time" content="2024-12-17T06:45:54.000Z">
+<meta property="article:modified_time" content="2026-11-13T08:46:06.794Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="Concurrency">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">Summary</a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    
+      <button class="icon-button" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    
+    <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+    </button>
+  </div>
+</header>
+
+  <main id="main">
+
+  <div class="container article-layout">
+  <article class="article">
+    <header class="article-header">
+  <h1 class="article-title">The meaning of parameters in java ThreadPoolExecutor</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2024-12-17T06:45:54.000Z">2024-12-17</time>
+      <span>· 约 3 分钟</span>
+      
+        · <a href="/categories/Java/">Java</a>
+      
+      
+        <a class="badge" href="/tags/Java/">Java</a>
+      
+        <a class="badge" href="/tags/Concurrency/">Concurrency</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>corePoolSize: the number of threads to keep in the pool, even if they are idle, unless allowCoreThreadTimeOut is set<br>maximumPoolSize: the maximum number of threads to allow in the pool keepAliveTime when the number of threads is greater than the core, this is the maximum time that excess idle threads will wait for new tasks before terminating.<br>unit : the time unit for the keepAliveTime argument<br>workQueue: the queue to use for holding tasks before they are executed. This queue will hold only the Runnable tasks submitted by the execute method.<br>handler: the handler to use when execution is blocked because the thread bounds and queue capacities are reache</p>
+<ol>
+<li>corePoolSize（核心线程数）</li>
+</ol>
+<p>线程池中会始终保持的最小线程数<br>即使这些线程处于空闲状态，也不会被销毁（除非设置了allowCoreThreadTimeOut为true）<br>这些线程响应速度最快，因为不需要创建新线程</p>
+<ol start="2">
+<li>maximumPoolSize（最大线程数）</li>
+</ol>
+<p>线程池允许创建的最大线程数<br>当工作队列满了，且当前线程数小于maximumPoolSize时，会创建新线程<br>超过这个数量的任务会触发拒绝策略</p>
+<ol start="3">
+<li>keepAliveTime（空闲线程存活时间）</li>
+</ol>
+<p>非核心线程空闲超过这个时间后会被销毁<br>如果allowCoreThreadTimeOut为true，核心线程也会受这个参数影响<br>用于减少资源浪费</p>
+<ol start="4">
+<li>unit（时间单位）</li>
+</ol>
+<p>keepAliveTime的时间单位<br>可以是SECONDS、MINUTES等TimeUnit枚举值</p>
+<ol start="5">
+<li>workQueue（工作队列）</li>
+</ol>
+<p>用于存放待执行的任务<br>常用队列类型：</p>
+<p>ArrayBlockingQueue：有界队列<br>LinkedBlockingQueue：无界队列<br>SynchronousQueue：无缓冲的等待队列<br>PriorityBlockingQueue：优先级队列</p>
+<ol start="6">
+<li>handler（拒绝策略）</li>
+</ol>
+<p>当队列满且线程数达到maximumPoolSize时的处理策略<br>默认策略类型：</p>
+<p>AbortPolicy：抛出异常（默认）<br>CallerRunsPolicy：在调用者线程执行<br>DiscardPolicy：直接丢弃<br>DiscardOldestPolicy：丢弃最早的任务</p>
+<p><img src="https://cdn.jsdelivr.net/gh/wenPKtalk/pictures/wenPKtalk/pictures/2025-04-07/20250407150030-2025-04-07.png" alt="Process UML"></p>
+<p>planUML描述如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br></pre></td><td class="code"><pre><span class="line">@startuml</span><br><span class="line">title ThreadPoolExecutor执行流程</span><br><span class="line"></span><br><span class="line">skinparam backgroundColor #FFFFFF</span><br><span class="line">skinparam handwritten false</span><br><span class="line"></span><br><span class="line">start</span><br><span class="line"></span><br><span class="line">:提交新任务;</span><br><span class="line"></span><br><span class="line">if (当前线程数 &lt; 核心线程数?) then (是)</span><br><span class="line">  :创建新的核心线程;</span><br><span class="line">  :执行任务;</span><br><span class="line">else (否)</span><br><span class="line">  if (工作队列未满?) then (是)</span><br><span class="line">    :将任务放入工作队列;</span><br><span class="line">    note right</span><br><span class="line">      队列类型:</span><br><span class="line">      - ArrayBlockingQueue (有界)</span><br><span class="line">      - LinkedBlockingQueue (无界)</span><br><span class="line">      - SynchronousQueue (同步)</span><br><span class="line">      - PriorityBlockingQueue (优先级)</span><br><span class="line">    end note</span><br><span class="line">  else (否)</span><br><span class="line">    if (当前线程数 &lt; 最大线程数?) then (是)</span><br><span class="line">      :创建新的临时线程;</span><br><span class="line">      note right</span><br><span class="line">        临时线程在空闲超过</span><br><span class="line">        keepAliveTime后销毁</span><br><span class="line">      end note</span><br><span class="line">      :执行任务;</span><br><span class="line">    else (否)</span><br><span class="line">      :执行拒绝策略;</span><br><span class="line">      note right</span><br><span class="line">        拒绝策略:</span><br><span class="line">        - AbortPolicy (默认)</span><br><span class="line">        - CallerRunsPolicy</span><br><span class="line">        - DiscardPolicy</span><br><span class="line">        - DiscardOldestPolicy</span><br><span class="line">      end note</span><br><span class="line">    endif</span><br><span class="line">  endif</span><br><span class="line">endif</span><br><span class="line"></span><br><span class="line">fork</span><br><span class="line">  :核心线程池;</span><br><span class="line">  note right: 保持运行</span><br><span class="line">fork again</span><br><span class="line">  :临时线程池;</span><br><span class="line">  note right: 空闲超时销毁</span><br><span class="line">fork again</span><br><span class="line">  :等待队列;</span><br><span class="line">  note right: 任务缓存</span><br><span class="line">end fork</span><br><span class="line"></span><br><span class="line">stop</span><br><span class="line"></span><br><span class="line">legend right</span><br><span class="line">  参数说明:</span><br><span class="line">  ====</span><br><span class="line">  corePoolSize: 核心线程数</span><br><span class="line">  maximumPoolSize: 最大线程数</span><br><span class="line">  keepAliveTime: 空闲线程存活时间</span><br><span class="line">  workQueue: 工作队列</span><br><span class="line">  handler: 拒绝策略</span><br><span class="line">endlegend</span><br><span class="line"></span><br><span class="line">@enduml</span><br></pre></td></tr></table></figure></div>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>
