@@ -31,22 +31,22 @@
   "devDependencies": {
     "eslint": "7.32.0",
     "eslint-config-google": "0.14.0",
-    "grunt": "1.4.1",
-    "grunt-cli": "1.4.3",
-    "grunt-contrib-clean": "2.0.0",
-    "grunt-contrib-concat": "1.0.1",
+    "grunt": "1.6.3",
+    "grunt-cli": "1.5.0",
+    "grunt-contrib-clean": "2.0.1",
+    "grunt-contrib-concat": "2.1.0",
     "grunt-contrib-copy": "1.0.0",
-    "grunt-contrib-cssmin": "4.0.0",
-    "grunt-contrib-uglify": "5.0.1",
+    "grunt-contrib-cssmin": "5.0.0",
+    "grunt-contrib-uglify": "5.2.2",
     "grunt-contrib-watch": "1.1.0",
     "grunt-sails-linker": "1.0.4",
-    "grunt-sass": "3.1.0",
+    "grunt-sass": "4.1.0",
     "grunt-sync": "0.8.2",
     "grunt-text-replace": "0.4.0",
     "include-all": "4.0.3",
     "load-grunt-tasks": "5.1.0",
-    "node-sass": "6.0.1",
-    "rand-token": "1.0.1"
+    "rand-token": "1.0.1",
+    "sass": "1.108.2"
   },
   "dependencies": {
     "@fancyapps/fancybox": "3.5.7",
@@ -55,9 +55,9 @@
     "gitalk": "1.7.2",
     "gitment": "0.0.3",
     "hexo-util": "2.5.0",
-    "jquery": "3.6.0",
+    "jquery": "3.7.1",
     "jsdom": "16.7.0",
-    "moment": "2.29.1"
+    "moment": "2.31.0"
   },
   "engines": {
     "node": ">=10"

@@ -11,14 +11,14 @@ jobs:
 
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
 
       - name: Prepare Node env
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: '12'
+          node-version: '24'
 
       - name: Setup Hexo
         env:
@@ -32,15 +32,11 @@ jobs:
           git config --global user.email "wensir_top@163.com"
           git config --global user.name "topsion"
           cd themes/tranquilpeak
-          rm package-lock.json
-          npm install && npm run prod
+          npm ci && npm run prod
           cd ../..
-          rm package-lock.json
-          npm install
-          npm install hexo-cli -g
-          npm install
+          npm ci
       - name: Deploy
         run: |
-          hexo clean
-          hexo g
-          hexo deploy
+          npx hexo clean
+          npx hexo g
+          npx hexo deploy
