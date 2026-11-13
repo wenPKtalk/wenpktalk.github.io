@@ -5,7 +5,8 @@
 //   -> <div class="callout callout-note"><p class="callout-title">Title</p><p>body…</p>…</div>
 // Nested quotes inside a callout (e.g. an English original) are kept as quotes.
 
-const OPENING = /<blockquote>\s*<p>\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\][ \t]*([^<]*?)\s*(<br\s*\/?>\s*|<\/p>)/i;
+// The title runs to the first <br> or </p> and may contain inline tags such as <code>.
+const OPENING = /<blockquote>\s*<p>\[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION)\][ \t]*([^\n]*?)\s*(<br\s*\/?>\s*|<\/p>)/i;
 const QUOTE_TAG = /<blockquote\b[^>]*>|<\/blockquote>/gi;
 
 function renderCallouts(html, labels = {}) {

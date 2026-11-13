@@ -35,6 +35,12 @@ test('a title-only first paragraph does not leave an empty paragraph', () => {
   assert.equal(out, '<div class="callout callout-warning"><p class="callout-title">小心</p>\n<p>body</p>\n</div>');
 });
 
+test('a title may contain inline markup such as code', () => {
+  const out = renderCallouts('<blockquote>\n<p>[!NOTE] 译注 · <code>%lu</code> 与 <code>%zu</code><br>body</p>\n</blockquote>', LABELS);
+
+  assert.equal(out, '<div class="callout callout-note"><p class="callout-title">译注 · <code>%lu</code> 与 <code>%zu</code></p><p>body</p>\n</div>');
+});
+
 test('plain quotes and unknown markers stay untouched', () => {
   const plain = '<blockquote>\n<p>quoted</p>\n</blockquote>';
   const unknown = '<blockquote>\n<p>[!FOO] x</p>\n</blockquote>';
