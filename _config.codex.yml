@@ -1,0 +1,16 @@
+# Site-specific settings for the codex theme (merged over themes/codex/_config.yml)
+author:
+  avatar: /images/avatar.jpg
+  location: Xi'an, China
+  links:
+    GitHub: https://github.com/wenPKtalk
+    Stack Overflow: https://stackoverflow.com/users/15967860/topsion
+
+giscus:
+  enable: true
+  repo: wenPKtalk/wenpktalk.github.io
+  repo_id: R_kgDOGqAqSQ
+  # Announcement-type category: only maintainers and giscus can open discussions
+  category: Announcements
+  category_id: DIC_kwDOGqAqSc4DLBw3
+  lang: zh-CN

@@ -29,6 +29,11 @@
   <%- partial('_partial/header') %>
   <main id="main"><%- body %></main>
   <%- partial('_partial/footer') %>
+  <script id="codex-config" type="application/json"><%- JSON.stringify(theme.cdn || {}) %></script>
   <%- js('js/codex.js') %>
+  <% if (theme.search && theme.search.enable !== false) { %>
+    <%- partial('_partial/search') %>
+    <%- js('js/search.js') %>
+  <% } %>
 </body>
 </html>

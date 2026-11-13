@@ -107,9 +107,57 @@
     if (frame) frame.contentWindow.postMessage({ giscus: { setConfig: { theme: theme } } }, 'https://giscus.app');
   }
 
+  function readConfig() {
+    var node = document.getElementById('codex-config');
+    try { return node ? JSON.parse(node.textContent) : {}; } catch (e) { return {}; }
+  }
+
+  function loadStylesheet(href) {
+    var link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = function () { reject(new Error('failed to load ' + src)); };
+      document.head.appendChild(script);
+    });
+  }
+
+  // KaTeX only on pages with math (front matter `math: true`, see lib/markdown.js).
+  function renderMath(cdn) {
+    var nodes = document.querySelectorAll('.math');
+    if (!nodes.length || !cdn.katex_js) return;
+    if (cdn.katex_css) loadStylesheet(cdn.katex_css);
+    loadScript(cdn.katex_js).then(function () {
+      nodes.forEach(function (node) {
+        window.katex.render(node.textContent, node, { displayMode: node.classList.contains('math-display'), throwOnError: false });
+      });
+    }).catch(function (error) { console.warn('[codex]', error.message); });
+  }
+
+  // Mermaid only on pages with ```mermaid blocks; drawn in the theme active at load time.
+  function renderMermaid(cdn) {
+    var nodes = document.querySelectorAll('pre.mermaid');
+    if (!nodes.length || !cdn.mermaid) return;
+    import(cdn.mermaid).then(function (module) {
+      var mermaid = module.default;
+      mermaid.initialize({ startOnLoad: false, theme: currentTheme() === 'dark' ? 'dark' : 'default' });
+      return mermaid.run({ nodes: nodes });
+    }).catch(function (error) { console.warn('[codex] mermaid:', error.message); });
+  }
+
+  var cdn = readConfig();
   initThemeToggle();
   initCodeBlocks();
   initTocSpy();
   initBookNav();
   loadGiscus();
+  renderMath(cdn);
+  renderMermaid(cdn);
 })();

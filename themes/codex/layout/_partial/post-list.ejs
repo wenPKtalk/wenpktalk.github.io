@@ -12,7 +12,7 @@
     <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MM-DD') %></time>
     <a class="post-link" href="<%- url_for(post.path) %>"><%= post.title %></a>
     <span class="post-tags">
-      <% if (nav) { %><a class="badge badge-book" href="<%- url_for('/books/' + nav.book.id + '/') %>"><%= nav.book.title %></a><% } %>
+      <% if (nav) { %><a class="badge badge-book" href="<%- url_for('/books/' + nav.book.id + '/') %>"><%= nav.book.title %> · <%= nav.index + 1 %>/<%= nav.book.articles.length %></a><% } %>
       <% post.tags.each(function (tag) { %><a class="badge" href="<%- url_for(tag.path) %>"><%= tag.name %></a><% }) %>
     </span>
   </li>

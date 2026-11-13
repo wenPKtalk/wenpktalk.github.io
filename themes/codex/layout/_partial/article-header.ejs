@@ -1,8 +1,10 @@
 <header class="article-header">
   <h1 class="article-title"><%= page.title %></h1>
+  <% const showReadingTime = theme.reading_time !== false; %>
   <% if (is_post()) { %>
     <p class="article-meta">
       <time datetime="<%= date_xml(page.date) %>"><%= date(page.date) %></time>
+      <% if (showReadingTime) { %><span>· <%= __('post.reading_time', reading_minutes(page.content)) %></span><% } %>
       <% page.categories.each(function (category) { %>
         · <a href="<%- url_for(category.path) %>"><%= category.name %></a>
       <% }) %>
@@ -10,5 +12,7 @@
         <a class="badge" href="<%- url_for(tag.path) %>"><%= tag.name %></a>
       <% }) %>
     </p>
+  <% } else if (showReadingTime && page.content) { %>
+    <p class="article-meta"><span><%= __('post.reading_time', reading_minutes(page.content)) %></span></p>
   <% } %>
 </header>

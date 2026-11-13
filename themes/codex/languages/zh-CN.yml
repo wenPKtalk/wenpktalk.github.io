@@ -18,6 +18,7 @@ books:
   open_nav: 目录
   empty: 还没有专栏。
 post:
+  reading_time: 约 %d 分钟
   prev: 上一篇
   next: 下一篇
   toc: 本页目录
@@ -34,3 +35,9 @@ tag:
 footer:
   powered: 由 %s 驱动
   rss: RSS
+
+search:
+  open: 搜索（/）
+  placeholder: 搜索文章、专栏……
+  empty: 没有找到相关内容
+  error: 搜索索引加载失败

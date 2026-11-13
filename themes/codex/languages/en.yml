@@ -18,6 +18,7 @@ books:
   open_nav: Contents
   empty: No books yet.
 post:
+  reading_time: '%d min read'
   prev: Previous
   next: Next
   toc: On this page
@@ -34,3 +35,9 @@ tag:
 footer:
   powered: Powered by %s
   rss: RSS
+
+search:
+  open: Search (/)
+  placeholder: Search posts and books…
+  empty: No results
+  error: Could not load the search index

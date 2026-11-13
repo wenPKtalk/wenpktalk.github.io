@@ -1,4 +1,5 @@
 # codex — a minimal Hexo theme for technical writing with book/series indexing.
+# Override any of these in a `_config.codex.yml` next to your site's _config.yml.
 # Books are declared in source/_data/books.yml; articles join one with `book:` front matter.
 
 # Header navigation: <language key under nav.*>: <url>
@@ -11,15 +12,33 @@ menu:
 
 # Shown on the home page; name/subtitle/description come from the site _config.yml
 author:
-  avatar: /images/avatar.jpg
-  location: Xi'an, China
-  links:
-    GitHub: https://github.com/wenPKtalk
-    Stack Overflow: https://stackoverflow.com/users/15967860/topsion
+  avatar:          # e.g. /images/avatar.jpg (put the file in your site's source/images/)
+  location:
+  links: {}        # Label: URL
 
 # On-page table of contents (h2..max_depth)
 toc:
   max_depth: 3
+
+# "约 N 分钟" in article headers
+reading_time: true
+
+# Full-text search, built into /search.json; open with "/" or Ctrl/Cmd+K
+search:
+  enable: true
+  path: search.json
+  max_chars: 20000     # text kept per article
+
+# Math with KaTeX: pages opt in with `math: true` in front matter;
+# auto: true scans every page for $...$ and $$...$$ (opt out per page with `math: false`)
+math:
+  auto: false
+
+# Libraries loaded only on pages that need them (```mermaid blocks, math)
+cdn:
+  katex_js: https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js
+  katex_css: https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css
+  mermaid: https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs
 
 # Titles for GitHub-style alerts (> [!NOTE] ...) that have no title of their own
 callout_titles:
@@ -30,12 +49,10 @@ callout_titles:
   caution: 注意
 
 # Comments stored in GitHub Discussions; IDs from https://giscus.app
-# Needs Discussions enabled and the giscus app installed on the repo.
 giscus:
-  enable: true
-  repo: wenPKtalk/wenpktalk.github.io
-  repo_id: R_kgDOGqAqSQ
-  # Announcement-type category: only maintainers and giscus can open discussions
-  category: Announcements
-  category_id: DIC_kwDOGqAqSc4DLBw3
+  enable: false
+  repo:
+  repo_id:
+  category:
+  category_id:
   lang: zh-CN
