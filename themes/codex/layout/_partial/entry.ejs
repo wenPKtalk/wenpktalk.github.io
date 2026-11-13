@@ -1,0 +1,6 @@
+<% const nav = book_nav(page); %>
+<% if (nav) { %>
+  <%- partial('_partial/book-article', { nav: nav }) %>
+<% } else { %>
+  <%- partial('_partial/article') %>
+<% } %>

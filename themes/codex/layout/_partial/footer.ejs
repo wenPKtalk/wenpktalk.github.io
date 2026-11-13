@@ -1,0 +1,7 @@
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; <%= new Date().getFullYear() %> <%= config.author %></span>
+    <span><%- __('footer.powered', '<a href="https://hexo.io">Hexo</a>') %> · codex</span>
+    <% if (config.feed) { %><a href="<%- url_for(config.feed.path || 'atom.xml') %>"><%= __('footer.rss') %></a><% } %>
+  </div>
+</footer>

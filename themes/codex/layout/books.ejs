@@ -1,0 +1,9 @@
+<% const allBooks = books(); %>
+<div class="container narrow">
+  <h1 class="page-heading"><%= __('books.title') %></h1>
+  <% if (allBooks.length) { %>
+    <%- partial('_partial/book-cards', { list: allBooks }) %>
+  <% } else { %>
+    <p class="muted"><%= __('books.empty') %></p>
+  <% } %>
+</div>

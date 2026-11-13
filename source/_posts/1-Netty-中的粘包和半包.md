@@ -3,6 +3,7 @@ title: 1.Netty 中的粘包和半包
 date: 2021-05-12 22:00:44
 tags: Netty
 categories: Netty
+book: netty
 ---
 
 ### 粘包原因

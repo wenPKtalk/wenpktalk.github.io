@@ -3,6 +3,7 @@ title: 篇章2-MySql两个重要的日志redolog和binlog
 date: 2018-11-26 16:46:43
 tags: [Database, Mysql]
 categories: [Mysql]
+book: mysql
 ---
 
 ### 概述

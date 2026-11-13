@@ -1,0 +1,42 @@
+<% const book = nav.book; %>
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="<%- url_for('/books/' + book.id + '/') %>"><%= book.title %></a>
+      <%- partial('_partial/book-tree', { book: book, current: nav }) %>
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false"><%= __('books.open_nav') %></button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="<%- url_for('/books/') %>"><%= __('books.title') %></a>
+        <span aria-hidden="true">›</span>
+        <a href="<%- url_for('/books/' + book.id + '/') %>"><%= book.title %></a>
+        <% if (nav.chapter.title) { %><span aria-hidden="true">›</span><span><%= nav.chapter.title %></span><% } %>
+      </nav>
+      <span class="book-position"><%= __('books.position', nav.index + 1, book.articles.length) %></span>
+    </div>
+
+    <%- partial('_partial/article-header') %>
+    <div class="article-content"><%- page.content %></div>
+
+    <nav class="pager" aria-label="<%= __('post.prev') %> / <%= __('post.next') %>">
+      <% if (nav.prev) { %>
+        <a class="pager-link pager-prev" href="<%- url_for(nav.prev.path) %>" rel="prev">
+          <span class="pager-label">← <%= __('post.prev') %></span><span class="pager-title"><%= nav.prev.title %></span>
+        </a>
+      <% } else { %><span></span><% } %>
+      <% if (nav.next) { %>
+        <a class="pager-link pager-next" href="<%- url_for(nav.next.path) %>" rel="next">
+          <span class="pager-label"><%= __('post.next') %> →</span><span class="pager-title"><%= nav.next.title %></span>
+        </a>
+      <% } %>
+    </nav>
+    <%- partial('_partial/comments') %>
+  </article>
+
+  <%- partial('_partial/page-toc') %>
+</div>

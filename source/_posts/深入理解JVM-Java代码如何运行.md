@@ -3,6 +3,7 @@ title: 深入理解JVM-Java代码如何运行
 date: 2020-08-05 08:25:43
 tags: JVM
 categories: JVM
+book: jvm
 ---
 
 > Java作为一种高级编程语言以其较高的可移植性被广泛使用在各个平台。那么它底层运行的原理是什么？

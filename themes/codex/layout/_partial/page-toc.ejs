@@ -1,0 +1,9 @@
+<% const contents = toc(page.content, { max_depth: (theme.toc && theme.toc.max_depth) || 3, list_number: false }); %>
+<% if (contents) { %>
+  <aside class="page-toc" aria-label="<%= __('post.toc') %>">
+    <div class="page-toc-inner">
+      <p class="aside-title"><%= __('post.toc') %></p>
+      <%- contents %>
+    </div>
+  </aside>
+<% } %>

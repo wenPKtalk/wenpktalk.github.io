@@ -1,0 +1,20 @@
+<% const book = page.book;
+   const chapterCount = book.chapters.filter(function (chapter) { return chapter.title; }).length; %>
+<div class="container narrow book-home">
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <a href="<%- url_for('/books/') %>"><%= __('books.title') %></a>
+  </nav>
+  <header class="book-hero">
+    <h1><%= book.title %></h1>
+    <% if (book.description) { %><p class="lead"><%= book.description %></p><% } %>
+    <p class="book-stats">
+      <% if (chapterCount) { %><%= __('books.chapters', chapterCount) %> · <% } %><%= __('books.count', book.articles.length) %>
+      <% if (book.updated) { %> · <%= __('books.updated') %> <%= date(book.updated) %><% } %>
+    </p>
+    <a class="button" href="<%- url_for(book.articles[0].path) %>"><%= __('books.start') %> →</a>
+  </header>
+  <section class="book-contents">
+    <h2 class="section-title"><%= __('books.contents') %></h2>
+    <%- partial('_partial/book-tree', { book: book, current: null }) %>
+  </section>
+</div>

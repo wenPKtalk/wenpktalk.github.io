@@ -3,6 +3,7 @@ title: 2.Netty中是如何优化内存的
 date: 2021-05-16 22:11:11
 tags: Netty
 categories: Netty
+book: netty
 ---
 
 Netty减少内存使用技巧：

@@ -1,0 +1,13 @@
+# Local preview of the codex theme without switching production:
+#   npx hexo server --config _config.yml,_config.preview.yml
+theme: codex
+language: zh-CN
+url: https://wenpktalk.github.io
+archive_generator:
+  per_page: 0
+  yearly: true
+  monthly: false
+category_generator:
+  per_page: 0
+tag_generator:
+  per_page: 0

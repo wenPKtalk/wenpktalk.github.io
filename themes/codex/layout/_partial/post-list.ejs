@@ -1,0 +1,20 @@
+<% let lastYear = null; %>
+<% posts.each(function (post) {
+     const year = date(post.date, 'YYYY');
+     const nav = book_nav(post); %>
+  <% if (year !== lastYear) { %>
+    <% if (lastYear !== null) { %></ul><% } %>
+    <h2 class="year"><%= year %></h2>
+    <ul class="post-list">
+    <% lastYear = year; %>
+  <% } %>
+  <li class="post-item">
+    <time datetime="<%= date_xml(post.date) %>"><%= date(post.date, 'MM-DD') %></time>
+    <a class="post-link" href="<%- url_for(post.path) %>"><%= post.title %></a>
+    <span class="post-tags">
+      <% if (nav) { %><a class="badge badge-book" href="<%- url_for('/books/' + nav.book.id + '/') %>"><%= nav.book.title %></a><% } %>
+      <% post.tags.each(function (tag) { %><a class="badge" href="<%- url_for(tag.path) %>"><%= tag.name %></a><% }) %>
+    </span>
+  </li>
+<% }) %>
+<% if (lastYear !== null) { %></ul><% } %>

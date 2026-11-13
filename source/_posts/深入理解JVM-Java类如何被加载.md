@@ -3,6 +3,7 @@ title: 深入理解JVM-Java类如何被加载
 date: 2020-05-07 09:09:01
 tags: JVM
 categories: JVM
+book: jvm
 ---
 
 > 类加载器从应用程序和Java API加载类文件。只有运行中的程序实际需要Java API中的类的时候才会被加载到虚拟机。

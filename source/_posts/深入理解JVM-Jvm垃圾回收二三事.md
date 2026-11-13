@@ -3,6 +3,7 @@ title: 深入理解JVM-Jvm垃圾回收二三事
 date: 2020-09-01 08:20:45
 tags: [JVM, GC]
 categories: JVM
+book: jvm
 ---
 
 > 众所周知Java作为高级编程语言是不需要程序员去手动释放内存垃圾（**垃圾指的是死亡的对象所占据的堆空间**），JVM会替我们完成。那么JVM是如何识别出来哪些是需要被回收的对象？JVM是如何整理内存空间？JVM GC(Garbage Collection)过程和应用程序的线程有哪些相互影响？

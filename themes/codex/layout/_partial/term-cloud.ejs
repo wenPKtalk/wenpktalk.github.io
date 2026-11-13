@@ -1,0 +1,7 @@
+<ul class="term-cloud">
+  <% terms.sort('name').each(function (term) { %>
+    <% if (term.length) { %>
+      <li><a href="<%- url_for(term.path) %>"><%= term.name %><span class="term-count"><%= term.length %></span></a></li>
+    <% } %>
+  <% }) %>
+</ul>

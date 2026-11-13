@@ -3,6 +3,7 @@ title: 篇章3-MySql的事务探究
 date: 2018-12-01 22:48:53
 tags: [Database, Mysql]
 categories: [Mysql]
+book: mysql
 ---
 ##### 一. ACID解释
 A: Atomicity 原子性

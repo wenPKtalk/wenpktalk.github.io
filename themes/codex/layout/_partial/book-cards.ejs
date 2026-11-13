@@ -1,0 +1,12 @@
+<div class="book-cards">
+  <% list.forEach(function (book) {
+       const chapterCount = book.chapters.filter(function (chapter) { return chapter.title; }).length; %>
+    <a class="book-card" href="<%- url_for('/books/' + book.id + '/') %>">
+      <strong class="book-card-title"><%= book.title %></strong>
+      <span class="book-card-meta">
+        <% if (chapterCount) { %><%= __('books.chapters', chapterCount) %> · <% } %><%= __('books.count', book.articles.length) %>
+      </span>
+      <% if (book.description) { %><span class="book-card-desc"><%= book.description %></span><% } %>
+    </a>
+  <% }) %>
+</div>

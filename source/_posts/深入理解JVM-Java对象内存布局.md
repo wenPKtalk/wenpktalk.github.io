@@ -3,6 +3,7 @@ title: 深入理解JVM-Java对象内存布局
 date: 2020-08-17 22:06:46
 tags: JVM
 categories: JVM
+book: jvm
 ---
 
 ### Java创建对象的5种方式

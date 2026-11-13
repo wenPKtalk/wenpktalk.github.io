@@ -1,0 +1,11 @@
+# Books (专栏) for the codex theme. An article joins a book with `book: <id>` in its front matter,
+# optionally `chapter: <chapter id>` and `order: <number>`; without `order`, posts follow their dates.
+jvm:
+  title: 深入理解 JVM
+  description: 类加载、内存结构、代码执行、对象内存布局与垃圾回收。
+mysql:
+  title: MySQL 原理
+  description: 架构与执行引擎、redo log 与 binlog、事务和索引。
+netty:
+  title: Netty 系列
+  description: 粘包与半包、Netty 的内存优化。

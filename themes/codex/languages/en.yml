@@ -1,0 +1,39 @@
+nav:
+  label: Main navigation
+  home: Home
+  books: Books
+  categories: Categories
+  tags: Tags
+  archives: Archives
+skip_to_content: Skip to content
+theme_toggle: Toggle dark mode
+books:
+  title: Books
+  count: '%d articles'
+  chapters: '%d chapters'
+  start: Start reading
+  contents: Contents
+  updated: Updated
+  position: '%d of %d'
+  open_nav: Contents
+  empty: No books yet.
+post:
+  prev: Previous
+  next: Next
+  toc: On this page
+  comments: Comments
+  in_book: Part of
+  copy: Copy
+  copied: Copied
+archive:
+  title: Archives
+  total: '%d posts'
+category:
+  title: Categories
+  prefix: 'Category: '
+tag:
+  title: Tags
+  prefix: 'Tag: '
+footer:
+  powered: Powered by %s
+  rss: RSS

@@ -1,0 +1,23 @@
+<%
+  // book: the book node; current: the article being read, or null on the book index (all chapters open)
+  function articleList(articles) {
+    let html = '<ol class="tree-articles">';
+    articles.forEach(function (article) {
+      const isCurrent = current === article;
+      html += '<li><a href="' + url_for(article.path) + '"' + (isCurrent ? ' class="current" aria-current="page"' : '') + '>' + escape_html(article.title) + '</a></li>';
+    });
+    return html + '</ol>';
+  }
+%>
+<nav class="book-tree" aria-label="<%= __('books.contents') %>">
+  <% book.chapters.forEach(function (chapter) { %>
+    <% if (chapter.title) { %>
+      <details class="tree-chapter"<% if (!current || current.chapter === chapter) { %> open<% } %>>
+        <summary><span><%= chapter.title %></span><span class="tree-count"><%= chapter.articles.length %></span></summary>
+        <%- articleList(chapter.articles) %>
+      </details>
+    <% } else { %>
+      <%- articleList(chapter.articles) %>
+    <% } %>
+  <% }) %>
+</nav>

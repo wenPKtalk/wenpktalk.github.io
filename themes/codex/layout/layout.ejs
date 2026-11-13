@@ -1,0 +1,34 @@
+<%
+  let heading = page.title;
+  if (page.nav_key) heading = __('nav.' + page.nav_key);
+  else if (is_archive()) heading = __('archive.title');
+  else if (is_category()) heading = __('category.prefix') + page.category;
+  else if (is_tag()) heading = __('tag.prefix') + page.tag;
+  const documentTitle = heading && !is_home() ? heading + ' · ' + config.title : config.title;
+%><!DOCTYPE html>
+<html lang="<%= config.language || 'zh-CN' %>">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= documentTitle %></title>
+  <%- open_graph({ title: documentTitle }) %>
+  <% if (config.feed) { %><%- feed_tag() %><% } %>
+  <%- meta_generator() %>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  <%- css('css/codex.css') %>
+</head>
+<body>
+  <a class="skip-link" href="#main"><%= __('skip_to_content') %></a>
+  <%- partial('_partial/header') %>
+  <main id="main"><%- body %></main>
+  <%- partial('_partial/footer') %>
+  <%- js('js/codex.js') %>
+</body>
+</html>

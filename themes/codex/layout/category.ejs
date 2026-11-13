@@ -1,0 +1,5 @@
+<div class="container narrow">
+  <h1 class="page-heading"><%= __('category.prefix') %><%= page.category %></h1>
+  <%- partial('_partial/post-list', { posts: page.posts }) %>
+  <%- partial('_partial/paginator') %>
+</div>

@@ -3,6 +3,7 @@ title: 篇章4-MySQL索引（一）
 date: 2018-12-03 09:57:59
 tags: [Database, Mysql]
 categories: [Mysql]
+book: mysql
 ---
 
 >  经常听到别人讲数据库就像书的目录一样，是为了提高查询效率，那么索引实现和书的目录区别又是什么？

@@ -1,0 +1,29 @@
+<div class="container narrow">
+  <% if (page.current === 1) { %>
+    <section class="profile">
+      <% if (theme.author && theme.author.avatar) { %>
+        <img class="avatar" src="<%- url_for(theme.author.avatar) %>" alt="<%= config.author %>" width="72" height="72">
+      <% } %>
+      <div>
+        <h1 class="profile-name"><%= config.author %></h1>
+        <p class="profile-subtitle"><%= config.subtitle %><% if (theme.author && theme.author.location) { %> · <%= theme.author.location %><% } %></p>
+        <% if (config.description) { %><p class="profile-bio"><%= config.description %></p><% } %>
+        <% if (theme.author && theme.author.links) { %>
+          <p class="profile-links">
+            <% Object.keys(theme.author.links).forEach(function (label) { %>
+              <a href="<%- theme.author.links[label] %>"><%= label %></a>
+            <% }) %>
+          </p>
+        <% } %>
+      </div>
+    </section>
+    <% const allBooks = books(); if (allBooks.length) { %>
+      <section class="section">
+        <h2 class="section-title"><a href="<%- url_for('/books/') %>"><%= __('books.title') %></a></h2>
+        <%- partial('_partial/book-cards', { list: allBooks }) %>
+      </section>
+    <% } %>
+  <% } %>
+  <%- partial('_partial/post-list', { posts: page.posts }) %>
+  <%- partial('_partial/paginator') %>
+</div>
