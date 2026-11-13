@@ -31,15 +31,7 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            themes/tranquilpeak/package-lock.json
-
-      - name: Build theme assets
-        working-directory: themes/tranquilpeak
-        run: |
-          npm ci
-          npm run prod
+          cache-dependency-path: package-lock.json
 
       - name: Install site dependencies
         run: npm ci
