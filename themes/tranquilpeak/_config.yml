@@ -187,8 +187,20 @@ tag_pagination: true
 # Comment systems
 # ---------------
 
+# Giscus (comments stored in GitHub Discussions), takes precedence over the systems below
+# IDs come from https://giscus.app; needs Discussions enabled and the giscus app installed on the repo
+giscus:
+    enable: true
+    repo: wenPKtalk/wenpktalk.github.io
+    repo_id: R_kgDOGqAqSQ
+    # Announcement-type category: only maintainers and giscus can open new discussions
+    category: Announcements
+    category_id: DIC_kwDOGqAqSc4DLBw3
+    theme: light
+    lang: zh-CN
+
 # Your Disqus shortname
-disqus_shortname: summary blog
+disqus_shortname:
 # Your Gitment information
 # Read https://github.com/imsun/gitment#get-started to setup Gitment
 gitment:
