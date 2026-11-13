@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout source
@@ -21,14 +23,7 @@ jobs:
           node-version: '24'
 
       - name: Setup Hexo
-        env:
-          HEXO_DEPLOY_KEY: ${{ secrets.HEXO_DEPLOY_KEY }}
         run: |
-          mkdir -p ~/.ssh/
-          echo "$HEXO_DEPLOY_KEY" > ~/.ssh/id_rsa
-          chmod 700 ~/.ssh
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
           git config --global user.email "wensir_top@163.com"
           git config --global user.name "topsion"
           cd themes/tranquilpeak
@@ -36,7 +31,11 @@ jobs:
           cd ../..
           npm ci
       - name: Deploy
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # deploy.repo in _config.yml is an SSH URL; push over HTTPS with the job token instead
+          git config --global url."https://x-access-token:${GITHUB_TOKEN}@github.com/".insteadOf "git@github.com:"
           npx hexo clean
           npx hexo g
           npx hexo deploy
