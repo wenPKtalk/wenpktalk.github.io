@@ -25,8 +25,11 @@
     });
   }
 
+  var COPY_LABELS = root.lang.indexOf('zh') === 0 ? { copy: '复制', copied: '已复制' } : { copy: 'Copy', copied: 'Copied' };
+  var COPIED_RESET_MS = 1500;
+
   function initCodeBlocks() {
-    var labels = { copy: document.documentElement.lang.indexOf('zh') === 0 ? '复制' : 'Copy', copied: document.documentElement.lang.indexOf('zh') === 0 ? '已复制' : 'Copied' };
+    var labels = COPY_LABELS;
     document.querySelectorAll('figure.highlight').forEach(function (figure) {
       var language = figure.className.replace('highlight', '').trim();
       if (language && language !== 'plaintext' && language !== 'plain') {
@@ -44,7 +47,7 @@
       button.addEventListener('click', function () {
         navigator.clipboard.writeText(code.innerText.replace(/\n$/, '')).then(function () {
           button.textContent = labels.copied;
-          setTimeout(function () { button.textContent = labels.copy; }, 1500);
+          setTimeout(function () { button.textContent = labels.copy; }, COPIED_RESET_MS);
         });
       });
       figure.appendChild(button);

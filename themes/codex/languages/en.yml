@@ -22,9 +22,6 @@ post:
   next: Next
   toc: On this page
   comments: Comments
-  in_book: Part of
-  copy: Copy
-  copied: Copied
 archive:
   title: Archives
   total: '%d posts'
