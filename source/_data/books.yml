@@ -9,6 +9,18 @@ mysql:
 netty:
   title: Netty 系列
   description: 粘包与半包、Netty 的内存优化。
+ducklake:
+  title: DuckDB 与 DuckLake
+  description: 从版本全景和 DuckLake 的存储模型讲起，深入 DuckDB 的线程、调度、内存与并发准入，再到 DuckLake 源码走读和生态项目。按 DuckDB v2.0.0 与 DuckLake v2.0 源码核对。
+  chapters:
+    - id: overview
+      title: 一、入门与全景
+    - id: internals
+      title: 二、引擎原理
+    - id: source
+      title: 三、源码
+    - id: ecosystem
+      title: 四、生态
 dive-into-systems:
   title: "Dive Into Systems 中英对照"
   description: "Dive Into Systems 全书中英对照译文，附译注与现代更新。个人学习用（CC BY-NC-ND 4.0），请勿公开传播。"
