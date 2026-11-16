@@ -84,6 +84,10 @@ time_format: HH:mm:ss
 ## updated_option supports 'mtime', 'date', 'empty'
 updated_option: 'mtime'
 
+# Resolve ![](pic.png) against the post's asset folder (post_asset_folder: true)
+marked:
+  postAsset: true
+
 # One page per archive / category / tag listing, yearly archives only (codex lists are compact)
 archive_generator:
   per_page: 0
