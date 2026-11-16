@@ -4,7 +4,44 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { readingMinutes } = require('../lib/reading');
 const { buildSearchIndex, htmlToText } = require('../lib/search');
-const { renderMermaidFences, protectMath } = require('../lib/markdown');
+const zlib = require('node:zlib');
+const { renderMermaidFences, protectMath, renderPlantumlFences, encodePlantuml } = require('../lib/markdown');
+
+const PLANTUML_ALPHABET = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_';
+
+function decodePlantuml(encoded) {
+  const bytes = [];
+  for (let i = 0; i < encoded.length; i += 4) {
+    const [c1, c2, c3, c4] = [...encoded.slice(i, i + 4)].map(ch => PLANTUML_ALPHABET.indexOf(ch));
+    bytes.push((c1 << 2) | (c2 >> 4), ((c2 & 0xf) << 4) | (c3 >> 2), ((c3 & 0x3) << 6) | c4);
+  }
+  return zlib.inflateRawSync(Buffer.from(bytes), { finishFlush: zlib.constants.Z_SYNC_FLUSH }).toString('utf8');
+}
+
+test('plantuml encoding is deflate + the PlantUML base64 alphabet and round-trips unicode', () => {
+  const source = '@startuml\nBob -> Alice : 你好 hello\n@enduml';
+  const encoded = encodePlantuml(source);
+
+  assert.match(encoded, /^[0-9A-Za-z_-]+$/);
+  assert.equal(decodePlantuml(encoded), source);
+});
+
+test('plantuml fences become server-rendered images; other code stays', () => {
+  const md = 'a\n\n```plantuml\nBob -> Alice\n```\n\n```puml\n@startuml\nA -> B\n@enduml\n```\n\n```java\nint x;\n```';
+
+  const out = renderPlantumlFences(md, 'https://uml.example/plantuml/');
+  const sources = [...out.matchAll(/src="https:\/\/uml\.example\/plantuml\/svg\/([0-9A-Za-z_-]+)"/g)].map(m => decodePlantuml(m[1]));
+
+  assert.deepEqual(sources, ['@startuml\nBob -> Alice\n@enduml', '@startuml\nA -> B\n@enduml']);
+  assert.match(out, /<figure class="plantuml"><img [^>]*loading="lazy"[^>]*><\/figure>/);
+  assert.match(out, /```java\nint x;\n```/);
+});
+
+test('unlabelled fences are not treated as plantuml even if they contain @startuml', () => {
+  const md = '```\n@startuml\nA -> B\n@enduml\n```';
+
+  assert.equal(renderPlantumlFences(md, 'https://uml.example'), md);
+});
 
 test('reading time counts Chinese characters and English words, at least one minute', () => {
   const chinese = '<p>' + '字'.repeat(800) + '</p>';

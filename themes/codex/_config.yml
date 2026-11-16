@@ -35,6 +35,12 @@ search:
 math:
   auto: false
 
+# ```plantuml / ```puml / ```uml fences become SVG images rendered by a PlantUML server.
+# The diagram source is sent to that server; point it at your own server if that matters.
+plantuml:
+  enable: true
+  server: https://www.plantuml.com/plantuml
+
 # Libraries loaded only on pages that need them (```mermaid blocks, math)
 cdn:
   katex_js: https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js

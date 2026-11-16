@@ -1,14 +1,16 @@
 'use strict';
 
 /* global hexo */
-const { renderMermaidFences, protectMath } = require('../lib/markdown');
+const { renderMermaidFences, protectMath, renderPlantumlFences } = require('../lib/markdown');
 const { readingMinutes } = require('../lib/reading');
 const { buildSearchIndex } = require('../lib/search');
 
-// Before Hexo's own code-block filter (priority 10): ```mermaid fences and opt-in math.
+// Before Hexo's own code-block filter (priority 10): ```mermaid / ```plantuml fences and opt-in math.
 hexo.extend.filter.register('before_post_render', data => {
   const math = hexo.theme.config.math || {};
+  const plantuml = hexo.theme.config.plantuml || {};
   data.content = renderMermaidFences(data.content);
+  if (plantuml.enable !== false && plantuml.server) data.content = renderPlantumlFences(data.content, plantuml.server);
   if (data.math === true || (math.auto && data.math !== false)) data.content = protectMath(data.content);
   return data;
 }, 5);

@@ -478,6 +478,8 @@ figure.highlight .deletion { color: var(--caution); }
 .math-display { margin: 0 0 1.05em; overflow-x: auto; overflow-y: hidden; text-align: center; }
 pre.mermaid { margin: 0 0 1.05em; text-align: center; background: transparent; border: 0; font: inherit; white-space: pre; }
 pre.mermaid:not([data-processed]) { color: var(--muted); font: 13px/1.6 var(--font-mono); text-align: left; }
+figure.plantuml { margin: 0 0 1.05em; text-align: center; }
+figure.plantuml img { padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: #fff; }
 
 /* ---------- responsive ---------- */
 @media (max-width: 1180px) {

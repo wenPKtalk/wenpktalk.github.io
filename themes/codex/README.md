@@ -13,6 +13,7 @@ A minimal Hexo theme for technical writing. Its core feature is a three-level in
 - **全文搜索**：按 `/` 或 Ctrl/Cmd+K 打开。索引在第一次打开时才下载（`/search.json`），中文按子串匹配。
 - **阅读时长**：显示「约 N 分钟」，中文按 400 字/分钟、英文按 200 词/分钟估算。
 - **数学公式**（KaTeX）和**流程图**（Mermaid）：只在需要的页面从 CDN 加载。
+- **PlantUML**：```` ```plantuml ````（或 `puml`、`uml`）代码块在构建时编码成 PlantUML 服务器的 SVG 图片地址，不需要 Java。
 - 普通文章右侧有本页目录，滚动时高亮当前小节。
 - 代码块：语言标签、一键复制、行号；深浅两套配色。
 - 深色模式：默认跟随系统，可手动切换并记住选择。
@@ -115,6 +116,7 @@ graph LR
 | `reading_time` | 是否显示阅读时长 |
 | `search` | 是否开启搜索、索引文件路径、每篇收录的最大字数 |
 | `math.auto` | 是否全站自动识别公式 |
+| `plantuml` | 是否把 plantuml 代码块渲染成图，以及 PlantUML 服务器地址（图的源码会发送给该服务器） |
 | `cdn` | KaTeX 和 Mermaid 的加载地址 |
 | `callout_titles` | 没写标题的提示框使用的默认标题 |
 | `giscus` | 评论配置，各个 ID 从 https://giscus.app 获取 |

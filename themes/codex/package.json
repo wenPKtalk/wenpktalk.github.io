@@ -1,16 +1,19 @@
 {
   "name": "hexo-theme-codex",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A minimal Hexo theme for technical writing: book/series indexing (book → chapter → article), full-text search, KaTeX, Mermaid, dark mode and giscus.",
   "keywords": [
-    "hexo",
-    "hexo-theme",
-    "theme",
     "blog",
     "book",
-    "series",
     "docs",
-    "minimal"
+    "hexo",
+    "hexo-theme",
+    "katex",
+    "mermaid",
+    "minimal",
+    "plantuml",
+    "series",
+    "theme"
   ],
   "license": "MIT",
   "author": "topsion",
