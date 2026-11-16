@@ -9,3 +9,45 @@ mysql:
 netty:
   title: Netty 系列
   description: 粘包与半包、Netty 的内存优化。
+dive-into-systems:
+  title: "Dive Into Systems 中英对照"
+  description: "Dive Into Systems 全书中英对照译文，附译注与现代更新。个人学习用（CC BY-NC-ND 4.0），请勿公开传播。"
+  chapters:
+    - id: 00-About
+      title: "关于本译本"
+    - id: 00-Front
+      title: "前置部分"
+    - id: C1-C_intro
+      title: "1. 在 C 边，在 C 边，在美丽的 C 边"
+    - id: C2-C_depth
+      title: "2. 深入 C 语言编程"
+    - id: C3-C_debug
+      title: "3. C 调试工具"
+    - id: C4-Binary
+      title: "4. 二进制与数据表示"
+    - id: C5-Arch
+      title: "5. 冯·诺依曼早已知道的事：计算机体系结构"
+    - id: C6-asm_intro
+      title: "6. 在 C 之下：潜入汇编"
+    - id: C7-x86_64
+      title: "7. 64 位 x86 汇编（x86-64）"
+    - id: C8-IA32
+      title: "8. 32 位 x86 汇编（IA32）"
+    - id: C9-ARM64
+      title: "9. ARM 汇编"
+    - id: C10-asm_takeaways
+      title: "10. 汇编要点总结"
+    - id: C11-MemHierarchy
+      title: "11. 存储与存储器层次结构"
+    - id: C12-CodeOpt
+      title: "12. 代码优化"
+    - id: C13-OS
+      title: "13. 操作系统"
+    - id: C14-SharedMemory
+      title: "14. 多核时代的共享内存利用"
+    - id: C15-Parallel
+      title: "15. 展望：其他并行系统与并行编程模型"
+    - id: Appendix1
+      title: "16. 附录 1：面向 Java 程序员的第 1 章"
+    - id: Appendix2
+      title: "17. 附录 2：使用 Unix"
