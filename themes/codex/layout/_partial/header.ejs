@@ -1,6 +1,19 @@
+<% const author = theme.author || {};
+   const links = author.links || {};
+   const githubLabel = Object.keys(links).find(function (label) { return /^github/i.test(label); }); %>
 <header class="site-header">
   <div class="container header-inner">
-    <a class="site-title" href="<%- url_for('/') %>"><span class="logo-mark" aria-hidden="true"><%= String(config.title || '').trim().charAt(0).toUpperCase() %></span><%= config.title %></a>
+    <a class="site-title" href="<%- url_for('/') %>">
+      <% if (author.avatar) { %>
+        <img class="brand-avatar" src="<%- url_for(author.avatar) %>" alt="" width="34" height="34">
+      <% } else { %>
+        <span class="logo-mark" aria-hidden="true"><%= String(config.title || '').trim().charAt(0).toUpperCase() %></span>
+      <% } %>
+      <span class="brand-text">
+        <span class="brand-name"><%= config.title %></span>
+        <% if (config.subtitle) { %><span class="brand-sub"><%= config.subtitle %></span><% } %>
+      </span>
+    </a>
     <nav class="site-nav" aria-label="<%= __('nav.label') %>">
       <% Object.keys(theme.menu || {}).forEach(function (key) {
            const target = theme.menu[key];
@@ -8,14 +21,21 @@
         <a href="<%- url_for(target) %>"<% if (active) { %> class="active" aria-current="page"<% } %>><%= __('nav.' + key) %></a>
       <% }) %>
     </nav>
-    <% if (theme.search && theme.search.enable !== false) { %>
-      <button class="icon-button" type="button" data-search-open aria-label="<%= __('search.open') %>" title="<%= __('search.open') %>">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <div class="header-actions">
+      <% if (theme.search && theme.search.enable !== false) { %>
+        <button class="search-trigger" type="button" data-search-open aria-label="<%= __('search.open') %>" title="<%= __('search.open') %>">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label"><%= __('search.label') %></span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      <% } %>
+      <% if (githubLabel) { %>
+        <a class="icon-button" href="<%- links[githubLabel] %>" aria-label="<%= githubLabel %>" title="<%= githubLabel %>"><%- partial('_partial/link-icon', { label: githubLabel }) %></a>
+      <% } %>
+      <button class="icon-button" type="button" data-theme-toggle aria-label="<%= __('theme_toggle') %>" title="<%= __('theme_toggle') %>">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
       </button>
-    <% } %>
-    <button class="icon-button" type="button" data-theme-toggle aria-label="<%= __('theme_toggle') %>" title="<%= __('theme_toggle') %>">
-      <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-      <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
-    </button>
+    </div>
   </div>
 </header>

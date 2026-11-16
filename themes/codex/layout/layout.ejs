@@ -24,7 +24,7 @@
   </script>
   <%- css('css/codex.css') %>
 </head>
-<body>
+<body<% if (is_home() && page.current === 1) { %> class="has-hero"<% } %>>
   <a class="skip-link" href="#main"><%= __('skip_to_content') %></a>
   <% if (is_post() || is_page()) { %><div class="read-progress" aria-hidden="true"></div><% } %>
   <%- partial('_partial/header') %>

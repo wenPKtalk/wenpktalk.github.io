@@ -37,6 +37,7 @@ footer:
   rss: RSS
 
 search:
+  label: 搜索
   open: 搜索（/）
   placeholder: 搜索文章、专栏……
   empty: 没有找到相关内容

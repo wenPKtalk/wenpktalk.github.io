@@ -154,17 +154,21 @@
 
   var BACK_TO_TOP_AFTER_PX = 600;
 
-  // Reading progress bar (articles only) and the back-to-top button share one scroll listener.
+  var HEADER_SCROLLED_AFTER_PX = 8;
+
+  // Reading progress bar (articles only), the back-to-top button and the header's scrolled state share one scroll listener.
   function initScrollUi() {
     var bar = document.querySelector('.read-progress');
     var backToTop = document.querySelector('[data-back-to-top]');
-    if (!bar && !backToTop) return;
+    var header = document.querySelector('.site-header');
+    if (!bar && !backToTop && !header) return;
     var pending = false;
     function update() {
       pending = false;
       var scrollable = document.documentElement.scrollHeight - window.innerHeight;
       if (bar) bar.style.setProperty('--progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
       if (backToTop) backToTop.classList.toggle('visible', window.scrollY > BACK_TO_TOP_AFTER_PX);
+      if (header) header.classList.toggle('is-scrolled', window.scrollY > HEADER_SCROLLED_AFTER_PX);
     }
     window.addEventListener('scroll', function () {
       if (!pending) { pending = true; window.requestAnimationFrame(update); }
@@ -173,7 +177,15 @@
     update();
   }
 
+  // The search shortcut is ⌘K on Apple platforms and Ctrl K elsewhere (see search.js).
+  function initShortcutHint() {
+    var isApple = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+    if (isApple) return;
+    document.querySelectorAll('[data-shortcut-hint]').forEach(function (hint) { hint.textContent = 'Ctrl K'; });
+  }
+
   var cdn = readConfig();
+  initShortcutHint();
   initScrollUi();
   initThemeToggle();
   initCodeBlocks();

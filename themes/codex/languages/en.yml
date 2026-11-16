@@ -37,6 +37,7 @@ footer:
   rss: RSS
 
 search:
+  label: Search
   open: Search (/)
   placeholder: Search posts and books…
   empty: No results
