@@ -41,3 +41,11 @@ search:
   placeholder: Search posts and books…
   empty: No results
   error: Could not load the search index
+
+hero:
+  posts: posts
+  books: books
+  tags: tags
+  all: All
+  latest: Latest posts
+back_to_top: Back to top

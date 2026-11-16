@@ -39,8 +39,20 @@ function groupByBook(entries, declared, warnings) {
   return grouped;
 }
 
+const HUE_STEPS = 360;
+
+// FNV-1a then the murmur3 finalizer, so similar short ids still land far apart on the colour wheel.
+function hueOf(id) {
+  let hash = 0x811c9dc5;
+  for (const ch of String(id)) hash = Math.imul(hash ^ ch.codePointAt(0), 0x01000193) >>> 0;
+  hash = Math.imul(hash ^ (hash >>> 16), 0x85ebca6b) >>> 0;
+  hash = Math.imul(hash ^ (hash >>> 13), 0xc2b2ae35) >>> 0;
+  return ((hash ^ (hash >>> 16)) >>> 0) % HUE_STEPS;
+}
+
 function assembleBook(id, meta, entries, warnings) {
-  const book = { id, title: meta.title || id, description: meta.description || '', chapters: [], articles: [] };
+  const hue = Number.isInteger(meta.hue) ? meta.hue % HUE_STEPS : hueOf(id);
+  const book = { id, title: meta.title || id, description: meta.description || '', hue, chapters: [], articles: [] };
   book.chapters = buildChapters(book, meta.chapters, entries, warnings);
   book.articles = book.chapters.flatMap(chapter => chapter.articles);
   linkSequence(book.articles);

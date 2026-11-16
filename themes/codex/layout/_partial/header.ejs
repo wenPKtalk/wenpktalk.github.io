@@ -1,6 +1,6 @@
 <header class="site-header">
   <div class="container header-inner">
-    <a class="site-title" href="<%- url_for('/') %>"><%= config.title %></a>
+    <a class="site-title" href="<%- url_for('/') %>"><span class="logo-mark" aria-hidden="true"><%= String(config.title || '').trim().charAt(0).toUpperCase() %></span><%= config.title %></a>
     <nav class="site-nav" aria-label="<%= __('nav.label') %>">
       <% Object.keys(theme.menu || {}).forEach(function (key) {
            const target = theme.menu[key];

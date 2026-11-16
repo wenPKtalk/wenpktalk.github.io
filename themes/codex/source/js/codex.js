@@ -152,7 +152,29 @@
     }).catch(function (error) { console.warn('[codex] mermaid:', error.message); });
   }
 
+  var BACK_TO_TOP_AFTER_PX = 600;
+
+  // Reading progress bar (articles only) and the back-to-top button share one scroll listener.
+  function initScrollUi() {
+    var bar = document.querySelector('.read-progress');
+    var backToTop = document.querySelector('[data-back-to-top]');
+    if (!bar && !backToTop) return;
+    var pending = false;
+    function update() {
+      pending = false;
+      var scrollable = document.documentElement.scrollHeight - window.innerHeight;
+      if (bar) bar.style.setProperty('--progress', scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
+      if (backToTop) backToTop.classList.toggle('visible', window.scrollY > BACK_TO_TOP_AFTER_PX);
+    }
+    window.addEventListener('scroll', function () {
+      if (!pending) { pending = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    if (backToTop) backToTop.addEventListener('click', function () { window.scrollTo({ top: 0 }); });
+    update();
+  }
+
   var cdn = readConfig();
+  initScrollUi();
   initThemeToggle();
   initCodeBlocks();
   initTocSpy();

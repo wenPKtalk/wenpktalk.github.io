@@ -114,6 +114,23 @@ test('books without articles are left out and declared order is kept', () => {
   assert.deepEqual(books.map(book => book.id), ['sys', 'jvm']);
 });
 
+test('each book gets a stable accent hue derived from its id', () => {
+  const { books } = buildBooks({ data: BOOK_DATA, posts, pages });
+  const again = buildBooks({ data: BOOK_DATA, posts, pages }).books;
+
+  books.forEach((book, i) => {
+    assert.ok(Number.isInteger(book.hue) && book.hue >= 0 && book.hue < 360);
+    assert.equal(book.hue, again[i].hue);
+  });
+  assert.notEqual(books[0].hue, books[1].hue);
+});
+
+test('a declared hue overrides the derived one', () => {
+  const data = { ...BOOK_DATA, jvm: { title: 'JVM', hue: 200 } };
+
+  assert.equal(buildBooks({ data, posts, pages }).books.find(book => book.id === 'jvm').hue, 200);
+});
+
 test('missing data yields no books', () => {
   const { books, byKey } = buildBooks({ data: undefined, posts, pages });
 

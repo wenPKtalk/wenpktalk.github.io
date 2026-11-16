@@ -18,6 +18,8 @@ A minimal Hexo theme for technical writing. Its core feature is a three-level in
 - 深色模式：默认跟随系统，可手动切换并记住选择。
 - 提示框：GitHub 语法 `> [!NOTE]`、`[!TIP]`、`[!IMPORTANT]`、`[!WARNING]`、`[!CAUTION]`。
 - giscus 评论；自动生成 `/categories/` 和 `/tags/` 索引页；配合 hexo-generator-feed 提供 RSS。
+- 首页横幅：头像、简介、链接按钮（自动配 GitHub、Stack Overflow 等图标）和统计数字；可设置背景图 `author.cover`，不设时用内置的渐变网格。
+- 专栏卡片和专栏首页按专栏自动配色（也可在 books.yml 里用 `hue: 0-359` 指定），文章页顶部有阅读进度条，并有回到顶部按钮。
 - 纯 CSS 和原生 JS，没有构建步骤，不加载网络字体。
 
 ## 安装
@@ -37,6 +39,7 @@ language: zh-CN        # 或 en
 ```yaml
 author:
   avatar: /images/avatar.jpg     # 把图片放在站点的 source/images/ 里
+  cover: /images/cover.jpg       # 首页横幅背景图，可不填
   location: Xi'an, China
   links:
     GitHub: https://github.com/you
@@ -56,6 +59,7 @@ giscus:
    jvm:
      title: 深入理解 JVM
      description: 类加载、内存结构……
+     hue: 210            # 可选：卡片颜色（色相 0-359），不写则按 id 自动生成
    my-book:
      title: 一本有章节的书
      chapters:            # 可选；不写时专栏只有「专栏 → 文章」两级

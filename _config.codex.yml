@@ -1,6 +1,7 @@
 # Site-specific settings for the codex theme (merged over themes/codex/_config.yml)
 author:
   avatar: /images/avatar.jpg
+  cover: /images/cover.jpg
   location: Xi'an, China
   links:
     GitHub: https://github.com/wenPKtalk

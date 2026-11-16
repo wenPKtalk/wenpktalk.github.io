@@ -1,6 +1,6 @@
 {
   "name": "hexo-theme-codex",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A minimal Hexo theme for technical writing: book/series indexing (book → chapter → article), full-text search, KaTeX, Mermaid, dark mode and giscus.",
   "keywords": [
     "hexo",

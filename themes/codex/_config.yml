@@ -13,6 +13,7 @@ menu:
 # Shown on the home page; name/subtitle/description come from the site _config.yml
 author:
   avatar:          # e.g. /images/avatar.jpg (put the file in your site's source/images/)
+  cover:           # home banner image, e.g. /images/cover.jpg; empty = built-in gradient
   location:
   links: {}        # Label: URL
 

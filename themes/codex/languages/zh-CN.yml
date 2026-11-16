@@ -41,3 +41,11 @@ search:
   placeholder: 搜索文章、专栏……
   empty: 没有找到相关内容
   error: 搜索索引加载失败
+
+hero:
+  posts: 篇文章
+  books: 个专栏
+  tags: 个标签
+  all: 全部
+  latest: 最近文章
+back_to_top: 回到顶部

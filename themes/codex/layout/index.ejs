@@ -1,29 +1,45 @@
-<div class="container narrow">
-  <% if (page.current === 1) { %>
-    <section class="profile">
-      <% if (theme.author && theme.author.avatar) { %>
-        <img class="avatar" src="<%- url_for(theme.author.avatar) %>" alt="<%= config.author %>" width="72" height="72">
+<% const allBooks = books();
+   const author = theme.author || {};
+   const tagCount = site.tags.filter(function (tag) { return tag.length; }).length; %>
+<% if (page.current === 1) { %>
+  <section class="hero<% if (author.cover) { %> hero-cover<% } %>"<% if (author.cover) { %> style="--hero-image: url('<%- url_for(author.cover) %>')"<% } %>>
+    <div class="container narrow hero-inner">
+      <% if (author.avatar) { %>
+        <img class="hero-avatar" src="<%- url_for(author.avatar) %>" alt="<%= config.author %>" width="96" height="96">
       <% } %>
-      <div>
-        <h1 class="profile-name"><%= config.author %></h1>
-        <p class="profile-subtitle"><%= config.subtitle %><% if (theme.author && theme.author.location) { %> · <%= theme.author.location %><% } %></p>
-        <% if (config.description) { %><p class="profile-bio"><%= config.description %></p><% } %>
-        <% if (theme.author && theme.author.links) { %>
-          <p class="profile-links">
-            <% Object.keys(theme.author.links).forEach(function (label) { %>
-              <a href="<%- theme.author.links[label] %>"><%= label %></a>
-            <% }) %>
-          </p>
+      <h1 class="hero-name"><%= config.author %></h1>
+      <p class="hero-subtitle">
+        <%= config.subtitle %>
+        <% if (author.location) { %>
+          <span class="hero-location"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg><%= author.location %></span>
         <% } %>
-      </div>
+      </p>
+      <% if (config.description) { %><p class="hero-bio"><%= config.description %></p><% } %>
+      <% if (author.links && Object.keys(author.links).length) { %>
+        <p class="hero-links">
+          <% Object.keys(author.links).forEach(function (label) { %>
+            <a class="pill" href="<%- author.links[label] %>"><%- partial('_partial/link-icon', { label: label }) %><%= label %></a>
+          <% }) %>
+        </p>
+      <% } %>
+      <dl class="hero-stats">
+        <div><dd><%= site.posts.length %></dd><dt><%= __('hero.posts') %></dt></div>
+        <div><dd><%= allBooks.length %></dd><dt><%= __('hero.books') %></dt></div>
+        <div><dd><%= tagCount %></dd><dt><%= __('hero.tags') %></dt></div>
+      </dl>
+    </div>
+  </section>
+<% } %>
+<div class="container narrow">
+  <% if (page.current === 1 && allBooks.length) { %>
+    <section class="section">
+      <h2 class="section-title"><span><%= __('books.title') %></span><a class="section-more" href="<%- url_for('/books/') %>"><%= __('hero.all') %> →</a></h2>
+      <%- partial('_partial/book-cards', { list: allBooks }) %>
     </section>
-    <% const allBooks = books(); if (allBooks.length) { %>
-      <section class="section">
-        <h2 class="section-title"><a href="<%- url_for('/books/') %>"><%= __('books.title') %></a></h2>
-        <%- partial('_partial/book-cards', { list: allBooks }) %>
-      </section>
-    <% } %>
   <% } %>
-  <%- partial('_partial/post-list', { posts: page.posts }) %>
-  <%- partial('_partial/paginator') %>
+  <section class="section">
+    <h2 class="section-title"><span><%= __('hero.latest') %></span><a class="section-more" href="<%- url_for('/archives/') %>"><%= __('nav.archives') %> →</a></h2>
+    <%- partial('_partial/post-list', { posts: page.posts }) %>
+    <%- partial('_partial/paginator') %>
+  </section>
 </div>
