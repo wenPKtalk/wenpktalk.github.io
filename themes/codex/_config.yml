@@ -17,6 +17,11 @@ author:
   location:
   links: {}        # Label: URL
 
+# Browser tab icon, a PNG such as /images/favicon.png (64×64); empty = author.avatar
+favicon:
+# iOS home-screen icon: an opaque, square 180×180 PNG (iOS rounds the corners); empty = favicon
+apple_touch_icon:
+
 # On-page table of contents (h2..max_depth)
 toc:
   max_depth: 3

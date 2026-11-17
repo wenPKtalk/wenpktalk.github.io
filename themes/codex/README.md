@@ -44,6 +44,8 @@ author:
   location: Xi'an, China
   links:
     GitHub: https://github.com/you
+favicon: /images/favicon.png     # 浏览器标签页图标（64×64 的 PNG），不填就用头像
+apple_touch_icon: /images/apple-touch-icon.png   # iOS 主屏幕图标：180×180、不透明的方形 PNG，不填就用 favicon
 giscus:
   enable: true
   repo: you/your-repo

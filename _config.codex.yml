@@ -15,3 +15,6 @@ giscus:
   category: Announcements
   category_id: DIC_kwDOGqAqSc4DLBw3
   lang: zh-CN
+
+favicon: /images/favicon.png
+apple_touch_icon: /images/apple-touch-icon.png
