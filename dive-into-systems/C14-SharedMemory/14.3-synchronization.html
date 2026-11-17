@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.3. 线程同步 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;synchronization.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3. Synchronizi">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.3. 线程同步 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;synchronization.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3. Synchronizi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html" class="current" aria-current="page">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 146 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.3. 线程同步</h1>
+  
+  
+    <p class="article-meta"><span>约 22 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/synchronization.html">https://diveintosystems.org/book/C14-SharedMemory/synchronization.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.3. Synchronizing Threads</em></p>
+<p>在我们迄今看过的例子中，每个线程在执行时都不与其他任何线程共享数据。例如，在标量乘法程序中，数组的每个元素都完全独立于其他所有元素，因此线程之间无须共享数据。</p>
+<blockquote>
+<p>In the examples we’ve looked at thus far, each thread executes without sharing data with any other threads. In the scalar multiplication program, for instance, each element of the array is entirely independent of all the others, making it unnecessary for the threads to share data.</p>
+</blockquote>
+<p>然而，线程能够方便地与其他线程共享数据，正是它的主要特点之一。回想一下，多线程进程的所有线程共享该进程公共的堆。在本节中，我们详细研究线程可以使用的数据共享和保护机制。</p>
+<blockquote>
+<p>However, a thread’s ability to easily share data with other threads is one of its main features. Recall that all the threads of a multithreaded process share the heap common to the process. In this section, we study the data sharing and protection mechanisms available to threads in detail.</p>
+</blockquote>
+<p><strong>线程同步</strong>（thread synchronization）指的是强制线程按特定的顺序执行。尽管同步线程可能会增加程序的运行时间，但为了确保程序的正确性，它常常是必要的。在本节中，我们主要讨论一种同步结构（<em>互斥锁</em>）如何帮助确保多线程程序的正确性。本节最后讨论其他几种常见的同步结构：<em>信号量</em>、<em>屏障</em>和<em>条件变量</em>。</p>
+<blockquote>
+<p><strong>Thread synchronization</strong> refers to forcing threads to execute in a particular order. Even though synchronizing threads can add to the runtime of a program, it is often necessary to ensure program correctness. In this section, we primarily discuss how one synchronization construct (a <em>mutex</em>) helps ensure the correctness of a threaded program. We conclude the section with a discussion of some other common synchronization constructs: <em>semaphores</em>, <em>barriers</em> and <em>condition variables</em>.</p>
+</blockquote>
+<h3 id="计数排序（CountSort）"><a href="#计数排序（CountSort）" class="headerlink" title="计数排序（CountSort）"></a>计数排序（CountSort）</h3><p><em>CountSort</em></p>
+<p>我们来研究一个稍微复杂一点的例子：计数排序（CountSort）。计数排序算法是一种简单的线性（O(<em>N</em>)）排序算法，用于对取值范围已知且较小（共 <em>R</em> 种取值，<em>R</em> 远小于 <em>N</em>）的数据进行排序。为了说明计数排序如何工作，考虑一个有 15 个元素的数组 <code>A</code>，其中所有元素都是 0 到 9 之间（10 种可能取值）的随机值：</p>
+<blockquote>
+<p>Let’s study a slightly more complicated example called CountSort. The CountSort algorithm is a simple linear (O(<em>N</em>)) sorting algorithm for sorting a known small range of <em>R</em> values, where <em>R</em> is much smaller than <em>N</em>. To illustrate how CountSort works, consider an array <code>A</code> of 15 elements, all of which contain random values between 0 and 9 (10 possible values):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A = [9, 0, 2, 7, 9, 0, 1, 4, 2, 2, 4, 5, 0, 9, 1]</span><br></pre></td></tr></table></figure>
+
+<p>对于一个特定的数组，计数排序的工作过程如下：</p>
+<blockquote>
+<p>For a particular array, CountSort works as follows:</p>
+</blockquote>
+<ol>
+<li>统计数组中每个值出现的频次。</li>
+</ol>
+<blockquote>
+<ol>
+<li>It counts the frequency of each value in the array.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>按照每个值的频次逐个列举，覆盖原数组。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>It overwrites the original array by enumerating each value by its frequency.</li>
+</ol>
+</blockquote>
+<p>第 1 步之后，每个值的频次被放进一个长度为 10 的 <code>counts</code> 数组中，其中 <code>counts[i]</code> 的值是值 <em>i</em> 在数组 <code>A</code> 中出现的频次。例如，由于数组 <code>A</code> 中有三个值为 2 的元素，所以 <code>counts[2]</code> 为 3。</p>
+<blockquote>
+<p>After step 1, the frequency of each value is placed in a <code>counts</code> array of length 10, where the value of <code>counts[i]</code> is the frequency of the value <em>i</em> in array <code>A</code>. For example, since there are three elements with value 2 in array <code>A</code>, <code>counts[2]</code> is 3.</p>
+</blockquote>
+<p>上面例子对应的 <code>counts</code> 数组如下：</p>
+<blockquote>
+<p>The corresponding <code>counts</code> array for the previous example looks like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">counts = [3, 2, 3, 0, 2, 1, 0, 1, 0, 3]</span><br></pre></td></tr></table></figure>
+
+<p>注意，<code>counts</code> 数组中所有元素之和等于 <code>A</code> 的长度，即 15。</p>
+<blockquote>
+<p>Note that the sum of all the elements in the <code>counts</code> array is equal to the length of <code>A</code>, or 15.</p>
+</blockquote>
+<p>第 2 步用 <code>counts</code> 数组覆盖 <code>A</code>，利用频次计数来确定 <code>A</code> 中按排好序的顺序存放每个相继值的下标集合。所以，由于 <code>counts</code> 数组表明数组 <code>A</code> 中有三个值为 0 的元素和两个值为 1 的元素，最终数组的前三个元素将是 0，接下来两个将是 1。</p>
+<blockquote>
+<p>Step 2 uses the <code>counts</code> array to overwrite <code>A</code>, using the frequency counts to determine the set of indices in <code>A</code> that store each consecutive value in sorted order. So, since the <code>counts</code> array indicates that there are three elements with value 0 and two elements with value 1 in array <code>A</code>, the first three elements of the final array will be 0, and the next two will be 1.</p>
+</blockquote>
+<p>运行第 2 步之后，最终的数组如下：</p>
+<blockquote>
+<p>After running step 2, the final array looks like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">A = [0, 0, 0, 1, 1, 2, 2, 2, 4, 4, 5, 7, 9, 9, 9]</span><br></pre></td></tr></table></figure>
+
+<p>下面是计数排序算法的一个串行实现，其中 <code>count</code>（第 1 步）和 <code>overwrite</code>（第 2 步）函数界限分明。为简洁起见，我们在这里没有列出整个程序，不过你可以下载源代码（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">countSort.c</a>）。</p>
+<blockquote>
+<p>Below is a serial implementation of the CountSort algorithm, with the <code>count</code> (step 1) and <code>overwrite</code> (step 2) functions clearly delineated. For brevity, we do not reproduce the whole program here, though you can download the source (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">countSort.c</a>).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br></pre></td><td class="code"><pre><span class="line">#define MAX 10 //the maximum value of an element. (10 means 0-9)</span><br><span class="line"></span><br><span class="line">/*step 1:</span><br><span class="line"> * compute the frequency of all the elements in the input array and store</span><br><span class="line"> * the associated counts of each element in array counts. The elements in the</span><br><span class="line"> * counts array are initialized to zero prior to the call to this function.</span><br><span class="line">*/</span><br><span class="line">void countElems(int *counts, int *array_A, long length) &#123;</span><br><span class="line">    int val, i;</span><br><span class="line">    for (i = 0; i &lt; length; i++) &#123;</span><br><span class="line">      val = array_A[i]; //read the value at index i</span><br><span class="line">      counts[val] = counts[val] + 1; //update corresponding location in counts</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* step 2:</span><br><span class="line"> * overwrite the input array (array_A) using the frequencies stored in the</span><br><span class="line"> *  array counts</span><br><span class="line">*/</span><br><span class="line">void writeArray(int *counts, int *array_A) &#123;</span><br><span class="line">    int i, j = 0, amt;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; MAX; i++) &#123; //iterate over the counts array</span><br><span class="line">        amt = counts[i]; //capture frequency of element i</span><br><span class="line">        while (amt &gt; 0) &#123; //while all values aren&#x27;t written</span><br><span class="line">            array_A[j] = i; //replace value at index j of array_A with i</span><br><span class="line">            j++; //go to next position in array_A</span><br><span class="line">            amt--; //decrease the amount written by 1</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* main function:</span><br><span class="line"> * gets array length from command line args, allocates a random array of that</span><br><span class="line"> * size, allocates the counts array, the executes step 1 of the CountSort</span><br><span class="line"> * algorithm (countsElem) followed by step 2 (writeArray).</span><br><span class="line">*/</span><br><span class="line">int main( int argc, char **argv ) &#123;</span><br><span class="line">    //code ommitted for brevity -- download source to view full file</span><br><span class="line"></span><br><span class="line">    srand(10); //use of static seed ensures the output is the same every run</span><br><span class="line"></span><br><span class="line">    long length = strtol( argv[1], NULL, 10 );</span><br><span class="line">    int verbose = atoi(argv[2]);</span><br><span class="line"></span><br><span class="line">    //generate random array of elements of specified length</span><br><span class="line">    int *array = malloc(length * sizeof(int));</span><br><span class="line">    genRandomArray(array, length);</span><br><span class="line"></span><br><span class="line">    //print unsorted array (commented out)</span><br><span class="line">    //printArray(array, length);</span><br><span class="line"></span><br><span class="line">    //allocate counts array and initializes all elements to zero.</span><br><span class="line">    int counts[MAX] = &#123;0&#125;;</span><br><span class="line"></span><br><span class="line">    countElems(counts, array, length); //calls step 1</span><br><span class="line">    writeArray(counts, array); //calls step2</span><br><span class="line"></span><br><span class="line">    //print sorted array (commented out)</span><br><span class="line">    //printArray(array, length);</span><br><span class="line"></span><br><span class="line">    free(array); //free memory</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在一个大小为 15 的数组上运行这个程序，得到下面的输出：</p>
+<blockquote>
+<p>Running this program on an array of size 15 yields the following output:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./countSort 15 1</span><br><span class="line">array before sort:</span><br><span class="line">5 8 8 5 8 7 5 1 7 7 3 3 8 3 4</span><br><span class="line">result after sort:</span><br><span class="line">1 3 3 3 4 5 5 5 7 7 7 8 8 8 8</span><br></pre></td></tr></table></figure>
+
+<p>这个程序的第二个参数是一个 <em>verbose</em>（详细输出）标志，表示程序是否打印输出。对于较大的数组，我们可能想运行程序但不一定要打印输出，这时这个选项就很有用。</p>
+<blockquote>
+<p>The second parameter to this program is a <em>verbose</em> flag, which indicates whether the program prints output. This is a useful option for larger arrays for which we may want to run the program but not necessarily print out the output.</p>
+</blockquote>
+<h3 id="并行化-countElems：初次尝试"><a href="#并行化-countElems：初次尝试" class="headerlink" title="并行化 countElems：初次尝试"></a>并行化 countElems：初次尝试</h3><p><em>Parallelizing countElems: An Initial Attempt</em></p>
+<p>计数排序由两个主要步骤组成，每一步都能从并行化中获益。在本章余下的部分，我们主要集中于第 1 步，即 <code>countElems</code> 函数的并行化。<code>writeArray</code> 函数的并行化留给读者作为练习。</p>
+<blockquote>
+<p>CountSort consists of two primary steps, each of which benefits from being parallelized. In the remainder of the chapter, we primarily concentrate on the parallelization of step 1, or the <code>countElems</code> function. Parallelizing the <code>writeArray</code> function is left as an exercise for the reader.</p>
+</blockquote>
+<p>下面的代码块展示了创建多线程版 <code>countElems</code> 函数的初次尝试。为简洁起见，这个例子省略了部分代码（参数解析、错误处理），完整的源代码可以在这里下载（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p.c">countElems_p.c</a>）。在下面的代码中，每个线程试图统计全局数组中分配给它的那部分中各元素的频次，并用统计结果更新一个全局的计数数组：</p>
+<blockquote>
+<p>The code block that follows depicts a first attempt at creating a threaded <code>countElems</code> function. Parts of the code (argument parsing, error handling) are omitted in this example for the sake of brevity, but the full source can be downloaded here (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p.c">countElems_p.c</a>). In the code that follows, each thread attempts to count the frequency of the array elements in its assigned component of the global array and updates a global count array with the discovered counts:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">/*parallel version of step 1 (first cut) of CountSort algorithm:</span><br><span class="line"> * extracts arguments from args value</span><br><span class="line"> * calculates the portion of the array that thread is responsible for counting</span><br><span class="line"> * computes the frequency of all the elements in assigned component and stores</span><br><span class="line"> * the associated counts of each element in counts array</span><br><span class="line">*/</span><br><span class="line">void *countElems( void *args ) &#123;</span><br><span class="line">    struct t_arg * myargs = (struct t_arg *)args;</span><br><span class="line">    //extract arguments (omitted for brevity)</span><br><span class="line">    int *array = myargs-&gt;ap;</span><br><span class="line">    long *counts = myargs-&gt;countp;</span><br><span class="line">    //... (get nthreads, length, myid)</span><br><span class="line"></span><br><span class="line">    //assign work to the thread</span><br><span class="line">    long chunk = length / nthreads; //nominal chunk size</span><br><span class="line">    long start = myid * chunk;</span><br><span class="line">    long end = (myid + 1) * chunk;</span><br><span class="line">    long val;</span><br><span class="line">    if (myid == nthreads-1) &#123;</span><br><span class="line">        end = length;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    long i;</span><br><span class="line">    //heart of the program</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        val = array[i];</span><br><span class="line">        counts[val] = counts[val] + 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>main</code> 函数看起来与我们之前的示例程序几乎一样：</p>
+<blockquote>
+<p>The <code>main</code> function looks nearly identical to our earlier sample programs:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line"></span><br><span class="line">    if (argc != 4) &#123;</span><br><span class="line">        //print out usage info (ommitted for brevity)</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    srand(10); //static seed to assist in correctness check</span><br><span class="line"></span><br><span class="line">    //parse command line arguments</span><br><span class="line">    long t;</span><br><span class="line">    long length = strtol(argv[1], NULL, 10);</span><br><span class="line">    int verbose = atoi(argv[2]);</span><br><span class="line">    long nthreads = strtol(argv[3], NULL, 10);</span><br><span class="line"></span><br><span class="line">    //generate random array of elements of specified length</span><br><span class="line">    int *array = malloc(length * sizeof(int));</span><br><span class="line">    genRandomArray(array, length);</span><br><span class="line"></span><br><span class="line">    //specify counts array and initialize all elements to zero</span><br><span class="line">    long counts[MAX] = &#123;0&#125;;</span><br><span class="line"></span><br><span class="line">    //allocate threads and args array</span><br><span class="line">    pthread_t *thread_array; //pointer to future thread array</span><br><span class="line">    thread_array = malloc(nthreads * sizeof(pthread_t)); //allocate the array</span><br><span class="line">    struct t_arg *thread_args = malloc( nthreads * sizeof(struct t_arg) );</span><br><span class="line"></span><br><span class="line">    //fill thread array with parameters</span><br><span class="line">    for (t = 0; t &lt; nthreads; t++) &#123;</span><br><span class="line">        //ommitted for brevity...</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for (t = 0; t &lt; nthreads; t++) &#123;</span><br><span class="line">        pthread_create(&amp;thread_array[t], NULL, countElems, &amp;thread_args[t]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for (t = 0; t &lt; nthreads; t++) &#123;</span><br><span class="line">        pthread_join(thread_array[t], NULL);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    free(thread_array);</span><br><span class="line">    free(array);</span><br><span class="line"></span><br><span class="line">    if (verbose) &#123;</span><br><span class="line">        printf(&quot;Counts array:\n&quot;);</span><br><span class="line">        printCounts(counts);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了结果可复现，随机数生成器用一个固定的值（10）作为种子，以确保 <code>array</code>（进而 <code>counts</code>）总是包含同一组数。另一个函数（<code>printCounts</code>）打印出全局 <code>counts</code> 数组的内容。我们预期，无论使用多少个线程，<code>counts</code> 数组的内容都应当相同。为简洁起见，清单中去掉了错误处理。</p>
+<blockquote>
+<p>For reproducibility purposes, the random number generator is seeded with a static value (10) to ensure that <code>array</code> (and therefore <code>counts</code>) always contains the same set of numbers. An additional function (<code>printCounts</code>) prints out the contents of the global <code>counts</code> array. The expectation is that, regardless of the number of threads used, the contents of the <code>counts</code> array should always be the same. For brevity, error handling has been removed from the listing.</p>
+</blockquote>
+<p>编译这个程序，并分别用一个、两个和四个线程在 1000 万个元素上运行，得到下面的结果：</p>
+<blockquote>
+<p>Compiling the program and running it with one, two, and four threads over 10 million elements produces the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o countElems_p countElems_p.c -pthread</span><br><span class="line"></span><br><span class="line">$./countElems_p 10000000 1 1</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br><span class="line"></span><br><span class="line">$./countElems_p 10000000 1 2</span><br><span class="line">Counts array:</span><br><span class="line">661756 661977 657828 658479 657913 659308 658561 656879 658070 657276</span><br><span class="line"></span><br><span class="line">$./countElems_p 10000000 1 4</span><br><span class="line">Counts array:</span><br><span class="line">579846 580814 580122 579772 582509 582713 582518 580917 581963 581094</span><br></pre></td></tr></table></figure>
+
+<p>注意，每次运行打印出的结果都有明显变化。尤其是，它们似乎随着线程数的不同而变化！这本不应该发生，因为我们使用了固定的种子，保证每次运行都得到同一组数。这些结果违背了多线程程序的一条基本准则：<em>无论</em>使用多少个线程，程序的输出都应当正确且一致。</p>
+<blockquote>
+<p>Note that the printed results change significantly on each run. In particular, they seem to change as we vary the number of threads! This should not happen, since our use of the static seed guarantees the same set of numbers every run. These results contradict one of the cardinal rules for threaded programs: the output of a program should be correct and consistent <em>regardless</em> of the number of threads used.</p>
+</blockquote>
+<p>由于我们并行化 <code>countElems</code> 的初次尝试似乎没有成功，我们来深入研究一下这个程序在做什么，看看如何修正它。</p>
+<blockquote>
+<p>Since our first attempt at parallelizing <code>countElems</code> doesn’t seem to be working, let’s delve deeper into what this program is doing and examine how we might fix it.</p>
+</blockquote>
+<h3 id="数据竞争"><a href="#数据竞争" class="headerlink" title="数据竞争"></a>数据竞争</h3><p><em>Data Races</em></p>
+<p>为了弄清发生了什么，我们考虑在多核系统的两个不同核心上用两个线程运行的一个例子。回想一下，任何线程的执行都可能随时被操作系统抢占，这意味着在任一时刻，每个线程可能正在执行某个函数的不同指令（也可能是同一条指令）。<a href="14.3-synchronization.html">表 1</a> 展示了经过 <code>countElems</code> 函数的一条可能的执行路径。为了更好地说明发生了什么，我们把 <code>counts[val] = counts[val] + 1</code> 这一行翻译成下面这串等价的指令：</p>
+<blockquote>
+<p>To understand what’s going on, let’s consider an example run with two threads on two separate cores of a multicore system. Recall that the execution of any thread can be preempted at any time by the OS, which means that each thread could be running different instructions of a particular function at any given time (or possibly the same instruction). <a href="14.3-synchronization.html">Table 1</a> shows one possible path of execution through the <code>countElems</code> function. To better illustrate what is going on, we translated the line <code>counts[val] = counts[val] + 1</code> into the following sequence of equivalent instructions:</p>
+</blockquote>
+<ol>
+<li><strong>读</strong>取 <code>counts[val]</code>，放入一个寄存器。</li>
+</ol>
+<blockquote>
+<ol>
+<li><strong>Read</strong> <code>counts[val]</code> and place into a register.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li><strong>修改</strong>寄存器，把它加一。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><strong>Modify</strong> the register by incrementing it by one.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>把寄存器的内容<strong>写</strong>回 <code>counts[val]</code>。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li><strong>Write</strong> the contents of the register to <code>counts[val]</code>.</li>
+</ol>
+</blockquote>
+<p>这称为<strong>读-改-写</strong>（read-modify-write）模式。在<a href="14.3-synchronization.html">表 1</a> 所示的例子中，每个线程在不同的核心上执行（线程 0 在核心 0 上，线程 1 在核心 1 上）。我们从时间步 <em>i</em> 开始考察进程的执行，此时两个线程的 <code>val</code> 都是 1。</p>
+<blockquote>
+<p>This is known as the <strong>read-modify-write</strong> pattern. In the example shown in <a href="14.3-synchronization.html">Table 1</a>, each thread executes on a separate core (Thread 0 on Core 0, Thread 1 on Core 1). We start inspecting the execution of the process at time step <em>i</em>, where both threads have a <code>val</code> of 1.</p>
+</blockquote>
+<p><strong>表 1.</strong> 两个线程运行 countElems 的一种可能的执行序列</p>
+<p><em>Table 1. A Possible Execution Sequence of Two Threads Running countElems</em></p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>线程 0</th>
+<th>线程 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>读取 counts[1]，放入核心 0 的寄存器</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>寄存器加 1</td>
+<td>读取 counts[1]，放入核心 1 的寄存器</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>用寄存器的内容覆盖 counts[1]</td>
+<td>寄存器加 1</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>…​</td>
+<td>用寄存器的内容覆盖 counts[1]</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Thread 0</th>
+<th>Thread 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>Read counts[1] and place into Core 0’s register</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>Increment register by 1</td>
+<td>Read counts[1] and place into Core 1’s register</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>Overwrite counts[1] with contents of register</td>
+<td>Increment register by 1</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>…​</td>
+<td>Overwrite counts[1] with contents of register</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>假设在<a href="14.3-synchronization.html">表 1</a> 的执行序列之前，<code>counts[1]</code> 的值为 60。在时间步 <em>i</em>，线程 0 读取 <code>counts[1]</code>，把值 60 放入核心 0 的寄存器。在时间步 <em>i+1</em>，线程 0 把核心 0 的寄存器加一，与此同时，线程 1 把 <code>counts[1]</code> 的<em>当前</em>值（60）读入核心 1 的寄存器。在时间步 <em>i+2</em>，线程 0 用值 61 更新 <code>counts[1]</code>，同时线程 1 把存放在它本地寄存器中的值（60）加一。最终结果是，在时间步 <em>i+3</em>，<code>counts[1]</code> 被线程 1 用值 61 覆盖，而不是我们预期的 62！这实际上让 <code>counts[1]</code>「丢失」了一次加一！</p>
+<blockquote>
+<p>Suppose that, prior to the execution sequence in <a href="14.3-synchronization.html">Table 1</a>, <code>counts[1]</code> contains the value 60. In time step <em>i</em>, Thread 0 reads <code>counts[1]</code> and places the value 60 in Core 0’s register. In time step <em>i+1</em>, while Thread 0 increments Core 0’s register by one, the <em>current</em> value in <code>counts[1]</code> (60) is read into Core 1’s register by Thread 1. In time step <em>i+2</em>, Thread 0 updates <code>counts[1]</code> with the value 61 while Thread 1 increments the value stored in its local register (60) by one. The end result is that during time step <em>i+3</em>, the value <code>counts[1]</code> is overwritten by Thread 1 with the value 61, not 62 as we would expect! This causes <code>counts[1]</code> to essentially “lose” an increment!</p>
+</blockquote>
+<p>我们把两个线程试图写同一个内存位置的情形称为<strong>数据竞争</strong>（data race）。更一般地说，<strong>竞态条件</strong>（race condition）指的是两个操作同时执行会得到错误结果的任何情形。注意，同时读取 <code>counts[1]</code> 这个位置本身并<em>不</em>构成竞态条件，因为一般来说，单纯从内存中读取值不会有问题。是这一步与对 <code>counts[1]</code> 的写操作结合在一起，才导致了错误的结果。在大多数多线程程序中，这种读-改-写模式是一种特定类型的竞态条件，即<strong>数据竞争</strong>的常见来源。在讨论竞态条件及其修正方法时，我们集中讨论数据竞争。</p>
+<blockquote>
+<p>We refer to the scenario in which two threads attempt to write to the same location in memory as a <strong>data race</strong> condition. More generally, a <strong>race condition</strong> refers to any scenario in which the simultaneous execution of two operations gives an incorrect result. Note that a simultaneous read of the <code>counts[1]</code> location would <em>not</em> in and of itself constitute a race condition, because values can generally read alone from memory without issue. It was the combination of this step with the writes to <code>counts[1]</code> that caused the incorrect result. This read-modify-write pattern is a common source of a particular type of race condition, called a <strong>data race</strong>, in most threaded programs. In our discussion of race conditions and how to fix them, we focus on data races.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 原子操作（Atomic operations）</p><p>如果一个线程感觉某个操作是不间断地执行的（换句话说，是一个「要么全做、要么不做」的动作），这个操作就被定义为<strong>原子的</strong>（atomic）。在一些库中，会用一个关键字或类型来指明某块计算应当被视为原子的。在前面的例子中，<code>counts[val] = counts[val] + 1</code> 这一行（即使写成 <code>counts[val]++</code>）<em>不是</em>原子的，因为这一行在机器层面实际上对应好几条指令。需要互斥这样的同步结构，才能确保没有数据竞争。一般来说，除非显式地强制互斥，否则应当假定所有操作都是非原子的。</p>
+<blockquote>
+<p>An operation is defined as being <strong>atomic</strong> if a thread perceives it as executing without interruption (in other words, as an “all or nothing” action). In some libraries, a keyword or type is used to specify that a block of computation should be treated as being atomic. In the previous example, the line <code>counts[val] = counts[val] + 1</code> (even if written as <code>counts[val]++</code>) is <em>not</em> atomic, because this line actually corresponds to several instructions at the machine level. A synchronization construct like mutual exclusion is needed to ensure that there are no data races. In general, all operations should be assumed to be nonatomic unless mutual exclusion is explicitly enforced.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · 用机器码看「读-改-写」与 C11 原子操作</p><p>译者在 Apple Silicon Mac 上用 <code>clang -O2 -S</code> 编译 <code>plain[val] = plain[val] + 1;</code>，得到的正是上文所说的三步：<code>ldr</code>（读）、<code>add</code>（改）、<code>str</code>（写）。C11 起，标准库 <code>&lt;stdatomic.h&gt;</code> 提供了原子类型和原子操作，例如 <code>atomic_fetch_add</code>，它以原子方式把一个值加到原子对象上，相当于一次原子的读-改-写（见 <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/atomic/atomic_fetch_add">cppreference：atomic_fetch_add</a>）。把 <code>counts</code> 声明为 <code>atomic_long counts[10];</code> 并改用 <code>atomic_fetch_add(&amp;counts[val], 1);</code> 后，同样的编译得到的是单条 ARMv8.1 原子指令 <code>ldaddal</code>，这类简单的计数器就不再需要互斥锁了。</p>
+</div>
+<p>要记住，并非两个线程的所有执行序列都会导致竞态条件。考虑<a href="14.3-synchronization.html">表 2</a> 中线程 0 和线程 1 的示例执行序列。</p>
+<blockquote>
+<p>Keep in mind that not all execution sequences of the two threads cause a race condition. Consider the sample execution sequence of Threads 0 and 1 in <a href="14.3-synchronization.html">Table 2</a>.</p>
+</blockquote>
+<p><strong>表 2.</strong> 两个线程运行 countElems 的另一种可能的执行序列</p>
+<p><em>Table 2. Another Possible Execution Sequence of Two Threads Running countElems</em></p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>线程 0</th>
+<th>线程 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>读取 counts[1]，放入核心 0 的寄存器</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>寄存器加 1</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>用寄存器的内容覆盖 counts[1]</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>…​</td>
+<td>读取 counts[1]，放入核心 1 的寄存器</td>
+</tr>
+<tr>
+<td><em>i+4</em></td>
+<td>…​</td>
+<td>寄存器加 1</td>
+</tr>
+<tr>
+<td><em>i+5</em></td>
+<td>…​</td>
+<td>用寄存器的内容覆盖 counts[1]</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Thread 0</th>
+<th>Thread 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>Read counts[1] and place into Core 0’s register</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>Increment register by 1</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>Overwrite counts[1] with contents of register</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>…​</td>
+<td>Read counts[1] and place into Core 1’s register</td>
+</tr>
+<tr>
+<td><em>i+4</em></td>
+<td>…​</td>
+<td>Increment register by 1</td>
+</tr>
+<tr>
+<td><em>i+5</em></td>
+<td>…​</td>
+<td>Overwrite counts[1] with contents of register</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>在这个执行序列中，线程 1 直到线程 0 用新值（61）更新了 <code>counts[1]</code> 之后才读取它。最终结果是，线程 1 在时间步 <em>i+3</em> 从 <code>counts[1]</code> 中读到值 61，把它放入核心 1 的寄存器，并在时间步 <em>i+5</em> 把值 62 写入 <code>counts[1]</code>。</p>
+<blockquote>
+<p>In this execution sequence, Thread 1 does not read from <code>counts[1]</code> until after Thread 0 updates it with its new value (61). The end result is that Thread 1 reads the value 61 from <code>counts[1]</code> and places it into Core 1’s register during time step <em>i+3</em>, and writes the value 62 to <code>counts[1]</code> in time step <em>i+5</em>.</p>
+</blockquote>
+<p>要修正数据竞争，首先必须把<strong>临界区</strong>（critical section）隔离出来，即为了确保正确的行为而必须<strong>原子地</strong>（孤立地）执行的那部分代码。在多线程程序中，更新共享资源的代码块通常被认定为临界区。</p>
+<blockquote>
+<p>To fix a data race, we must first isolate the <strong>critical section</strong>, or the subset of code that must execute <strong>atomically</strong> (in isolation) to ensure correct behavior. In threaded programs, blocks of code that update a shared resource are typically identified to be critical sections.</p>
+</blockquote>
+<p>在 <code>countElems</code> 函数中，对 <code>counts</code> 数组的更新应当放在临界区中，以确保值不会因多个线程更新同一内存位置而丢失：</p>
+<blockquote>
+<p>In the <code>countElems</code> function, updates to the <code>counts</code> array should be put in a critical section to ensure that values are not lost due to multiple threads updating the same location in memory:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">long i;</span><br><span class="line">for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">    val = array[i];</span><br><span class="line">    counts[val] = counts[val] + 1; //this line needs to be protected</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于 <code>countElems</code> 中的根本问题是多个线程同时访问 <code>counts</code>，所以需要一种机制来确保一次只有一个线程在临界区内执行。使用同步结构（例如下一节介绍的互斥锁）会强制线程依次进入临界区。</p>
+<blockquote>
+<p>Since the fundamental problem in <code>countElems</code> is the simultaneous access of <code>counts</code> by multiple threads, a mechanism is needed to ensure that only one thread executes within the critical section at a time. Using a synchronization construct (like a mutex, which is covered in the next section) will force the threads to enter the critical section sequentially.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.2-posix.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.2. 你好，线程！编写你的第一个多线程程序</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.3.1. 互斥</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%AE%A1%E6%95%B0%E6%8E%92%E5%BA%8F%EF%BC%88CountSort%EF%BC%89"><span class="toc-text">计数排序（CountSort）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B6%E8%A1%8C%E5%8C%96-countElems%EF%BC%9A%E5%88%9D%E6%AC%A1%E5%B0%9D%E8%AF%95"><span class="toc-text">并行化 countElems：初次尝试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E7%AB%9E%E4%BA%89"><span class="toc-text">数据竞争</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

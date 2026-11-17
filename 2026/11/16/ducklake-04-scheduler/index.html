@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转 · Summary</title>
+  <meta name="description" content="上一篇讲了谁在哪个线程跑，这一篇看 task 怎么排队、worker 怎么取活。这是 v2.0 改动最大的地方，篇末附了从 v1.5 到 v2.0 的变化。  3. 引擎调度：两个线程池 + 每 pipeline 私有 morselDuckDB 的并发调度是两层：   ① Task 层（全局）：每个 DatabaseInstance 一个 TaskScheduler，内部两个池、两个 moodyc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-04-scheduler/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="上一篇讲了谁在哪个线程跑，这一篇看 task 怎么排队、worker 怎么取活。这是 v2.0 改动最大的地方，篇末附了从 v1.5 到 v2.0 的变化。  3. 引擎调度：两个线程池 + 每 pipeline 私有 morselDuckDB 的并发调度是两层：   ① Task 层（全局）：每个 DatabaseInstance 一个 TaskScheduler，内部两个池、两个 moodyc">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-04-scheduler/duckdb-internal-concurrency.png">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-04-scheduler/duckdb-concurrentqueue-structure.png">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-04-scheduler/duckdb-task-scheduling-detail.png">
+<meta property="article:published_time" content="2026-11-16T07:04:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.908Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-04-scheduler/duckdb-internal-concurrency.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/" class="current" aria-current="page">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>二、引擎原理</span>
+      </nav>
+      <span class="book-position">第 4 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:04:00.000Z">2026-11-16</time>
+      <span>· 约 7 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><a href="/2026/11/16/ducklake-03-connections-and-threads/" title="DuckLake 专栏（三）：DuckDB 多连接与线程分工">上一篇</a>讲了谁在哪个线程跑，这一篇看 task 怎么排队、worker 怎么取活。这是 v2.0 改动最大的地方，篇末附了从 v1.5 到 v2.0 的变化。
+
+<h2 id="3-引擎调度：两个线程池-每-pipeline-私有-morsel"><a href="#3-引擎调度：两个线程池-每-pipeline-私有-morsel" class="headerlink" title="3. 引擎调度：两个线程池 + 每 pipeline 私有 morsel"></a>3. 引擎调度：两个线程池 + 每 pipeline 私有 morsel</h2><p>DuckDB 的并发调度是<strong>两层</strong>：</p>
+<p><img src="/2026/11/16/ducklake-04-scheduler/duckdb-internal-concurrency.png" alt="DuckDB 内部并发调度（源码级）"></p>
+<ul>
+<li><strong>① Task 层（全局）</strong>：每个 <code>DatabaseInstance</code> 一个 <code>TaskScheduler</code>，内部<strong>两个池、两个 moodycamel 队列</strong>：<code>TaskSchedulerType &#123; REGULAR, ASYNC &#125;</code>（<code>task_scheduler_type.hpp:15</code>）。<ul>
+<li><strong>REGULAR 池</strong>：<code>threads</code> 个计算 worker。它们<strong>两个队列都取</strong>：先试 REGULAR、再试 ASYNC（<code>task_scheduler.cpp:156</code> <code>ExecuteForever</code>）。</li>
+<li><strong>ASYNC 池</strong>：<code>async_threads</code> 个 I&#x2F;O 线程，<strong>只取 ASYNC 队列</strong>。默认 <code>async_threads = min(4 × 系统线程数, 256)</code>（<code>config.cpp:706</code>）。</li>
+<li><strong>队列里排的是 Task，不是 morsel。</strong> 每个查询（Executor）有自己的 <code>ProducerToken</code>，在每个队列里各有一条自己的 lane。</li>
+</ul>
+</li>
+<li><strong>② Morsel 层（每 pipeline 私有）</strong>：morsel <strong>不排队</strong>——由每条 pipeline 私有的全局 source 状态（<strong>mutex 保护的游标</strong>）按需 pull，每次发 1 个 row group。<strong>每查询各自建一份</strong>，扫同一张表也各自从头发一遍 → <strong>无跨查询 morsel 池</strong>。<ul>
+<li>DuckDB 原生表：<code>RowGroupCollection::NextParallelScan</code>（<code>row_group_collection.cpp:370</code>）。</li>
+<li>Parquet &#x2F; DuckLake：<code>MultiFileGlobalState::lock</code> 下 <code>ParquetReader::TryInitializeScan</code> 做 <code>row_group_index++</code>（<code>parquet_multi_file_info.cpp:592</code>，见<a href="/2026/11/16/ducklake-06-ducklake-thread-model/" title="DuckLake 专栏（六）：DuckLake 在线程上怎么跑">第 6 篇</a>）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>调度性质（这几条决定了后面所有稳定性问题）</strong>：</p>
+<ul>
+<li>每个池一个共享队列 → <strong>无 work-stealing</strong>（没有 per-worker 私有队列）；</li>
+<li><strong>无 per-query 优先级</strong>，同 lane 内 FIFO；</li>
+<li><strong>有 lane 轮转</strong>（v2.0 新增）：worker 每从一条 lane 取满 16 个 task，就整体轮转到下一条 lane，每个查询都能轮到（3.3）；</li>
+<li>后台 worker 默认 <code>PROCESS_ALL</code>、<strong>不抢占</strong>（task 跑完或阻塞才让出）；</li>
+<li>阻塞 task 由 <strong>Deschedule 让出线程</strong>，被唤醒后重新入队。</li>
+</ul>
+<h3 id="3-1-队列的真实数据结构：lane-本身就是队列"><a href="#3-1-队列的真实数据结构：lane-本身就是队列" class="headerlink" title="3.1 队列的真实数据结构：lane 本身就是队列"></a>3.1 队列的真实数据结构：<strong>lane 本身就是队列</strong></h3><p>“一个队列”是 API 层的说法；物理上它是一堆 per-producer 子队列的集合（REGULAR、ASYNC 两个队列各是这样一套）：</p>
+<p><img src="/2026/11/16/ducklake-04-scheduler/duckdb-concurrentqueue-structure.png" alt="moodycamel ConcurrentQueue 内部数据结构"></p>
+<ul>
+<li>一条 <strong>lane &#x3D; 一个 <code>ExplicitProducer</code> &#x3D; 一条真正的队列</strong>（block 链表，每 block 32 槽，<code>concurrentqueue.h:292</code> <code>BLOCK_SIZE=32</code>）；SPMC：单生产者塞、多 worker 取。</li>
+<li><strong>enqueue</strong>：只往”自己 lane”的尾 block 塞 → 生产者之间<strong>零争用、无锁</strong>。</li>
+<li><strong>dequeue</strong>：worker 带一个 **<code>ConsumerToken</code>**，从”当前分到的 lane”取 1 个 task；所有 consumer 共享一个全局轮转偏移，任何 consumer 从某条 lane 取满 16 个就推进一次偏移，大家一起换 lane（详见 3.3）。</li>
+<li>所以”无全局 FIFO &#x2F; 无 per-query 优先级 &#x2F; 无 work-stealing”的根源，就是<strong>根本不存在一条全局队列</strong>，只有一堆子队列 + 消费端轮转遍历。</li>
+</ul>
+<h3 id="3-2-多查询怎么在一个-worker-池上交错"><a href="#3-2-多查询怎么在一个-worker-池上交错" class="headerlink" title="3.2 多查询怎么在一个 worker 池上交错"></a>3.2 多查询怎么在一个 worker 池上交错</h3><p><img src="/2026/11/16/ducklake-04-scheduler/duckdb-task-scheduling-detail.png" alt="多查询在 worker 池上交错"></p>
+<ul>
+<li><strong>调用线程先顶上</strong>：新查询到达时就算后台 worker 全忙，它的调用线程也会立刻从自己的 lane 取 task 跑（并行度 1）；小查询可能全程只靠调用线程跑完，根本用不到后台 worker。</li>
+<li>**轮转保证”轮得到”**：一个 worker 空出来后，按轮转顺序去下一条非空 lane 取活，所以新查询不会再把老查询的 lane 饿死（v2.0 之前会，见 3.3 末尾）。</li>
+<li><strong>但不保证”立刻有 worker”<strong>：后台 worker 跑 <code>PROCESS_ALL</code>、不抢占。一条重的 CPU 密集查询把 worker 都占在长 task 上时，其它查询的 task 仍要在 lane 里</strong>等 worker 空出来</strong>。轮转解决的是”空出来的 worker 去哪条 lane”，不是”给每个查询保底几个 worker”。</li>
+<li>引擎不做隔离和限流——公平&#x2F;限流仍要在应用层做（见<a href="/2026/11/16/ducklake-05-memory-and-admission/" title="DuckLake 专栏（五）：内存模型与并发准入">第 5 篇</a>）。</li>
+</ul>
+<h3 id="3-3-worker-取-task-的算法：ConsumerToken-轮转（v2-0）"><a href="#3-3-worker-取-task-的算法：ConsumerToken-轮转（v2-0）" class="headerlink" title="3.3 worker 取 task 的算法：ConsumerToken 轮转（v2.0）"></a>3.3 worker 取 task 的算法：<code>ConsumerToken</code> 轮转（v2.0）</h3><p>每个 worker 线程在 <code>ExecuteForever</code> 里建一个 <code>ConsumerToken</code>，用 <code>try_dequeue(token, item)</code> 取 task（<code>task_scheduler_queue.cpp</code> 的 <code>Dequeue</code>；moodycamel 实现在 <code>concurrentqueue.h:1106</code>）：</p>
+<ol>
+<li>每个 token 生来带一个 <code>initialOffset</code>（按创建顺序递增），第一次取时据此<strong>定位到自己的起始 lane</strong>；</li>
+<li>全局有一个 <code>globalExplicitConsumerOffset</code>；<strong>任何</strong> worker 从当前 lane 连续取满 <strong>16</strong> 个 task（DuckDB 把 moodycamel 默认的 256 调成了 16，<code>task_scheduler_queue.cpp:16</code> <code>TaskQueueTraits</code>），就把这个全局偏移 +1；</li>
+<li>每个 worker 取之前发现全局偏移变了，就<strong>跟着往后挪同样的格数</strong>（<code>concurrentqueue.h:1332</code> <code>update_current_producer_after_rotation</code>）——所以是”大家一起轮转”，速度由取得最快的 worker 决定；</li>
+<li>当前 lane 空了 → 沿 producer 链表往后找，<strong>取第一条非空 lane 的 1 个</strong>，并把它设为新的当前 lane；</li>
+<li>全空 → 返回 <code>false</code>，worker 回到池的信号量（LightweightSemaphore）上休眠等新活。</li>
+</ol>
+<p><strong>几点容易记错的</strong>：</p>
+<ul>
+<li>取的仍是<strong>一个 task</strong>，不是一条 lane；<strong>不清空</strong> lane；lane 是 SPMC，多个 worker 可同时从同一条 lane 各取不同 task。</li>
+<li><strong>调用线程不参与轮转</strong>：发起查询的 Executor 用 <code>try_dequeue_from_producer</code> <strong>只取自己那条 lane</strong>（<code>DequeueFromProducer</code>，带锁）——即调用线程只干自己查询的活。</li>
+<li>REGULAR worker 每轮先 REGULAR 队列后 ASYNC 队列，所以 I&#x2F;O 活在计算池空闲时也会被计算线程顺手做掉；ASYNC 线程从不碰计算 task。</li>
+</ul>
+<p><strong>v2.0 之前的旧算法（已删除）</strong>：worker 用 token-less <code>try_dequeue(item)</code>，从链表头（最新的 producer）往后扫，只看前 3 个非空 lane、挑 <code>size_approx</code> 最大的取 1 个，调用之间不保留状态。提交 <code>0f67e73fd31</code>（2026-10-09，PR <a target="_blank" rel="noopener" href="https://github.com/duckdb/duckdb/pull/26809">#26809</a>「…use a ConsumerToken to improve query execution fairness」；同期由外部用户以 issue <a target="_blank" rel="noopener" href="https://github.com/duckdb/duckdb/issues/26818">#26818</a>「Task Scheduler is Unfair: Always Prioritize 3 Queries Only」独立复现）的说明原文指出：<strong>因为只扫前 3 条、且新查询不断让自己的 lane 非空，任何时刻只有约 3 条查询能拿到后台 worker，老查询的 task 永远取不到</strong>，只被轮询的查询可能完全没进展——这正是改成 ConsumerToken 轮转、并把配额从 256 降到 16 的原因（256 步比一个查询的总步数还多，等于不生效）。</p>
+<h3 id="3-4-异步-I-O-与-read-ahead（v2-0-新增）"><a href="#3-4-异步-I-O-与-read-ahead（v2-0-新增）" class="headerlink" title="3.4 异步 I&#x2F;O 与 read-ahead（v2.0 新增）"></a>3.4 异步 I&#x2F;O 与 read-ahead（v2.0 新增）</h3><ul>
+<li><strong>扫描 I&#x2F;O 下放到 ASYNC 池</strong>：Parquet reader 把列块读取包装成异步任务，返回 <code>AsyncResult(io_tasks, ASYNC)</code>（<code>parquet_reader.cpp:2363</code>、<code>:2488</code>）；扫描 task 先挂起（BLOCKED），I&#x2F;O 全部完成后被唤醒继续解码。</li>
+<li><strong>read-ahead</strong>：<code>read_ahead_depth</code> 默认 <strong>-1（自动）</strong>，深度不限，积压量由临时内存预算（<code>ManagedAsyncMemoryGovernor</code>）兜住；设 0 关闭；<code>async_threads=0</code> 时也自动关闭（<code>scan_read_ahead.cpp:144</code>）。开启后会在 ASYNC 池上<strong>提前打开后续文件</strong>、提前调度后续 row group 的 I&#x2F;O。</li>
+<li><strong>写</strong>：<code>COPY ... TO</code> 的文件打开&#x2F;关闭&#x2F;收尾作为生命周期任务投到 ASYNC 池（<code>physical_copy_to_file.cpp:318</code>）；<code>AsyncWriteQueue</code> 的落盘同样走 ASYNC 池。</li>
+</ul>
+<h2 id="附录：从-v1-5-到-v2-0-改了什么"><a href="#附录：从-v1-5-到-v2-0-改了什么" class="headerlink" title="附录：从 v1.5 到 v2.0 改了什么"></a>附录：从 v1.5 到 v2.0 改了什么</h2><p>这些笔记最早按 v1.5.x 写，2026-11-04 按 v2.0.0 源码重核后改了下面 9 处：1–4 在 v1.5 时代成立，是 v2.0 改掉的——<code>async_threads</code>（<code>204c01453f9</code>，2026-05-29）、read-ahead（<code>721de15a36d</code>，2026-08-14）、轮转取 task（<code>0f67e73fd31</code>，2026-10-09）三个提交都<strong>不在 <code>v1.5.6</code>、在 <code>v2.0.0</code> 里</strong>（<code>git merge-base --is-ancestor</code> 核对）；5–9 是旧版本身不准确、已过时或缺失：</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>旧说法</th>
+<th>现在（源码）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>一个 <code>TaskScheduler</code> + <strong>一个</strong>队列 + 一个 worker 池</td>
+<td><strong>两个池两个队列</strong>（REGULAR + ASYNC），REGULAR worker 两个队列都取</td>
+</tr>
+<tr>
+<td>2</td>
+<td>worker 用 token-less <code>try_dequeue</code>，前 3 个非空 lane 里挑最满的</td>
+<td><strong><code>ConsumerToken</code> 轮转</strong>，每条 lane 取满 16 个整体换 lane（<code>0f67e73fd31</code>）；旧算法会饿死老查询</td>
+</tr>
+<tr>
+<td>3</td>
+<td>无公平</td>
+<td>有”轮得到”的轮转公平；仍无优先级、无抢占</td>
+</tr>
+<tr>
+<td>4</td>
+<td>阻塞等 I&#x2F;O 只靠 Deschedule</td>
+<td>Parquet 读 I&#x2F;O、文件打开&#x2F;关闭、写落盘下放到 ASYNC 池；扫描默认开 read-ahead</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Finalize 由最后完成的 worker 当场执行</td>
+<td>最后一个 task 只负责触发；Finalize 是新投进 lane 的 1 个 <code>PipelineFinishTask</code>，谁取到谁跑</td>
+</tr>
+<tr>
+<td>6</td>
+<td>PG 池 <code>pg_connection_limit=64</code>、超限直接抛错不排队</td>
+<td>选项已弃用；新池默认 <strong><code>force</code> 无视上限</strong>，<code>pg_pool_max_connections</code> 默认 <code>clamp(核数×1.5, 4, 32)</code> 且只管缓存数；<code>wait</code> 模式才排队（30s 超时）</td>
+</tr>
+<tr>
+<td>7</td>
+<td>（无）DuckLake 层的线程模型</td>
+<td>新增<a href="/2026/11/16/ducklake-06-ducklake-thread-model/" title="DuckLake 专栏（六）：DuckLake 在线程上怎么跑">第 6 篇</a></td>
+</tr>
+<tr>
+<td>8</td>
+<td>开更多连接不会增加 CPU，所有连接共用一个 <code>threads</code> 大小的池</td>
+<td>后台 worker 是 <code>threads − 1</code> 个；每个活跃连接的调用线程还会循环执行自己查询的 task（<code>client_context_execution.cpp:349</code>）</td>
+</tr>
+<tr>
+<td>9</td>
+<td>文件清单在 planning 阶段对 catalog 发 SQL 取得</td>
+<td>扫描所在 pipeline 被调度时，在 <code>InitializeGlobalState</code> 里单线程物化（<code>ducklake_multi_file_reader.cpp:288</code>）</td>
+</tr>
+</tbody></table>
+<p><strong>图与动画</strong>：第 3–6 篇里的 7 张图都按上表重画过；旧版画的是 v1.5 的调度器和「planning 阶段取清单」。</p>
+<p><strong>仍待核实</strong>：<code>Connection::Query</code> 从 worker 线程发起时具体怎么驱动内部查询的 Executor（<a href="/2026/11/16/ducklake-06-ducklake-thread-model/" title="DuckLake 专栏（六）：DuckLake 在线程上怎么跑">第 6 篇</a>里相关两句是推断）；默认 <code>force</code> 模式下 PG 服务端拒连的实际表现（第 6 节失败链第 ④ 步是推断）。</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-03-connections-and-threads/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（三）：DuckDB 多连接与线程分工</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-05-memory-and-admission/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（五）：内存模型与并发准入</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E5%BC%95%E6%93%8E%E8%B0%83%E5%BA%A6%EF%BC%9A%E4%B8%A4%E4%B8%AA%E7%BA%BF%E7%A8%8B%E6%B1%A0-%E6%AF%8F-pipeline-%E7%A7%81%E6%9C%89-morsel"><span class="toc-text">3. 引擎调度：两个线程池 + 每 pipeline 私有 morsel</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E9%98%9F%E5%88%97%E7%9A%84%E7%9C%9F%E5%AE%9E%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%EF%BC%9Alane-%E6%9C%AC%E8%BA%AB%E5%B0%B1%E6%98%AF%E9%98%9F%E5%88%97"><span class="toc-text">3.1 队列的真实数据结构：lane 本身就是队列</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%A4%9A%E6%9F%A5%E8%AF%A2%E6%80%8E%E4%B9%88%E5%9C%A8%E4%B8%80%E4%B8%AA-worker-%E6%B1%A0%E4%B8%8A%E4%BA%A4%E9%94%99"><span class="toc-text">3.2 多查询怎么在一个 worker 池上交错</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-worker-%E5%8F%96-task-%E7%9A%84%E7%AE%97%E6%B3%95%EF%BC%9AConsumerToken-%E8%BD%AE%E8%BD%AC%EF%BC%88v2-0%EF%BC%89"><span class="toc-text">3.3 worker 取 task 的算法：ConsumerToken 轮转（v2.0）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%BC%82%E6%AD%A5-I-O-%E4%B8%8E-read-ahead%EF%BC%88v2-0-%E6%96%B0%E5%A2%9E%EF%BC%89"><span class="toc-text">3.4 异步 I&#x2F;O 与 read-ahead（v2.0 新增）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95%EF%BC%9A%E4%BB%8E-v1-5-%E5%88%B0-v2-0-%E6%94%B9%E4%BA%86%E4%BB%80%E4%B9%88"><span class="toc-text">附录：从 v1.5 到 v2.0 改了什么</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

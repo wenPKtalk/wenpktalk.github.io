@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（八）：DuckLake 生态逐项目架构 · Summary</title>
+  <meta name="description" content="第 1 篇给了生态的成熟度总表，这一篇逐个项目画核心架构图，并写下每个项目值得借鉴的地方。DuckLake 本体的架构见第 2 篇，全部来源汇总在第 9 篇末尾。  架构图怎么读  图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。 节点颜色： 🟦 写路径 🟩 读路径 🟪 维护 🟧 元数据 &#x2F; catalog 🟨 DuckDB 引擎 🟥 限制或">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（八）：DuckLake 生态逐项目架构 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-08-ducklake-ecosystem/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="第 1 篇给了生态的成熟度总表，这一篇逐个项目画核心架构图，并写下每个项目值得借鉴的地方。DuckLake 本体的架构见第 2 篇，全部来源汇总在第 9 篇末尾。  架构图怎么读  图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。 节点颜色： 🟦 写路径 🟩 读路径 🟪 维护 🟧 元数据 &#x2F; catalog 🟨 DuckDB 引擎 🟥 限制或">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-16T07:08:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.922Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/" class="current" aria-current="page">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>四、生态</span>
+      </nav>
+      <span class="book-position">第 8 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（八）：DuckLake 生态逐项目架构</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:08:00.000Z">2026-11-16</time>
+      <span>· 约 13 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><a href="/2026/11/16/ducklake-01-versions-and-maturity/" title="DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度">第 1 篇</a>给了生态的成熟度总表，这一篇逐个项目画核心架构图，并写下每个项目值得借鉴的地方。DuckLake 本体的架构见<a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/" title="DuckLake 专栏（二）：DuckLake 怎么存数据">第 2 篇</a>，全部来源汇总在<a href="/2026/11/16/ducklake-09-duckdb-embedding/" title="DuckLake 专栏（九）：DuckDB 被嵌入的五种形态">第 9 篇</a>末尾。
+
+<p><strong>架构图怎么读</strong></p>
+<ul>
+<li>图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。</li>
+<li>节点颜色：<ul>
+<li>🟦 写路径</li>
+<li>🟩 读路径</li>
+<li>🟪 维护</li>
+<li>🟧 元数据 &#x2F; catalog</li>
+<li>🟨 DuckDB 引擎</li>
+<li>🟥 限制或坑</li>
+<li>⬜ 外部系统或存储</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-1-MotherDuck（托管-DuckLake-Duckling）"><a href="#2-1-MotherDuck（托管-DuckLake-Duckling）" class="headerlink" title="2.1 MotherDuck（托管 DuckLake + Duckling）"></a>2.1 MotherDuck（托管 DuckLake + Duckling）</h2><blockquote>
+<p><strong>成熟度：</strong> MotherDuck 平台 🟢 <strong>GA</strong>（2024-06）。托管 DuckLake 🟡 <strong>Preview</strong>：4 月发布时写的是 public preview，之后的 release notes 都没有 GA 公告。文档列出的限制包括”每个库只允许一个账号写”。</p>
+</blockquote>
+<p><strong>定位：</strong> 云数仓，每个用户一个 DuckDB 实例（称为 hypertenancy）。客户端和云端可以分工执行一个查询（Dual Execution）。</p>
+<pre class="mermaid">flowchart LR
+  subgraph CLIENT[&quot;客户端&quot;]
+    LOCAL[&quot;本地 DuckDB&lt;br/&gt;+ motherduck 扩展&lt;br/&gt;或浏览器 duckdb-wasm&quot;]
+  end
+  PLAN&#123;&quot;Dual Execution 规划器&lt;br/&gt;算子跑在本地还是云端&quot;&#125;
+  subgraph CLOUD[&quot;MotherDuck 云&quot;]
+    D1[&quot;Duckling：用户 A&lt;br/&gt;尺寸 Pulse 到 Giga&lt;br/&gt;空闲自动关停&quot;]
+    D2[&quot;Duckling：用户 B&quot;]
+    RS[&quot;读扩展副本&lt;br/&gt;（最终一致，分钟级）&quot;]
+  end
+  subgraph LAKE[&quot;托管 DuckLake&quot;]
+    MCAT[&quot;MotherDuck 托管 catalog&quot;]
+    MOBJ[(&quot;MotherDuck 托管存储&lt;br/&gt;或用户自己的 bucket&quot;)]
+  end
+  LOCAL --&gt; PLAN
+  PLAN --&gt;|&quot;把数据拉到本地算&quot;| LOCAL
+  PLAN --&gt;|&quot;把计算推到云端&quot;| D1
+  BI[&quot;共用一个连接的 BI 工具&quot;] --&gt; RS
+  D1 --&gt; MCAT
+  D1 --&gt; MOBJ
+  D2 --&gt; MCAT
+  RS --&gt; MOBJ
+  ACL[&quot;表级权限 / secure view&lt;br/&gt;（2026-10，仅限托管的 lake）&quot;] -.-&gt; MCAT
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef read fill:#DCFCE7,stroke:#15803D,color:#1f2937
+  class LOCAL,D1,D2 duck
+  class MCAT,ACL meta
+  class RS read</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>按用户或租户隔离计算实例。</strong> 吵闹邻居只影响它自己。</li>
+<li><strong>读扩展副本接受最终一致。</strong> 适合 BI 这类”一个连接、很多用户”的场景。</li>
+<li><strong>未核实：</strong> 存储内部机制、冷启动时间、副本数上限。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://motherduck.com/blog/scaling-duckdb-with-ducklings/">扩展博客</a>、<a target="_blank" rel="noopener" href="https://motherduck.com/docs/about-motherduck/release-notes/">release notes</a></p>
+<hr>
+<h2 id="2-2-datafusion-ducklake（Hotdata）"><a href="#2-2-datafusion-ducklake（Hotdata）" class="headerlink" title="2.2 datafusion-ducklake（Hotdata）"></a>2.2 datafusion-ducklake（Hotdata）</h2><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>0.x</strong>：crates.io 最新 0.9.0（2026-10-07），没有 GitHub release。多 catalog 布局为 🟡 experimental。</p>
+</blockquote>
+<p><strong>定位：</strong> 用 Rust 原生读写 DuckLake，<strong>完全不依赖 DuckDB</strong>。</p>
+<pre class="mermaid">flowchart LR
+  APP[&quot;Rust 应用&lt;br/&gt;DataFusion SessionContext&quot;] --&gt; CATP[&quot;DuckLakeCatalog&lt;br/&gt;（catalog.schema.table）&quot;]
+  CATP --&gt; MP&#123;&quot;MetadataProvider&lt;br/&gt;由 feature flag 选择&quot;&#125;
+  MP --&gt;|&quot;默认&quot;| SQLITE[&quot;SQLite catalog&quot;]
+  MP --&gt;|&quot;metadata-postgres&lt;br/&gt;（sqlx + tokio）&quot;| PGC[&quot;PG catalog&quot;]
+  MP --&gt;|&quot;duckdb-bundled&quot;| DDC[&quot;DuckDB catalog&quot;]
+  CATP --&gt; OS[(&quot;object_store&lt;br/&gt;本地 / S3 / MinIO&quot;)]
+  W[&quot;写入：write-postgres&lt;br/&gt;write-duckdb 需显式开启&quot;] -.-&gt; MP
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  class SQLITE,PGC,DDC,MP meta
+  class W write</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>证明 DuckLake 元数据可以完全脱离 DuckDB 来读。</strong> 只要遵守规范，元数据协议是开放的。</li>
+<li><strong>读写能力按 feature flag 拆开。</strong> 默认只读，写入要显式开启，这是降低误写风险的好做法。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/datafusion-contrib/datafusion-ducklake">GitHub</a></p>
+<hr>
+<h2 id="2-3-ducklake-spark（MotherDuck）"><a href="#2-3-ducklake-spark（MotherDuck）" class="headerlink" title="2.3 ducklake-spark（MotherDuck）"></a>2.3 ducklake-spark（MotherDuck）</h2><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>0.x</strong>：v0.4.0（2026-10-12），只能写。</p>
+</blockquote>
+<p><strong>定位：</strong> 基于 Spark DataSource V2 的<strong>只写</strong>连接器，只支持追加。</p>
+<pre class="mermaid">flowchart LR
+  DF[&quot;Spark DataFrame&lt;br/&gt;df.writeTo(...).append()&quot;] --&gt; DRV[&quot;Spark Driver&quot;]
+  DRV --&gt; EX1[&quot;Executor 1&quot;]
+  DRV --&gt; EX2[&quot;Executor N&quot;]
+  EX1 --&gt;|&quot;Hadoop FS 写 Parquet&quot;| OBJ[(&quot;S3 / 对象存储&quot;)]
+  EX2 --&gt;|&quot;Hadoop FS 写 Parquet&quot;| OBJ
+  DRV --&gt;|&quot;通过 DuckDB ducklake 扩展&lt;br/&gt;与 catalog 交互&lt;br/&gt;（具体怎么登记文件，README 没写）&quot;| CAT[&quot;DuckLake catalog&lt;br/&gt;（本地 DuckDB / PG / MotherDuck）&quot;]
+  LIM[&quot;限制：不能读 / 只能追加&lt;br/&gt;表必须事先建好 / 不支持 UUID / 不支持 Spark 4&quot;]
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class EX1,EX2 write
+  class CAT meta
+  class LIM warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>“数据面”和”元数据提交”分开。</strong> 大量 worker 并行写文件，最后由一个点统一登记和提交。</li>
+<li><strong>反面教材：</strong> 连接器只能写不能读，说明多引擎生态的成熟度远不如 Iceberg。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/motherduckdb/ducklake-spark">GitHub README</a></p>
+<blockquote>
+<p><strong>Trino 和 pandas 客户端（不画图，只读了 README 的状态部分）</strong></p>
+<ul>
+<li><strong><code>brikk/trino-ducklake</code></strong> 🟠 v0.5.4：通过 JDBC 访问 catalog。能读写 DuckLake 1.0 格式，<strong>不能写 1.1 格式</strong>，读 1.1 格式是实验功能，正常构建里没有开启。</li>
+<li><strong><code>awitten1/trino-ducklake</code></strong> 🟠：没有 release。</li>
+<li><strong>pandas 版 <code>ducklake-dataframe</code></strong> 🟡：概念验证。README 写明”100% written by Claude Code”，不建议在生产环境使用。</li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="2-4-pg-ducklake-pg-duckpipe（relytcloud）"><a href="#2-4-pg-ducklake-pg-duckpipe（relytcloud）" class="headerlink" title="2.4 pg_ducklake + pg_duckpipe（relytcloud）"></a>2.4 pg_ducklake + pg_duckpipe（relytcloud）</h2><blockquote>
+<p><strong>成熟度：</strong> pg_ducklake 🟢 <strong>v1.0.3</strong>（2026-10-19），升级到 DuckDB 2.0 &#x2F; DuckLake 1.1 还在 issue 里跟踪。pg_duckpipe 🟠 <strong>没有 GitHub release</strong>，各组件的 Cargo 版本是 0.1.0 和 1.0.0，README 没有声明成熟度。</p>
+</blockquote>
+<p><strong>定位：</strong> 在 Postgres 里原生建 DuckLake 表；pg_duckpipe 从 WAL 做 CDC，把行存表增量同步成 DuckLake 表。</p>
+<pre class="mermaid">flowchart TB
+  subgraph PG[&quot;PostgreSQL 实例&quot;]
+    HEAP[&quot;行存表（必须有主键）&quot;]
+    WAL[&quot;WAL&lt;br/&gt;wal_level=logical&quot;]
+    subgraph DP[&quot;pg_duckpipe&quot;]
+      G1[&quot;同步组 1：独立 bgworker 进程&lt;br/&gt;+ 独立复制槽&quot;]
+      G2[&quot;同步组 2：独立 bgworker 进程&lt;br/&gt;+ 独立复制槽&quot;]
+      Q[&quot;按表划分的变更队列&quot;]
+      T1[&quot;表 t1 的刷写线程&quot;]
+      T2[&quot;表 t2 的刷写线程&quot;]
+      BP[&quot;背压：队列超过阈值&lt;br/&gt;就暂停消费 WAL&quot;]
+    end
+    subgraph PDL[&quot;pg_ducklake（基于 pg_duckdb 构建）&quot;]
+      AM[&quot;CREATE TABLE ... USING ducklake&quot;]
+      DDB[&quot;进程内的 DuckDB 执行&quot;]
+      MW[&quot;后台 worker：&lt;br/&gt;刷写内联数据 / 合并小文件&quot;]
+    end
+    CATS[&quot;ducklake.* 元数据 schema&lt;br/&gt;（catalog 就在这个 PG 里）&quot;]
+  end
+  OBJ[(&quot;本地盘 / S3&lt;br/&gt;Parquet&quot;)]
+  HEAP --&gt; WAL --&gt; G1 &amp; G2
+  G1 --&gt; Q
+  G2 --&gt; Q
+  Q --&gt; T1 &amp; T2
+  T1 --&gt;|&quot;批量写入&quot;| DDB
+  T2 --&gt;|&quot;批量写入&quot;| DDB
+  BP -.-&gt; G1
+  AM --&gt; DDB
+  DDB --&gt; CATS
+  DDB --&gt; OBJ
+  MW -.-&gt; CATS
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef maint fill:#F3E8FF,stroke:#7E22CE,color:#1f2937
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class G1,G2,T1,T2,Q write
+  class CATS meta
+  class MW maint
+  class DDB duck
+  class BP warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>同步组隔离：</strong> 每个组有自己的进程和复制槽，”一张慢表拖不住别的组”。</li>
+<li><strong>按表的刷写线程：</strong> 不同表之间并行写入。</li>
+<li><strong>背压：</strong> 积压超过阈值就暂停消费，内存有上界。</li>
+<li><strong>缓冲后批量写，加上 inlining 吸收小写入：</strong> 是解决小文件问题的标准做法。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/relytcloud/pg_ducklake">pg_ducklake</a>、<a target="_blank" rel="noopener" href="https://github.com/relytcloud/pg_duckpipe">pg_duckpipe</a></p>
+<hr>
+<h2 id="2-5-dlt（dltHub）DuckLake-目的端"><a href="#2-5-dlt（dltHub）DuckLake-目的端" class="headerlink" title="2.5 dlt（dltHub）DuckLake 目的端"></a>2.5 dlt（dltHub）DuckLake 目的端</h2><blockquote>
+<p><strong>成熟度：</strong> dlt 🟢 <strong>1.32.0</strong>（PyPI 标为 “Production&#x2F;Stable”）。DuckLake 目的端的文档没有标阶段：PG catalog 是唯一的生产级选项；SQLite 和 DuckDB catalog 只能串行加载；MotherDuck catalog 为 🟡 experimental；MySQL 未测试。</p>
+</blockquote>
+<p><strong>定位：</strong> Python 写的 EL 库，原生支持 <code>destination=&quot;ducklake&quot;</code>。</p>
+<pre class="mermaid">flowchart LR
+  SRC[&quot;数据源&lt;br/&gt;API / DB / 文件&quot;] --&gt; EXT[&quot;extract&quot;] --&gt; NORM[&quot;normalize&lt;br/&gt;推断 schema / 展平嵌套&quot;] --&gt; LOAD[&quot;load&quot;]
+  LOAD --&gt; DDB[&quot;DuckDB + ducklake 扩展&quot;]
+  DDB --&gt; CAT[&quot;catalog：SQLite（自动建）&lt;br/&gt;/ Postgres / MotherDuck&quot;]
+  DDB --&gt; OBJ[(&quot;文件系统 / S3&quot;)]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  class DDB duck
+  class CAT meta</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>本地 SQLite catalog 和生产 PG catalog 用同一套代码切换。</strong></li>
+<li>来源：<a target="_blank" rel="noopener" href="https://dlthub.com/docs/dlt-ecosystem/destinations/ducklake">dlt 文档</a>（据检索摘要；写入策略的细节没有核实）</li>
+</ul>
+<hr>
+<h2 id="2-6-Quack-on-Demand（starlake-ai）"><a href="#2-6-Quack-on-Demand（starlake-ai）" class="headerlink" title="2.6 Quack on Demand（starlake-ai）"></a>2.6 Quack on Demand（starlake-ai）</h2><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>0.x</strong>：v0.12.2（2026-11-09），依赖的 Quack 还是 🟡 beta。</p>
+</blockquote>
+<p><strong>定位：</strong> 面向 DuckDB 和 DuckLake 的多租户”服务层”，相当于自托管、只管查询服务的 MotherDuck。</p>
+<pre class="mermaid">flowchart LR
+  subgraph CLI[&quot;客户端&quot;]
+    JDBC[&quot;JDBC / ODBC / ADBC&lt;br/&gt;Power BI / Tableau&quot;]
+    QK[&quot;任意 DuckDB&lt;br/&gt;ATTACH 'quack:...'&quot;]
+  end
+  subgraph MGR[&quot;Manager（控制面，单个二进制）&quot;]
+    EDGE[&quot;Flight SQL 入口 :31338&lt;br/&gt;Quack 监听 :9494&quot;]
+    AUTH[&quot;认证：Keycloak / AzureAD&lt;br/&gt;Google / Cognito / JWT&quot;]
+    RBAC[&quot;RBAC 图：用户 / 角色 / 组&lt;br/&gt;→ 每个会话一份 EffectiveSet&quot;]
+    ROUTE[&quot;按 tenant + pool 路由&lt;br/&gt;选负载最低的节点&quot;]
+    CP[(&quot;控制面 Postgres&quot;)]
+  end
+  subgraph POOLS[&quot;节点池（按需拉起：子进程 / K8s Pod / 服务器集群）&quot;]
+    N1[&quot;节点：pool=bi&lt;br/&gt;DuckDB&quot;]
+    N2[&quot;节点：pool=etl&lt;br/&gt;DuckDB&quot;]
+  end
+  ACL[&quot;每条语句的 ACL：&lt;br/&gt;按 DuckDB 绑定后的对象判定&lt;br/&gt;读 / 写 / DDL，结果签名后缓存&quot;]
+  TCAT[&quot;每个租户一个&lt;br/&gt;DuckLake catalog 库&quot;]
+  OBJ[(&quot;对象存储 Parquet&quot;)]
+  JDBC --&gt; EDGE
+  QK --&gt; EDGE
+  EDGE --&gt; AUTH --&gt; RBAC --&gt; ROUTE
+  RBAC --- CP
+  ROUTE --&gt; N1 &amp; N2
+  N1 -.-&gt; ACL
+  N1 --&gt; TCAT
+  N2 --&gt; TCAT
+  N1 --&gt; OBJ
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class N1,N2 duck
+  class TCAT,CP meta
+  class ACL warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>按 bound plan 而不是 SQL 文本做鉴权：</strong> 判断的是 DuckDB 实际解析出的对象，绕不过去。</li>
+<li><strong>按工作负载分池（bi &#x2F; etl）：</strong> 交互查询和批量任务分开。</li>
+<li><strong>README 里的自我定位很明确：</strong> 每条语句只路由到一个节点，不跨节点做 shuffle。需要分布式就去用 Trino 或 StarRocks。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/starlake-ai/quack-on-demand">GitHub README</a></p>
+<hr>
+<h2 id="2-7-PostHog-Hoglake（DuckLake-的硬分叉）"><a href="#2-7-PostHog-Hoglake（DuckLake-的硬分叉）" class="headerlink" title="2.7 PostHog Hoglake（DuckLake 的硬分叉）"></a>2.7 PostHog Hoglake（DuckLake 的硬分叉）</h2><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>v1.4.9</strong>（2026-11-10），PostHog 自己在生产环境使用（dev、prod-us、prod-eu）。和 DuckLake 不兼容。</p>
+</blockquote>
+<p><strong>定位：</strong> 把 catalog 做成一个服务，只用 Postgres 做后端，<strong>由服务端提交</strong>。和 DuckLake 不兼容；已经以 “Gigahog” 的名字部署在 dev、prod-us、prod-eu。</p>
+<pre class="mermaid">flowchart LR
+  subgraph WR[&quot;客户端&quot;]
+    PY[&quot;Python 客户端&quot;]
+    TR[&quot;Trino 连接器&quot;]
+    DX[&quot;DuckDB 扩展&quot;]
+  end
+  subgraph SRV[&quot;Hoglake 服务（Kotlin / JDK 25）&quot;]
+    REST[&quot;REST 接口&quot;]
+    COMMIT[&quot;服务端提交&lt;br/&gt;只看本次写集&lt;br/&gt;准入控制&quot;]
+    REG[&quot;Footer 登记：&lt;br/&gt;客户端上传 Parquet 后只发 footer 统计&lt;br/&gt;服务端在提交路径上不打开数据文件&quot;]
+    BG[&quot;后台任务（advisory lock）：&lt;br/&gt;合并 / 过期快照 / 物理清理 / 不变量扫描&quot;]
+    CF[&quot;变更流 + 消费者 offset&lt;br/&gt;过期时尊重 offset&quot;]
+  end
+  PGM[(&quot;Postgres 18&lt;br/&gt;外键 / CASCADE / 部分索引&quot;)]
+  OBJ[(&quot;对象存储 Parquet&lt;br/&gt;每个文件一个删除向量&quot;)]
+  PY --&gt;|&quot;① 上传 Parquet&quot;| OBJ
+  PY --&gt;|&quot;② 发 footer&quot;| REST
+  TR --&gt; REST
+  DX --&gt; REST
+  REST --&gt; COMMIT --&gt; PGM
+  REST --&gt; REG --&gt; PGM
+  BG --&gt; PGM
+  BG --&gt; OBJ
+  CF --&gt; PGM
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef maint fill:#F3E8FF,stroke:#7E22CE,color:#1f2937
+  class COMMIT,REG write
+  class PGM meta
+  class BG maint</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>缺陷清单本身就是最好的借鉴材料。</strong> <code>docs/ducklake-defect-ledger.md</code> 记了 6 个他们在 PG catalog 上踩到的 DuckLake 问题：<ul>
+<li>内联表的回收永远触发不了（一个 catalog 积累了 112,947 张）；</li>
+<li>提交时加载全 catalog 统计；</li>
+<li>schema 缓存不按列计内存，导致无限增长；</li>
+<li>等等。</li>
+</ul>
+</li>
+<li><strong>维护任务由一个地方统一执行并加锁，而不是各个客户端抢着跑。</strong></li>
+<li><strong>提交开销只跟本次写集有关，不随 catalog 规模增长。</strong> 这是 DuckLake 上游还没做到的地方。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/PostHog/hoglake">PostHog&#x2F;hoglake</a></p>
+<hr>
+<h2 id="2-8-其他-DuckLake-社区项目"><a href="#2-8-其他-DuckLake-社区项目" class="headerlink" title="2.8 其他 DuckLake 社区项目"></a>2.8 其他 DuckLake 社区项目</h2><p><strong>boilstream</strong>：Rust 写的多租户 DuckDB 服务，原生集成 DuckLake。 🟠 <strong>0.x</strong>：GitHub release 0.10.7（2026-04），tag 到 v0.10.29。</p>
+<pre class="mermaid">flowchart LR
+  BI[&quot;BI 工具 / psql&lt;br/&gt;PG 协议 :5432&quot;] --&gt; BS[&quot;boilstream（Rust）&lt;br/&gt;多租户 DuckDB&lt;br/&gt;secret / 文件系统隔离&quot;]
+  ING[&quot;流式写入&quot;] --&gt; BS
+  BS --&gt;|&quot;热层：约 1 秒一次提交&quot;| DL[&quot;DuckLake&lt;br/&gt;内嵌 PG catalog&quot;]
+  DL --&gt; S3[(&quot;S3 Parquet&lt;br/&gt;冷层回灌 &gt;1GB/s&quot;)]
+  BS --&gt; FTS[&quot;Tantivy 全文索引&quot;]
+  BS --&gt; SSE[&quot;SSE 推送 Arrow IPC&quot;]
+  BS --&gt; VEND[&quot;凭证下发：&lt;br/&gt;DuckDB / WASM 客户端直接读湖&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class BS duck</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> “凭证下发”。服务端只负责鉴权和发放临时凭证，客户端自己的 DuckDB（包括浏览器里的 WASM）直接读 Parquet，计算下放到客户端。</li>
+</ul>
+<p><strong>SwanLake</strong>：Arrow Flight SQL 服务端，后面是 DuckDB 和 DuckLake（PG catalog 加 S3）。 🟠 <strong>0.x</strong>：v0.1.0（2025-11），之后没有新版本。</p>
+<pre class="mermaid">flowchart LR
+  C[&quot;Flight SQL 客户端（gRPC）&quot;] --&gt; S[&quot;SwanLake&lt;br/&gt;Flight SQL 服务&quot;] --&gt; D[&quot;DuckDB + ducklake&quot;] --&gt; P[&quot;PG catalog&quot;]
+  D --&gt; O[(&quot;S3&quot;)]</pre>
+
+<p><strong>featherman</strong>：DuckLake 的 Kubernetes Operator。 🟡 <strong>Alpha</strong>：v0.3.0 标为 prerelease，README 写”early development”，CRD 是 <code>v1alpha1</code>。</p>
+<pre class="mermaid">flowchart LR
+  CRD[&quot;CRD：DuckLakeCatalog&lt;br/&gt;含备份策略&quot;] --&gt; OP[&quot;Operator 控制循环&quot;] --&gt; POOL[&quot;预热的 DuckDB Pod 池&lt;br/&gt;低延迟查询&quot;]
+  OP --&gt; BK[&quot;备份&quot;]</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 预热 Pod 池。冷启动开销（加载扩展、ATTACH、读元数据缓存）放在请求之前付掉。</li>
+</ul>
+<p><strong>ducklake-guard</strong>：给 DuckLake 加按表的访问控制（实验性）。 🟡 <strong>Experimental</strong>：v0.1.0，README 标注 Experimental。</p>
+<pre class="mermaid">flowchart LR
+  CLI[&quot;ducklake-guard CLI&quot;] --&gt; G[(&quot;guard 库&lt;br/&gt;（权限的唯一事实来源）&quot;)]
+  CLI --&gt;|&quot;推送 RLS 和角色&quot;| PC[&quot;catalog PG&lt;br/&gt;行级安全策略&quot;]
+  CLI --&gt;|&quot;推送 bucket 策略&quot;| S3[(&quot;S3 bucket policy&quot;)]
+  CLI --&gt; AUD[&quot;审计日志&quot;]</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 权限同时落在两层，用 PG 行级安全控制 catalog 里能看到哪些行，用 bucket 策略控制能读哪些文件。一处漏了，另一处兜底。</li>
+</ul>
+<p><strong>cloudflare-ducklake</strong>：DuckDB 跑在 Cloudflare Containers 上，用 Hono.js 包成 HTTP API。 🟡 <strong>演示项目</strong>：没有 release，README 提示需要 Cloudflare Containers beta 权限。</p>
+<pre class="mermaid">flowchart LR
+  U[&quot;HTTP 客户端&lt;br/&gt;API_TOKEN&quot;] --&gt; W[&quot;Cloudflare Worker&quot;] --&gt; CT[&quot;Container：Hono API&lt;br/&gt;@duckdb/node-api&quot;] --&gt; R2[(&quot;R2&quot;)]</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 把扩展预先打进镜像，容器启动时不用联网下载。</li>
+</ul>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-07-source-walkthrough/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-09-duckdb-embedding/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#2-1-MotherDuck%EF%BC%88%E6%89%98%E7%AE%A1-DuckLake-Duckling%EF%BC%89"><span class="toc-text">2.1 MotherDuck（托管 DuckLake + Duckling）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-2-datafusion-ducklake%EF%BC%88Hotdata%EF%BC%89"><span class="toc-text">2.2 datafusion-ducklake（Hotdata）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-3-ducklake-spark%EF%BC%88MotherDuck%EF%BC%89"><span class="toc-text">2.3 ducklake-spark（MotherDuck）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-4-pg-ducklake-pg-duckpipe%EF%BC%88relytcloud%EF%BC%89"><span class="toc-text">2.4 pg_ducklake + pg_duckpipe（relytcloud）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-5-dlt%EF%BC%88dltHub%EF%BC%89DuckLake-%E7%9B%AE%E7%9A%84%E7%AB%AF"><span class="toc-text">2.5 dlt（dltHub）DuckLake 目的端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-6-Quack-on-Demand%EF%BC%88starlake-ai%EF%BC%89"><span class="toc-text">2.6 Quack on Demand（starlake-ai）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-7-PostHog-Hoglake%EF%BC%88DuckLake-%E7%9A%84%E7%A1%AC%E5%88%86%E5%8F%89%EF%BC%89"><span class="toc-text">2.7 PostHog Hoglake（DuckLake 的硬分叉）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-8-%E5%85%B6%E4%BB%96-DuckLake-%E7%A4%BE%E5%8C%BA%E9%A1%B9%E7%9B%AE"><span class="toc-text">2.8 其他 DuckLake 社区项目</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

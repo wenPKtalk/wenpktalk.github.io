@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8.4.1. 预备知识 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;preliminaries.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.4.1. Preliminaries 条件比较指令C">
+<meta property="og:type" content="website">
+<meta property="og:title" content="8.4.1. 预备知识 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;preliminaries.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.4.1. Preliminaries 条件比较指令C">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html" class="current" aria-current="page">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>8. 32 位 x86 汇编（IA32）</span>
+      </nav>
+      <span class="book-position">第 93 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">8.4.1. 预备知识</h1>
+  
+  
+    <p class="article-meta"><span>约 15 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C8-IA32/preliminaries.html">https://diveintosystems.org/book/C8-IA32/preliminaries.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>8.4.1. Preliminaries</em></p>
+<h3 id="条件比较指令"><a href="#条件比较指令" class="headerlink" title="条件比较指令"></a>条件比较指令</h3><p><em>Conditional Comparison Instructions</em></p>
+<p>比较指令执行一次算术运算，目的是引导程序的条件执行。<a href="8.4.1-preliminaries.html">表 1</a> 列出了与条件控制相关的基本指令。</p>
+<blockquote>
+<p>Comparison instructions perform an arithmetic operation for the purpose of guiding the conditional execution of a program. <a href="8.4.1-preliminaries.html">Table 1</a> lists the basic instructions associated with conditional control.</p>
+</blockquote>
+<p><strong>表 1.</strong> 条件控制指令</p>
+<p><em>Table 1. Conditional Control Instructions</em></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cmp R1, R2</code></td>
+<td>比较 R2 与 R1（即计算 R2 - R1）</td>
+</tr>
+<tr>
+<td><code>test R1, R2</code></td>
+<td>计算 R1 &amp; R2</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Translation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>cmp R1, R2</code></td>
+<td>Compares R2 with R1 (i.e., evaluates R2 - R1)</td>
+</tr>
+<tr>
+<td><code>test R1, R2</code></td>
+<td>Computes R1 &amp; R2</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p><code>cmp</code> 指令比较两个寄存器 R2 和 R1 的值，具体来说，就是从 R2 中减去 R1。<code>test</code> 指令执行按位与。常常会看到这样一条指令：</p>
+<blockquote>
+<p>The <code>cmp</code> instruction compares the values of two registers, R2 and R1. Specifically, it subtracts R1 from R2. The <code>test</code> instruction performs bitwise AND. It is common to see an instruction like:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">test %eax, %eax</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，<code>%eax</code> 与自身按位与的结果，只有在 <code>%eax</code> 为零时才为零。换句话说，这是检测值是否为零，等价于：</p>
+<blockquote>
+<p>In this example, the bitwise AND of <code>%eax</code> with itself is zero only when <code>%eax</code> contains zero. In other words, this is a test for a zero value and is equivalent to the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cmp $0, %eax</span><br></pre></td></tr></table></figure>
+
+<p>与迄今介绍的算术指令不同，<code>cmp</code> 和 <code>test</code> 不修改目标寄存器，而是修改一系列称为<strong>条件码标志</strong>（condition code flag）的单位值。例如，<code>cmp</code> 会根据 R2 - R1 的结果是正（大于）、负（小于）还是零（等于）来修改条件码标志。回想一下，<a href="../C5-Arch/5.5-cpu.html">条件码</a>的值编码了 ALU 中一次运算的相关信息。在 x86 系统上，条件码标志是 <code>FLAGS</code> 寄存器的一部分。</p>
+<blockquote>
+<p>Unlike the arithmetic instructions covered thus far, <code>cmp</code> and <code>test</code> do not modify the destination register. Instead, both instructions modify a series of single-bit values known as <strong>condition code flags</strong>. For example, <code>cmp</code> will modify condition code flags based on whether the value R2 - R1 results in a positive (greater), negative (less), or zero (equal) value. Recall that <a href="../C5-Arch/5.5-cpu.html">condition code</a> values encode information about an operation in the ALU. The condition code flags are part of the <code>FLAGS</code> register on x86 systems.</p>
+</blockquote>
+<p><strong>表 2.</strong> 常用的条件码标志</p>
+<p><em>Table 2. Common Condition Code Flags.</em></p>
+<table>
+<thead>
+<tr>
+<th>标志</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ZF</code></td>
+<td>是否等于零（1：是；0：否）</td>
+</tr>
+<tr>
+<td><code>SF</code></td>
+<td>是否为负（1：是；0：否）</td>
+</tr>
+<tr>
+<td><code>OF</code></td>
+<td>是否发生了溢出（1：是；0：否）</td>
+</tr>
+<tr>
+<td><code>CF</code></td>
+<td>是否发生了算术进位（1：是；0：否）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Translation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ZF</code></td>
+<td>Is equal to zero (1: yes; 0: no)</td>
+</tr>
+<tr>
+<td><code>SF</code></td>
+<td>Is negative (1: yes; 0: no)</td>
+</tr>
+<tr>
+<td><code>OF</code></td>
+<td>Overflow has occurred (1:yes; 0: no)</td>
+</tr>
+<tr>
+<td><code>CF</code></td>
+<td>Arithmetic carry has occurred (1: yes; 0:no)</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p><a href="8.4.1-preliminaries.html">表 2</a> 描绘了用于条件码运算的常用标志。回到 <code>cmp R1, R2</code> 指令：</p>
+<blockquote>
+<p><a href="8.4.1-preliminaries.html">Table 2</a> depicts the common flags used for condition code operations. Revisiting the <code>cmp R1, R2</code> instruction:</p>
+</blockquote>
+<ul>
+<li>如果 R1 和 R2 相等，<code>ZF</code> 标志被置为 1。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>ZF</code> flag is set to 1 if R1 and R2 are equal.</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果 R2 <em>小于</em> R1（即 R2 - R1 的结果为负），<code>SF</code> 标志被置为 1。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>SF</code> flag is set to 1 if R2 is <em>less</em> than R1 (i.e., R2 - R1 results in a negative value).</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果运算 R2 - R1 导致整数溢出，<code>OF</code> 标志被置为 1（用于有符号比较）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>OF</code> flag is set to 1 if the operation R2 - R1 results in an integer overflow (useful for signed comparisons).</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果运算 R2 - R1 导致进位（借位），<code>CF</code> 标志被置为 1（用于无符号比较）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>CF</code> flag is set to 1 if the operation R2 - R1 results in a carry operation (useful for unsigned comparisons).</li>
+</ul>
+</blockquote>
+<p><code>SF</code> 和 <code>OF</code> 标志用于有符号整数的比较运算，而 <code>CF</code> 标志用于无符号整数的比较。尽管深入讨论条件码标志超出了本书的范围，但正是 <code>cmp</code> 和 <code>test</code> 对这些标志的设置，使我们接下来要介绍的那组指令（<em>跳转</em>指令）能够正确运作。</p>
+<blockquote>
+<p>The <code>SF</code> and <code>OF</code> flags are used for comparison operations on signed integers, whereas the <code>CF</code> flag is used for comparisons on unsigned integers. Although an in-depth discussion of condition code flags is beyond the scope of this book, the setting of these registers by <code>cmp</code> and <code>test</code> enables the next set of instructions we cover (the <em>jump</em> instructions) to operate correctly.</p>
+</blockquote>
+<h3 id="跳转指令"><a href="#跳转指令" class="headerlink" title="跳转指令"></a>跳转指令</h3><p><em>The Jump Instructions</em></p>
+<p>跳转指令让程序的执行能「跳」到代码中的一个新位置。在我们迄今跟踪过的汇编程序中，<code>%eip</code> 总是指向程序内存中的下一条指令。跳转指令使 <code>%eip</code> 能被设置为一条还没见过的新指令（例如 <code>if</code> 语句的情形），或者一条之前执行过的指令（例如循环的情形）。</p>
+<blockquote>
+<p>A jump instruction enables a program’s execution to “jump” to a new position in the code. In the assembly programs we have traced through thus far, <code>%eip</code> always points to the next instruction in program memory. The jump instructions enable <code>%eip</code> to be set to either a new instruction not yet seen (as in the case of an <code>if</code> statement) or to a previously executed instruction (as in the case of a loop).</p>
+</blockquote>
+<h4 id="直接跳转指令"><a href="#直接跳转指令" class="headerlink" title="直接跳转指令"></a>直接跳转指令</h4><p><em>Direct jump instructions</em></p>
+<p><strong>表 3.</strong> 直接跳转指令</p>
+<p><em>Table 3. Direct Jump Instructions</em></p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>jmp L</code></td>
+<td>跳转到 L 所指定的位置</td>
+</tr>
+<tr>
+<td><code>jmp *addr</code></td>
+<td>跳转到指定的地址</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>jmp L</code></td>
+<td>Jump to location specified by L</td>
+</tr>
+<tr>
+<td><code>jmp *addr</code></td>
+<td>Jump to specified address</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p><a href="8.4.1-preliminaries.html">表 3</a> 列出了直接跳转指令的集合；<code>L</code> 指一个<strong>符号标签</strong>（symbolic label），它在程序的目标文件中充当标识符。所有标签都由一些字母和数字后跟一个冒号组成。标签相对于目标文件的作用域可以是<em>局部</em>的或<em>全局</em>的。函数标签通常是<em>全局</em>的，一般由函数名加冒号组成。例如，<code>main:</code>（或 <code>&lt;main&gt;:</code>）用来标记用户定义的 <code>main</code> 函数。按照惯例，作用域为<em>局部</em>的标签以句点开头。在 <code>if</code> 语句或循环中，可能会遇到名为 <code>.L1</code> 这样的局部标签。</p>
+<blockquote>
+<p><a href="8.4.1-preliminaries.html">Table 3</a> lists the set of direct jump instructions; <code>L</code> refers to a <strong>symbolic label</strong>, which serves as an identifier in the program’s object file. All labels consist of some letters and digits followed by a colon. Labels can be <em>local</em> or <em>global</em> to an object file’s scope. Function labels tend to be <em>global</em> and usually consist of the function name and a colon. For example, <code>main:</code> (or <code>&lt;main&gt;:</code>) is used to label a user-defined <code>main</code> function. By convention, labels whose scope are <em>local</em> are preceded by a period. One may encounter a local label with a name like <code>.L1</code> in the context of an <code>if</code> statement or loop.</p>
+</blockquote>
+<p>所有标签都有一个对应的地址。当 CPU 执行 <code>jmp</code> 指令时，它修改 <code>%eip</code>，使其反映标签 <code>L</code> 所指定的程序地址。编写汇编的程序员也可以用 <code>jmp *</code> 指令指定一个要跳转到的具体地址。有时，局部标签显示为相对于函数起始处的偏移量。因此，地址距离 <code>main</code> 起始处 28 字节的指令可能用标签 <code>&lt;main+28&gt;</code> 表示。</p>
+<blockquote>
+<p>All labels have an associated address. When the CPU executes a <code>jmp</code> instruction, it modifies <code>%eip</code> to reflect the program address specified by label <code>L</code>. A programmer writing assembly can also specify a particular address to jump to using the <code>jmp *</code> instruction. Sometimes, local labels are shown as an offset from the start of a function. Therefore, an instruction whose address is 28 bytes away from the start of <code>main</code> may be represented with the label <code>&lt;main+28&gt;</code>.</p>
+</blockquote>
+<p>例如，指令 <code>jmp 0x8048427 &lt;main+28&gt;</code> 表示跳转到地址 0x8048427，与之关联的标签是 <code>&lt;main+28&gt;</code>，表示它距离 <code>main</code> 函数的起始地址 28 字节。执行这条指令会把 <code>%eip</code> 设为 0x8048427。</p>
+<blockquote>
+<p>For example, the instruction <code>jmp 0x8048427 &lt;main+28&gt;</code> indicates a jump to address 0x8048427, which has the associated label <code>&lt;main+28&gt;</code>, representing that it is 28 bytes away from the starting address of the <code>main</code> function. Executing this instruction sets <code>%eip</code> to 0x8048427.</p>
+</blockquote>
+<h4 id="条件跳转指令"><a href="#条件跳转指令" class="headerlink" title="条件跳转指令"></a>条件跳转指令</h4><p><em>Conditional jump instructions</em></p>
+<p>条件跳转指令的行为取决于 <code>cmp</code> 指令设置的条件码寄存器。<a href="8.4.1-preliminaries.html">表 4</a> 列出了常用的条件跳转指令。每条指令都以字母 <code>j</code> 开头，表示它是一条跳转指令。每条指令的后缀表示跳转的<em>条件</em>。跳转指令的后缀还决定了把数值比较解释为有符号还是无符号。</p>
+<blockquote>
+<p>The behavior of conditional jump instructions depends on the condition code registers set by the <code>cmp</code> instruction. <a href="8.4.1-preliminaries.html">Table 4</a> lists the set of common conditional jump instructions. Each instruction starts with the letter <code>j</code> denoting that it is a jump instruction. The suffix of each instruction indicates the <em>condition</em> for the jump. The jump instruction suffixes also determine whether to interpret numerical comparisons as signed or unsigned.</p>
+</blockquote>
+<p><strong>表 4.</strong> 条件跳转指令；括号中为同义指令</p>
+<p><em>Table 4. Conditional Jump Instructions; Synonyms Shown in Parentheses</em></p>
+<table>
+<thead>
+<tr>
+<th>有符号比较</th>
+<th>无符号比较</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>je</code> (<code>jz</code>)</td>
+<td></td>
+<td>相等（&#x3D;&#x3D;）或为零时跳转</td>
+</tr>
+<tr>
+<td><code>jne</code> (<code>jnz</code>)</td>
+<td></td>
+<td>不相等（!&#x3D;）时跳转</td>
+</tr>
+<tr>
+<td><code>js</code></td>
+<td></td>
+<td>为负时跳转</td>
+</tr>
+<tr>
+<td><code>jns</code></td>
+<td></td>
+<td>非负时跳转</td>
+</tr>
+<tr>
+<td><code>jg</code> (<code>jnle</code>)</td>
+<td><code>ja</code> (<code>jnbe</code>)</td>
+<td>大于（&gt;）时跳转</td>
+</tr>
+<tr>
+<td><code>jge</code> (<code>jnl</code>)</td>
+<td><code>jae</code> (<code>jnb</code>)</td>
+<td>大于等于（&gt;&#x3D;）时跳转</td>
+</tr>
+<tr>
+<td><code>jl</code> (<code>jnge</code>)</td>
+<td><code>jb</code> (<code>jnae</code>)</td>
+<td>小于（&lt;）时跳转</td>
+</tr>
+<tr>
+<td><code>jle</code> (<code>jng</code>)</td>
+<td><code>jbe</code> (<code>jna</code>)</td>
+<td>小于等于（&lt;&#x3D;）时跳转</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Signed Comparison</th>
+<th>Unsigned Comparison</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>je</code> (<code>jz</code>)</td>
+<td></td>
+<td>jump if equal (&#x3D;&#x3D;) or jump if zero</td>
+</tr>
+<tr>
+<td><code>jne</code> (<code>jnz</code>)</td>
+<td></td>
+<td>jump if not equal (!&#x3D;)</td>
+</tr>
+<tr>
+<td><code>js</code></td>
+<td></td>
+<td>jump if negative</td>
+</tr>
+<tr>
+<td><code>jns</code></td>
+<td></td>
+<td>jump if non-negative</td>
+</tr>
+<tr>
+<td><code>jg</code> (<code>jnle</code>)</td>
+<td><code>ja</code> (<code>jnbe</code>)</td>
+<td>jump if greater (&gt;)</td>
+</tr>
+<tr>
+<td><code>jge</code> (<code>jnl</code>)</td>
+<td><code>jae</code> (<code>jnb</code>)</td>
+<td>jump if greater than or equal (&gt;&#x3D;)</td>
+</tr>
+<tr>
+<td><code>jl</code> (<code>jnge</code>)</td>
+<td><code>jb</code> (<code>jnae</code>)</td>
+<td>jump if less (&lt;)</td>
+</tr>
+<tr>
+<td><code>jle</code> (<code>jng</code>)</td>
+<td><code>jbe</code> (<code>jna</code>)</td>
+<td>jump if less than or equal (&lt;&#x3D;)</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>与其死记这些不同的条件跳转指令，不如把指令后缀「读出来」更有帮助。<a href="8.4.1-preliminaries.html">表 5</a> 列出了跳转指令中常见的字母及其对应的单词。</p>
+<blockquote>
+<p>Instead of memorizing these different conditional jump instructions, it is more helpful to sound out the instruction suffixes. <a href="8.4.1-preliminaries.html">Table 5</a> lists the letters commonly found in jump instructions and their word correspondence.</p>
+</blockquote>
+<p><strong>表 5.</strong> 跳转指令后缀</p>
+<p><em>Table 5. Jump Instruction Suffixes.</em></p>
+<table>
+<thead>
+<tr>
+<th>字母</th>
+<th>单词</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>j</code></td>
+<td>jump（跳转）</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>not（不）</td>
+</tr>
+<tr>
+<td><code>e</code></td>
+<td>equal（等于）</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>signed（有符号，指符号位为负）</td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td>greater（大于，有符号解释）</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td>less（小于，有符号解释）</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>above（高于，无符号解释）</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>below（低于，无符号解释）</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Letter</th>
+<th>Word</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>j</code></td>
+<td>jump</td>
+</tr>
+<tr>
+<td><code>n</code></td>
+<td>not</td>
+</tr>
+<tr>
+<td><code>e</code></td>
+<td>equal</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>signed</td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td>greater (signed interpretation)</td>
+</tr>
+<tr>
+<td><code>l</code></td>
+<td>less (signed interpretation)</td>
+</tr>
+<tr>
+<td><code>a</code></td>
+<td>above (unsigned interpretation)</td>
+</tr>
+<tr>
+<td><code>b</code></td>
+<td>below (unsigned interpretation)</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>这样读出来，就能看出 <code>jg</code> 对应于 <em>jump greater</em>（大于则跳转），它的有符号同义指令 <code>jnl</code> 代表 <em>jump not less</em>（不小于则跳转）。同样，无符号版本 <code>ja</code> 代表 <em>jump above</em>（高于则跳转），它的同义指令 <code>jnbe</code> 代表 <em>jump not below or equal</em>（不低于也不等于则跳转）。</p>
+<blockquote>
+<p>Sounding it out, we can see that <code>jg</code> corresponds to <em>jump greater</em> and that its signed synonym <code>jnl</code> stands for <em>jump not less</em>. Likewise, the unsigned version <code>ja</code> stands for <em>jump above</em>, while its synonym <code>jnbe</code> stands for <em>jump not below or equal</em>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>与第 7 章相同的笔误：按上面的表 4，<code>jg</code> 的同义指令是 <code>jnle</code>（jump not less or equal，不小于等于则跳转）；<code>jnl</code>（不小于则跳转）是 <code>jge</code> 的同义指令。</p>
+</div>
+<p>如果把指令读出来，就有助于理解为什么某些同义指令对应于特定的指令。另一件要记住的事是：术语 <em>greater</em>（大于）和 <em>less</em>（小于）指示 CPU 把数值比较解释为有符号值，而 <em>above</em>（高于）和 <em>below</em>（低于）表示数值比较是无符号的。</p>
+<blockquote>
+<p>If you sound out the instructions, it helps to explain why certain synonyms correspond to particular instructions. The other thing to remember is that the terms <em>greater</em> and <em>less</em> instruct the CPU to interpret the numerical comparison as a signed value, whereas <em>above</em> and <em>below</em> indicate that the numerical comparison is unsigned.</p>
+</blockquote>
+<h3 id="goto-语句"><a href="#goto-语句" class="headerlink" title="goto 语句"></a><code>goto</code> 语句</h3><p><em>The <code>goto</code> Statement</em></p>
+<p>在接下来的几个小节中，我们会考察汇编中的条件语句和循环，并把它们逆向还原成 C。把条件语句和循环的汇编代码翻译回 C 时，理解对应的 C 语言 <code>goto</code> 形式会很有帮助。<code>goto</code> 语句是 C 的一种原语，它强制程序的执行切换到代码中的另一行。与 <code>goto</code> 语句对应的汇编指令是 <code>jmp</code>。</p>
+<blockquote>
+<p>In the following subsections, we look at conditionals and loops in assembly and reverse engineer them back to C. When translating assembly code of conditionals and loops back into C, it is useful to understand the corresponding C language <code>goto</code> forms. The <code>goto</code> statement is a C primitive that forces program execution to switch to another line in the code. The assembly instruction associated with the <code>goto</code> statement is <code>jmp</code>.</p>
+</blockquote>
+<p><code>goto</code> 语句由 <code>goto</code> 关键字后跟一个 <strong>goto 标签</strong>（goto label）组成，goto 标签是一种指明执行应当在哪里继续的程序标签。所以，<code>goto done</code> 表示程序的执行应当跳到标记为 <code>done</code> 的那一行。C 中程序标签的其他例子包括第 2 章介绍过的 <a href="../C2-C_depth/2.9.1-advanced_switch.html">switch 语句标签</a>。</p>
+<blockquote>
+<p>The <code>goto</code> statement consists of the <code>goto</code> keyword followed by a <strong>goto label</strong>, a type of program label that indicates where execution should continue. So, <code>goto done</code> means that the program execution should jump to the line marked by label <code>done</code>. Other examples of program labels in C include the <a href="../C2-C_depth/2.9.1-advanced_switch.html">switch statement labels</a> previously covered in Chapter 2.</p>
+</blockquote>
+<p><strong>表 6.</strong> 一个 C 函数与其对应的 goto 形式的比较</p>
+<p><em>Table 6. Comparison of a C function and its associated goto form.</em></p>
+<p><strong>普通的 C 版本</strong></p>
+<blockquote>
+<p><strong>Regular C version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">int getSmallest(int x, int y) &#123;</span><br><span class="line">    int smallest;</span><br><span class="line">    if ( x &gt; y ) &#123; //if (conditional)</span><br><span class="line">        smallest = y; //then statement</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        smallest = x; //else statement</span><br><span class="line">    &#125;</span><br><span class="line">    return smallest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>goto 版本</strong></p>
+<blockquote>
+<p><strong>Goto version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">int getSmallest(int x, int y) &#123;</span><br><span class="line">    int smallest;</span><br><span class="line"></span><br><span class="line">    if (x &lt;= y ) &#123; //if (!conditional)</span><br><span class="line">        goto else_statement;</span><br><span class="line">    &#125;</span><br><span class="line">    smallest = y; //then statement</span><br><span class="line">    goto done;</span><br><span class="line"></span><br><span class="line">else_statement:</span><br><span class="line">    smallest = x; //else statement</span><br><span class="line"></span><br><span class="line">done:</span><br><span class="line">    return smallest;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><a href="8.4.1-preliminaries.html">表 6</a> 描绘了用普通 C 代码编写的函数 <code>getSmallest()</code>，以及它在 C 中对应的 <code>goto</code> 形式。<code>getSmallest()</code> 函数比较两个整数（<code>x</code> 和 <code>y</code>）的值，并把较小的值赋给变量 <code>smallest</code>。</p>
+<blockquote>
+<p><a href="8.4.1-preliminaries.html">Table 6</a> depicts a function <code>getSmallest()</code> written in regular C code and its associated <code>goto</code> form in C. The <code>getSmallest()</code> function compares the value of two integers (<code>x</code> and <code>y</code>), and assigns the smaller value to variable <code>smallest</code>.</p>
+</blockquote>
+<p>这个函数的 <code>goto</code> 形式可能显得有违直觉，我们来讨论一下到底发生了什么。条件检查变量 <code>x</code> 是否小于或等于 <code>y</code>。</p>
+<blockquote>
+<p>The <code>goto</code> form of this function may seem counterintuitive, but let’s discuss what exactly is going on. The conditional checks to see whether variable <code>x</code> is less than or equal to <code>y</code>.</p>
+</blockquote>
+<ul>
+<li>如果 <code>x</code> 小于或等于 <code>y</code>，程序把控制转移到标记为 <code>else_statement</code> 的标签处，那里只有一条语句 <code>smallest = x</code>。由于程序是线性执行的，程序接着执行标签 <code>done</code> 下面的代码，返回 <code>smallest</code> 的值（<code>x</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If <code>x</code> is less than or equal to <code>y</code>, the program transfers control to the label marked by <code>else_statement</code>, which contains the single statement <code>smallest = x</code>. Since the program executes linearly, the program continues on to execute the code under the label <code>done</code>, which returns the value of <code>smallest</code> (<code>x</code>).</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果 <code>x</code> 大于 <code>y</code>，<code>smallest</code> 被赋值为 <code>y</code>。接着程序执行语句 <code>goto done</code>，把控制转移到 <code>done</code> 标签处，返回 <code>smallest</code> 的值（<code>y</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If <code>x</code> is greater than <code>y</code>, then <code>smallest</code> is assigned the value <code>y</code>. The program then executes the statement <code>goto done</code>, which transfers control to the <code>done</code> label, which returns the value of <code>smallest</code> (<code>y</code>).</li>
+</ul>
+</blockquote>
+<p>虽然在编程的早期 <code>goto</code> 语句很常用，但在现代代码中使用 <code>goto</code> 语句被认为是不好的做法，因为它降低了代码整体的可读性。事实上，计算机科学家艾兹格·迪杰斯特拉（Edsger Dijkstra）写过一篇抨击使用 <code>goto</code> 语句的著名文章，题为《<em>Go To 语句有害论</em>》（<em>Go To Statement Considered Harmful</em>）<sup>1</sup>。</p>
+<blockquote>
+<p>Although <code>goto</code> statements were commonly used in the early days of programming, their use in modern code is considered bad practice, because it reduces the overall readability of code. In fact, computer scientist Edsger Dijkstra wrote a famous paper lambasting the use of <code>goto</code> statements called <em>Go To Statement Considered Harmful</em><sup>1</sup>.</p>
+</blockquote>
+<p>一般来说，设计良好的 C 程序不使用 <code>goto</code> 语句，程序员也不被鼓励使用它，以免写出难以阅读、调试和维护的代码。不过，理解 C 的 <code>goto</code> 语句很重要，因为 GCC 在把含有条件语句的 C 代码（包括含有 <code>if</code> 语句和循环的代码）翻译成汇编之前，通常会先把它改写成 <code>goto</code> 形式。</p>
+<blockquote>
+<p>In general, well-designed C programs do not use <code>goto</code> statements, and programmers are discouraged from using them to avoid writing code that is difficult to read, debug, and maintain. However, the C <code>goto</code> statement is important to understand, as GCC typically changes C code with conditionals into a <code>goto</code> form prior to translating it to assembly, including code that contains <code>if</code> statements and loops.</p>
+</blockquote>
+<p>接下来的几个小节更详细地介绍 <code>if</code> 语句和循环的汇编表示。</p>
+<blockquote>
+<p>The following subsections cover the assembly representation of <code>if</code> statements and loops in greater detail.</p>
+</blockquote>
+<ul>
+<li><a href="8.4.2-if_statements.html">if 语句</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a href="8.4.2-if_statements.html">If Statements</a></li>
+</ul>
+</blockquote>
+<ul>
+<li><a href="8.4.3-loops.html">循环</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a href="8.4.3-loops.html">loops</a></li>
+</ul>
+</blockquote>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><em>References</em></p>
+<ol>
+<li>Edsger Dijkstra. “Go To Statement Considered Harmful”. <em>Communications of the ACM</em> 11(3) pp. 147—​148. 1968.</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">8.4. 条件控制与循环</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">8.4.2. 汇编中的 if 语句</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%9D%A1%E4%BB%B6%E6%AF%94%E8%BE%83%E6%8C%87%E4%BB%A4"><span class="toc-text">条件比较指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B7%B3%E8%BD%AC%E6%8C%87%E4%BB%A4"><span class="toc-text">跳转指令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#goto-%E8%AF%AD%E5%8F%A5"><span class="toc-text">goto 语句</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">参考文献</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

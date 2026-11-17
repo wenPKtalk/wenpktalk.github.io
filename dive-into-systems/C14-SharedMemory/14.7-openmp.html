@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.7. 用 OpenMP 实现隐式多线程 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;openmp.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.7. Implicit Threading w">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.7. 用 OpenMP 实现隐式多线程 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.7-openmp.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;openmp.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.7. Implicit Threading w">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.959Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.959Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html" class="current" aria-current="page">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 155 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.7. 用 OpenMP 实现隐式多线程</h1>
+  
+  
+    <p class="article-meta"><span>约 21 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/openmp.html">https://diveintosystems.org/book/C14-SharedMemory/openmp.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.7. Implicit Threading with OpenMP</em></p>
+<p>到目前为止，我们介绍的都是用 POSIX 线程进行共享内存编程。尽管 Pthreads 很适合简单的应用程序，但随着程序本身越来越复杂，它也变得越来越难用。POSIX 线程是线程<strong>显式并行编程</strong>（explicit parallel programming）的一个例子，它要求程序员准确指定每个线程需要做什么，以及每个线程应当何时开始、何时停止。</p>
+<blockquote>
+<p>Thus far, we have presented shared memory programming using POSIX threads. Although Pthreads are great for simple applications, they become increasingly difficult to use as programs themselves become more complex. POSIX threads are an example of <strong>explicit parallel programming</strong> of threads, requiring a programmer to specify exactly what each thread is required to do and when each thread should start and stop.</p>
+</blockquote>
+<p>使用 Pthreads 时，要给现有的顺序程序<em>逐步地</em>加入并行也可能很困难。也就是说，程序员常常必须完全重写程序才能使用线程，而在试图并行化一个大型的现有代码库时，这往往是不可取的。</p>
+<blockquote>
+<p>With Pthreads, it can also be challenging to <em>incrementally</em> add parallelism to an existing sequential program. That is, one must often rewrite the program entirely to use threads, which is often not desirable when attempting to parallelize a large, existing codebase.</p>
+</blockquote>
+<p>开放多处理（Open Multiprocessing，OpenMP）库实现了 Pthreads 的一种<em>隐式</em>替代方案。OpenMP 内置于 GCC 以及 LLVM 和 Clang 等其他流行的编译器中，可以与 C、C++ 和 Fortran 编程语言一起使用。OpenMP 的一个主要优点是，它让程序员只需在代码的某些部分加入<strong>编译指示</strong>（pragma，即特殊的编译器指令），就能并行化现有的顺序 C 代码中的组成部分。OpenMP 专用的编译指示以 <code>#pragma omp</code> 开头。</p>
+<blockquote>
+<p>The Open Multiprocessing (OpenMP) library implements an <em>implicit</em> alternative to Pthreads. OpenMP is built into GCC and other popular compilers such as LLVM and Clang, and can be used with the C, C++, and Fortran programming languages. A key advantage of OpenMP is that it enables programmers to parallelize components of existing, sequential C code by adding <strong>pragmas</strong> (special compiler directives) to parts of the code. Pragmas specific to OpenMP begin with <code>#pragma omp</code>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · Mac 上的 OpenMP</p><p>macOS 自带的 Apple Clang 不直接支持 OpenMP：译者在 Mac 上用 <code>clang -fopenmp</code> 编译一个带 <code>#pragma omp parallel</code> 的程序，得到「unsupported option ‘-fopenmp’」错误。要在 Mac 上跟做本节，需要另外安装 OpenMP 运行时库（例如通过 Homebrew 安装 <code>libomp</code>）并相应调整编译选项，或者安装 GCC &#x2F; 上游 LLVM，也可以直接在 Linux 中运行。</p>
+</div>
+<p>对 OpenMP 的详细介绍超出了本书的范围，不过我们会介绍一些常用的编译指示，并展示如何在一些示例应用程序中使用其中的几个。</p>
+<blockquote>
+<p>Detailed coverage of OpenMP is outside the scope of this book, but we cover some common pragmas, and show how several can be used in the context of some sample applications.</p>
+</blockquote>
+<h3 id="14-7-1-常用的编译指示"><a href="#14-7-1-常用的编译指示" class="headerlink" title="14.7.1. 常用的编译指示"></a>14.7.1. 常用的编译指示</h3><p><em>14.7.1. Common Pragmas</em></p>
+<p>下面是 OpenMP 程序中最常用的一些编译指示：</p>
+<blockquote>
+<p>Here are some of the most commonly used pragmas in OpenMP programs:</p>
+</blockquote>
+<ul>
+<li><p><strong><code>#pragma omp parallel</code></strong></p>
+<p>这个编译指示创建一组线程，让每个线程运行其作用域中的代码（通常是一个函数调用）。调用这个编译指示通常相当于调用<a href="14.2-posix.html">我们最初讨论 Pthreads 时</a>介绍的 <code>pthread_create</code> 和 <code>pthread_join</code> 函数对。这个编译指示可以带若干子句，包括：</p>
+<ul>
+<li><code>num_threads</code> 指定要创建的线程数。</li>
+<li><code>private</code> 是一个变量列表，列出对每个线程来说应当是私有（或局部）的变量。对线程私有的变量也可以在编译指示的作用域内声明（例子见下文）。每个线程都会得到每个这类变量的一份副本。</li>
+<li><code>shared</code> 是一个变量列表，列出应当在线程之间共享的变量。这类变量只有一份副本，由所有线程共享。</li>
+<li><code>default</code> 表示是否由编译器决定哪些变量应当共享。在大多数情况下，我们希望使用 <code>default(none)</code>，并显式指定哪些变量应当共享、哪些应当私有。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>#pragma omp parallel</code></strong></p>
+<p>This pragma creates a team of threads and has each thread run the code in its scope (usually a function call) on each thread. An invocation of this pragma is usually equivalent to an invocation of the <code>pthread_create</code> and <code>pthread_join</code> function pairing <a href="14.2-posix.html">discussed in our original discussion on Pthreads</a>. The pragma may have a number of clauses, including the following:</p>
+<ul>
+<li><p><code>num_threads</code> specifies the number of threads to create.</p>
+</li>
+<li><p><code>private</code> is a list of variables that should be private (or local) to each thread. Variables that should be private to a thread can also be declared within the scope of the pragma (see below for an example). Each thread gets its own copy of each variable.</p>
+</li>
+<li><p><code>shared</code> is a listing of variables that should be shared amongst the threads. There is one copy of the variable that is shared amongst all threads.</p>
+</li>
+<li><p><code>default</code> indicates whether the determination of which variables should be shared is left up to the compiler. In most cases, we want to use <code>default(none)</code> and specify explicitly which variables should be shared, and which should be private.</p>
+</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong><code>#pragma omp for</code></strong></p>
+<p>指定每个线程执行 <code>for</code> 循环迭代的一个子集。尽管循环的调度由系统决定，但默认通常是在<a href="14.2-posix.html">标量乘法的例子</a>中首次讨论的「分块」方法。这是一种<em>静态</em>的调度形式：每个线程得到一个分配好的块，然后处理块中的迭代。不过，OpenMP 也让<em>动态</em>调度变得很容易。在动态调度中，每个线程得到若干次迭代，处理完之后再请求一组新的迭代。调度策略可以用下面的子句来设置：</p>
+<ul>
+<li><code>schedule(dynamic)</code>：指定应当使用<em>动态</em>形式的调度。尽管在某些情况下这样做有好处，但静态（默认）形式的调度通常更快。</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>#pragma omp for</code></strong></p>
+<p>Specifies that each thread execute a subset of iterations of a <code>for</code> loop. Although the scheduling of the loops is up to the system, the default is usually the “chunking” method first discussed in the <a href="14.2-posix.html">scalar multiplication example</a>. This is a <em>static</em> form of scheduling: each thread gets an assigned chunk, and then processes the iterations in its chunk. However, OpenMP also makes <em>dynamic</em> scheduling easy. In dynamic scheduling, each thread gets a number of iterations, and requests a new set upon completing processing their iteration. The scheduling policy can be set using the following clause:</p>
+<ul>
+<li><code>schedule(dynamic)</code>: specifies that a <em>dynamic</em> form of scheduling should be used. While this is advantageous in some cases, the static (default) form of scheduling is usually faster.</li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong><code>#pragma omp parallel for</code></strong></p>
+<p>这个编译指示是 <code>omp parallel</code> 和 <code>omp for</code> 编译指示的组合。与 <code>omp for</code> 编译指示不同，<code>omp parallel for</code> 编译指示还会先生成一组线程，然后再给每个线程分配循环迭代的一个集合。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>#pragma omp parallel for</code></strong></p>
+<p>This pragma is a combination of the <code>omp parallel</code> and the <code>omp for</code> pragmas. Unlike the <code>omp for</code> pragma, the <code>omp parallel for</code> pragma also generates a team of threads before assigning each thread a set of iterations of the loop.</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong><code>#pragma omp critical</code></strong></p>
+<p>这个编译指示用来指定其作用域下的代码应当被视为<em>临界区</em>，即一次只能有一个线程执行这段代码，以确保正确的行为。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>#pragma omp critical</code></strong></p>
+<p>This pragma is used to specify that the code under its scope should be treated as a <em>critical section</em> — that is, only one thread should execute the section of code at a time to ensure correct behavior.</p>
+</li>
+</ul>
+</blockquote>
+<p>还有几个线程可以调用的<em>函数</em>，在执行中常常很有用。例如：</p>
+<blockquote>
+<p>There are also several <em>functions</em> that a thread can access that are often useful for execution. For example:</p>
+</blockquote>
+<ul>
+<li><p><strong><code>omp_get_num_threads</code></strong></p>
+<p>返回当前正在执行的线程组中的线程数。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>omp_get_num_threads</code></strong></p>
+<p>returns the number of threads in the current team that is being executed.</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong><code>omp_set_num_threads</code></strong></p>
+<p>设置一个线程组应当拥有的线程数。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>omp_set_num_threads</code></strong></p>
+<p>sets the number of threads that a team should have.</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong><code>omp_get_thread_num</code></strong></p>
+<p>返回调用线程的标识符。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong><code>omp_get_thread_num</code></strong></p>
+<p>returns the identifier of the calling thread.</p>
+</li>
+</ul>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · <code>omp parallel for</code> 指令只适用于 for 循环！（The <code>omp parallel for</code> directive works only with for loops!）</p><p>记住，<code>omp parallel for</code> 编译指示<em>只</em>适用于 <code>for</code> 循环。其他类型的循环，例如 <code>while</code> 循环和 <code>do</code>-<code>while</code> 循环，都不受支持。</p>
+<blockquote>
+<p>Keep in mind that the <code>omp parallel for</code> pragma works <em>only</em> with <code>for</code> loops. Other types of loops, such as <code>while</code> loops and <code>do</code>-<code>while</code> loops, are not supported.</p>
+</blockquote>
+</div>
+<h3 id="14-7-2-你好，线程：OpenMP-风味"><a href="#14-7-2-你好，线程：OpenMP-风味" class="headerlink" title="14.7.2. 你好，线程：OpenMP 风味"></a>14.7.2. 你好，线程：OpenMP 风味</h3><p><em>14.7.2. Hello Threading: OpenMP flavored</em></p>
+<p>我们再来看「Hello World」（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>）程序，这次用 OpenMP 而不是 Pthreads 来写：</p>
+<blockquote>
+<p>Let’s revisit our “Hello World” (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>) program, now using OpenMP instead of Pthreads:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;omp.h&gt;</span><br><span class="line"></span><br><span class="line">void HelloWorld( void ) &#123;</span><br><span class="line">    long myid = omp_get_thread_num();</span><br><span class="line">    printf( &quot;Hello world! I am thread %ld\n&quot;, myid );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main( int argc, char** argv ) &#123;</span><br><span class="line">    long nthreads;</span><br><span class="line"></span><br><span class="line">    if (argc !=2) &#123;</span><br><span class="line">        fprintf(stderr, &quot;usage: %s &lt;n&gt;\n&quot;, argv[0]);</span><br><span class="line">        fprintf(stderr, &quot;where &lt;n&gt; is the number of threads\n&quot;);</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    nthreads = strtol( argv[1], NULL, 10 );</span><br><span class="line"></span><br><span class="line">    #pragma omp parallel num_threads(nthreads)</span><br><span class="line">        HelloWorld();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意，OpenMP 程序比 Pthreads 版本<em>短得多</em>。为了使用 OpenMP 库函数，我们包含头文件 <code>omp.h</code>。<code>main</code> 中的 <code>omp parallel num_threads(nthreads)</code> 编译指示创建一组线程，每个线程都调用 <code>HelloWorld</code> 函数。子句 <code>num_threads(nthreads)</code> 指定总共应当生成 <code>nthreads</code> 个线程。这个编译指示还会把每个创建的线程合并回单线程进程。换句话说，创建和合并线程的所有底层工作都对程序员<em>抽象</em>掉了，只需加入一个编译指示就能完成。因此，OpenMP 被认为是一种<strong>隐式多线程</strong>（implicit threading）库。</p>
+<blockquote>
+<p>Note that the OpenMP program is <em>much</em> shorter than the Pthreads version. To access the OpenMP library functions, we include the header file <code>omp.h</code>. The <code>omp parallel num_threads(nthreads)</code> pragma in <code>main</code> creates a set of threads, where each thread calls the <code>HelloWorld</code> function. The clause <code>num_threads(nthreads)</code> specifies that a total of <code>nthreads</code> should be generated. The pragma also joins each created thread back to a single-threaded process. In other words, all the low-level work of creating and joining threads is <em>abstracted</em> away from the programmer and is accomplished with the inclusion of just one pragma. For this reason, OpenMP is considered an <strong>implicit threading</strong> library.</p>
+</blockquote>
+<p>OpenMP 还省去了显式管理线程 ID 的需要。在 <code>HelloWorld</code> 中，<code>omp_get_thread_num</code> 函数取出运行它的那个线程的唯一 ID。</p>
+<blockquote>
+<p>OpenMP also abstracts away the need to explicitly manage thread IDs. In the context of <code>HelloWorld</code>, the <code>omp_get_thread_num</code> function extracts the unique ID associated with the thread that is running it.</p>
+</blockquote>
+<h4 id="编译代码"><a href="#编译代码" class="headerlink" title="编译代码"></a>编译代码</h4><p><em>Compiling the code</em></p>
+<p>我们给编译器传入 <code>-fopenmp</code> 选项来编译并运行这个程序，这个选项表示我们是在用 OpenMP 进行编译：</p>
+<blockquote>
+<p>Let’s compile and run this program by passing the <code>-fopenmp</code> flag to the compiler, which signals that we’re compiling with OpenMP:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o hello_mp hello_mp.c -fopenmp</span><br><span class="line"></span><br><span class="line">$ ./hello_mp 4</span><br><span class="line">Hello world! I am thread 2</span><br><span class="line">Hello world! I am thread 3</span><br><span class="line">Hello world! I am thread 0</span><br><span class="line">Hello world! I am thread 1</span><br></pre></td></tr></table></figure>
+
+<p>由于线程的执行在后续运行中可能变化，重新运行这个程序会得到不同顺序的消息：</p>
+<blockquote>
+<p>Since the execution of threads can change with subsequent runs, rerunning this program results in a different sequence of messages:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./hello_mp 4</span><br><span class="line">Hello world! I am thread 3</span><br><span class="line">Hello world! I am thread 2</span><br><span class="line">Hello world! I am thread 1</span><br><span class="line">Hello world! I am thread 0</span><br></pre></td></tr></table></figure>
+
+<p>这种行为与我们<a href="14.2-posix.html">用 Pthreads 编写的例子</a>是一致的。</p>
+<blockquote>
+<p>This behavior is consistent with our <a href="14.2-posix.html">example with Pthreads</a>.</p>
+</blockquote>
+<h3 id="14-7-3-一个更复杂的例子：OpenMP-版计数排序"><a href="#14-7-3-一个更复杂的例子：OpenMP-版计数排序" class="headerlink" title="14.7.3. 一个更复杂的例子：OpenMP 版计数排序"></a>14.7.3. 一个更复杂的例子：OpenMP 版计数排序</h3><p><em>14.7.3. A More Complex Example: CountSort in OpenMP</em></p>
+<p>OpenMP 的一个强大优势在于，它让程序员能够逐步地并行化自己的代码。为了实际看一看，我们来并行化本章前面讨论过的、更复杂的计数排序算法（串行代码在这里：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">countSort.c</a>）。回想一下，这个算法对只包含少量取值的数组进行排序。串行程序的 <code>main</code> 函数如下：</p>
+<blockquote>
+<p>A powerful advantage of OpenMP is that it enables programmers to incrementally parallelize their code. To see this in action, let’s parallelize the more complex CountSort algorithm discussed earlier in this chapter (the serial code is located here: <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">countSort.c</a>). Recall that this algorithm sorts arrays containing a small range of values. The main function of the serial program looks like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">int main( int argc, char **argv ) &#123;</span><br><span class="line">    //parse args (omitted for brevity)</span><br><span class="line"></span><br><span class="line">    srand(10); //use of static seed ensures the output is the same every run</span><br><span class="line"></span><br><span class="line">    //generate random array of elements of specified length</span><br><span class="line">    //(omitted for brevity)</span><br><span class="line"></span><br><span class="line">    //allocate counts array and initializes all elements to zero.</span><br><span class="line">    int counts[MAX] = &#123;0&#125;;</span><br><span class="line"></span><br><span class="line">    countElems(counts, array, length); //calls step 1</span><br><span class="line">    writeArray(counts, array); //calls step2</span><br><span class="line"></span><br><span class="line">    free(array); //free memory</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>main</code> 函数在做了一些命令行解析并生成一个随机数组之后，先调用 <code>countsElems</code> 函数，再调用 <code>writeArray</code> 函数。</p>
+<blockquote>
+<p>The <code>main</code> function, after doing some command line parsing and generating a random array, calls the <code>countsElems</code> function followed by the <code>writeArray</code> function.</p>
+</blockquote>
+<h4 id="用-OpenMP-并行化-CountElems"><a href="#用-OpenMP-并行化-CountElems" class="headerlink" title="用 OpenMP 并行化 CountElems"></a>用 OpenMP 并行化 CountElems</h4><p><em>Parallelizing CountElems Using OpenMP</em></p>
+<p>并行化前面的程序有好几种方法。一种方法（如下面的例子所示）是在 <code>countElems</code> 和 <code>writeArray</code> 函数中使用 <code>omp parallel</code> 编译指示。这样，就不需要对 <code>main</code> 函数做任何改动。程序的完整版本见：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort_mp.c">countSort_mp.c</a>。</p>
+<blockquote>
+<p>There are several ways to parallelize the preceding program. One way (shown in the example that follows) uses the <code>omp parallel</code> pragma in the context of the <code>countElems</code> and <code>writeArray</code> functions. As a result, no changes need to be made to the <code>main</code> function. A full version of the program is available at: <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort_mp.c">countSort_mp.c</a>.</p>
+</blockquote>
+<p>首先，我们来看如何用 OpenMP 并行化 <code>countElems</code> 函数：</p>
+<blockquote>
+<p>First, let’s examine how to parallelize the <code>countElems</code> function using OpenMP:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void countElems(int *counts, int *array, long length) &#123;</span><br><span class="line"></span><br><span class="line">    #pragma omp parallel default(none) shared(counts, array, length)</span><br><span class="line">    &#123;</span><br><span class="line">        int val, i, local[MAX] = &#123;0&#125;;</span><br><span class="line">        #pragma omp for</span><br><span class="line">        for (i = 0; i &lt; length; i++) &#123;</span><br><span class="line">            val = array[i];</span><br><span class="line">            local[val]++;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">       #pragma omp critical</span><br><span class="line">       &#123;</span><br><span class="line">           for (i = 0; i &lt; MAX; i++) &#123;</span><br><span class="line">               counts[i] += local[i];</span><br><span class="line">           &#125;</span><br><span class="line">       &#125;</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个版本的代码中，使用了三个编译指示：</p>
+<blockquote>
+<p>In this version of the code, three pragmas are employed:</p>
+</blockquote>
+<ul>
+<li><code>#pragma omp parallel</code> 编译指示表示应当创建一组线程。<code>main</code> 中的 <code>omp_set_num_threads(nthreads)</code> 这一行把线程组的默认大小设为 <code>nthreads</code>。如果没有使用 <code>omp_set_num_threads</code> 函数，分配的线程数将等于系统中的核心数。提醒一下，<code>omp parallel</code> 编译指示在块的开头隐式地创建线程，在块的末尾合并它们。花括号（<code>{}</code>）用来指定作用域。<code>shared</code> 子句声明变量 <code>counts</code>、<code>array</code> 和 <code>length</code> 在所有线程之间共享（全局的）。因此，变量 <code>val</code>、<code>i</code> 和 <code>local[MAX]</code> 在每个线程中都是<em>局部</em>声明的。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>#pragma omp parallel</code> pragma indicates that a team of threads should be created. The <code>omp_set_num_threads(nthreads)</code> line in <code>main</code> sets the default size of the thread team to be <code>nthreads</code>. If the <code>omp_set_num_threads</code> function is not used, then the number of threads assigned will equal the number of cores in the system. As a reminder, the <code>omp parallel</code> pragma implicitly creates threads at the beginning of the block and joins them at the end of the block. Braces (<code>{}</code>) are used to specify scope. The <code>shared</code> clause declares that the variables <code>counts</code>, <code>array</code>, and <code>length</code> are shared (global) among all the threads. Thus, the variables <code>val</code>, <code>i</code>, and <code>local[MAX]</code> are declared <em>locally</em> in each thread.</li>
+</ul>
+</blockquote>
+<ul>
+<li>下一个编译指示是 <code>#pragma omp for</code>，它并行化 <code>for</code> 循环，把迭代次数分给各个线程。OpenMP 会计算如何最好地划分循环的迭代。如前所述，默认策略通常是分块方法，让每个线程计算大致相同数量的迭代。因此，每个线程读取共享数组 <code>array</code> 的一部分，并在它的局部数组 <code>local</code> 中累计计数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The next pragma is <code>#pragma omp for</code>, which parallelizes the <code>for</code> loop, splitting the number of iterations among the number of threads. OpenMP calculates how best to split up the iterations of the loop. As previously mentioned, the default strategy is usually a chunking method, wherein each thread gets roughly the same number of iterations to compute. Thus, each thread reads a component of the shared array <code>array</code>, and accumulates its counts in its local array <code>local</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>#pragma omp critical</code> 编译指示表示临界区作用域中的代码一次只能由一个线程执行。这相当于这个程序的 Pthreads 版本中使用的互斥锁。在这里，每个线程依次递增共享的 <code>counts</code> 数组。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>#pragma omp critical</code> pragma indicates that the code in the scope of the critical section should be executed by exactly one thread at a time. This is equivalent to the mutex that was employed in the Pthreads version of this program. Here, each thread increments the shared <code>counts</code> array one at a time.</li>
+</ul>
+</blockquote>
+<p>我们用 1 亿个元素运行这个函数，来感受一下它的性能：</p>
+<blockquote>
+<p>Let’s get a sense of the performance of this function by running it with 100 million elements:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_mp 100000000 1</span><br><span class="line">Run Time for Phase 1 is 0.249893</span><br><span class="line"></span><br><span class="line">$ ./countElems_mp 100000000 2</span><br><span class="line">Run Time for Phase 1 is 0.124462</span><br><span class="line"></span><br><span class="line">$ ./countElems_mp 100000000 4</span><br><span class="line">Run Time for Phase 1 is 0.068749</span><br></pre></td></tr></table></figure>
+
+<p>这是非常出色的性能：我们的函数在两个线程上得到了 2 的加速比，在四个线程上得到了 3.63 的加速比。性能甚至比 Pthreads 的实现还要好！</p>
+<blockquote>
+<p>This is excellent performance, with our function getting a speedup of 2 on two threads, and a speedup of 3.63 on four threads. We get even better performance than the Pthreads implementation!</p>
+</blockquote>
+<h4 id="OpenMP-中的-writeArray-函数"><a href="#OpenMP-中的-writeArray-函数" class="headerlink" title="OpenMP 中的 writeArray 函数"></a>OpenMP 中的 <code>writeArray</code> 函数</h4><p><em>The <code>writeArray</code> Function in OpenMP</em></p>
+<p>并行化 <code>writeArray</code> 函数要<em>难得多</em>。下面的代码展示了一种可能的解决方案：</p>
+<blockquote>
+<p>Parallelizing the <code>writeArray</code> function is <em>much</em> harder. The following code shows one possible solution:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void writeArray(int *counts, int *array) &#123;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    //assumed the number of threads is no more than MAX</span><br><span class="line">    #pragma omp parallel for schedule(dynamic)</span><br><span class="line">    for (i = 0; i &lt; MAX; i++) &#123;</span><br><span class="line">        int j = 0, amt, start = 0;</span><br><span class="line">        for (j = 0; j &lt; i; j++) &#123;  //calculate the &quot;true&quot; start position</span><br><span class="line">            start += counts[j];</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        amt = counts[i]; //the number of array positions to fill</span><br><span class="line"></span><br><span class="line">        //overwrite amt elements with value i, starting at position start</span><br><span class="line">        for (j = start; j &lt; start + amt; j++) &#123;</span><br><span class="line">            array[j] = i;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在并行化之前，我们对这个函数做了一处修改，因为<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">旧版本</a>的 <code>writeArray</code> 使 <code>j</code> 依赖于循环的前几次迭代。在这个版本中，每个线程根据 <code>counts</code> 中前面所有元素之和，算出自己唯一的 <code>start</code> 值。</p>
+<blockquote>
+<p>Prior to parallelizing, we made a change to this function, because <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countSort.c">the old version</a> of <code>writeArray</code> caused <code>j</code> to have a dependency on the previous iterations of the loop. In this version, each thread calculates its unique <code>start</code> value based on the sum of all the previous elements in <code>counts</code>.</p>
+</blockquote>
+<p>去掉这个依赖之后，并行化就相当直接了。<code>#pragma omp parallel for</code> 编译指示生成一组线程，并通过给每个线程分配循环迭代的一个子集来并行化 <code>for</code> 循环。提醒一下，这个编译指示是 <code>omp parallel</code> 和 <code>omp for</code> 编译指示（在并行化 <code>countElems</code> 时用过）的组合。</p>
+<blockquote>
+<p>When this dependency is removed, the parallelization is pretty straightforward. The <code>#pragma omp parallel for</code> pragma generates a team of threads and parallelizes the <code>for</code> loop by assigning each thread a subset of the iterations of the loop. As a reminder, this pragma is a combination of the <code>omp parallel</code> and the <code>omp for</code> pragmas (which were used in the parallelization of <code>countElems</code>).</p>
+</blockquote>
+<p>分块的线程调度方法（如前面的 <code>countElems</code> 函数中所示）在这里并不合适，因为 <code>counts</code> 中各个元素的频次可能相差悬殊。因此，各线程的工作量不会相等，导致一些线程分到的工作比其他线程多。所以这里使用了 <code>schedule(dynamic)</code> 子句，让每个线程完成分配给它的迭代后，再向线程管理器请求新的迭代。</p>
+<blockquote>
+<p>A chunking approach to scheduling threads (as shown in the earlier <code>countElems</code> function) is not appropriate here, because it is possible that each element in <code>counts</code> has a radically different frequency. Therefore, the threads will not have equal work, resulting in some threads being assigned more work than others. Therefore, the <code>schedule(dynamic)</code> clause is employed, so that each thread completes the iteration it is assigned before requesting a new iteration from the thread manager.</p>
+</blockquote>
+<p>由于每个线程写的是数组中不同的位置，这个函数不需要互斥。</p>
+<blockquote>
+<p>Since each thread is writing to distinct array locations, mutual exclusion is not needed for this function.</p>
+</blockquote>
+<p>注意，OpenMP 代码比 POSIX 线程的实现简洁得多。代码非常易读，而且只需要很少的修改。这就是<strong>抽象</strong>（abstraction）的威力之一：实现细节对程序员隐藏了起来。</p>
+<blockquote>
+<p>Notice how much cleaner the OpenMP code is than the POSIX thread implementation. The code is very readable, and required very little modification. This is one of the powers of <strong>abstraction</strong>, in which the implementation details are hidden from the programmer.</p>
+</blockquote>
+<p>然而，抽象必然要以控制力为代价。程序员假定编译器足够「聪明」，能处理并行化的种种细节，因而能更轻松地并行化自己的应用程序。但是，程序员不再对并行化的细节做出具体的决定。如果不清楚 OpenMP 编译指示在底层是如何执行的，就可能很难调试 OpenMP 应用程序，也很难知道在某个时候使用哪个编译指示最合适。</p>
+<blockquote>
+<p>However, a necessary trade-off for abstraction is control. The programmer assumes that the compiler is “smart” enough to take care of the particulars of parallelization and thus has an easier time parallelizing their application. However, the programmer no longer makes detailed decisions about the particulars of that parallelization. Without a clear idea of how OpenMP pragmas execute under the hood, it can be difficult to debug an OpenMP application or know which pragma is the most appropriate to use at a given time.</p>
+</blockquote>
+<h3 id="14-7-4-进一步学习-OpenMP"><a href="#14-7-4-进一步学习-OpenMP" class="headerlink" title="14.7.4. 进一步学习 OpenMP"></a>14.7.4. 进一步学习 OpenMP</h3><p><em>14.7.4. Learning More about OpenMP</em></p>
+<p>对 OpenMP 更深入的讨论超出了本书的范围，不过有一些学习 OpenMP 的免费资源<sup>1,2</sup>很有用。</p>
+<blockquote>
+<p>A deeper discussion of OpenMP is beyond the scope of this book, but there are useful free resources<sup>1,2</sup> for learning OpenMP.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· OpenMP 6.0</p><p>2024 年 11 月 14 日，OpenMP 架构审查委员会（ARB）在 SC24 大会上发布了 <strong>OpenMP 6.0</strong> 规范。按官方新闻稿，主要新增内容包括：简化任务（task）编程，例如允许不属于任何线程组的「自由代理线程」（free-agent thread）执行任务、可以录制任务图以便高效重放；增强加速器设备支持；完整支持 C23、C++23 和 Fortran 2023 等最新语言标准；以及让用户更细致地控制存储资源和内存空间。本节介绍的 <code>parallel</code>、<code>for</code>、<code>critical</code> 等基本编译指示在新版本中依然适用。<a target="_blank" rel="noopener" href="https://www.businesswire.com/news/home/20241114597184/en/OpenMP-ARB-Releases-OpenMP-6.0-for-Easier-Programming">Business Wire：OpenMP ARB Releases OpenMP 6.0 for Easier Programming</a></p>
+</div>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><em>References:</em></p>
+<ol>
+<li><p>Blaise Barney. “OpenMP”. <a target="_blank" rel="noopener" href="https://hpc.llnl.gov/tuts/openMP/">https://hpc.llnl.gov/tuts/openMP/</a></p>
+</li>
+<li><p>Richard Brown and Libby Shoop. “Multicore Programming with OpenMP”. <em>CSinParallel: Parallel Computing in the Computer Science curriculum</em>. <a target="_blank" rel="noopener" href="http://selkie.macalester.edu/csinparallel/modules/MulticoreProgramming/build/html/index.html">http://selkie.macalester.edu/csinparallel/modules/MulticoreProgramming/build/html/index.html</a></p>
+</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.6. 线程安全</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.8-summary.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.8. 小结</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-7-1-%E5%B8%B8%E7%94%A8%E7%9A%84%E7%BC%96%E8%AF%91%E6%8C%87%E7%A4%BA"><span class="toc-text">14.7.1. 常用的编译指示</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-7-2-%E4%BD%A0%E5%A5%BD%EF%BC%8C%E7%BA%BF%E7%A8%8B%EF%BC%9AOpenMP-%E9%A3%8E%E5%91%B3"><span class="toc-text">14.7.2. 你好，线程：OpenMP 风味</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-7-3-%E4%B8%80%E4%B8%AA%E6%9B%B4%E5%A4%8D%E6%9D%82%E7%9A%84%E4%BE%8B%E5%AD%90%EF%BC%9AOpenMP-%E7%89%88%E8%AE%A1%E6%95%B0%E6%8E%92%E5%BA%8F"><span class="toc-text">14.7.3. 一个更复杂的例子：OpenMP 版计数排序</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-7-4-%E8%BF%9B%E4%B8%80%E6%AD%A5%E5%AD%A6%E4%B9%A0-OpenMP"><span class="toc-text">14.7.4. 进一步学习 OpenMP</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">参考文献</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

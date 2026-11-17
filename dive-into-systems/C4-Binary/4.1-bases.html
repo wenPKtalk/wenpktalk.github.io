@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4.1. 数的进制与无符号整数 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;bases.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.1. Number Bases and Unsigned Int">
+<meta property="og:type" content="website">
+<meta property="og:title" content="4.1. 数的进制与无符号整数 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/4.1-bases.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;bases.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.1. Number Bases and Unsigned Int">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/BaseTen.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/UnsignedLine.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/BaseTen.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html" class="current" aria-current="page">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>4. 二进制与数据表示</span>
+      </nav>
+      <span class="book-position">第 44 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">4.1. 数的进制与无符号整数</h1>
+  
+  
+    <p class="article-meta"><span>约 20 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C4-Binary/bases.html">https://diveintosystems.org/book/C4-Binary/bases.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>4.1. Number Bases and Unsigned Integers</em></p>
+<p>我们已经看到，<a href="4.0-index.html">二进制序列可以用各种非数值的方式来解释</a>，现在把注意力转向数。具体来说，我们从<strong>无符号</strong>（unsigned）数开始，它可以解释为零或正数，但永远不会是负数（它们没有<em>符号</em>）。</p>
+<blockquote>
+<p>Having seen that <a href="4.0-index.html">binary sequences can be interpreted in all sorts of nonnumerical ways</a>, let’s turn our attention to numbers. Specifically, we’ll start with <strong>unsigned</strong> numbers, which can be interpreted as zero or positive, but they can never be negative (they have no <em>sign</em>).</p>
+</blockquote>
+<h3 id="4-1-1-十进制数"><a href="#4-1-1-十进制数" class="headerlink" title="4.1.1. 十进制数"></a>4.1.1. 十进制数</h3><p><em>4.1.1. Decimal Numbers</em></p>
+<p>我们不从二进制开始，而是先看一看我们已经用惯了的数制——<strong>十进制数制</strong>（decimal number system），它的<em>基数</em>（base）是 10。<em>以 10 为基数</em>意味着在解释和表示十进制值时有两个重要性质。</p>
+<blockquote>
+<p>Rather than starting with binary, let’s first examine a number system we’re already comfortable using, the <strong>decimal number system</strong>, which uses a <em>base</em> of 10. <em>Base 10</em> implies two important properties for the interpretation and representation of decimal values.</p>
+</blockquote>
+<ol>
+<li>十进制数中的任何一位数字都存储 10 个不同值（0–9）之一。要存储大于 9 的值，就必须向左边多出来的一位<strong>进位</strong>（carry）。例如，如果某一位从它的最大值（9）开始，再加 1，结果就需要两位数字（9 + 1 &#x3D; 10）。无论这一位在数中的什么位置，都遵循同样的模式（例如 50<strong>8</strong>0 + <strong>2</strong>0 &#x3D; 5<strong>10</strong>0）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Any individual digit in a base 10 number stores one of 10 unique values (0-9). To store a value larger than 9, the value must <strong>carry</strong> to an additional digit to the left. For example, if one digit starts at its maximum value (9) and we add 1 to it, the result requires two digits (9 + 1 &#x3D; 10). The same pattern holds for any digit, regardless of its position within a number (e.g., 50<strong>8</strong>0 + <strong>2</strong>0 &#x3D; 5<strong>10</strong>0).</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>数中每一位数字的位置决定了这位数字对整个数值的重要程度。把各位数字<em>从右到左</em>标记为 d<sub>0</sub>、d<sub>1</sub>、d<sub>2</sub> 等，每往左一位，贡献就比右边那一位大 <em>10</em> 倍。例如，看看数值 8425（<a href="4.1-bases.html">图 1</a>）。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The position of each digit in the number determines how important that digit is to the overall value of the number. Labeling the digits from <em>right to left</em> as d<sub>0</sub>, d<sub>1</sub>, d<sub>2</sub>, etc., each successive digit contributes a factor of <em>ten</em> more than the next. For example, take the value 8425 (<a href="4.1-bases.html">Figure 1</a>).</li>
+</ol>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/BaseTen.png" alt="For the number 8425, digit 0 is the 5, which is in the &quot;ones place&quot;. Digit 1 is the 2, which is in the &quot;tens place&quot;. Digit 2 is the 4, in the &quot;hundreds place&quot;. Finally, digit 3 is the 8, in the &quot;thousands place&quot;."></p>
+<p><strong>图 1.</strong> 十进制数中每一位数字的重要程度，用的是你在小学时可能用过的各位名称。</p>
+<p><em>Figure 1. The importance of each digit in a base 10 number, using names that you may have given to each digit in grade school.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>对于数 8425，第 0 位是 5，在「个位」；第 1 位是 2，在「十位」；第 2 位是 4，在「百位」；第 3 位是 8，在「千位」。</p>
+</div>
+<p>对于示例值 8425，「个」位上的 5 贡献 5（5 × 10<sup>0</sup>），「十」位上的 2 贡献 20（2 × 10<sup>1</sup>），「百」位上的 4 贡献 400（4 × 10<sup>2</sup>），最后，「千」位上的 8 贡献 8000（8 × 10<sup>3</sup>）。更正式地说，8425 可以表示为</p>
+<blockquote>
+<p>For the example value 8425, the 5 in the “ones” place contributes 5 (5 × 10<sup>0</sup>). The 2 in the “tens” place contributes 20 (2 × 10<sup>1</sup>). The 4 in the “hundreds” place contributes 400 (4 × 10<sup>2</sup>), and, finally, the 8 in the “thousands” place contributes 8000 (8 × 10<sup>3</sup>). More formally, one could express 8425 as</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(8 × 10<sup>3</sup>)    +    (4 × 10<sup>2</sup>)    +    (2 × 10<sup>1</sup>)    +    (5 × 10<sup>0</sup>)</p>
+</div>
+<p>这种对底数 10 施加递增指数的模式，正是它被称为<em>十进制</em>（base 10）数制的原因。从右到左给各位数字指定位置编号、从 d<sub>0</sub> 开始，意味着每一位数字 d<sub>i</sub> 对总值的贡献为 10<sup>i</sup>（的倍数）。因此，任何 <em>N</em> 位十进制数的总值都可以表示为：</p>
+<blockquote>
+<p>This pattern of increasing exponents applied to a base of 10 is the reason why it’s called a <em>base 10</em> number system. Assigning position numbers to digits from right to left starting with d<sub>0</sub> implies that each digit d<sub>i</sub> contributes 10<sup>i</sup> to the overall value. Thus, the overall value of any <em>N</em>-digit decimal number can be expressed as:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(d<sub>N-1</sub> × 10<sup>N-1</sup>)    +    (d<sub>N-2</sub> × 10<sup>N-2</sup>)    +    …​    +    (d<sub>2</sub> × 10<sup>2</sup>)    +    (d<sub>1</sub> × 10<sup>1</sup>)    +    (d<sub>0</sub> × 10<sup>0</sup>)</p>
+</div>
+<p>幸运的是，我们很快会看到，其他数制也适用非常相似的模式。</p>
+<blockquote>
+<p>Fortunately, as we’ll soon see, a very similar pattern applies to other number systems.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 区分数的进制（Distinguishing Number Bases）</p><p>既然我们即将介绍第二种数制，一个潜在的问题是如何解释一个数可能不够清楚。例如，看看数值 1000。它应当被解释为十进制值（即一千），还是二进制值（即八，原因稍后解释），一时并不明显。为了表达清楚，本章其余部分会给所有非十进制的数显式地加上前缀。我们很快会介绍二进制，它的前缀是 <strong>0b</strong>；还有十六进制，它用前缀 <strong>0x</strong>。</p>
+<p>因此，如果你看到 1000，应当认为它是十进制的「一千」；如果你看到 0b1000，应当把它解释为二进制数，这里的值是「八」。</p>
+<blockquote>
+<p>Now that we’re about to introduce a second number system, one potential problem is a lack of clarity regarding how to interpret a number. For example, consider the value 1000. It’s not immediately obvious whether you should interpret that number as a decimal value (i.e., one thousand) or a binary value (i.e., eight, for reasons explained soon). To help clarify, the remainder of this chapter will explicitly attach a prefix to all nondecimal numbers. We’ll soon introduce binary, for which the prefix is <strong>0b</strong>, and hexadecimal, which uses a prefix of <strong>0x</strong>.</p>
+<p>Therefore, if you see 1000, you should assume it’s a decimal “one thousand”, and if you see 0b1000, you should interpret it as a binary number, in this case the value “eight”.</p>
+</blockquote>
+</div>
+<h3 id="4-1-2-无符号二进制数"><a href="#4-1-2-无符号二进制数" class="headerlink" title="4.1.2. 无符号二进制数"></a>4.1.2. 无符号二进制数</h3><p><em>4.1.2. Unsigned Binary Numbers</em></p>
+<p>你也许从未想过用 10 的幂来描述十进制数的具体公式，但{ <em>个</em>、<em>十</em>、<em>百</em>…… }位的概念应该很熟悉。幸运的是，类似的术语也适用于二进制等其他数制。当然，其他数制的基数不同，所以每个数位对数值的贡献也不同。</p>
+<blockquote>
+<p>While you may never have considered the specific formula describing decimal numbers as powers of 10, the concept of { <em>ones</em>, <em>tens</em>, <em>hundreds</em>, etc. } places should hopefully feel comfortable. Luckily, similar terminology applies to other number systems, like binary. Of course, the base is different in other number systems, so each digit position contributes a different amount to its numerical value.</p>
+</blockquote>
+<p><strong>二进制数制</strong>（binary number system）的基数是 2，而不是十进制的 10。用刚才分析十进制的方法来分析它，会发现几处相似之处（只是把 10 换成了 2）：</p>
+<blockquote>
+<p>A <strong>binary number system</strong> uses a base of 2 instead of decimal’s 10. Analyzing it the same way that we just did for decimal reveals several parallels (with 2 substituted for 10):</p>
+</blockquote>
+<ol>
+<li>以 2 为基数的数中，任何一位都存储两个不同值（0 或 1）之一。要存储大于 1 的值，二进制编码就必须向左边多出来的一位<strong>进位</strong>。例如，如果某一位从它的最大值（1）开始，再加 1，结果就需要两位（1 + 1 &#x3D; 0b10）。无论这一位在数中的什么位置，都遵循同样的模式（例如 0b100<strong>1</strong>00 + 0b<strong>1</strong>00 &#x3D; 0b10<strong>10</strong>00）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Any individual bit in a base 2 number stores one of two unique values (0 or 1). To store a value larger than 1, the binary encoding must <strong>carry</strong> to an additional bit to the left. For example, if one bit starts at its maximum value (1) and we add 1 to it, the result requires two bits (1 + 1 &#x3D; 0b10). The same pattern holds for any bit, regardless of its position within a number (e.g., 0b100<strong>1</strong>00 + 0b<strong>1</strong>00 &#x3D; 0b10<strong>10</strong>00).</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>数中每一位的位置决定了这一位对数值的重要程度。把各位<em>从右到左</em>标记为 d<sub>0</sub>、d<sub>1</sub>、d<sub>2</sub> 等，每往左一位，贡献就比右边那一位大<em>两</em>倍。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The position of each bit in the number determines how important that bit is to the numerical value of the number. Labeling the digits from <em>right to left</em> as d<sub>0</sub>, d<sub>1</sub>, d<sub>2</sub>, etc., each successive bit contributes a factor of <em>two</em> more than the next.</li>
+</ol>
+</blockquote>
+<p>第一点意味着二进制计数与十进制遵循同样的模式：只需依次列举各个值，并按需增加数位（位）。由于本节关注的是<em>无符号</em>数（只有零和正数），从零开始数是很自然的。<a href="4.1-bases.html">表 1</a> 展示了如何用二进制数出前几个自然数。从表中可以看出，用二进制计数时位数增长得很快。直观上，这种增长是合理的，因为每个二进制数位（两个可能的值）所表示的信息比一个十进制数位（10 个可能的值）少。</p>
+<blockquote>
+<p>The first point implies that counting in binary follows the same pattern as decimal: by simply enumerating the values and adding digits (bits). Because this section focuses on <em>unsigned</em> numbers (zero and positives only), it’s natural to start counting from zero. <a href="4.1-bases.html">Table 1</a> shows how to count the first few natural numbers in binary. As you can see from the table, counting in binary quickly increases the number of digits. Intuitively, this growth makes sense, since each binary digit (two possible values) represents less information than a decimal digit (10 possible values).</p>
+</blockquote>
+<p><strong>表 1.</strong> 二进制计数与十进制计数的对比</p>
+<p><em>Table 1. A Comparison of Counting in Binary versus Decimal</em></p>
+<table>
+<thead>
+<tr>
+<th>二进制值</th>
+<th>十进制值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>2</td>
+</tr>
+<tr>
+<td>11</td>
+<td>3</td>
+</tr>
+<tr>
+<td>100</td>
+<td>4</td>
+</tr>
+<tr>
+<td>101</td>
+<td>5</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Binary value</th>
+<th>Decimal value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>2</td>
+</tr>
+<tr>
+<td>11</td>
+<td>3</td>
+</tr>
+<tr>
+<td>100</td>
+<td>4</td>
+</tr>
+<tr>
+<td>101</td>
+<td>5</td>
+</tr>
+<tr>
+<td>…​</td>
+<td>…​</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>关于标记数位的第二点看起来非常眼熟！事实上，它与十进制太相似了，以至于得出了几乎完全相同的二进制数解释公式。只需把每个指数的底数 10 换成 2：</p>
+<blockquote>
+<p>The second point about labeling digits looks really familiar! In fact, it’s so similar to decimal that it leads to a nearly identical formula for interpreting a binary number. Simply replace the 10 at the base of each exponent with a 2:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(d<sub>N-1</sub> × 2<sup>N-1</sup>)    +    (d<sub>N-2</sub> × 2<sup>N-2</sup>)    +    …​    +    (d<sub>2</sub> × 2<sup>2</sup>)    +    (d<sub>1</sub> × 2<sup>1</sup>)    +    (d<sub>0</sub> × 2<sup>0</sup>)</p>
+</div>
+<p>应用这个公式，就能得到任何二进制数的<em>无符号</em>解释。例如，看看 0b1000：</p>
+<blockquote>
+<p>Applying this formula yields the <em>unsigned</em> interpretation of any binary number. For example, take 0b1000:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(1 × 2<sup>3</sup>)    +    (0 × 2<sup>2</sup>)    +    (0 × 2<sup>1</sup>)    +    (0 × 2<sup>0</sup>)</p>
+<p>  &#x3D;    8 + 0 + 0 + 0    &#x3D;    8</p>
+</div>
+<p>下面是一个更长的单字节例子，0b10110100：</p>
+<blockquote>
+<p>Here’s a longer one-byte example, 0b10110100:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(1 × 2<sup>7</sup>)    +    (0 × 2<sup>6</sup>)    +    (1 × 2<sup>5</sup>)    +    (1 × 2<sup>4</sup>)    +    (0 × 2<sup>3</sup>)    +    (1 × 2<sup>2</sup>)    +    (0 × 2<sup>1</sup>)    +    (0 × 2<sup>0</sup>)</p>
+<p>  &#x3D;    128 + 0 + 32 + 16 + 0 + 4 + 0 + 0    &#x3D;    180</p>
+</div>
+<h3 id="4-1-3-十六进制"><a href="#4-1-3-十六进制" class="headerlink" title="4.1.3. 十六进制"></a>4.1.3. 十六进制</h3><p><em>4.1.3. Hexadecimal</em></p>
+<p>到目前为止，我们考察了两种数制：十进制和二进制。十进制之所以重要，是因为它对人类来说用着顺手；而二进制则与硬件中存储数据的方式相吻合。要注意，两者的表达能力是等价的，也就是说，能用其中一种数制表示的数，都能用另一种表示。既然两者等价，我们还要再讨论一种数制——以 16 为基数的<strong>十六进制</strong>（hexadecimal）——这可能会让你感到意外。</p>
+<blockquote>
+<p>Thus far, we’ve examined two number systems, decimal and binary. Decimal is notable due to its comfort for humans, whereas binary matches the way data is stored in hardware. It’s important to note that they are equivalent in their expressive power. That is, there’s no number you can represent in one system that you can’t represent in the other. Given their equivalence, it may surprise you that we’re going to discuss one more number system: the base 16 <strong>hexadecimal</strong> system.</p>
+</blockquote>
+<p>已经有了两种完全够用的数制，你可能会问为什么还需要另一种。答案主要是为了方便。如<a href="4.1-bases.html">表 1</a> 所示，二进制位序列的位数增长得很快。人们往往很难理解只含 0 和 1 的长序列。而十进制虽然更紧凑，但它的基数 10 与二进制的基数 2 不匹配。</p>
+<blockquote>
+<p>With two perfectly good number systems, you may wonder why we need another. The answer is primarily convenience. As shown in <a href="4.1-bases.html">Table 1</a>, binary bit sequences quickly grow to a large number of digits. Humans tend to have a tough time making sense of long sequences containing only 0’s and 1’s. And whereas decimal is more compact, its base of 10 is a mismatch with binary’s base 2.</p>
+</blockquote>
+<p>十进制不容易体现出固定位数所能表示的范围。例如，假设一台老式计算机使用 16 位内存地址，它的有效地址范围是 0b0000000000000000 到 0b1111111111111111。用十进制表示，地址范围是 0 到 65535。显然，十进制表示比长长的二进制序列更紧凑，但除非你记住它们之间的换算，否则用十进制数来推理会更困难。在使用 32 位或 64 位地址的现代设备上，这两个问题都只会更糟！</p>
+<blockquote>
+<p>Decimal doesn’t easily capture the range that can be expressed using a fixed number of bits. For example, suppose that an old computer uses 16-bit memory addresses. Its valid addresses range from 0b0000000000000000 to 0b1111111111111111. Represented in decimal, the addresses range from 0 to 65535. Clearly, the decimal representations are more compact than the long binary sequences, but unless you memorize their conversions, it’s more difficult to reason about the decimal numbers. Both problems only get worse on modern devices, which use 32- or 64-bit addresses!</p>
+</blockquote>
+<p>面对这些长长的位序列，正是十六进制的基数 16 大显身手的时候。较大的基数让每一位数字能表示足够多的信息，使十六进制数很紧凑。此外，由于基数本身是 2 的幂（2<sup>4</sup> &#x3D; 16），十六进制与二进制之间的相互转换很容易。为完整起见，我们用分析十进制和二进制的方法来分析十六进制：</p>
+<blockquote>
+<p>These long bit sequences are where hexadecimal’s base 16 shines. The large base allows each digit to represent enough information for hexadecimal numbers to be compact. Furthermore, because the base is itself a power of two (2<sup>4</sup> &#x3D; 16), it’s easy to map hexadecimal to binary, and vice versa. For the sake of completeness, let’s analyze hexadecimal in the same way as decimal and binary:</p>
+</blockquote>
+<ol>
+<li>以 16 为基数的数中，任何一位数字都存储 16 个不同值之一。超过 10 个值给十六进制带来了一个新问题——传统的十进制数字最大只到 9。按照惯例，十六进制用字母表示大于 9 的值：A 表示 10，B 表示 11，一直到 F 表示 15。和其他数制一样，要存储大于 15 的值，就必须向左边多出来的一位<strong>进位</strong>。例如，如果某一位从它的最大值（F）开始，再加 1，结果就需要两位数字（0xF + 0x1 &#x3D; 0x10；注意我们用 0x 表示十六进制数）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Any individual digit in a base 16 number stores one of 16 unique values. Having more than 10 values presents a new challenge for hexadecimal — traditional base 10 digits stop at a maximum value of 9. By convention, hexadecimal uses letters to represent values larger than 9, with A for 10, B for 11, up to F for 15. Like the other systems, to store a value larger than 15, the number must <strong>carry</strong> to an additional digit to the left. For example, if one digit starts at its maximum value (F) and we add 1 to it, the result requires two digits (0xF + 0x1 &#x3D; 0x10; note that we use 0x to indicate hexadecimal numbers).</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>数中每一位数字的位置决定了这位数字对数值的重要程度。把各位数字<em>从右到左</em>标记为 d<sub>0</sub>、d<sub>1</sub>、d<sub>2</sub> 等，每往左一位，贡献就比右边那一位大 16 倍。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The position of each digit in the number determines how important that digit is to the numerical value of the number. Labeling the digits from <em>right to left</em> as d<sub>0</sub>, d<sub>1</sub>, d<sub>2</sub>, etc., each successive digit contributes a factor of 16 more than the next.</li>
+</ol>
+</blockquote>
+<p>毫不意外，那个可靠的解释公式同样适用于十六进制，只是基数换成了 16：</p>
+<blockquote>
+<p>Unsurprisingly, the same trusty formula for interpreting a number applies to hexadecimal, with 16 as the base:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(d<sub>N-1</sub> × 16<sup>N-1</sup>)    +    (d<sub>N-2</sub> × 16<sup>N-2</sup>)    +    …​    +    (d<sub>2</sub> × 16<sup>2</sup>)    +    (d<sub>1</sub> × 16<sup>1</sup>)    +    (d<sub>0</sub> × 16<sup>0</sup>)</p>
+</div>
+<p>例如，求 0x23C8 的十进制值：</p>
+<blockquote>
+<p>For example, to determine the decimal value of 0x23C8:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>(2 × 16<sup>3</sup>)    +    (3 × 16<sup>2</sup>)    +    (C × 16<sup>1</sup>)    +    (8 × 16<sup>0</sup>)</p>
+<p>  &#x3D;    (2 × 16<sup>3</sup>)    +    (3 × 16<sup>2</sup>)    +    (12 × 16<sup>1</sup>)    +    (8 × 16<sup>0</sup>)</p>
+<p>  &#x3D;    (2 × 4096)    +    (3 × 256)    +    (12 × 16)    +    (8 × 1)</p>
+<p>  &#x3D;    8192 + 768 + 192 + 8    &#x3D;    9160</p>
+</div>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 关于十六进制的误解（Hexadecimal Misconception）</p><p>刚开始学习系统编程时，你可能不会经常遇到十六进制数。实际上，你最可能见到它们的场合是表示内存地址。例如，如果用 <code>printf</code> 的 <code>%p</code>（指针）格式码打印变量的地址，得到的就是十六进制输出。</p>
+<p>很多学生常常开始把内存地址（例如 C 指针变量）等同于十六进制。虽然你可能会习惯于看到以这种方式表示的地址，但要记住，<em>它们在硬件中仍然以二进制存储</em>，和所有其他数据一样！</p>
+<blockquote>
+<p>You may not encounter hexadecimal numbers frequently as you’re first learning about systems programming. In fact, the only context where you’re likely to find them is in representing memory addresses. For example, if you print the address of a variable using the <code>%p</code> (pointer) format code for <code>printf</code>, you’ll get hexadecimal output.</p>
+<p>Many students often begin to equate memory addresses (e.g., C pointer variables) with hexadecimal. While you may get used to seeing addresses represented that way, keep in mind that <em>they are still stored using binary in the hardware</em>, just like all other data!</p>
+</blockquote>
+</div>
+<h3 id="4-1-4-存储的限制"><a href="#4-1-4-存储的限制" class="headerlink" title="4.1.4. 存储的限制"></a>4.1.4. 存储的限制</h3><p><em>4.1.4. Storage Limitations</em></p>
+<p>从概念上讲，无符号整数有无穷多个。实际上，出于多种原因，程序员必须<em>在存储一个值之前</em>就选定要为变量分配多少位：</p>
+<blockquote>
+<p>Conceptually, there are infinitely many unsigned integers. In practice, a programmer must choose how many bits to dedicate to a variable <em>prior to storing it</em>, for a variety of reasons:</p>
+</blockquote>
+<ul>
+<li>在存储一个值之前，程序必须为它分配存储空间。在 C 中，声明一个变量就是根据它的类型告诉编译器它需要<a href="../C1-C_intro/1.1-getting_started.html">多少内存</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Before storing a value, a program must allocate storage space for it. In C, declaring a variable tells the compiler <a href="../C1-C_intro/1.1-getting_started.html">how much memory</a> it needs based on its type.</li>
+</ul>
+</blockquote>
+<ul>
+<li>硬件存储设备的容量是有限的。系统的主存通常很大，不太可能成为限制因素，但 CPU 内部用作临时「草稿空间」的存储位置（即<a href="../C5-Arch/5.4.3-storagecircs.html">寄存器</a>）就受限得多。CPU 使用的寄存器大小受限于它的字长（通常是 32 或 64 位，取决于 CPU 体系结构）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Hardware storage devices have finite capacity. Whereas a system’s main memory is typically large and unlikely to be a limiting factor, storage locations inside the CPU that are used as temporary “scratch space” (i.e., <a href="../C5-Arch/5.4.3-storagecircs.html">registers</a>) are more constrained. A CPU uses registers that are limited to its word size (typically 32 or 64 bits, depending on the CPU architecture).</li>
+</ul>
+</blockquote>
+<ul>
+<li>程序经常把数据从一个存储设备移到另一个（例如在 CPU 寄存器和主存之间）。值越大，存储设备之间就需要越多的导线来传递信号。因此，扩大存储会增加硬件的复杂度，并给其他部件留下更少的物理空间。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Programs often move data from one storage device to another (e.g., between CPU registers and main memory). As values get larger, storage devices need more wires to communicate signals between them. Hence, expanding storage increases the complexity of the hardware and leaves less physical space for other components.</li>
+</ul>
+</blockquote>
+<p>存储一个整数所用的位数决定了它可表示值的范围。<a href="4.1-bases.html">图 2</a> 描绘了我们可以如何理解无限的和有限的无符号整数存储空间。</p>
+<blockquote>
+<p>The number of bits used to store an integer dictates the range of its representable values. <a href="4.1-bases.html">Figure 2</a> depicts how we might conceptualize infinite and finite unsigned integer storage spaces.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/UnsignedLine.png" alt="The infinite unsigned number line starts at zero and increases infinitely. The finite unsigned number line starts at 0 and ends at a maximum value. Attempting to move off one end wraps around to the other."></p>
+<p><strong>图 2.</strong> (a) 无限的无符号数轴和 (b) 有限的无符号数轴示意图。后者在两端都会「回绕」（溢出）。</p>
+<p><em>Figure 2. Illustrations of (a) an infinite unsigned number line and (b) a finite unsigned number line. The latter “wraps around” at either endpoint (overflow).</em></p>
+<p>试图把大于变量大小所允许范围的值存入变量，称为<strong>整数溢出</strong>（integer overflow）。本章把溢出的细节留到<a href="4.5-overflow.html">后面的一节</a>。目前，可以把它想象成汽车的里程表：当它试图超过最大值时，就会「翻转」回零。类似地，零减一会得到最大值。</p>
+<blockquote>
+<p>Attempting to store a larger value to a variable than the variable’s size allows is known as <strong>integer overflow</strong>. This chapter defers the details of overflow to a <a href="4.5-overflow.html">later section</a>. For now, think of it like a car’s odometer that “rolls over” back to zero if it attempts to increase beyond its maximum value. Similarly, subtracting one from zero yields the maximum value.</p>
+</blockquote>
+<p>到这里，关于无符号二进制数，一个自然的问题是：「<em>N 位能存储的最大正数是多少？</em>」换句话说，给定一个全为 1 的 <em>N</em> 位序列，这个序列表示什么值？非正式地推理一下这个问题：<a href="4.0-index.html">上一节</a>的分析表明，<em>N</em> 位可以产生 2<sup>N</sup> 个不同的位序列。由于其中一个序列必须表示数 0，剩下的 2<sup>N</sup> - 1 个序列表示从 1 到 2<sup>N</sup> - 1 的正值。因此，<em>N</em> 位无符号二进制数的最大值必然是 2<sup>N</sup> - 1。</p>
+<blockquote>
+<p>At this point, a natural question to ask about unsigned binary is “<em>What’s the largest positive value that N bits can store?</em>“ In other words, given a sequence of <em>N</em> bits that are all 1, what value does the sequence represent? Reasoning about this question informally, the analysis in the <a href="4.0-index.html">previous section</a> shows that <em>N</em> bits yield 2<sup>N</sup> unique bit sequences. Since one of those sequences must represent the number 0, that leaves 2<sup>N</sup> - 1 positive values ranging from 1 to 2<sup>N</sup> - 1. Thus, the maximum value for an unsigned binary number of <em>N</em> bits must be 2<sup>N</sup> - 1.</p>
+</blockquote>
+<p>例如，8 位提供 2<sup>8</sup> &#x3D; 256 个不同的序列。其中一个序列 0b00000000 留给 0，剩下 255 个序列用于存储正值。因此，一个 8 位变量可以表示 1 到 255 的正值，其中最大的是 255。</p>
+<blockquote>
+<p>For example, 8 bits provide 2<sup>8</sup> &#x3D; 256 unique sequences. One of those sequences, 0b00000000, is reserved for 0, leaving 255 sequences for storing positive values. Therefore, an 8-bit variable represents the positive values 1 through 255, the largest of which is 255.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C4-Binary/4.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">4. 二进制与数据表示</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C4-Binary/4.2-conversion.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">4.2. 进制之间的转换</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-1-%E5%8D%81%E8%BF%9B%E5%88%B6%E6%95%B0"><span class="toc-text">4.1.1. 十进制数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-2-%E6%97%A0%E7%AC%A6%E5%8F%B7%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B0"><span class="toc-text">4.1.2. 无符号二进制数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-3-%E5%8D%81%E5%85%AD%E8%BF%9B%E5%88%B6"><span class="toc-text">4.1.3. 十六进制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-4-%E5%AD%98%E5%82%A8%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-text">4.1.4. 存储的限制</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

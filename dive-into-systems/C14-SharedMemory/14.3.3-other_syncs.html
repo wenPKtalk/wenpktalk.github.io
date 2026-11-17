@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.3.3. 其他同步结构 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;other_syncs.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3.3. Other Synchro">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.3.3. 其他同步结构 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;other_syncs.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3.3. Other Synchro">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html" class="current" aria-current="page">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 149 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.3.3. 其他同步结构</h1>
+  
+  
+    <p class="article-meta"><span>约 16 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/other_syncs.html">https://diveintosystems.org/book/C14-SharedMemory/other_syncs.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.3.3. Other Synchronization Constructs</em></p>
+<p>互斥锁和信号量并不是多线程程序中仅有的同步结构。在本小节中，我们简要讨论屏障和条件变量这两种同步结构，它们都是 Pthreads 库的一部分。</p>
+<blockquote>
+<p>Mutexes and semaphores are not the only example of synchronization constructs that can be used in the context of multithreaded programs. In this subsection we will briefly discuss the barrier and condition variable synchronization constructs, which are both part of the Pthreads library.</p>
+</blockquote>
+<h4 id="屏障"><a href="#屏障" class="headerlink" title="屏障"></a>屏障</h4><p><em>Barriers</em></p>
+<p><strong>屏障</strong>（barrier）是一种同步结构，它强制<em>所有</em>线程到达执行中的一个公共点，然后再放行这些线程继续并发执行。Pthreads 提供了屏障同步原语。要使用 Pthreads 屏障，需要做以下几件事：</p>
+<blockquote>
+<p>A <strong>barrier</strong> is a type of synchronization construct that forces <em>all</em> threads to reach a common point in execution before releasing the threads to continue executing concurrently. Pthreads offers a barrier synchronization primitive. To use Pthreads barriers, it is necessary to do the following:</p>
+</blockquote>
+<ul>
+<li>声明一个屏障全局变量（例如 <code>pthread_barrier_t barrier</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>Declare a barrier global variable (e.g., <code>pthread_barrier_t barrier</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>在 <code>main</code> 中初始化屏障（<code>pthread_barrier_init(&amp;barrier)</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>Initialize the barrier in <code>main</code> (<code>pthread_barrier_init(&amp;barrier)</code>)</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>pthread_barrier_init</code> 实际上有三个参数：屏障的地址、属性（通常为 <code>NULL</code>）以及必须到达屏障的线程数，例如 <code>pthread_barrier_init(&amp;barrier, NULL, nthreads)</code>。另外，macOS 没有实现 POSIX 屏障：译者在 Mac 上编译使用 <code>pthread_barrier_t</code> 的代码，Clang 报错「unknown type name ‘pthread_barrier_t’」。在 Mac 上可以用本节后面介绍的「条件变量 + 广播」自己实现屏障，或者在 Linux 中运行这个例子。</p>
+</div>
+<ul>
+<li>使用后在 <code>main</code> 中销毁屏障（<code>pthread_barrier_destroy(&amp;barrier)</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>Destroy the barrier in <code>main</code> after use (<code>pthread_barrier_destroy(&amp;barrier)</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>用 <code>pthread_barrier_wait</code> 函数创建一个同步点。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Use the <code>pthread_barrier_wait</code> function to create a synchronization point.</li>
+</ul>
+</blockquote>
+<p>下面的程序展示了在一个名为 <code>threadEx</code> 的函数中使用屏障：</p>
+<blockquote>
+<p>The following program shows the use of a barrier in a function called <code>threadEx</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">void *threadEx(void *args)&#123;</span><br><span class="line">    //parse args</span><br><span class="line">    //...</span><br><span class="line">    long myid = myargs-&gt;id;</span><br><span class="line">    int nthreads = myargs-&gt;numthreads;</span><br><span class="line">    int *array = myargs-&gt;array</span><br><span class="line"></span><br><span class="line">    printf(&quot;Thread %ld starting thread work!\n&quot;, myid);</span><br><span class="line">    pthread_barrier_wait(&amp;barrier); //forced synchronization point</span><br><span class="line">    printf(&quot;All threads have reached the barrier!\n&quot;);</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        array[i] = array[i] * 2;</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;Thread %ld done with work!\n&quot;, myid);</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，在<em>每个</em>线程都打印出它们开始工作的消息之前，没有哪个线程能开始处理分配给它的那部分数组。如果没有屏障，就可能出现一个线程在其他线程打印出开始工作的消息之前就已经完成了工作！注意，<em>仍然</em>可能出现一个线程在另一个线程完成之前就打印出它已完成工作的情况。</p>
+<blockquote>
+<p>In this example, no thread can start processing its assigned portion of the array until <em>every</em> thread has printed out the message that they are starting work. Without the barrier, it is possible for one thread to have finished work before the other threads have printed their starting work message! Notice that it is <em>still</em> possible for one thread to print that it is done doing work before another thread finishes.</p>
+</blockquote>
+<h4 id="条件变量"><a href="#条件变量" class="headerlink" title="条件变量"></a>条件变量</h4><p><em>Condition Variables</em></p>
+<p>条件变量（condition variable）强制线程阻塞，直到达到某个特定的条件。在线程做某些工作之前必须满足某个条件的场景中，这种结构很有用。如果没有条件变量，线程就不得不反复检查条件是否满足，持续占用 CPU。条件变量总是与互斥锁一起使用。在这种同步结构中，互斥锁实施互斥，而条件变量确保在线程获得互斥锁之前满足特定的条件。</p>
+<blockquote>
+<p>Condition variables force a thread to block until a particular condition is reached. This construct is useful for scenarios in which a condition must be met before the thread does some work. In the absence of condition variables, a thread would have to repeatedly check to see whether the condition is met, continuously utilizing the CPU. Condition variables are always used in conjunction with a mutex. In this type of synchronization construct, the mutex enforces mutual exclusion, whereas the condition variable ensures that particular conditions are met before a thread acquires the mutex.</p>
+</blockquote>
+<p>POSIX 条件变量的类型是 <code>pthread_cond_t</code>。与互斥锁和屏障结构一样，条件变量必须在使用前初始化，在使用后销毁。</p>
+<blockquote>
+<p>POSIX condition variables have the type <code>pthread_cond_t</code>. Like the mutex and barrier constructs, condition variables must be initialized prior to use and destroyed after use.</p>
+</blockquote>
+<p>要初始化条件变量，使用 <code>pthread_cond_init</code> 函数。要销毁条件变量，使用 <code>pthread_cond_destroy</code> 函数。</p>
+<blockquote>
+<p>To initialize a condition variable, use the <code>pthread_cond_init</code> function. To destroy a condition variable, use the <code>pthread_cond_destroy</code> function.</p>
+</blockquote>
+<p>使用条件变量时，常调用的两个函数是 <code>pthread_cond_wait</code> 和 <code>pthread_cond_signal</code>。这两个函数除了需要条件变量的地址之外，还需要一个互斥锁的地址：</p>
+<blockquote>
+<p>The two functions commonly invoked when using condition variables are <code>pthread_cond_wait</code> and <code>pthread_cond_signal</code>. Both functions require the address of a mutex in addition to the address of the condition variable:</p>
+</blockquote>
+<ul>
+<li><code>pthread_cond_wait(&amp;cond, &amp;mutex)</code> 函数接收条件变量 <code>cond</code> 和互斥锁 <code>mutex</code> 的地址作为参数。它使调用线程阻塞在条件变量 <code>cond</code> 上，直到另一个线程向它发出信号（即「唤醒」它）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>pthread_cond_wait(&amp;cond, &amp;mutex)</code> function takes the addresses of a condition variable <code>cond</code> and a mutex <code>mutex</code> as its arguments. It causes the calling thread to block on the condition variable <code>cond</code> until another thread signals it (or “wakes” it up).</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · wait 会暂时释放互斥锁</p><p>上一段说两个函数都需要互斥锁，其实只有 <code>pthread_cond_wait</code> 需要；<code>pthread_cond_signal(&amp;cond)</code> 只接收条件变量（下一条也是这么写的）。调用 <code>pthread_cond_wait</code> 时，调用线程必须已经持有 <code>mutex</code>；按 POSIX 手册，该函数会<strong>原子地释放</strong> <code>mutex</code> 并让调用线程阻塞在 <code>cond</code> 上，被唤醒、成功返回时，<code>mutex</code> 又会被调用线程重新持有。正因为等待期间锁被释放了，其他线程（例如下面例子中的「母鸡」）才能获得锁去修改共享变量。<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/pthread_cond_wait.3p.html">pthread_cond_wait(3p)</a></p>
+</div>
+<ul>
+<li><code>pthread_cond_signal(&amp;cond)</code> 函数使调用线程解除另一个等待在条件变量 <code>cond</code> 上的线程的阻塞（即向它发出信号）（依据调度优先级）。如果当前没有线程阻塞在该条件上，这个函数就没有任何作用。与 <code>pthread_cond_wait</code> 不同，无论调用 <code>pthread_cond_signal</code> 的线程是否持有调用 <code>pthread_cond_wait</code> 时使用的那个互斥锁，都可以调用这个函数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>pthread_cond_signal(&amp;cond)</code> function causes the calling thread to unblock (or signal) another thread that is waiting on the condition variable <code>cond</code> (based on scheduling priority). If no threads are currently blocked on the condition, then the function has no effect. Unlike <code>pthread_cond_wait</code>, the <code>pthread_cond_signal</code> function can be called by a thread regardless of whether or not it owns the mutex in which <code>pthread_cond_wait</code> is called.</li>
+</ul>
+</blockquote>
+<h4 id="条件变量示例"><a href="#条件变量示例" class="headerlink" title="条件变量示例"></a>条件变量示例</h4><p><em>Condition Variable Example</em></p>
+<p>传统上，当一部分线程在等待另一组线程完成某个动作时，条件变量最为有用。在下面的例子中，我们用多个线程模拟一群农夫从一群母鸡那里收集鸡蛋。「Chicken」（母鸡）和「Farmer」（农夫）代表两类不同的线程。这个程序的完整源代码可以下载（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/layeggs.c">layeggs.c</a>）。注意，为简洁起见，清单中省略了许多注释和错误处理。</p>
+<blockquote>
+<p>Traditionally, condition variables are most useful when a subset of threads are waiting on another set to complete some action. In the following example, we use multiple threads to simulate a set of farmers collecting eggs from a set of chickens. “Chicken” and “Farmer” represent two separate classes of threads. The full source of this program can be downloaded ( <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/layeggs.c">layeggs.c</a>). Note that the listing excludes many comments&#x2F;error handling for brevity.</p>
+</blockquote>
+<p><code>main</code> 函数创建了一个共享变量 <code>num_eggs</code>（表示任一时刻可用的鸡蛋总数）、一个共享的 <code>mutex</code>（每当线程访问 <code>num_eggs</code> 时使用）和一个共享的条件变量 <code>eggs</code>。然后它创建两个母鸡线程和两个农夫线程：</p>
+<blockquote>
+<p>The <code>main</code> function creates a shared variable <code>num_eggs</code> (which indicates the total number of eggs available at any given time), a shared <code>mutex</code> (which is used whenever a thread accesses <code>num_eggs</code>), and a shared condition variable <code>eggs</code>. It then creates two Chicken and two Farmer threads:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">int main(int argc, char **argv)&#123;</span><br><span class="line">    //... declarations omitted for brevity</span><br><span class="line"></span><br><span class="line">    // these will be shared by all threads via pointer fields in t_args</span><br><span class="line">    int num_eggs;           // number of eggs ready to collect</span><br><span class="line">    pthread_mutex_t mutex;  // mutex associated with cond variable</span><br><span class="line">    pthread_cond_t  eggs;   // used to block/wake-up farmer waiting for eggs</span><br><span class="line"></span><br><span class="line">    //... args parsing removed for brevity</span><br><span class="line"></span><br><span class="line">    num_eggs = 0; // number of eggs ready to collect</span><br><span class="line">    ret = pthread_mutex_init(&amp;mutex, NULL); //initialize the mutex</span><br><span class="line">    pthread_cond_init(&amp;eggs, NULL); //initialize the condition variable</span><br><span class="line"></span><br><span class="line">    //... thread_array and thread_args creation/filling omitted for brevity</span><br><span class="line"></span><br><span class="line">    // create some chicken and farmer threads</span><br><span class="line">    for (i = 0; i &lt; (2 * nthreads); i++) &#123;</span><br><span class="line">        if ( (i % 2) == 0 ) &#123;</span><br><span class="line">            ret = pthread_create(&amp;thread_array[i], NULL,</span><br><span class="line">                                 chicken, &amp;thread_args[i]);</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            ret = pthread_create(&amp;thread_array[i], NULL,</span><br><span class="line">                                 farmer, &amp;thread_args[i] );</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // wait for chicken and farmer threads to exit</span><br><span class="line">    for (i = 0; i &lt; (2 * nthreads); i++)  &#123;</span><br><span class="line">        ret = pthread_join(thread_array[i], NULL);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // clean-up program state</span><br><span class="line">    pthread_mutex_destroy(&amp;mutex); //destroy the mutex</span><br><span class="line">    pthread_cond_destroy(&amp;eggs);   //destroy the cond var</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个母鸡线程负责下一定数量的蛋：</p>
+<blockquote>
+<p>Each Chicken thread is responsible for laying a certain number of eggs:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void *chicken(void *args ) &#123;</span><br><span class="line">    struct t_arg *myargs = (struct t_arg *)args;</span><br><span class="line">    int *num_eggs, i, num;</span><br><span class="line"></span><br><span class="line">    num_eggs = myargs-&gt;num_eggs;</span><br><span class="line">    i = 0;</span><br><span class="line"></span><br><span class="line">    // lay some eggs</span><br><span class="line">    for (i = 0; i &lt; myargs-&gt;total_eggs; i++) &#123;</span><br><span class="line">        usleep(EGGTIME); //chicken sleeps</span><br><span class="line"></span><br><span class="line">        pthread_mutex_lock(myargs-&gt;mutex);</span><br><span class="line">        *num_eggs = *num_eggs + 1;  // update number of eggs</span><br><span class="line">        num = *num_eggs;</span><br><span class="line">        pthread_cond_signal(myargs-&gt;eggs); // wake a sleeping farmer (squawk)</span><br><span class="line">        pthread_mutex_unlock(myargs-&gt;mutex);</span><br><span class="line"></span><br><span class="line">        printf(&quot;chicken %d created egg %d available %d\n&quot;,myargs-&gt;id,i,num);</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了下一个蛋，母鸡线程先睡一会儿，然后获得互斥锁，把可用鸡蛋的总数加一。在释放互斥锁之前，母鸡线程「唤醒」一个正在睡觉的农夫（大概是靠咯咯叫）。母鸡线程重复这个循环，直到下完了它打算下的所有蛋（<code>total_eggs</code>）。</p>
+<blockquote>
+<p>To lay an egg, a Chicken thread sleeps for a while, acquires the mutex and updates the total number of available eggs by one. Prior to releasing the mutex, the Chicken thread “wakes up” a sleeping Farmer (presumably by squawking). The Chicken thread repeats the cycle until it has laid all the eggs it intends to (<code>total_eggs</code>).</p>
+</blockquote>
+<p>每个农夫线程负责从这群母鸡那里收集 <code>total_eggs</code> 个鸡蛋（大概是当早饭）：</p>
+<blockquote>
+<p>Each Farmer thread is responsible for collecting <code>total_eggs</code> eggs from the set of chickens (presumably for their breakfast):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">void *farmer(void *args ) &#123;</span><br><span class="line">    struct t_arg * myargs = (struct t_arg *)args;</span><br><span class="line">    int *num_eggs, i, num;</span><br><span class="line"></span><br><span class="line">    num_eggs = myargs-&gt;num_eggs;</span><br><span class="line"></span><br><span class="line">    i = 0;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; myargs-&gt;total_eggs; i++) &#123;</span><br><span class="line">        pthread_mutex_lock(myargs-&gt;mutex);</span><br><span class="line">        while (*num_eggs == 0 ) &#123; // no eggs to collect</span><br><span class="line">            // wait for a chicken to lay an egg</span><br><span class="line">            pthread_cond_wait(myargs-&gt;eggs, myargs-&gt;mutex);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        // we hold mutex lock here and num_eggs &gt; 0</span><br><span class="line">        num = *num_eggs;</span><br><span class="line">        *num_eggs = *num_eggs - 1;</span><br><span class="line">        pthread_mutex_unlock(myargs-&gt;mutex);</span><br><span class="line"></span><br><span class="line">        printf(&quot;farmer %d gathered egg %d available %d\n&quot;,myargs-&gt;id,i,num);</span><br><span class="line">    &#125;</span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个农夫线程在检查共享变量 <code>num_eggs</code>、看是否有可用的鸡蛋（<code>*num_eggs == 0</code>）之前，都要先获得互斥锁。当没有可用的鸡蛋时，农夫线程就阻塞（即打个盹）。</p>
+<blockquote>
+<p>Each Farmer thread acquires the mutex prior to checking the shared <code>num_eggs</code> variable to see whether any eggs are available (<code>*num_eggs == 0</code>). While there aren’t any eggs available, the Farmer thread blocks (i.e., takes a nap).</p>
+</blockquote>
+<p>农夫线程因母鸡线程发出的信号而「醒来」后，会检查是否仍有鸡蛋可用（可能另一个农夫先拿走了），如果有，农夫就「收集」一个鸡蛋（把 <code>num_eggs</code> 减一）并释放互斥锁。</p>
+<blockquote>
+<p>After the Farmer thread “wakes up” due to a signal from a Chicken thread, it checks to see that an egg is still available (another Farmer could have grabbed it first) and if so, the Farmer “collects” an egg (decrementing <code>num_eggs</code> by one) and releases the mutex.</p>
+</blockquote>
+<p>就这样，母鸡和农夫协同工作，下蛋&#x2F;收蛋。条件变量确保在母鸡线程下蛋之前，没有哪个农夫线程会去收蛋。</p>
+<blockquote>
+<p>In this manner, the Chicken and Farmer work in concert to lay&#x2F;collect eggs. Condition variables ensure that no Farmer thread collects an egg until it is laid by a Chicken thread.</p>
+</blockquote>
+<h4 id="广播"><a href="#广播" class="headerlink" title="广播"></a>广播</h4><p><em>Broadcasting</em></p>
+<p>与条件变量一起使用的另一个函数是 <code>pthread_cond_broadcast</code>，当多个线程阻塞在某个特定条件上时，它很有用。调用 <code>pthread_cond_broadcast(&amp;cond)</code> 会唤醒阻塞在条件 <code>cond</code> 上的<em>所有</em>线程。在下一个例子中，我们展示如何用条件变量实现前面讨论过的屏障结构：</p>
+<blockquote>
+<p>Another function used with condition variables is <code>pthread_cond_broadcast</code>, which is useful when multiple threads are blocked on a particular condition. Calling <code>pthread_cond_broadcast(&amp;cond)</code> wakes up <em>all</em> threads that are blocked on condition <code>cond</code>. In this next example, we show how condition variables can implement the barrier construct discussed previously:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">// mutex (initialized in main)</span><br><span class="line">pthread_mutex_t mutex;</span><br><span class="line"></span><br><span class="line">// condition variable signifying the barrier (initialized in main)</span><br><span class="line">pthread_cond_t barrier;</span><br><span class="line"></span><br><span class="line">void *threadEx_v2(void *args)&#123;</span><br><span class="line">    // parse args</span><br><span class="line">    // ...</span><br><span class="line"></span><br><span class="line">    long myid = myargs-&gt;id;</span><br><span class="line">    int nthreads = myargs-&gt;numthreads;</span><br><span class="line">    int *array = myargs-&gt;array</span><br><span class="line"></span><br><span class="line">    // counter denoting the number of threads that reached the barrier</span><br><span class="line">    int *n_reached = myargs-&gt;n_reached;</span><br><span class="line"></span><br><span class="line">    // start barrier code</span><br><span class="line">    pthread_mutex_lock(&amp;mutex);</span><br><span class="line">    *n_reached++;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Thread %ld starting work!\n&quot;, myid)</span><br><span class="line"></span><br><span class="line">    // if some threads have not reached the barrier</span><br><span class="line">    while (*n_reached &lt; nthreads) &#123;</span><br><span class="line">        pthread_cond_wait(&amp;barrier, &amp;mutex);</span><br><span class="line">    &#125;</span><br><span class="line">    // all threads have reached the barrier</span><br><span class="line">    printf(&quot;all threads have reached the barrier!\n&quot;);</span><br><span class="line">    pthread_cond_broadcast(&amp;barrier);</span><br><span class="line"></span><br><span class="line">    pthread_mutex_unlock(&amp;mutex);</span><br><span class="line">    // end barrier code</span><br><span class="line"></span><br><span class="line">    // normal thread work</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        array[i] = array[i] * 2;</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;Thread %ld done with work!\n&quot;, myid);</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>函数 <code>threadEx_v2</code> 的功能与 <code>threadEx</code> 完全相同。在这个例子中，条件变量名为 <code>barrier</code>。每个线程获得锁之后，把 <code>n_reached</code>（已到达该点的线程数）加一。当到达屏障的线程数少于线程总数时，线程就在条件变量 <code>barrier</code> 和互斥锁 <code>mutex</code> 上等待。</p>
+<blockquote>
+<p>The function <code>threadEx_v2</code> has identical functionality to <code>threadEx</code>. In this example, the condition variable is named <code>barrier</code>. As each thread acquires the lock, it increments <code>n_reached</code>, the number of threads that have reached that point. While the number of threads that have reached the barrier is less than the total number of threads, the thread waits on the condition variable <code>barrier</code> and mutex <code>mutex</code>.</p>
+</blockquote>
+<p>然而，当最后一个线程到达屏障时，它调用 <code>pthread_cond_broadcast(&amp;barrier)</code>，释放等待在条件变量 <code>barrier</code> 上的<em>所有</em>其他线程，使它们能够继续执行。</p>
+<blockquote>
+<p>However, when the last thread reaches the barrier, it calls <code>pthread_cond_broadcast(&amp;barrier)</code>, which releases <em>all</em> the other threads that are waiting on the condition variable <code>barrier</code>, enabling them to continue execution.</p>
+</blockquote>
+<p>这个例子很适合用来说明 <code>pthread_cond_broadcast</code> 函数；不过，只要程序中需要屏障，最好还是使用 Pthreads 的屏障原语。</p>
+<blockquote>
+<p>This example is useful for illustrating the <code>pthread_cond_broadcast</code> function; however, it is best to use the Pthreads barrier primitive whenever barriers are necessary in a program.</p>
+</blockquote>
+<p>学生们常问的一个问题是：<code>farmer</code> 和 <code>threadEx_v2</code> 代码中围绕 <code>pthread_cond_wait</code> 调用的 <code>while</code> 循环，能否换成 <code>if</code> 语句？实际上，这个 <code>while</code> 循环是绝对必要的，主要有两个原因。第一，在被唤醒的线程回来继续执行之前，条件可能已经改变了。<code>while</code> 循环强制最后再检测一次条件。第二，<code>pthread_cond_wait</code> 函数可能出现<strong>虚假唤醒</strong>（spurious wakeup），即线程在条件可能并未满足的情况下被错误地唤醒。这个 <code>while</code> 循环实际上是<strong>谓词循环</strong>（predicate loop）的一个例子，它强制在释放互斥锁之前对条件做最后一次检查。因此，使用条件变量时，使用谓词循环是正确的做法。</p>
+<blockquote>
+<p>One question that students tend to ask is if the <code>while</code> loop around the call to <code>pthread_cond_wait</code> in the <code>farmer</code> and <code>threadEx_v2</code> code can be replaced with an <code>if</code> statement. This <code>while</code> loop is in fact absolutely necessary for two main reasons. First, the condition may change prior to the woken thread arriving to continue execution. The <code>while</code> loop enforces that the condition be retested one last time. Second, the <code>pthread_cond_wait</code> function is vulnerable to <strong>spurious wakeups</strong>, in which a thread is erroneously woken up even though the condition may not be met. The <code>while</code> loop is in fact an example of a <strong>predicate loop</strong>, which forces a final check of the condition variable before releasing the mutex. The use of predicate loops is therefore correct practice when using condition variables.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.3.2. 信号量</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.4-performance.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.4. 测量并行程序的性能</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

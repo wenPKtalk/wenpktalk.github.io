@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.3.1. 互斥 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;mutex.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3.1. Mutual Exclusion 互斥">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.3.1. 互斥 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;mutex.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.3.1. Mutual Exclusion 互斥">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/deadlock.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/deadlock.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html" class="current" aria-current="page">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 147 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.3.1. 互斥</h1>
+  
+  
+    <p class="article-meta"><span>约 22 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/mutex.html">https://diveintosystems.org/book/C14-SharedMemory/mutex.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.3.1. Mutual Exclusion</em></p>
+<p><em>互斥锁是什么？答案就在那里，它在寻找你，只要你愿意，它就会找到你。</em></p>
+<blockquote>
+<p><em>What is the mutex? The answer is out there, and it’s looking for you, and it will find you if you want it to.</em></p>
+</blockquote>
+<p>——崔妮蒂向尼奥解释互斥锁（向《<em>黑客帝国</em>》致歉）</p>
+<blockquote>
+<p>~Trinity, explaining mutexes to Neo (Apologies to <em>The Matrix</em>)</p>
+</blockquote>
+<p>为了修正数据竞争，我们来使用一种称为互斥锁（mutual exclusion lock，简称 <strong>mutex</strong>）的同步结构。互斥锁是一种同步原语，它确保在任一时刻只有一个线程能进入并执行临界区中的代码。</p>
+<blockquote>
+<p>To fix the data race, let’s use a synchronization construct known as a mutual exclusion lock, or <strong>mutex</strong>. Mutual exclusion locks are a type of synchronization primitive that ensures that only one thread enters and executes the code inside the critical section at any given time.</p>
+</blockquote>
+<p>在使用互斥锁之前，程序必须先：</p>
+<blockquote>
+<p>Before using a mutex, a program must first:</p>
+</blockquote>
+<ol>
+<li>在线程共享的内存中声明互斥锁（通常作为全局变量）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Declare the mutex in memory that’s shared by threads (often as a global variable).</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>在线程需要使用互斥锁之前初始化它（通常在 <code>main</code> 函数中）。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Initialize the mutex before the threads need to use it (typically in the <code>main</code> function).</li>
+</ol>
+</blockquote>
+<p>Pthreads 库为互斥锁定义了 <code>pthread_mutex_t</code> 类型。要声明一个互斥锁变量，添加这一行：</p>
+<blockquote>
+<p>The Pthreads library defines a <code>pthread_mutex_t</code> type for mutexes. To declare a mutex variable, add this line:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_mutex_t mutex;</span><br></pre></td></tr></table></figure>
+
+<p>要初始化互斥锁，使用 <code>pthread_mutex_init</code> 函数，它接收一个互斥锁的地址和一个属性结构（通常设为 <code>NULL</code>）：</p>
+<blockquote>
+<p>To initialize the mutex use the <code>pthread_mutex_init</code> function, which takes the address of a mutex and an attribute structure, typically set to <code>NULL</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_mutex_init(&amp;mutex, NULL);</span><br></pre></td></tr></table></figure>
+
+<p>当不再需要互斥锁时（通常在 <code>main</code> 函数末尾、<code>pthread_join</code> 之后），程序应当调用 <code>pthread_mutex_destroy</code> 函数来释放互斥锁结构：</p>
+<blockquote>
+<p>When the mutex is no longer needed (typically at the end of the <code>main</code> function, after <code>pthread_join</code>), a program should release the mutex structure by invoking the <code>pthread_mutex_destroy</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_mutex_destroy(&amp;mutex);</span><br></pre></td></tr></table></figure>
+
+<h4 id="互斥锁：上膛"><a href="#互斥锁：上膛" class="headerlink" title="互斥锁：上膛"></a>互斥锁：上膛</h4><p><em>The Mutex: Locked and Loaded</em></p>
+<p>互斥锁的初始状态是未加锁的，即任何线程都可以立即使用它。要进入临界区，线程必须先获得锁。这是通过调用 <code>pthread_mutex_lock</code> 函数来完成的。一个线程持有锁之后，在持锁线程释放锁之前，其他任何线程都不能进入临界区。如果另一个线程调用 <code>pthread_mutex_lock</code> 时互斥锁已经被锁住，该线程就会<strong>阻塞</strong>（block，即等待），直到互斥锁变为可用。回想一下，<a href="../C13-OS/13.2-processes.html"><em>阻塞</em>意味着该线程不会被调度</a>使用 CPU，直到它所等待的条件（互斥锁可用）成立为止。</p>
+<blockquote>
+<p>The initial state of a mutex is unlocked, meaning it’s immediately usable by any thread. To enter a critical section, a thread must first acquire a lock. This is accomplished with a call to the <code>pthread_mutex_lock</code> function. After a thread has the lock, no other thread can enter the critical section until the thread with the lock releases it. If another thread calls <code>pthread_mutex_lock</code> and the mutex is already locked, the thread will <strong>block</strong> (or wait) until the mutex becomes available. Recall that <a href="../C13-OS/13.2-processes.html"><em>blocking</em> implies that the thread will not be scheduled</a> to use the CPU until the condition it’s waiting for (the mutex being available) becomes true.</p>
+</blockquote>
+<p>当线程退出临界区时，它必须调用 <code>pthread_mutex_unlock</code> 函数释放互斥锁，让其他线程可以使用它。这样，一次最多只有一个线程能获得锁并进入临界区，从而防止多个线程<em>竞相</em>读取和更新共享变量。</p>
+<blockquote>
+<p>When a thread exits the critical section it must call the <code>pthread_mutex_unlock</code> function to release the mutex, making it available for another thread. Thus, at most one thread may acquire the lock and enter the critical section at a time, which prevents multiple threads from <em>racing</em> to read and update shared variables.</p>
+</blockquote>
+<p>声明并初始化互斥锁之后，下一个问题是：加锁和解锁函数应当放在哪里，才能最好地实施临界区？下面是用互斥锁增强 <code>countElems</code> 函数的初次尝试（完整源代码可从 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v2.c">countElems_p_v2.c</a> 下载）：</p>
+<blockquote>
+<p>Having declared and initialized a mutex, the next question is where the lock and unlock functions should be placed to best enforce the critical section. Here is an initial attempt at augmenting the <code>countElems</code> function with a mutex (The full source can be downloaded from <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v2.c">countElems_p_v2.c</a>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">pthread_mutex_t mutex; //global declaration of mutex, initialized in main()</span><br><span class="line"></span><br><span class="line">/*parallel version of step 1 of CountSort algorithm (attempt 1 with mutexes):</span><br><span class="line"> * extracts arguments from args value</span><br><span class="line"> * calculates component of the array that thread is responsible for counting</span><br><span class="line"> * computes the frequency of all the elements in assigned component and stores</span><br><span class="line"> * the associated counts of each element in counts array</span><br><span class="line">*/</span><br><span class="line">void *countElems( void *args ) &#123;</span><br><span class="line">    //extract arguments</span><br><span class="line">    //ommitted for brevity</span><br><span class="line">    int *array = myargs-&gt;ap;</span><br><span class="line">    long *counts = myargs-&gt;countp;</span><br><span class="line"></span><br><span class="line">    //assign work to the thread</span><br><span class="line">    long chunk = length / nthreads; //nominal chunk size</span><br><span class="line">    long start = myid * chunk;</span><br><span class="line">    long end = (myid + 1) * chunk;</span><br><span class="line">    long val;</span><br><span class="line">    if (myid == nthreads - 1) &#123;</span><br><span class="line">        end = length;</span><br><span class="line">    &#125;</span><br><span class="line">    long i;</span><br><span class="line"></span><br><span class="line">    //heart of the program</span><br><span class="line">    pthread_mutex_lock(&amp;mutex); //acquire the mutex lock</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        val = array[i];</span><br><span class="line">        counts[val] = counts[val] + 1;</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_mutex_unlock(&amp;mutex); //release the mutex lock</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>互斥锁的初始化和销毁函数放在 <code>main</code> 中，位于线程创建和合并函数的前后：</p>
+<blockquote>
+<p>The mutex initialize and destroy functions are placed in <code>main</code> around the thread creation and join functions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">//code snippet from main():</span><br><span class="line"></span><br><span class="line">pthread_mutex_init(&amp;mutex, NULL); //initialize the mutex</span><br><span class="line"></span><br><span class="line">for (t = 0; t &lt; nthreads; t++) &#123;</span><br><span class="line">    pthread_create( &amp;thread_array[t], NULL, countElems, &amp;thread_args[t] );</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">for (t = 0; t &lt; nthreads; t++) &#123;</span><br><span class="line">    pthread_join(thread_array[t], NULL);</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_destroy(&amp;mutex); //destroy (free) the mutex</span><br></pre></td></tr></table></figure>
+
+<p>我们重新编译并运行这个新程序，同时改变线程数：</p>
+<blockquote>
+<p>Let’s recompile and run this new program while varying the number of threads:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p_v2 10000000 1 1</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v2 10000000 1 2</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v2 10000000 1 4</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br></pre></td></tr></table></figure>
+
+<p>太好了，无论使用多少个线程，输出<em>终于</em>一致了！</p>
+<blockquote>
+<p>Excellent, the output is <em>finally</em> consistent regardless of the number of threads used!</p>
+</blockquote>
+<p>回想一下，多线程的另一个主要目标是随着线程数的增加缩短程序的运行时间（换句话说，就是<em>加速</em>程序的执行）。我们来对 <code>countElems</code> 函数的性能进行基准测试。尽管可能很想用 <code>time -p</code> 这样的命令行工具，但要记住，调用 <code>time -p</code> 测量的是<em>整个</em>程序的挂钟时间（包括生成随机元素的时间），而<em>不仅仅</em>是运行 <code>countElems</code> 函数的时间。在这种情况下，最好使用 <code>gettimeofday</code> 这样的系统调用，它让用户能准确测量某段代码的挂钟时间。在 1 亿个元素上对 <code>countElems</code> 进行基准测试，得到下面的运行时间：</p>
+<blockquote>
+<p>Recall that another primary goal of threading is to reduce the runtime of a program as the number of threads increases (in other words, to <em>speed up</em> program execution). Let’s benchmark the performance of the <code>countElems</code> function. Although it may be tempting to use a command line utility like <code>time -p</code>, recall that invoking <code>time -p</code> measures the wall-clock time of the <em>entire</em> program (including the generation of random elements) and <em>not</em> just the running of the <code>countElems</code> function. In this case, it is better to use a system call like <code>gettimeofday</code>, which allows a user to accurately measure the wall-clock time of a particular section of code. Benchmarking <code>countElems</code> on 100 million elements yields the following run times:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p_v2 100000000 0 1</span><br><span class="line">Time for Step 1 is 0.368126 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v2 100000000 0 2</span><br><span class="line">Time for Step 1 is 0.438357 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v2 100000000 0 4</span><br><span class="line">Time for Step 1 is 0.519913 s</span><br></pre></td></tr></table></figure>
+
+<p>增加线程反而让程序变<em>慢</em>了！这与用线程让程序变<em>快</em>的目标背道而驰。</p>
+<blockquote>
+<p>Adding more threads causes the program to get <em>slower</em>! This goes against the goal of making programs <em>faster</em> with threads.</p>
+</blockquote>
+<p>为了弄清发生了什么，考虑锁在 <code>countsElems</code> 函数中放在了哪里：</p>
+<blockquote>
+<p>To understand what is going on, consider where the locks are placed in the <code>countsElems</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">//code snippet from the countElems function from earlier</span><br><span class="line">//the heart of the program</span><br><span class="line">pthread_mutex_lock(&amp;mutex); //acquire the mutex lock</span><br><span class="line">for (i = start; i &lt; end; i++)&#123;</span><br><span class="line">    val = array[i];</span><br><span class="line">    counts[val] = counts[val] + 1;</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(&amp;mutex); //release the mutex lock</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，我们把锁放在了<em>整个</em> <code>for</code> 循环的周围。尽管这样放置解决了正确性问题，但从性能的角度看，这是一个极其糟糕的决定：临界区现在囊括了整个循环体。以这种方式放置锁，保证了一次只有一个线程能执行这个循环，实际上把程序串行化了！</p>
+<blockquote>
+<p>In this example, we placed the lock around the <em>entirety</em> of the <code>for</code> loop. Even though this placement solves the correctness problems, it’s an extremely poor decision from a performance perspective — the critical section now encompasses the entire loop body. Placing locks in this manner guarantees that only one thread can execute the loop at a time, effectively serializing the program!</p>
+</blockquote>
+<h4 id="互斥锁：重装上阵"><a href="#互斥锁：重装上阵" class="headerlink" title="互斥锁：重装上阵"></a>互斥锁：重装上阵</h4><p><em>The Mutex: Reloaded</em></p>
+<p>我们试试另一种方法，把互斥锁的加锁和解锁函数放在循环的每次迭代之内：</p>
+<blockquote>
+<p>Let’s try another approach and place the mutex locking and unlocking functions within every iteration of the loop:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">/*modified code snippet of countElems function:</span><br><span class="line"> *locks are now placed INSIDE the for loop!</span><br><span class="line">*/</span><br><span class="line">//the heart of the program</span><br><span class="line">for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">    val = array[i];</span><br><span class="line">    pthread_mutex_lock(&amp;m); //acquire the mutex lock</span><br><span class="line">    counts[val] = counts[val] + 1;</span><br><span class="line">    pthread_mutex_unlock(&amp;m); //release the mutex lock</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>乍一看，这似乎是个更好的解决办法，因为每个线程都可以并行地进入循环，只在到达锁时才串行化。临界区非常小，只包括 <code>counts[val] = counts[val] + 1</code> 这一行。</p>
+<blockquote>
+<p>This may initially look like a better solution because each thread can enter the loop in parallel, serializing only when reaching the lock. The critical section is very small, encompassing only the line <code>counts[val] = counts[val] + 1</code>.</p>
+</blockquote>
+<p>我们先对这个版本的程序进行正确性检查：</p>
+<blockquote>
+<p>Let’s first perform a correctness check on this version of the program:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p_v3 10000000 1 1</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 10000000 1 2</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 10000000 1 4</span><br><span class="line">Counts array:</span><br><span class="line">999170 1001044 999908 1000431 999998 1001479 999709 997250 1000804 1000207</span><br></pre></td></tr></table></figure>
+
+<p>到目前为止一切顺利。无论使用多少个线程，这个版本的程序也能产生一致的输出。</p>
+<blockquote>
+<p>So far so good. This version of the program also produces consistent output regardless of the number of threads employed.</p>
+</blockquote>
+<p>现在，我们来看看性能：</p>
+<blockquote>
+<p>Now, let’s look at performance:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p_v3 100000000 0 1</span><br><span class="line">Time for Step 1 is 1.92225 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 100000000 0 2</span><br><span class="line">Time for Step 1 is 10.9704 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 100000000 0 4</span><br><span class="line">Time for Step 1 is 9.13662 s</span><br></pre></td></tr></table></figure>
+
+<p>运行这个版本的代码，得到的运行时间（令人惊讶地）<em>显著变慢</em>了！</p>
+<blockquote>
+<p>Running this version of the code yields (amazingly enough) a <em>significantly slower</em> runtime!</p>
+</blockquote>
+<p>事实证明，给互斥锁加锁和解锁是代价很高的操作。回想<a href="../C12-CodeOpt/12.2-loops_functions.html">函数调用优化</a>的讨论中所讲的内容：在循环中反复（且不必要地）调用一个函数，可能是程序变慢的一个主要原因。在之前使用互斥锁的方式中，每个线程只加锁和解锁互斥锁一次。在当前的解决方案中，每个线程要加锁和解锁互斥锁 <em>n&#x2F;t</em> 次，其中 <em>n</em> 是数组的大小，<em>t</em> 是线程数，<em>n&#x2F;t</em> 是分配给每个线程的那部分数组的大小。因此，额外的互斥锁操作的开销大大拖慢了循环的执行。</p>
+<blockquote>
+<p>As it turns out, locking and unlocking a mutex are expensive operations. Recall what was covered in the discussion on <a href="../C12-CodeOpt/12.2-loops_functions.html">function call optimizations</a>: calling a function repeatedly (and needlessly) in a loop can be a major cause of slowdown in a program. In our prior use of mutexes, each thread locks and unlocks the mutex exactly once. In the current solution, each thread locks and unlocks the mutex <em>n&#x2F;t</em> times, where <em>n</em> is the size of the array, <em>t</em> is the number of threads, and <em>n&#x2F;t</em> is the size of the array component assigned to each particular thread. As a result, the cost of the additional mutex operations slows down the loop’s execution considerably.</p>
+</blockquote>
+<h4 id="互斥锁：再探"><a href="#互斥锁：再探" class="headerlink" title="互斥锁：再探"></a>互斥锁：再探</h4><p><em>The Mutex: Revisited</em></p>
+<p>除了保护临界区以实现正确的行为之外，理想的解决方案还应当尽可能少地使用加锁和解锁函数，并把临界区缩到尽可能小。</p>
+<blockquote>
+<p>In addition to protecting the critical section to achieve correct behavior, an ideal solution would use the lock and unlock functions as little as possible, and reduce the critical section to the smallest possible size.</p>
+</blockquote>
+<p>最初的实现满足了第一个要求，而第二个实现试图实现第二个要求。乍一看，这两个要求似乎是互不相容的。有没有办法真正同时做到这两点（顺便还能加快程序的执行）？</p>
+<blockquote>
+<p>The original implementation satisfies the first requirement, whereas the second implementation tries to accomplish the second. At first glance, it appears that the two requirements are incompatible with each other. Is there a way to actually accomplish both (and while we are at it, speed up the execution of our program)?</p>
+</blockquote>
+<p>在下一次尝试中，每个线程在自己的栈上维护一个私有的、<em>局部的</em>计数数组。由于这个数组是每个线程局部的，线程访问它时无须加锁：不在线程之间共享的数据不存在竞态条件的风险。每个线程处理共享数组中分配给它的子集，填充自己的局部计数数组。统计完自己子集中的所有值之后，每个线程：</p>
+<blockquote>
+<p>For the next attempt, each thread maintains a private, <em>local</em> array of counts on its stack. Because the array is local to each thread, a thread can access it without locking — there’s no risk of a race condition on data that isn’t shared between threads. Each thread processes its assigned subset of the shared array and populates its local counts array. After counting up all the values within its subset, each thread:</p>
+</blockquote>
+<ol>
+<li>给共享的互斥锁加锁（进入临界区）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Locks the shared mutex (entering a critical section).</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>把局部计数数组中的值加到共享的计数数组中。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Adds the values from its local counts array to the shared counts array.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>给共享的互斥锁解锁（退出临界区）。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Unlocks the shared mutex (exiting the critical section).</li>
+</ol>
+</blockquote>
+<p>限制每个线程只更新一次共享的计数数组，能显著减少对共享变量的争用，并把代价高昂的互斥锁操作降到最少。</p>
+<blockquote>
+<p>Restricting each thread to update the shared counts array only once significantly reduces the contention for shared variables and minimizes expensive mutex operations.</p>
+</blockquote>
+<p>下面是修改后的 <code>countElems</code> 函数。这个最终程序的完整源代码可以在（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a>）获取：</p>
+<blockquote>
+<p>The following is our revised <code>countElems</code> function. The full source code for this final program can be accessed at (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">/*parallel version of step 1 of CountSort algorithm (final attempt w/mutexes):</span><br><span class="line"> * extracts arguments from args value</span><br><span class="line"> * calculates component of the array that thread is responsible for counting</span><br><span class="line"> * computes the frequency of all the elements in assigned component and stores</span><br><span class="line"> * the associated counts of each element in counts array</span><br><span class="line">*/</span><br><span class="line">void *countElems( void *args ) &#123;</span><br><span class="line">    //extract arguments</span><br><span class="line">    //ommitted for brevity</span><br><span class="line">    int *array = myargs-&gt;ap;</span><br><span class="line">    long *counts = myargs-&gt;countp;</span><br><span class="line"></span><br><span class="line">    //local declaration of counts array, initializes every element to zero.</span><br><span class="line">    long local_counts[MAX] = &#123;0&#125;;</span><br><span class="line"></span><br><span class="line">    //assign work to the thread</span><br><span class="line">    long chunk = length / nthreads; //nominal chunk size</span><br><span class="line">    long start = myid * chunk;</span><br><span class="line">    long end = (myid + 1) * chunk;</span><br><span class="line">    long val;</span><br><span class="line">    if (myid == nthreads-1)</span><br><span class="line">        end = length;</span><br><span class="line"></span><br><span class="line">    long i;</span><br><span class="line"></span><br><span class="line">    //heart of the program</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        val = array[i];</span><br><span class="line"></span><br><span class="line">        //updates local counts array</span><br><span class="line">        local_counts[val] = local_counts[val] + 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //update to global counts array</span><br><span class="line">    pthread_mutex_lock(&amp;mutex); //acquire the mutex lock</span><br><span class="line">    for (i = 0; i &lt; MAX; i++) &#123;</span><br><span class="line">        counts[i] += local_counts[i];</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_mutex_unlock(&amp;mutex); //release the mutex lock</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个版本有几个额外的特点：</p>
+<blockquote>
+<p>This version has a few additional features:</p>
+</blockquote>
+<ul>
+<li>有一个 <code>local_counts</code> 数组，它对每个线程的作用域来说是私有的（即分配在线程的栈上）。与 <code>counts</code> 一样，<code>local_counts</code> 包含 <code>MAX</code> 个元素，因为 <code>MAX</code> 是输入数组中任何元素可能取到的最大值。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The presence of <code>local_counts</code>, an array that is private to the scope of each thread (i.e., allocated in the thread’s stack). Like <code>counts</code>, <code>local_counts</code> contains <code>MAX</code> elements, given that <code>MAX</code> is the maximum value any element can hold in our input array.</li>
+</ul>
+</blockquote>
+<ul>
+<li>每个线程按自己的节奏更新 <code>local_counts</code>，不会争用任何共享变量。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Each thread makes updates to <code>local_counts</code> at its own pace, without any contention for shared variables.</li>
+</ul>
+</blockquote>
+<ul>
+<li>每个线程对全局 <code>counts</code> 数组的更新由一次 <code>pthread_mutex_lock</code> 调用保护，这个更新在每个线程执行结束时只发生一次。</li>
+</ul>
+<blockquote>
+<ul>
+<li>A single call to <code>pthread_mutex_lock</code> protects each thread’s update to the global <code>counts</code> array, which happens only once at the end of each thread’s execution.</li>
+</ul>
+</blockquote>
+<p>通过这种方式，我们把每个线程在临界区中花费的时间减少到只有更新共享计数数组那一点。尽管一次仍只能有一个线程进入临界区，但每个线程在其中花费的时间与 <code>MAX</code> 成正比，而不是与全局数组的长度 <em>n</em> 成正比。由于 <code>MAX</code> 远小于 <em>n</em>，我们应该能看到性能的提升。</p>
+<blockquote>
+<p>In this manner, we reduce the time each thread spends in a critical section to just updating the shared counts array. Even though only one thread can enter the critical section at a time, the time each thread spends there is proportional to <code>MAX</code>, not <em>n</em>, the length of the global array. Since <code>MAX</code> is much less than <em>n</em>, we should see an improvement in performance.</p>
+</blockquote>
+<p>我们现在来对这个版本的代码进行基准测试：</p>
+<blockquote>
+<p>Let’s now benchmark this version of our code:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p_v3 100000000 0 1</span><br><span class="line">Time for Step 1 is 0.334574 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 100000000 0 2</span><br><span class="line">Time for Step 1 is 0.209347 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p_v3 100000000 0 4</span><br><span class="line">Time for Step 1 is 0.130745 s</span><br></pre></td></tr></table></figure>
+
+<p>哇，差别真大！我们的程序不仅能算出正确的答案，而且随着线程数的增加执行得更快了。</p>
+<blockquote>
+<p>Wow, what a difference! Our program not only computes the correct answers, but also executes faster as we increase the number of threads.</p>
+</blockquote>
+<p>这里要吸取的教训是：要有效地缩小临界区，就用局部变量来收集中间值。等需要并行化的繁重工作完成之后，再用互斥锁安全地更新任何共享变量。</p>
+<blockquote>
+<p>The lesson to take away here is this: to efficiently minimize a critical section, use local variables to collect intermediate values. After the hard work requiring parallelization is over, use a mutex to safely update any shared variable(s).</p>
+</blockquote>
+<h4 id="死锁"><a href="#死锁" class="headerlink" title="死锁"></a>死锁</h4><p><em>Deadlock</em></p>
+<p>在一些程序中，正在等待的线程之间存在相互依赖。当多个同步结构（例如互斥锁）使用不当时，就可能出现一种称为<strong>死锁</strong>（deadlock）的情况。一个陷入死锁的线程被另一个线程阻塞而无法执行，而后者<em>自身</em>又阻塞在一个被阻塞的线程上。交通堵塞（所有方向的车辆都因被其他车辆挡住而无法前进）是繁忙的城市路口常见的一个现实世界中的死锁例子。</p>
+<blockquote>
+<p>In some programs, waiting threads have dependencies on one another. A situation called <strong>deadlock</strong> can arise when multiple synchronization constructs like mutexes are incorrectly applied. A deadlocked thread is blocked from execution by another thread, which <em>itself</em> is blocked on a blocked thread. Gridlock (in which cars in all directions cannot move forward due to being blocked by other cars) is a common real-world example of deadlock that occurs at busy city intersections.</p>
+</blockquote>
+<p>为了用代码说明死锁的情形，我们来考虑一个用多线程实现银行应用程序的例子。每个用户的账户由余额和它自己的互斥锁定义（确保更新余额时不会出现竞态条件）：</p>
+<blockquote>
+<p>To illustrate a deadlock scenario in code, let’s consider an example where multithreading is used to implement a banking application. Each user’s account is defined by a balance and its own mutex (ensuring that no race conditions can occur when updating the balance):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">struct account &#123;</span><br><span class="line">    pthread_mutex_t lock;</span><br><span class="line">    int balance;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>考虑下面这个把钱从一个银行账户转到另一个账户的 <code>Transfer</code> 函数的简单实现：</p>
+<blockquote>
+<p>Consider the following naive implementation of a <code>Transfer</code> function that moves money from one bank account to another:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">void *Transfer(void *args)&#123;</span><br><span class="line">    //argument passing removed to increase readability</span><br><span class="line">    //...</span><br><span class="line"></span><br><span class="line">    pthread_mutex_lock(&amp;fromAcct-&gt;lock);</span><br><span class="line">    pthread_mutex_lock(&amp;toAcct-&gt;lock);</span><br><span class="line"></span><br><span class="line">    fromAcct-&gt;balance -= amt;</span><br><span class="line">    toAcct-&gt;balance += amt;</span><br><span class="line"></span><br><span class="line">    pthread_mutex_unlock(&amp;fromAcct-&gt;lock);</span><br><span class="line">    pthread_mutex_unlock(&amp;toAcct-&gt;lock);</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设线程 0 和线程 1 并发执行，分别代表用户 A 和 B。现在考虑 A 和 B 想相互转账的情形：A 想给 B 转 20 美元，而 B 想给 A 转 40 美元。</p>
+<blockquote>
+<p>Suppose that Threads 0 and 1 are executing concurrently and represent users A and B, respectively. Now consider the situation in which A and B want to transfer money to each other: A wants to transfer 20 dollars to B, while B wants to transfer 40 to A.</p>
+</blockquote>
+<p>在<a href="14.3.1-mutex.html">图 1</a> 所示的执行路径中，两个线程并发地执行 <code>Transfer</code> 函数。线程 0 获得了 <code>acctA</code> 的锁，而线程 1 获得了 <code>acctB</code> 的锁。现在考虑会发生什么。为了继续执行，线程 0 需要获得 <code>acctB</code> 的锁，而这个锁被线程 1 持有。同样，线程 1 需要获得 <code>acctA</code> 的锁才能继续执行，而这个锁被线程 0 持有。由于两个线程相互阻塞，它们陷入了死锁。</p>
+<blockquote>
+<p>In the path of execution highlighted by <a href="14.3.1-mutex.html">Figure 1</a>, both threads concurrently execute the <code>Transfer</code> function. Thread 0 acquires the lock of <code>acctA</code> while Thread 1 acquires the lock of <code>acctB</code>. Now consider what happens. To continue executing, Thread 0 needs to acquire the lock on <code>acctB</code>, which Thread 1 holds. Likewise, Thread 1 needs to acquire the lock on <code>acctA</code> to continue executing, which Thread 0 holds. Since both threads are blocked on each other, they are in deadlock.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/deadlock.png" alt="Two threads deadlocked with each other"></p>
+<p><strong>图 1.</strong> 一个死锁的例子</p>
+<p><em>Figure 1. An example of deadlock</em></p>
+<p>尽管操作系统提供了一些防止死锁的保护，但程序员仍应注意自己编写的代码是否会增加死锁的可能性。例如，前面的情形本可以通过重新安排锁来避免，让每对加锁&#x2F;解锁只包围与之相关的那条余额更新语句：</p>
+<blockquote>
+<p>Although the OS provides some protection against deadlock, programmers should be mindful about writing code that increases the likelihood of deadlock. For example, the preceding scenario could have been avoided by rearranging the locks so that each lock&#x2F;unlock pair surrounds only the balance update statement associated with it:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这种改法确实不会死锁（任何时刻一个线程最多只持有一把锁），但代价是转账不再是原子的：在两次加锁之间，钱已经从 <code>fromAcct</code> 扣除、还没有到账 <code>toAcct</code>，其他线程此时看到的两个余额之和会暂时变少。若需要保持转账的原子性，可以让所有线程按同一个全局顺序（例如按账户编号或地址从小到大）获取两把锁，这样就不会形成循环等待。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">void *Transfer(void *args)&#123;</span><br><span class="line">    //argument passing removed to increase readability</span><br><span class="line">    //...</span><br><span class="line"></span><br><span class="line">    pthread_mutex_lock(&amp;fromAcct-&gt;lock);</span><br><span class="line">    fromAcct-&gt;balance -= amt;</span><br><span class="line">    pthread_mutex_unlock(&amp;fromAcct-&gt;lock);</span><br><span class="line"></span><br><span class="line">    pthread_mutex_lock(&amp;toAcct-&gt;lock);</span><br><span class="line">    toAcct-&gt;balance += amt;</span><br><span class="line">    pthread_mutex_unlock(&amp;toAcct-&gt;lock);</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>死锁并不是线程特有的情况。进程（尤其是相互通信的进程）之间也可能发生死锁。程序员应当注意所使用的同步原语，以及错误使用它们的后果。</p>
+<blockquote>
+<p>Deadlock is not a situation that is unique to threads. Processes (especially those that are communicating with one another) can deadlock with one another. Programmers should be mindful of the synchronization primitives they use and the consequences of using them incorrectly.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.3. 线程同步</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.3.2. 信号量</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8.5. 汇编中的函数 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;functions.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.5. Functions in Assembly 在上一节中">
+<meta property="og:type" content="website">
+<meta property="og:title" content="8.5. 汇编中的函数 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/8.5-functions.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;functions.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.5. Functions in Assembly 在上一节中">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/stackFrame.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/memparts.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide1.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide2.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide3.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide4.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide5.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide6.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide7.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide8.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide9.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide10.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide11.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide12.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide13.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide14.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide15.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide16.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide17.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide18.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide19.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide20.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide21.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide23.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide24.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide25.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide26.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/procedures/Slide27.png">
+<meta property="article:published_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/stackFrame.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html" class="current" aria-current="page">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>8. 32 位 x86 汇编（IA32）</span>
+      </nav>
+      <span class="book-position">第 96 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">8.5. 汇编中的函数</h1>
+  
+  
+    <p class="article-meta"><span>约 24 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C8-IA32/functions.html">https://diveintosystems.org/book/C8-IA32/functions.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>8.5. Functions in Assembly</em></p>
+<p>在上一节中，我们跟踪了汇编中的一些简单函数。本节在一个较大程序的背景下，讨论汇编中多个函数之间的交互。我们还会介绍一些与函数管理有关的新指令。</p>
+<blockquote>
+<p>In the previous section, we traced through simple functions in assembly. In this section, we discuss the interaction between multiple functions in assembly in the context of a larger program. We also introduce some new instructions involved with function management.</p>
+</blockquote>
+<p>我们先复习一下调用栈是如何管理的。回想一下，<code>%esp</code> 是<strong>栈指针</strong>，总是指向栈顶。寄存器 <code>%ebp</code> 表示基址指针（也称<strong>帧指针</strong>），指向当前栈帧的底部。<strong>栈帧</strong>（stack frame，也称<strong>活动帧</strong>或<strong>活动记录</strong>）指的是栈中分配给单次函数调用的那一部分。当前正在执行的函数总是位于栈顶，它的栈帧称为<strong>活动帧</strong>（active frame）。活动帧的边界由栈指针（在栈顶）和帧指针（在帧底）界定。活动记录中通常存放着函数的局部变量和参数。</p>
+<blockquote>
+<p>Let’s begin with a refresher on how the call stack is managed. Recall that <code>%esp</code> is the <strong>stack pointer</strong> and always points to the top of the stack. The register <code>%ebp</code> represents the base pointer (also known as the <strong>frame pointer</strong>) and points to the base of the current stack frame. The <strong>stack frame</strong> (also known as the <strong>activation frame</strong> or the <strong>activation record</strong>) refers to the portion of the stack allocated to a single function call. The currently executing function is always at the top of the stack, and its stack frame is referred to as the <strong>active frame</strong>. The active frame is bounded by the stack pointer (at the top of stack) and the frame pointer (at the bottom of the frame). The activation record typically holds local variables and parameters for a function.</p>
+</blockquote>
+<p><a href="8.5-functions.html">图 1</a> 展示了 <code>main</code> 及其调用的一个名为 <code>fname</code> 的函数的栈帧。我们把 <code>main</code> 函数称为<em>调用者</em>（caller）函数，把 <code>fname</code> 称为<em>被调用者</em>（callee）函数。</p>
+<blockquote>
+<p><a href="8.5-functions.html">Figure 1</a> shows the stack frames for <code>main</code> and a function it calls named <code>fname</code>. We will refer to the <code>main</code> function as the <em>caller</em> function and <code>fname</code> as the <em>callee</em> function.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C8-IA32/images/stackFrame.png" alt="an illustration of stack frames"></p>
+<p><strong>图 1.</strong> 栈帧的管理</p>
+<p><em>Figure 1. Stack frame management</em></p>
+<p>在<a href="8.5-functions.html">图 1</a> 中，当前的活动帧属于被调用者函数（<code>fname</code>）。栈指针和帧指针之间的内存用于存放局部变量。随着局部值被压入和弹出栈，栈指针会移动。与之不同，帧指针相对保持不变，指向当前栈帧的开头（底部）。因此，像 GCC 这样的编译器通常相对于帧指针来引用栈上的值。在<a href="8.5-functions.html">图 1</a> 中，活动帧的下边界是 <code>fname</code> 的基址指针，即栈地址 0x418。存放在这个地址处的值是「保存的」<code>%ebp</code> 值（0x42c），它本身表示 <code>main</code> 函数活动帧的底部。<code>main</code> 活动帧的顶部以<strong>返回地址</strong>（return address）为界，返回地址表示被调用函数执行完毕后，<code>main</code> 从哪个程序地址继续执行。</p>
+<blockquote>
+<p>In <a href="8.5-functions.html">Figure 1</a>, the current active frame belongs to the callee function (<code>fname</code>). The memory between the stack pointer and the frame pointer is used for local variables. The stack pointer moves as local values are pushed and popped from the stack. In contrast, the frame pointer remains relatively constant, pointing to the beginning (the bottom) of the current stack frame. As a result, compilers like GCC commonly reference values on the stack relative to the frame pointer. In <a href="8.5-functions.html">Figure 1</a>, the active frame is bounded below by the base pointer of <code>fname</code>, which contains the stack address 0x418. The value stored at this address is the “saved” <code>%ebp</code> value (0x42c), which itself indicates the bottom of the activation frame for the <code>main</code> function. The top of the activation frame of <code>main</code> is bounded by the <strong>return address</strong>, which indicates the program address at which <code>main</code> resumes execution once the callee function finishes executing.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 返回地址指向代码段内存，而不是栈内存（The return address points to program memory, not stack memory）</p><p>回想一下，程序的调用栈区域（栈内存）与其代码区域（代码段内存）是不同的。<code>%ebp</code> 和 <code>%esp</code> 指向栈内存中的位置，而 <code>%eip</code> 指向<em>代码</em>段内存中的位置。换句话说，返回地址是代码段内存中的一个地址，而不是栈内存中的地址：</p>
+<p><img src="/dive-into-systems/C8-IA32/images/memparts.png" alt="The parts of a program’s address space."></p>
+<p><em>图示：程序地址空间的组成部分</em></p>
+<blockquote>
+<p>Recall that the call stack region (stack memory) of a program is different from its code region (code memory). Whereas <code>%ebp</code> and <code>%esp</code> point to locations in the stack memory, <code>%eip</code> points to a location in <em>code</em> memory. In other words, the return address is an address in code memory, not stack memory:</p>
+<p><em>Figure 2. The parts of a program’s address space</em></p>
+</blockquote>
+</div>
+<p><a href="8.5-functions.html">表 1</a> 列出了编译器用于基本函数管理的另外几条指令。</p>
+<blockquote>
+<p><a href="8.5-functions.html">Table 1</a> contains several additional instructions that the compiler uses for basic function management.</p>
+</blockquote>
+<p><strong>表 1.</strong> 常用的函数管理指令</p>
+<p><em>Table 1. Common Function Management Instructions</em></p>
+<p><strong>指令</strong></p>
+<blockquote>
+<p><strong>Instruction</strong></p>
+</blockquote>
+<p><code>leave</code></p>
+<p><strong>含义</strong></p>
+<blockquote>
+<p><strong>Translation</strong></p>
+</blockquote>
+<p>为离开函数准备好栈。等价于：</p>
+<blockquote>
+<p>Prepares the stack for leaving a function. Equivalent to:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov %ebp, %esp</span><br><span class="line">pop %ebp</span><br></pre></td></tr></table></figure>
+
+<p><strong>指令</strong></p>
+<blockquote>
+<p><strong>Instruction</strong></p>
+</blockquote>
+<p><code>call addr &lt;fname&gt;</code></p>
+<p><strong>含义</strong></p>
+<blockquote>
+<p><strong>Translation</strong></p>
+</blockquote>
+<p>把活动帧切换到被调用者函数。等价于：</p>
+<blockquote>
+<p>Switches active frame to callee function. Equivalent to:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">push %eip</span><br><span class="line">mov addr, %eip</span><br></pre></td></tr></table></figure>
+
+<p><strong>指令</strong></p>
+<blockquote>
+<p><strong>Instruction</strong></p>
+</blockquote>
+<p><code>ret</code></p>
+<p><strong>含义</strong></p>
+<blockquote>
+<p><strong>Translation</strong></p>
+</blockquote>
+<p>把活动帧恢复为调用者函数。等价于：</p>
+<blockquote>
+<p>Restores active frame to caller function. Equivalent to:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pop %eip</span><br></pre></td></tr></table></figure>
+
+<p>例如，<code>leave</code> 指令是编译器在准备离开函数时，用来恢复栈指针和帧指针的简写形式。当被调用函数执行完毕时，<code>leave</code> 确保帧指针被<em>恢复</em>为之前的值。</p>
+<blockquote>
+<p>For example, the <code>leave</code> instruction is a shorthand that the compiler uses to restore the stack and frame pointers as it prepares to leave a function. When the callee function finishes execution, <code>leave</code> ensures that the frame pointer is <em>restored</em> to its previous value.</p>
+</blockquote>
+<p><code>call</code> 和 <code>ret</code> 指令在一个函数调用另一个函数的过程中起着重要作用。两条指令都会修改指令指针（寄存器 <code>%eip</code>）。当调用者函数执行 <code>call</code> 指令时，<code>%eip</code> 的当前值被保存到栈上，作为返回地址，即被调用函数执行完毕后调用者继续执行的程序地址。<code>call</code> 指令还会用被调用函数的地址替换 <code>%eip</code> 的值。</p>
+<blockquote>
+<p>The <code>call</code> and <code>ret</code> instructions play a prominent role in the process where one function calls another. Both instructions modify the instruction pointer (register <code>%eip</code>). When the caller function executes the <code>call</code> instruction, the current value of <code>%eip</code> is saved on the stack to represent the return address, or the program address at which the caller resumes executing once the callee function finishes. The <code>call</code> instruction also replaces the value of <code>%eip</code> with the address of the callee function.</p>
+</blockquote>
+<p><code>ret</code> 指令把 <code>%eip</code> 的值恢复为保存在栈上的值，确保程序在调用者函数中指定的程序地址处继续执行。被调用者返回的任何值都存放在 <code>%eax</code> 中。<code>ret</code> 指令通常是任何函数中执行的最后一条指令。</p>
+<blockquote>
+<p>The <code>ret</code> instruction restores the value of <code>%eip</code> to the value saved on the stack, ensuring that the program resumes execution at the program address specified in the caller function. Any value returned by the callee is stored in <code>%eax</code>. The <code>ret</code> instruction is usually the last instruction that executes in any function.</p>
+</blockquote>
+<h3 id="8-5-1-跟踪一个例子"><a href="#8-5-1-跟踪一个例子" class="headerlink" title="8.5.1. 跟踪一个例子"></a>8.5.1. 跟踪一个例子</h3><p><em>8.5.1. Tracing Through an Example</em></p>
+<p>利用我们关于函数管理的知识，来跟踪本章开头首次介绍的那个代码示例。</p>
+<blockquote>
+<p>Using our knowledge of function management, let’s trace through the code example first introduced at the beginning of this chapter.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int assign(void) &#123;</span><br><span class="line">    int y = 40;</span><br><span class="line">    return y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int adder(void) &#123;</span><br><span class="line">    int a;</span><br><span class="line">    return a + 2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int x;</span><br><span class="line">    assign();</span><br><span class="line">    x = adder();</span><br><span class="line">    printf(&quot;x is: %d\n&quot;, x);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们用 <code>-m32</code> 选项编译代码，并用 <code>objdump -d</code> 查看底层的汇编。后一条命令会输出一个相当大的文件，其中包含许多我们不需要的信息。用 <code>less</code> 及其搜索功能提取出 <code>adder</code>、<code>assign</code> 和 <code>main</code> 函数：</p>
+<blockquote>
+<p>We compile the code with the <code>-m32</code> flag and use <code>objdump -d</code> to view the underlying assembly. The latter command outputs a pretty big file that contains a lot of information that we don’t need. Use <code>less</code> and the search functionality to extract the <code>adder</code>, <code>assign</code>, and <code>main</code> functions:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 这段清单被手工改过</p><p>仔细对照会发现 <code>main</code> 部分的机器码与助记符对不上：字节 <code>83 ec 20</code> 编码的是 <code>sub $0x20,%esp</code>，而不是右边写的 <code>sub $0x14,%esp</code>；字节 <code>89 44 24 1c</code> 编码的是 <code>mov %eax,0x1c(%esp)</code>，而不是 <code>mov %eax,0xc(%esp)</code>（<code>8b 44 24 1c</code> 同理）。译者用 <code>clang -target i386-linux-gnu</code> 汇编这几条指令确认了编码：<code>sub $0x14,%esp</code> 是 <code>83 ec 14</code>，<code>mov %eax,0xc(%esp)</code> 是 <code>89 44 24 0c</code>。另外，<code>mov %esp,%ebp</code> 只有 2 字节，下一条指令本应位于 0x8048430，清单却从 0x8048433 开始，说明中间删去了一条 3 字节的指令（比如把栈指针按 16 字节对齐的 <code>and $0xfffffff0,%esp</code>，编码为 <code>83 e4 f0</code>，正好 3 字节）。本节后面的跟踪讲解与右边的助记符（<code>0x14</code>、<code>0xc</code>）一致，按助记符理解即可。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line">804840d &lt;assign&gt;:</span><br><span class="line"> 804840d:       55                      push   %ebp</span><br><span class="line"> 804840e:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 8048410:       83 ec 10                sub    $0x10,%esp</span><br><span class="line"> 8048413:       c7 45 fc 28 00 00 00    movl   $0x28,-0x4(%ebp)</span><br><span class="line"> 804841a:       8b 45 fc                mov    -0x4(%ebp),%eax</span><br><span class="line"> 804841d:       c9                      leave</span><br><span class="line"> 804841e:       c3                      ret</span><br><span class="line"></span><br><span class="line">0804841f &lt;adder&gt;:</span><br><span class="line"> 804841f:       55                      push   %ebp</span><br><span class="line"> 8048420:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 8048422:       83 ec 10                sub    $0x10,%esp</span><br><span class="line"> 8048425:       8b 45 fc                mov    -0x4(%ebp),%eax</span><br><span class="line"> 8048428:       83 c0 02                add    $0x2,%eax</span><br><span class="line"> 804842b:       c9                      leave</span><br><span class="line"> 804842c:       c3                      ret</span><br><span class="line"></span><br><span class="line">0804842d &lt;main&gt;:</span><br><span class="line"> 804842d:       55                      push   %ebp</span><br><span class="line"> 804842e:       89 e5                   mov    %esp,%ebp</span><br><span class="line"> 8048433:       83 ec 20                sub    $0x14,%esp</span><br><span class="line"> 8048436:       e8 d2 ff ff ff          call   804840d &lt;assign&gt;</span><br><span class="line"> 804843b:       e8 df ff ff ff          call   804841f &lt;adder&gt;</span><br><span class="line"> 8048440:       89 44 24 1c             mov    %eax,0xc(%esp)</span><br><span class="line"> 8048444:       8b 44 24 1c             mov    0xc(%esp),%eax</span><br><span class="line"> 8048448:       89 44 24 04             mov    %eax,0x4(%esp)</span><br><span class="line"> 804844c:       c7 04 24 f4 84 04 08    movl   $0x80484f4,(%esp)</span><br><span class="line"> 8048453:       e8 88 fe ff ff          call   80482e0 &lt;printf@plt&gt;</span><br><span class="line"> 8048458:       b8 00 00 00 00          mov    $0x0,%eax</span><br><span class="line"> 804845d:       c9                      leave</span><br><span class="line"> 804845e:       c3                      ret</span><br></pre></td></tr></table></figure>
+
+<p>每个函数都以一个与它在程序中声明的名字相对应的符号标签开头。例如，<code>&lt;main&gt;:</code> 是 <code>main</code> 函数的符号标签。函数标签的地址也就是该函数中第一条指令的地址。为了在后面的图中节省空间，我们把地址截取为低 12 位。所以，程序地址 0x804842d 显示为 0x42d。</p>
+<blockquote>
+<p>Each function begins with a symbolic label that corresponds to its declared name in the program. For example, <code>&lt;main&gt;:</code> is the symbolic label for the <code>main</code> function. The address of a function label is also the address of the first instruction in that function. To save space in the figures that follow, we truncate addresses to the lower 12 bits. So, program address 0x804842d is shown as 0x42d.</p>
+</blockquote>
+<h3 id="8-5-2-跟踪-main"><a href="#8-5-2-跟踪-main" class="headerlink" title="8.5.2. 跟踪 main"></a>8.5.2. 跟踪 main</h3><p><em>8.5.2. Tracing Through main</em></p>
+<p><a href="8.5-functions.html">图 3</a> 展示了执行 <code>main</code> 之前那一刻的执行栈。</p>
+<blockquote>
+<p><a href="8.5-functions.html">Figure 3</a> shows the execution stack immediately prior to the execution of <code>main</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide1.png" alt="slide1"></p>
+<p><strong>图 3.</strong> 执行 main 函数之前 CPU 寄存器和调用栈的初始状态</p>
+<p><em>Figure 3. The initial state of the CPU registers and call stack prior to executing the main function</em></p>
+<p>回想一下，栈向低地址方向增长。在这个例子中，<code>%ebp</code> 是地址 0x140，<code>%esp</code> 是地址 0x130（这两个值都是为本例虚构的）。寄存器 <code>%eax</code> 和 <code>%edx</code> 最初存放的是垃圾值。红色（左上角）箭头标出当前正在执行的指令。最初，<code>%eip</code> 存放地址 0x42d，即 <code>main</code> 函数第一行在程序内存中的地址。我们一起来跟踪程序的执行。</p>
+<blockquote>
+<p>Recall that the stack grows toward lower addresses. In this example, <code>%ebp</code> is address 0x140, and <code>%esp</code> is address 0x130 (both of these values are made up for this example). Registers <code>%eax</code> and <code>%edx</code> initially contain junk values. The red (upper-left) arrow indicates the currently executing instruction. Initially, <code>%eip</code> contains address 0x42d, which is the program memory address of the first line in the <code>main</code> function. Let’s trace through the program’s execution together.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide2.png" alt="slide2"></p>
+<p>第一条指令把 <code>ebp</code> 的值压入栈，保存地址 0x140。由于栈向低地址方向增长，栈指针 <code>%esp</code> 更新为 0x12c，比 0x130 小 4 个字节。寄存器 <code>%eip</code> 前进到顺序中的下一条指令。</p>
+<blockquote>
+<p>The first instruction pushes the value of <code>ebp</code> onto the stack, saving address 0x140. Since the stack grows toward lower addresses, the stack pointer <code>%esp</code> updates to 0x12c, which is 4 bytes less than 0x130. Register <code>%eip</code> advances to the next instruction in sequence.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide3.png" alt="slide3"></p>
+<p>下一条指令（<code>mov %esp, %ebp</code>）把 <code>%ebp</code> 的值更新为与 <code>%esp</code> 相同。帧指针（<code>%ebp</code>）现在指向 <code>main</code> 函数栈帧的开头。<code>%eip</code> 前进到顺序中的下一条指令。</p>
+<blockquote>
+<p>The next instruction (<code>mov %esp, %ebp</code>) updates the value of <code>%ebp</code> to be the same as <code>%esp</code>. The frame pointer (<code>%ebp</code>) now points to the start of the stack frame for the <code>main</code> function. <code>%eip</code> advances to the next instruction in sequence.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide4.png" alt="slide4"></p>
+<p><code>sub</code> 指令从栈指针的地址中减去 0x14，让栈「增长」20 个字节。寄存器 <code>%eip</code> 前进到下一条指令，也就是第一条 <code>call</code> 指令。</p>
+<blockquote>
+<p>The <code>sub</code> instruction subtracts 0x14 from the address of our stack pointer, “growing” the stack by 20 bytes. Register <code>%eip</code> advances to the next instruction, which is the first <code>call</code> instruction.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide5.png" alt="slide5"></p>
+<p><code>call &lt;assign&gt;</code> 指令把寄存器 <code>%eip</code> 中的值（它表示<em>下一条</em>要执行的指令的地址）压入栈。由于 <code>call &lt;assign&gt;</code> 之后的下一条指令的地址是 0x43b，这个值就作为返回地址被压入栈。回想一下，返回地址表示程序执行返回 <code>main</code> 时应当从哪个程序地址继续执行。</p>
+<blockquote>
+<p>The <code>call &lt;assign&gt;</code> instruction pushes the value inside register <code>%eip</code> (which denotes the address of the <em>next</em> instruction to execute) onto the stack. Since the next instruction after <code>call &lt;assign&gt;</code> has the address 0x43b, that value is pushed onto the stack as the return address. Recall that the return address indicates the program address where execution should resume when program execution returns to <code>main</code>.</p>
+</blockquote>
+<p>接着，<code>call</code> 指令把 <code>assign</code> 函数的地址（0x40d）移入寄存器 <code>%eip</code>，表示程序应当进入被调用函数 <code>assign</code> 继续执行，而不是执行 <code>main</code> 中的下一条指令。</p>
+<blockquote>
+<p>Next, the <code>call</code> instruction moves the address of the <code>assign</code> function (0x40d) into register <code>%eip</code>, signifying that program execution should continue into the callee function <code>assign</code> and not the next instruction in <code>main</code>.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide6.png" alt="slide6"></p>
+<p><code>assign</code> 函数中最先执行的两条指令是每个函数都要做的例行簿记工作。第一条指令把 <code>%ebp</code> 中存放的值（内存地址 0x12c）压入栈。回想一下，这个地址指向 <code>main</code> 栈帧的开头。<code>%eip</code> 前进到 <code>assign</code> 中的第二条指令。</p>
+<blockquote>
+<p>The first two instructions that execute in the <code>assign</code> function are the usual book-keeping that every function performs. The first instruction pushes the value stored in <code>%ebp</code> (memory address 0x12c) onto the stack. Recall that this address points to the beginning of the stack frame for <code>main</code>. <code>%eip</code> advances to the second instruction in <code>assign</code>.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide7.png" alt="slide7"></p>
+<p>下一条指令（<code>mov %esp, %ebp</code>）更新 <code>%ebp</code>，使其指向栈顶，标志着 <code>assign</code> 栈帧的开始。指令指针（<code>%eip</code>）前进到 <code>assign</code> 函数中的下一条指令。</p>
+<blockquote>
+<p>The next instruction (<code>mov %esp, %ebp</code>) updates <code>%ebp</code> to point to the top of the stack, marking the beginning of the stack frame for <code>assign</code>. The instruction pointer (<code>%eip</code>) advances to the next instruction in the <code>assign</code> function.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide8.png" alt="slide8"></p>
+<p>地址 0x410 处的 <code>sub</code> 指令让栈增长 16 个字节，在栈帧上腾出额外的空间存放局部值，并更新 <code>%esp</code>。指令指针再次前进到 <code>assign</code> 函数中的下一条指令。</p>
+<blockquote>
+<p>The <code>sub</code> instruction at address 0x410 grows the stack by 16 bytes, creating extra space on the stack frame to store local values and updating <code>%esp</code>. The instruction pointer again advances to the next instruction in the <code>assign</code> function.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide9.png" alt="slide9"></p>
+<p>地址 0x413 处的 <code>mov</code> 指令把值 <code>$0x28</code>（即 40）移到栈上地址 <code>-0x4(%ebp)</code> 处，也就是帧指针上方四个字节的位置。回想一下，帧指针常用来引用栈上的位置。<code>%eip</code> 前进到 <code>assign</code> 函数中的下一条指令。</p>
+<blockquote>
+<p>The <code>mov</code> instruction at address 0x413 moves the value <code>$0x28</code> (or 40) onto the stack at address <code>-0x4(%ebp)</code>, which is four bytes above the frame pointer. Recall that the frame pointer is commonly used to reference locations on the stack. <code>%eip</code> advances to the next instruction in the <code>assign</code> function.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide10.png" alt="slide10"></p>
+<p>地址 0x41a 处的 <code>mov</code> 指令把值 <code>$0x28</code> 放到寄存器 <code>%eax</code> 中，该寄存器存放函数的返回值。<code>%eip</code> 前进到 <code>assign</code> 函数中的 <code>leave</code> 指令。</p>
+<blockquote>
+<p>The <code>mov</code> instruction at address 0x41a places the value <code>$0x28</code> into register <code>%eax</code>, which holds the return value of the function. <code>%eip</code> advances to the <code>leave</code> instruction in the <code>assign</code> function.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide11.png" alt="slide11"></p>
+<p>此时，<code>assign</code> 函数几乎执行完了。下一条执行的指令是 <code>leave</code>，它为从函数调用返回准备好栈。回想一下，<code>leave</code> 相当于下面这一对指令：</p>
+<blockquote>
+<p>At this point, the <code>assign</code> function has almost completed execution. The next instruction that executes is the <code>leave</code> instruction, which prepares the stack for returning from the function call. Recall that <code>leave</code> is analogous to the following pair of instructions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">mov %ebp, %esp</span><br><span class="line">pop %ebp</span><br></pre></td></tr></table></figure>
+
+<p>换句话说，CPU 用帧指针覆盖栈指针。在我们的例子中，栈指针先从 0x100 被更新为 0x110。接着，CPU 执行 <code>pop %ebp</code>，取出位于 0x110 处的值（在我们的例子中是地址 0x12c），放入 <code>%ebp</code>。回想一下，0x12c 是 <code>main</code> 栈帧的开头。<code>%esp</code> 变为 0x114，<code>%eip</code> 指向 <code>assign</code> 函数中的 <code>ret</code> 指令。</p>
+<blockquote>
+<p>In other words, the CPU overwrites the stack pointer with the frame pointer. In our example, the stack pointer is initially updated from 0x100 to 0x110. Next, the CPU executes <code>pop %ebp</code>, which takes the value located at 0x110 (in our example, the address 0x12c) and places it in <code>%ebp</code>. Recall that 0x12c is the start of the stack frame for <code>main</code>. <code>%esp</code> becomes 0x114 and <code>%eip</code> points to the <code>ret</code> instruction in the <code>assign</code> function.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide12.png" alt="slide12"></p>
+<p><code>assign</code> 中的最后一条指令是 <code>ret</code>。<code>ret</code> 执行时，返回地址被从栈中弹出，放入寄存器 <code>%eip</code>。在我们的例子中，<code>%eip</code> 现在前进到对 <code>adder</code> 函数的调用。</p>
+<blockquote>
+<p>The last instruction in <code>assign</code> is a <code>ret</code> instruction. When <code>ret</code> executes, the return address is popped off the stack into register <code>%eip</code>. In our example, <code>%eip</code> now advances to the call to the <code>adder</code> function.</p>
+</blockquote>
+<p>此时有几件重要的事值得注意：</p>
+<blockquote>
+<p>Some important things to notice at this juncture:</p>
+</blockquote>
+<ul>
+<li>栈指针和帧指针已恢复为调用 <code>assign</code> 之前的值，这表明 <code>main</code> 的栈帧再次成为活动帧。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The stack pointer and frame pointer have been restored to their values prior to the call to <code>assign</code>, reflecting that the stack frame for <code>main</code> is once again the active frame.</li>
+</ul>
+</blockquote>
+<ul>
+<li>之前那个活动栈帧中的旧值<em>并没有</em>被移除，它们仍然存在于调用栈上。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The old values on the stack from the prior active stack frame are <em>not</em> removed. They still exist on the call stack.</li>
+</ul>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide13.png" alt="slide13"></p>
+<p>对 <code>adder</code> 的调用用一个新的返回地址（0x440）<em>覆盖</em>了栈上旧的返回地址。这个返回地址指向 <code>adder</code> 返回后要执行的下一条指令，即 <code>mov %eax, 0xc(%ebp)</code>。<code>%eip</code> 反映的是 <code>adder</code> 中要执行的第一条指令，位于地址 0x41f。</p>
+<blockquote>
+<p>The call to <code>adder</code> <em>overwrites</em> the old return address on the stack with a new return address (0x440). This return address points to the next instruction to be executed after <code>adder</code> returns, or <code>mov %eax, 0xc(%ebp)</code>. <code>%eip</code> reflects the first instruction to execute in <code>adder</code>, which is at address 0x41f.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>按上面的清单，地址 0x440 处的指令是 <code>mov %eax,0xc(%esp)</code>（以 <code>%esp</code> 为基址），原文这里写成了 <code>0xc(%ebp)</code>。</p>
+</div>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide14.png" alt="slide14"></p>
+<p><code>adder</code> 函数中的第一条指令把调用者的帧指针（<code>main</code> 的 <code>%ebp</code>）保存到栈上。</p>
+<blockquote>
+<p>The first instruction in the <code>adder</code> function saves the caller’s frame pointer (<code>%ebp</code> of <code>main</code>) on the stack.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide15.png" alt="slide15"></p>
+<p>下一条指令用 <code>%esp</code> 的当前值，即地址 0x110，更新 <code>%ebp</code>。这两条指令合起来建立了 <code>adder</code> 栈帧的开头。</p>
+<blockquote>
+<p>The next instruction updates <code>%ebp</code> with the current value of <code>%esp</code>, or address 0x110. Together, these last two instructions establish the beginning of the stack frame for <code>adder</code>.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide16.png" alt="slide16"></p>
+<p>地址 0x422 处的 <code>sub</code> 指令让栈「增长」16 个字节。再次注意，让栈增长并不会影响栈上之前创建的任何值。同样，旧值会一直散落在栈上，直到被覆盖为止。</p>
+<blockquote>
+<p>The <code>sub</code> instruction at address 0x422 “grows” the stack by 16 bytes. Notice again that growing the stack does not affect any previously created values on the stack. Again, old values will litter the stack until they are overwritten.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide17.png" alt="slide20"></p>
+<p>请仔细看看接下来执行的指令：<code>mov $-0x4(%ebp), %eax</code>。这条指令把栈上的一个<em>旧</em>值移入寄存器 <code>%eax</code>！这是程序员忘了在函数 <code>adder</code> 中初始化 <code>a</code> 的直接后果。</p>
+<blockquote>
+<p>Pay close attention to the next instruction that executes: <code>mov $-0x4(%ebp), %eax</code>. This instruction moves an <em>old</em> value that is on the stack into register <code>%eax</code>! This is a direct result of the fact that the programmer forgot to initialize <code>a</code> in the function <code>adder</code>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>指令中多了一个 <code>$</code>，按清单应为 <code>mov -0x4(%ebp),%eax</code>：这里是从栈上地址 <code>%ebp-4</code> 读取内存，而不是立即数。<code>adder</code> 的 <code>-0x4(%ebp)</code> 恰好与刚才 <code>assign</code> 存放 <code>y</code>（40）的位置相同，所以读到的「旧值」就是 40。</p>
+</div>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide18.png" alt="slide18"></p>
+<p>地址 0x428 处的 <code>add</code> 指令把寄存器 <code>%eax</code> 加 2。回想一下，IA32 通过寄存器 <code>%eax</code> 传递返回值。最后这两条指令合起来，等价于 <code>adder</code> 中的下面这段代码：</p>
+<blockquote>
+<p>The <code>add</code> instruction at address 0x428 adds 2 to register <code>%eax</code>. Recall that IA32 passes the return value through register <code>%eax</code>. Together, the last two instructions are equivalent to the following code in <code>adder</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int a;</span><br><span class="line">return a + 2;</span><br></pre></td></tr></table></figure>
+
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide19.png" alt="slide19"></p>
+<p><code>leave</code> 执行后，帧指针再次指向 <code>main</code> 栈帧的开头，即地址 0x12c。栈指针现在存放的是地址 0x114。</p>
+<blockquote>
+<p>After <code>leave</code> executes, the frame pointer again points to the beginning of the stack frame for <code>main</code>, or address 0x12c. The stack pointer now stores the address 0x114.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide20.png" alt="slide20"></p>
+<p><code>ret</code> 的执行把返回地址从栈中弹出，把指令指针恢复为 0x440，也就是 <code>main</code> 中下一条要执行的指令的地址。<code>%esp</code> 现在是 0x118。</p>
+<blockquote>
+<p>The execution of <code>ret</code> pops the return address off the stack, restoring the instruction pointer back to 0x440, or the address of the next instruction to execute in <code>main</code>. The address of <code>%esp</code> is now 0x118.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide21.png" alt="slide21"></p>
+<p><code>mov %eax, 0xc(%esp)</code> 指令把 <code>%eax</code> 中的值放到 <code>%esp</code> 下方 12 个字节（三个位置）处。</p>
+<blockquote>
+<p>The <code>mov %eax, 0xc(%esp)</code> instruction places the value in <code>%eax</code> in a location 12 bytes (three spaces) below <code>%esp</code>.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide23.png" alt="slide23"></p>
+<p>稍微跳过一点：地址 0x444 和 0x448 处的 <code>mov</code> 指令把 <code>%eax</code> 设为保存在位置 <code>%esp+12</code> 处的值（即 0x2A），并把 0x2A 放到栈顶下方一个位置处（地址 <code>%esp + 4</code>，即 0x11c）。</p>
+<blockquote>
+<p>Skipping ahead a little, the <code>mov</code> instructions at addresses 0x444 and 0x448 set <code>%eax</code> to the value saved at location <code>%esp+12</code> (or 0x2A) and places 0x2A one spot below the top of the stack (address <code>%esp + 4</code>, or 0x11c).</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide24.png" alt="slide24"></p>
+<p>下一条指令（<code>mov $0x80484f4, (%esp)</code>）把一个本身是内存地址的常数值复制到栈顶。这个内存地址 0x80484f4 处存放的是字符串 <code>&quot;x is %d\n&quot;</code>。指令指针前进到对 <code>printf</code> 函数的调用（用标签 <code>&lt;printf@plt&gt;</code> 表示）。</p>
+<blockquote>
+<p>The next instruction (<code>mov $0x80484f4, (%esp)</code>) copies a constant value that is a memory address to the top of the stack. This particular memory address, 0x80484f4, contains the string <code>&quot;x is %d\n&quot;</code>. The instruction pointer advances to the call to the <code>printf</code> function (which is denoted with the label <code>&lt;printf@plt&gt;</code>).</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>按本节开头的源代码，这个格式字符串其实是 <code>&quot;x is: %d\n&quot;</code>（多一个冒号）；下文同。</p>
+</div>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide25.png" alt="slide25"></p>
+<p>为简洁起见，我们不跟踪 <code>printf</code> 函数，它是 <code>stdio.h</code> 的一部分。不过，从手册页（<code>man -s3 printf</code>）可以知道，<code>printf</code> 的格式如下：</p>
+<blockquote>
+<p>For the sake of brevity, we will not trace the <code>printf</code> function, which is part of <code>stdio.h</code>. However, we know from the manual page (<code>man -s3 printf</code>) that <code>printf</code> has the following format:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int printf(const char * format, ...)</span><br></pre></td></tr></table></figure>
+
+<p>换句话说，第一个参数是指向指定格式的字符串的指针，从第二个参数起是该格式中用到的值。地址 0x444–0x45c 指定的那些指令，对应于 <code>main</code> 函数中的下面这一行：</p>
+<blockquote>
+<p>In other words, the first argument is a pointer to a string specifying the format, and the second argument onward specify the values that are used in that format. The instructions specified by addresses 0x444 - 0x45c correspond to the following line in the <code>main</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(&quot;x is %d\n&quot;, x);</span><br></pre></td></tr></table></figure>
+
+<p>调用 <code>printf</code> 函数时：</p>
+<blockquote>
+<p>When the <code>printf</code> function is called:</p>
+</blockquote>
+<ul>
+<li>一个指定 <code>printf</code> 调用之后要执行的指令的返回地址被压入栈。</li>
+</ul>
+<blockquote>
+<ul>
+<li>A return address specifying the instruction that executes after the call to <code>printf</code> is pushed onto the stack.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>%ebp</code> 的值被压入栈，并更新 <code>%ebp</code>，使其指向栈顶，标志着 <code>printf</code> 栈帧的开始。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The value of <code>%ebp</code> is pushed onto the stack, and <code>%ebp</code> is updated to point to the top of the stack, indicating the beginning of the stack frame for <code>printf</code>.</li>
+</ul>
+</blockquote>
+<p>在某个时刻，<code>printf</code> 会引用它的参数，即字符串 <code>&quot;x is %d\n&quot;</code> 和值 0x2A。回想一下，返回地址就位于 <code>%ebp</code> 正下方的位置 <code>%ebp+4</code> 处。因此，第一个参数位于 <code>%ebp+8</code>（即紧挨在返回地址<em>下方</em>），第二个参数位于 <code>%ebp+12</code>。</p>
+<blockquote>
+<p>At some point, <code>printf</code> references its arguments, which are the string <code>&quot;x is %d\n&quot;</code> and the value 0x2A. Recall that the return address is located directly below <code>%ebp</code> at location <code>%ebp+4</code>. The first argument is thus located at <code>%ebp+8</code> (i.e., right <em>below</em> the return address), and the second argument is located at <code>%ebp+12</code>.</p>
+</blockquote>
+<p>对于任何有 <em>n</em> 个参数的函数，GCC 把第一个参数放在位置 <code>%ebp+8</code>，第二个放在 <code>%ebp+12</code>，第 <em>n</em> 个参数放在位置 <code>(%ebp+8) + (4*(n-1))</code>。</p>
+<blockquote>
+<p>For any function with <em>n</em> arguments, GCC places the first argument at location <code>%ebp+8</code>, the second at <code>%ebp+12</code>, and the <em>n</em><sup>th</sup> argument at location <code>(%ebp+8) + (4*(n-1))</code>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这个公式假定每个参数都占 4 字节（<code>int</code>、指针等）。<code>double</code>、<code>long long</code> 或按值传递的结构体会占更多空间，后续参数的偏移也随之变化。</p>
+</div>
+<p>调用 <code>printf</code> 之后，值 0x2A 以整数格式输出给用户。于是，屏幕上打印出了值 42！</p>
+<blockquote>
+<p>After the call to <code>printf</code>, the value 0x2A is output to the user in integer format. Thus, the value 42 is printed to the screen!</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide26.png" alt="slide26"></p>
+<p>调用 <code>printf</code> 之后，最后几条指令清理栈，为从 <code>main</code> 函数干净地退出做准备。首先，值 0x0 被放入寄存器 <code>%eax</code>，表示 <code>main</code> 返回值 0。回想一下，程序返回 0 表示正常终止。</p>
+<blockquote>
+<p>After the call to <code>printf</code>, the last few instructions clean up the stack and prepare a clean exit from the <code>main</code> function. First, the value 0x0 is placed in register <code>%eax</code>, signifying that the value 0 is returned from <code>main</code>. Recall that a program returns 0 to indicate correct termination.</p>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C8-IA32/images/procedures/Slide27.png" alt="slide27"></p>
+<p><code>leave</code> 和 <code>ret</code> 执行之后，栈指针和帧指针恢复为执行 <code>main</code> 之前的原始值。返回寄存器 <code>%eax</code> 中是 0x0，程序返回 0。</p>
+<blockquote>
+<p>After <code>leave</code> and <code>ret</code> are executed, the stack and frame pointers revert to their original values prior to the execution of <code>main</code>. With 0x0 in the return register <code>%eax</code>, the program returns 0.</p>
+</blockquote>
+<p>如果你仔细读完了本节，应该能理解为什么我们的程序会打印出值 42。本质上，程序无意中使用了栈上的旧值，导致它以我们没有预料到的方式运行。虽然这个例子相当无害，但在后面的小节中，我们会讨论黑客如何滥用函数调用，让程序以真正恶意的方式出错。</p>
+<blockquote>
+<p>If you have carefully read through this section, you should understand why our program prints out the value 42. In essence, the program inadvertently uses old values on the stack to cause it to behave in a way that we didn’t expect. While this example was pretty harmless, we discuss in future sections how hackers have misused function calls to make programs misbehave in truly malicious ways.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C8-IA32/8.4.3-loops.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">8.4.3. 汇编中的循环</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C8-IA32/8.6-recursion.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">8.6. 递归</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-1-%E8%B7%9F%E8%B8%AA%E4%B8%80%E4%B8%AA%E4%BE%8B%E5%AD%90"><span class="toc-text">8.5.1. 跟踪一个例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8-5-2-%E8%B7%9F%E8%B8%AA-main"><span class="toc-text">8.5.2. 跟踪 main</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

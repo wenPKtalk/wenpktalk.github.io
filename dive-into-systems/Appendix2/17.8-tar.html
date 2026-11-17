@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.8. 归档与压缩文件 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;tar.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.8. Archiving and Compressing File">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.8. 归档与压缩文件 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.8-tar.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;tar.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.8. Archiving and Compressing File">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html" class="current" aria-current="page">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 179 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.8. 归档与压缩文件</h1>
+  
+  
+    <p class="article-meta"><span>约 13 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/tar.html">https://diveintosystems.org/book/Appendix2/tar.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.8. Archiving and Compressing Files</em></p>
+<p><code>tar</code>（tape archive，磁带归档）工具用来把一组文件打包成单个文件（<strong>归档文件</strong>，archive file，或 <strong>tar 文件</strong>）。<code>tar</code> 命令也用来从 tar 文件中解出文件。归档文件（或 tar 文件）包含组成该 tar 文件的所有文件的数据，以及描述其内容的额外元数据。<code>tar</code> 需要这些元数据才能从 tar 文件中解出单个文件。</p>
+<blockquote>
+<p>The <code>tar</code> (tape archive) utility is used to package up a set of files into a single file (an <strong>archive file</strong> or a <strong>tar file</strong>). The <code>tar</code> command is also used to extract the files out of a tar file. An archive file (or tar file) contains all the file data from the files that make up the tar file plus additional meta-data that describe its contents. The meta-data are necessary for <code>tar</code> to extract the individual file(s) out of a tar file.</p>
+</blockquote>
+<p>tar 文件常用来分发一组文件，或者把一组文件从一台机器传到另一台机器。它们也可以用来存放成组文件的备份（文件归档）。例如，如果用户想把一组文件从一个系统传到另一个系统，他会先用 <code>-c</code> 命令行选项运行 <code>tar</code>，创建一个包含所有这些文件的单个 tar 文件，然后用 <code>scp</code> 把得到的 tar 文件传到远程机器上。在远程机器上，他再用 <code>-x</code> 运行 <code>tar</code>，从 tar 文件中解出文件。</p>
+<blockquote>
+<p>Tar files are often used to distribute a set of files or to transfer a set of files from one machine to another. They also may be used to store backups of sets of files (file archives). For example, if a user who wants to transfer a set of files from one system to another, they would first run <code>tar</code> with the <code>-c</code> command line option to create a single tar file containing all of the files, then <code>scp</code> the resulting tar file to the remote machine. On the remote machine they would then run <code>tar</code> with <code>-x</code> to extract files from the tar file.</p>
+</blockquote>
+<p><code>tar</code> 命令有许多命令行选项，可以用不同的方式配置它的行为。<a href="17.8-tar.html">表 1</a> 列出了一些例子。</p>
+<blockquote>
+<p>The <code>tar</code> command has many command line options for configuring its behavior in different ways. <a href="17.8-tar.html">Table 1</a> lists some examples.</p>
+</blockquote>
+<p><strong>表 1.</strong> tar 的命令行选项</p>
+<p><em>Table 1. tar command line options</em></p>
+<table>
+<thead>
+<tr>
+<th>选项</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-c</code></td>
+<td>从一组文件创建一个 tar 文件</td>
+</tr>
+<tr>
+<td><code>-x</code></td>
+<td>解包（即 untar）一个 tar 文件</td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td>列出 tar 文件的内容</td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>详细模式，在运行命令时打印出信息</td>
+</tr>
+<tr>
+<td><code>-f &lt;tar file name&gt;</code></td>
+<td>指定 tar 文件的名字</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Option</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>-c</code></td>
+<td>create a tar file from a set of files</td>
+</tr>
+<tr>
+<td><code>-x</code></td>
+<td>extract, or untar, a tar file</td>
+</tr>
+<tr>
+<td><code>-t</code></td>
+<td>list the contents of a tar file</td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>verbose mode, prints out information as runs command</td>
+</tr>
+<tr>
+<td><code>-f &lt;tar file name&gt;</code></td>
+<td>specifies the name of the tar file</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>要创建 tar 文件，需要使用 <code>-c</code>，用 <code>-f</code> 指定输出 tar 文件的名字，然后给出要包含在 tar 文件中的文件（和目录）列表（目录的全部内容都会被包含进来）。</p>
+<blockquote>
+<p>To create a tar file you need to use <code>-c</code>, specify the name of the tar output file with <code>-f</code> and then give the list of files (and directories) to include in the tar file (full directory contents will be included).</p>
+</blockquote>
+<p>下面是一个例子，展示如何从三个普通文件（<code>main.c</code>、<code>process.c</code>、<code>Makefile</code>）和一个目录的内容（<code>inputfiles/</code>）创建一个 tar 文件：</p>
+<blockquote>
+<p>Here is an example of how to create a tar file from three regular files (<code>main.c</code>, <code>process.c</code>, <code>Makefile</code>) and the contents of a directory (<code>inputfiles/</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tar -c -v -f mytarfile.tar  main.c process.c Makefile intputfiles/</span><br></pre></td></tr></table></figure>
+
+<p><code>-v</code> 是详细输出的命令行选项。它会在 tar 执行时列出被打包的文件的一些信息。</p>
+<blockquote>
+<p><code>-v</code> is the verbose command line option. It lists some information about the files being tar’ed up as tar executes.</p>
+</blockquote>
+<p><code>tar</code> 的命令行选项也可以用另一种更紧凑的语法来指定（你看到的 <code>tar</code> 例子中常常用这种写法）：</p>
+<blockquote>
+<p>The command line options to <code>tar</code> can also be specified using an alternate, more compact, syntax (this is often used in <code>tar</code> examples you see):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ tar -cvf mytarfile.tar  main.c process.c Makefile intputfiles/</span><br><span class="line"></span><br><span class="line">$ tar cvf mytarfile.tar  main.c process.c Makefile intputfiles/</span><br></pre></td></tr></table></figure>
+
+<p>或者，你可以创建一个目录，把想打包的文件复制进去，然后从这个目录生成一个 tar 文件。例如：</p>
+<blockquote>
+<p>Alternatively, you can create a directory and copy the files you want to tar into it, and generate a tar file from that directory. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir mytardir</span><br><span class="line">$ cp *.c mytardir/.</span><br><span class="line">$ cp -r inputfiles mytardir/.</span><br><span class="line">$ tar cvf mytarfile.tar mytardir</span><br></pre></td></tr></table></figure>
+
+<p>要列出 tar 文件中的文件，使用 <code>-t</code> 命令行选项：</p>
+<blockquote>
+<p>To list the files in a tar file, use the <code>-t</code> command line option:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tar -tvf mytarfile.tar</span><br></pre></td></tr></table></figure>
+
+<p>要从 tar 文件中解出文件，使用 <code>-x</code> 命令行选项：</p>
+<blockquote>
+<p>To extract files from a tar file, use the <code>-x</code> command line option:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tar xvf mytarfile.tar</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-8-1-文件压缩"><a href="#17-8-1-文件压缩" class="headerlink" title="17.8.1. 文件压缩"></a>17.8.1. 文件压缩</h3><p><em>17.8.1. file compression</em></p>
+<p>文件压缩常常与 <code>tar</code> 一起使用，以减小 tar 文件的大小。这既能减少存放 tar 文件所需的存储空间，也能在用 <code>scp</code> 把 tar 文件复制到远程机器时减少通过网络发送的数据量。<code>gzip</code> 和 <code>gunzip</code> 用 gzip 压缩算法压缩和解压文件，<code>bzip2</code> 和 <code>bunzip2</code> 用 bzip 压缩算法压缩和解压文件。下面是一些调用示例：</p>
+<blockquote>
+<p>Often times file compression is used along with <code>tar</code> to reduce the size of the tar file. This is useful for both reducing the storage space required for the tar file, and also to reduce the amount of data that are sent over the network when a tar file is copied to a remote machine using <code>scp</code>. The <code>gzip</code> and <code>gunzip</code> are used to compress and uncompress a file using gzip compression, and <code>bzip2</code> and <code>bunzip2</code> are used to compress and uncompress a file using bzip compression. Here are some example calls:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l</span><br><span class="line">-rw-r--r-- 1 sarita users 40840 Apr 12 16:55 file</span><br><span class="line"></span><br><span class="line">$ gzip file        # compress using gzip</span><br><span class="line">$ ls -l</span><br><span class="line">-rw-r--r-- 1 sarita users 13258 Apr 12 16:55 file.gz</span><br><span class="line"></span><br><span class="line">$ gunzip file.gz   # uncompress a gziped file</span><br><span class="line">$ ls -l</span><br><span class="line">-rw-r--r-- 1 sarita users 40840 Apr 12 16:55 file</span><br><span class="line"></span><br><span class="line">$ bzip2 file        # compress using bzip2</span><br><span class="line">$ ls -l</span><br><span class="line">-rw-r--r-- 1 sarita users 12568 Apr 12 16:55 file.bz2</span><br><span class="line"></span><br><span class="line">$ bunzip2 file.bz2   # uncompress a bzip2ed file</span><br><span class="line">$ ls -l</span><br><span class="line">-rw-r--r-- 1 sarita users 40840 Apr 12 16:55 file</span><br></pre></td></tr></table></figure>
+
+<h4 id="tar-与文件压缩"><a href="#tar-与文件压缩" class="headerlink" title="tar 与文件压缩"></a>tar 与文件压缩</h4><p><em>tar and file compression</em></p>
+<p>文件压缩常常用在 tar 文件上。用户可以在 <code>tar</code> 创建 tar 文件之后再对它运行文件压缩工具，并在运行 <code>tar</code> 从 tar 文件中解出文件之前先运行工具解压它。不过，由于文件压缩与 tar 文件一起使用得非常普遍，<code>tar</code> 有一些命令行选项，可以用不同的压缩算法创建压缩的 tar 文件（以及从压缩的 tar 文件中解出文件）（例如，<code>-j</code> 使用 <code>bzip2</code>，<code>-z</code> 使用 gzip）。</p>
+<blockquote>
+<p>File compression is often used on tar files. A user can run file compression utilities on a tar file after <code>tar</code> creates it and run utilities to uncompress the tar file before running <code>tar</code> to extract files from the tar file. However, because file compression is so commonly used with tar files, <code>tar</code> has command line options to create compressed tar files (and to extract files from compressed tar files) using different compression algorithms (for example, <code>-j</code> uses <code>bzip2</code>, and <code>-z</code> uses gzip).</p>
+</blockquote>
+<p>下面是给 <code>tar</code> 加上 <code>-z</code> 选项（使用 gzip）或 <code>-j</code> 选项（使用 bzip）一步完成 tar 文件压缩的一些例子：</p>
+<blockquote>
+<p>Here are some examples of compressing the tar file in one step using the <code>-z</code> option to gzip or <code>-j</code> option for bzip: to <code>tar</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"># use -z option to compress tar file using gzip:</span><br><span class="line">$ tar -czvf myproj.tar.gz myproj/</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar.gz</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># or use -j option to compress tar file using bzip2:</span><br><span class="line">$ tar -cjvf myproj.tar.bz2 myproj/</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar.bz2</span><br></pre></td></tr></table></figure>
+
+<p>或者，下面是把创建 tar 文件和压缩分成两步的例子（先创建 tar 文件，再用 <code>gzip</code>（或 <code>bzip2</code>）压缩）：</p>
+<blockquote>
+<p>Alternatively, here is an example of separating the tar file creation and compression into two steps (create tar file, then compress using <code>gzip</code> (or <code>bzip2</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">$ tar cvf myproj.tar myproj/   # create a tar file from myproj</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar</span><br><span class="line"></span><br><span class="line">$ gzip myproj.tar     # gzip the tar file</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar.gz</span><br><span class="line"></span><br><span class="line"># OR could use bzip</span><br><span class="line">$ bzip2 myproj.tar     # bzip the tar file</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar.bz2</span><br></pre></td></tr></table></figure>
+
+<p>你也可以用一步法或两步法从压缩的 tar 文件中解出文件。例如，下面是一步完成的方法（<code>-z</code> 指定先用 gzip 解压文件）：</p>
+<blockquote>
+<p>You can also use the one-step or two-step method to extract files from a compressed tar file. For example, here is the single step way (<code>-z</code> specifies to uncompress the file first using gzip):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ tar -xzvf myproj.tar.gz</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>或者，下面是从压缩的 tar 文件中解出文件的两步法（先用 gunzip 或 bunzip2 解压，再 untar）：</p>
+<blockquote>
+<p>Alternatively, here is the two-step method to extract files from a compressed tar file (first uncompress with gunzip or bunzip2, then untar):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line">  myproj.tar.gz</span><br><span class="line">$ gunzip myproj.tar.gz</span><br><span class="line">$ ls</span><br><span class="line">  myproj.tar</span><br><span class="line">$ tar -xvf myproj.tar</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># or using bunzip2 for bzip&#x27;ed file</span><br><span class="line">$ ls</span><br><span class="line">  myproj.tar.bz2</span><br><span class="line">$ bunzip myproj.tar.bz2</span><br><span class="line">$ ls</span><br><span class="line">  myproj.tar</span><br><span class="line">$ tar -xvf myproj.tar</span><br><span class="line">$ ls</span><br><span class="line">  myproj/ myproj.tar</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-8-2-综合运用"><a href="#17-8-2-综合运用" class="headerlink" title="17.8.2. 综合运用"></a>17.8.2. 综合运用</h3><p><em>17.8.2. putting it all together</em></p>
+<p>下面的例子展示了如何用 <code>tar</code> 把一个目录的内容从一台机器（<code>laptop</code>）传到一台远程机器（<code>ada.cs.college.edu</code>）。它用 <code>scp</code> 命令在两台机器之间远程复制文件（关于 <code>scp</code> 的更多信息，参见<a href="17.3-ssh_scp.html">第 17.3 节</a>）。</p>
+<blockquote>
+<p>Below is an example of using <code>tar</code> to transfer a directory’s contents from one machine (<code>laptop</code>) to a remote machine (<code>ada.cs.college.edu</code>). It uses the <code>scp</code> command to remotely copy the file between the two machines (see <a href="17.3-ssh_scp.html">Section 17.3</a> for more information about <code>scp</code>).</p>
+</blockquote>
+<ol>
+<li>首先，用户在 <code>laptop</code> 上创建压缩的 tar 文件（注意：我们用两步法来创建并压缩 tar 文件，是为了展示 tar 文件中文件的列表，但压缩的 tar 文件也可以用 <code>-cjvf</code> 命令行选项一步创建出来）： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">laptop$  ls myproj/</span><br><span class="line">  Makefile input1.txt input2.txt main.c mux.c mux.h</span><br><span class="line"></span><br><span class="line">laptop$  tar -cvf myproj.tar myproj/   # create a tar file from myproj</span><br><span class="line">laptop$  ls</span><br><span class="line">  myproj/ myproj.tar</span><br><span class="line"></span><br><span class="line">laptop$  tar -tf myproj.tar            # list tar file contents</span><br><span class="line">   myproj/</span><br><span class="line">   myproj/Makefile</span><br><span class="line">   myproj/input1.txt</span><br><span class="line">   myproj/input2.txt</span><br><span class="line">   myproj/main.c</span><br><span class="line">   myproj/mux.c</span><br><span class="line">   myproj/mux.h</span><br><span class="line"></span><br><span class="line">laptop$ gzip myproj.tar              # compress the file</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol>
+<li><p>First, the user creates the compressed tar file on <code>laptop</code> (note: we show the two-step method to create and compress the tar file in order to show the listing of the files in the tar file, but the compressed tar file could also be created in one-step using the <code>-cjvf</code> command line options):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">laptop$  ls myproj/</span><br><span class="line">  Makefile input1.txt input2.txt main.c mux.c mux.h</span><br><span class="line"></span><br><span class="line">laptop$  tar -cvf myproj.tar myproj/   # create a tar file from myproj</span><br><span class="line">laptop$  ls</span><br><span class="line">  myproj/ myproj.tar</span><br><span class="line"></span><br><span class="line">laptop$  tar -tf myproj.tar            # list tar file contents</span><br><span class="line">   myproj/</span><br><span class="line">   myproj/Makefile</span><br><span class="line">   myproj/input1.txt</span><br><span class="line">   myproj/input2.txt</span><br><span class="line">   myproj/main.c</span><br><span class="line">   myproj/mux.c</span><br><span class="line">   myproj/mux.h</span><br><span class="line"></span><br><span class="line">laptop$ gzip myproj.tar              # compress the file</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>然后，他用 scp 把这个单个的 tar 文件传到远程机器上： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">laptop$ scp myproj.tar sam@ada.cs.college.edu:.   # scp single tar file</span><br><span class="line">  sam@ada.cs.college.edu&#x27;s password:</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><p>Then, they scp the single tar file to the remote machine:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">laptop$ scp myproj.tar sam@ada.cs.college.edu:.   # scp single tar file</span><br><span class="line">  sam@ada.cs.college.edu&#x27;s password:</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>然后，用户可以 <code>ssh</code> 登录到远程机器，并对 <code>myproj.tar</code> 文件 untar 以解出文件： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">laptop$ ssh sam@ada.cs.college.edu</span><br><span class="line">  sam@ada.cs.college.edu&#x27;s password:</span><br><span class="line"></span><br><span class="line">ada$ ls</span><br><span class="line"> classes/ letters/  myproj.tar projects/</span><br><span class="line"></span><br><span class="line">ada$ tar -xjvf myproj.tar          # extract contents of tar file</span><br><span class="line"></span><br><span class="line">ada$ ls</span><br><span class="line"> classes/ letters/  myproj/  myproj.tar projects/</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="3">
+<li><p>Then the user can then <code>ssh</code> into the remote machine, and untar the <code>myproj.tar</code> file to extract the files:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">laptop$ ssh sam@ada.cs.college.edu</span><br><span class="line">  sam@ada.cs.college.edu&#x27;s password:</span><br><span class="line"></span><br><span class="line">ada$ ls</span><br><span class="line"> classes/ letters/  myproj.tar projects/</span><br><span class="line"></span><br><span class="line">ada$ tar -xjvf myproj.tar          # extract contents of tar file</span><br><span class="line"></span><br><span class="line">ada$ ls</span><br><span class="line"> classes/ letters/  myproj/  myproj.tar projects/</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 文件名与压缩选项前后不一致</p><p>第 1 步最后执行的是 <code>gzip myproj.tar</code>，它会把文件变成 <code>myproj.tar.gz</code>（gzip 格式），原来的 <code>myproj.tar</code> 就不存在了。所以第 2 步应当传送 <code>myproj.tar.gz</code>，第 3 步应当用对应 gzip 的 <code>-z</code> 选项解包：<code>tar -xzvf myproj.tar.gz</code>。书中第 3 步用的 <code>-j</code> 对应的是 bzip2；同理，第 1 步括号中提到的一步法若要与这里一致，应使用 <code>-czvf</code>。</p>
+</div>
+<p>如果用户想把目录 untar 到主目录以外的某个地方，可以用 <code>mv</code> 把目录移到想要的位置（或者也可以在 untar 之前先把 tar 文件移到想要的位置）。例如，把它移到 <code>project</code> 目录下作为子目录：</p>
+<blockquote>
+<p>If the user wanted to untar the directory somewhere other than in their home directory, they could use <code>mv</code> to move the directory where they want (or they could have also moved the tar file to where they want it before untaring it). For example, to move it as a subdirectory under the <code>project</code> directory:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">ada$ ls</span><br><span class="line">   classes/ letters/  myproj/  myproj.tar projects/</span><br><span class="line">ada$ mv myproj project/.</span><br><span class="line">ada$ ls</span><br><span class="line">   classes/ letters/  myproj.tar projects/</span><br><span class="line">ada$ cd project</span><br><span class="line">ada$ ls</span><br><span class="line">   myproj/</span><br></pre></td></tr></table></figure>
+
+<p>untar 一个 tar 文件之后，用户常常会删除那个 <code>.tar</code> 文件：</p>
+<blockquote>
+<p>Often after untaring a tar file, the user removes the <code>.tar</code> file:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm myproj.tar</span><br><span class="line">ls</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-8-3-参考资料"><a href="#17-8-3-参考资料" class="headerlink" title="17.8.3. 参考资料"></a>17.8.3. 参考资料</h3><p><em>17.8.3. References</em></p>
+<p>更多信息参见：</p>
+<blockquote>
+<p>For more information see:</p>
+</blockquote>
+<ul>
+<li>这些命令的手册页（例如 <code>man tar</code>、<code>man gunzip</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>The man pages for these commands (e.g., <code>man tar</code>, <code>man gunzip</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>cheat-sheets.org 上的<a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">最常用的 Unix 命令</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">most used Unix commands</a> from cheat-sheets.org</li>
+</ul>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash 参考手册</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash Reference Manual</a> from gnu.org.</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.7-chmod.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17.7. 查看与修改文件权限</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.9-pskill.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.9. 进程控制</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-8-1-%E6%96%87%E4%BB%B6%E5%8E%8B%E7%BC%A9"><span class="toc-text">17.8.1. 文件压缩</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-8-2-%E7%BB%BC%E5%90%88%E8%BF%90%E7%94%A8"><span class="toc-text">17.8.2. 综合运用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-8-3-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.8.3. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

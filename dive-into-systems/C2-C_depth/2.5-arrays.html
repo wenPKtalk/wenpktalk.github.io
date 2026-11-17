@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.5. C 中的数组 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;arrays.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.5. Arrays in C 在上一章中，我们介绍了静态声明">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2.5. C 中的数组 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/2.5-arrays.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;arrays.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.5. Arrays in C 在上一章中，我们介绍了静态声明">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/images/matrix.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/images/2Dmem.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/images/2Donemalloc.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/images/2Dnmallocs.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/images/matrix.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html" class="current" aria-current="page">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>2. 深入 C 语言编程</span>
+      </nav>
+      <span class="book-position">第 21 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">2.5. C 中的数组</h1>
+  
+  
+    <p class="article-meta"><span>约 29 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/arrays.html">https://diveintosystems.org/book/C2-C_depth/arrays.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>2.5. Arrays in C</em></p>
+<p>在<a href="../C1-C_intro/1.5-arrays_strings.html">上一章</a>中，我们介绍了静态声明的一维 C 数组，并讨论了把数组传给函数的语义。在本章的<a href="2.2-pointers.html">动态内存分配一节</a>中，我们介绍了动态分配的一维数组，并讨论了把它们传给函数的语义。</p>
+<blockquote>
+<p>In the <a href="../C1-C_intro/1.5-arrays_strings.html">previous chapter</a> we introduced statically declared one-dimensional C arrays and discussed the semantics of passing arrays to functions. In the <a href="2.2-pointers.html">dynamic memory allocation section</a> of this chapter, we introduced dynamically allocated one dimensional arrays and discussed the semantics of passing them to functions.</p>
+</blockquote>
+<p>本节更深入地探讨 C 中的数组。我们会更详细地介绍静态分配和动态分配的数组，并讨论二维数组。</p>
+<blockquote>
+<p>In this section, we take a more in-depth look at arrays in C. We describe both statically and dynamically allocated arrays in more detail and discuss two-dimensional arrays.</p>
+</blockquote>
+<h3 id="2-5-1-一维数组"><a href="#2-5-1-一维数组" class="headerlink" title="2.5.1. 一维数组"></a>2.5.1. 一维数组</h3><p><em>2.5.1. Single-Dimensional Arrays</em></p>
+<h4 id="静态分配"><a href="#静态分配" class="headerlink" title="静态分配"></a>静态分配</h4><p><em>Statically Allocated</em></p>
+<p>在进入新内容之前，我们先用一个例子简要回顾一下静态数组。关于静态声明的一维数组的更多细节，请参见<a href="../C1-C_intro/1.5-arrays_strings.html">上一章</a>。</p>
+<blockquote>
+<p>Before jumping into new content, we briefly summarize static arrays with an example. See the <a href="../C1-C_intro/1.5-arrays_strings.html">previous chapter</a> for more detail on statically declared one-dimensional arrays.</p>
+</blockquote>
+<p>静态声明的数组要么分配在栈上（局部变量），要么分配在内存的数据区（全局变量）。程序员可以通过指定数组变量的类型（每个下标处存放的类型）和总容量（元素个数）来声明它。</p>
+<blockquote>
+<p>Statically declared arrays are allocated either on the stack (for local variables) or in the data region of memory (for global variables). A programmer can declare an array variable by specifying its type (the type stored at each index) and its total capacity (number of elements).</p>
+</blockquote>
+<p>把数组传给函数时，C 把基地址的值复制给形参。也就是说，形参和实参都指向同一组内存位置——形参指针指向内存中实参数组的元素。因此，通过数组形参修改数组中存放的值，会修改实参数组中存放的值。</p>
+<blockquote>
+<p>When passing an array to a function, C copies the value of the base address to the parameter. That is, both the parameter and the argument refer to the same memory locations — the parameter pointer points to the argument’s array elements in memory. As a result, modifying the values stored in the array through an array parameter modifies the values stored in the argument array.</p>
+</blockquote>
+<p>下面是一些静态数组声明和使用的例子：</p>
+<blockquote>
+<p>Here are some examples of static array declaration and use:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// declare arrays specifying their type and total capacity</span><br><span class="line">float averages[30];   // array of float, 30 elements</span><br><span class="line">char  name[20];       // array of char, 20 elements</span><br><span class="line">int i;</span><br><span class="line"></span><br><span class="line">// access array elements</span><br><span class="line">for (i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">    averages[i] = 0.0 + i;</span><br><span class="line">    name[i] = &#x27;a&#x27; + i;</span><br><span class="line">&#125;</span><br><span class="line">name[10] = &#x27;\0&#x27;;    // name is being used for storing a C-style string</span><br><span class="line"></span><br><span class="line">// prints: 3 d abcdefghij</span><br><span class="line">printf(&quot;%g %c %s\n&quot;, averages[3], name[3], name);</span><br><span class="line"></span><br><span class="line">strcpy(name, &quot;Hello&quot;);</span><br><span class="line">printf(&quot;%s\n&quot;, name);  // prints: Hello</span><br></pre></td></tr></table></figure>
+
+<h4 id="动态分配"><a href="#动态分配" class="headerlink" title="动态分配"></a>动态分配</h4><p><em>Dynamically Allocated</em></p>
+<p>在本章的<a href="2.2-pointers.html">动态内存分配一节</a>中，我们介绍了动态分配的一维数组，包括它们的访问语法，以及把动态分配数组传给函数的语法和语义。这里我们用一个例子简短地回顾一下这些内容。</p>
+<blockquote>
+<p>In the <a href="2.2-pointers.html">Dynamic Memory Allocation section</a> of this chapter, we introduced dynamically allocated one-dimensional arrays, including their access syntax and the syntax and semantics of passing dynamically allocated arrays to functions. Here, we present a short recap of that information with an example.</p>
+</blockquote>
+<p>调用 <code>malloc</code> 函数会在运行时于堆上动态分配一个数组。分配到的堆空间的地址可以赋给一个全局或局部指针变量，该指针于是指向数组的第一个元素。要动态分配空间，就把要为数组分配的总字节数传给 <code>malloc</code>（用 <code>sizeof</code> 运算符获取特定类型的大小）。一次 <code>malloc</code> 调用会分配一块所申请大小的连续堆空间。例如：</p>
+<blockquote>
+<p>Calling the <code>malloc</code> function dynamically allocates an array on the heap at runtime. The address of the allocated heap space can be assigned to a global or local pointer variable, which then points to the first element of the array. To dynamically allocate space, pass <code>malloc</code> the total number of bytes to allocate for the array (using the <code>sizeof</code> operator to get the size of a specific type). A single call to <code>malloc</code> allocates a contiguous chunk of heap space of the requested size. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">// declare a pointer variable to point to allocated heap space</span><br><span class="line">int    *p_array;</span><br><span class="line">double *d_array;</span><br><span class="line"></span><br><span class="line">// call malloc to allocate the appropriate number of bytes for the array</span><br><span class="line"></span><br><span class="line">p_array = malloc(sizeof(int) * 50);      // allocate 50 ints</span><br><span class="line">d_array = malloc(sizeof(double) * 100);  // allocate 100 doubles</span><br><span class="line"></span><br><span class="line">// always CHECK RETURN VALUE of functions and HANDLE ERROR return values</span><br><span class="line">if ( (p_array == NULL) || (d_array == NULL) ) &#123;</span><br><span class="line">    printf(&quot;ERROR: malloc failed!\n&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// use [] notation to access array elements</span><br><span class="line">for (i = 0; i &lt; 50; i++) &#123;</span><br><span class="line">    p_array[i] = 0;</span><br><span class="line">    d_array[i] = 0.0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// free heap space when done using it</span><br><span class="line">free(p_array);</span><br><span class="line">p_array = NULL;</span><br><span class="line"></span><br><span class="line">free(d_array);</span><br><span class="line">d_array = NULL;</span><br></pre></td></tr></table></figure>
+
+<h4 id="数组的内存布局"><a href="#数组的内存布局" class="headerlink" title="数组的内存布局"></a>数组的内存布局</h4><p><em>Array Memory Layout</em></p>
+<p>无论数组是静态声明的，还是通过一次 <code>malloc</code> 调用动态分配的，数组元素都占据连续的内存位置（地址）：</p>
+<blockquote>
+<p>Whether an array is statically declared or dynamically allocated via a single call to <code>malloc</code>, array elements represent contiguous memory locations (addresses):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">array [0]:  base address</span><br><span class="line">array [1]:  next address</span><br><span class="line">array [2]:  next address</span><br><span class="line">  ...            ...</span><br><span class="line">array [99]: last address</span><br></pre></td></tr></table></figure>
+
+<p>元素 <code>i</code> 位于相对于数组基地址偏移 <code>i</code> 处。第 i 个元素的确切地址取决于数组中所存类型的字节数。例如，看下面的数组声明：</p>
+<blockquote>
+<p>The location of element <code>i</code> is at an offset <code>i</code> from the base address of the array. The exact address of the ith element depends on the number of bytes of the type stored in the array. For example, consider the following array declarations:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int  iarray[6];  // an array of six ints, each of which is four bytes</span><br><span class="line">char carray[4];  // an array of four chars, each of which is one byte</span><br></pre></td></tr></table></figure>
+
+<p>它们各个数组元素的地址可能是这样的：</p>
+<blockquote>
+<p>The addresses of their individual array elements might look something like this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">addr   element</span><br><span class="line">----   -------</span><br><span class="line">1230:  iarray[0]</span><br><span class="line">1234:  iarray[1]</span><br><span class="line">1238:  iarray[2]</span><br><span class="line">1242:  iarray[3]</span><br><span class="line">1246:  iarray[4]</span><br><span class="line">1250:  iarray[5]</span><br><span class="line">    ...</span><br><span class="line">1280:  carray[0]</span><br><span class="line">1281:  carray[1]</span><br><span class="line">1282:  carray[2]</span><br><span class="line">1283:  carray[3]</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，<code>1230</code> 是 <code>iarray</code> 的基地址，<code>1280</code> 是 <code>carray</code> 的基地址。注意每个数组的各个元素都被分配在连续的内存地址上：<code>iarray</code> 的每个元素存放一个 4 字节的 <code>int</code> 值，所以其元素地址相差 4；<code>carray</code> 的每个元素存放一个 1 字节的 <code>char</code> 值，所以其地址相差 1。并不保证这组局部变量在栈上被分配到连续的内存位置（因此，如本例所示，<code>iarray</code> 的末尾与 <code>carray</code> 的开头之间可能有一段地址空隙）。</p>
+<blockquote>
+<p>In this example, <code>1230</code> is the base address of <code>iarray</code> and <code>1280</code> the base address of <code>carray</code>. Note that individual elements of each array are allocated to contiguous memory addresses: each element of <code>iarray</code> stores a 4-byte <code>int</code> value, so its element addresses differ by 4, and each element of <code>carray</code> stores a 1-byte <code>char</code> value, so its addresses differ by 1. There is no guarantee that the set of local variables are allocated to contiguous memory locations on the stack (hence, there could be a gap in the addresses between the end of <code>iarray</code> and the start of <code>carray</code>, as shown in this example.)</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注</p><p>定义数组的总容量时，人们常用常量而不是字面数值。常量是 C 字面值的别名，用常量代替字面值能让代码更易读，也更便于修改。关于如何定义和使用 C 常量，请参见 <a href="2.9.1-advanced_switch.html">C 常量</a>。</p>
+<p>下面是一个定义常量（<code>N</code>）并用它作为数组维度的例子：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#define N   20</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">  int array[N];   // an array of 20 ints</span><br><span class="line">  int *d_arr, i;</span><br><span class="line"></span><br><span class="line">  // dynamically alloc array of 20 ints</span><br><span class="line">  d_arr = malloc(sizeof(int)*N);</span><br><span class="line">  if(d_arr == NULL) &#123;</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  for(i=0; i &lt; N; i++) &#123;</span><br><span class="line">    array[i] = i;</span><br><span class="line">    d_arr[i] = i*2;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Constants are often used when defining the total capacity of an array rather than using a literal numeric value. Constants are aliases for C literal values, and are used instead of literals to make the code easier to read and to allow for it to be more easily updated. See <a href="2.9.1-advanced_switch.html">C Constants</a> to learn more about defining and using C constants.</p>
+<p>Here is an example defining and using a constant (<code>N</code>) for the dimension of the arrays:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">#define N   20</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">  int array[N];   // an array of 20 ints</span><br><span class="line">  int *d_arr, i;</span><br><span class="line"></span><br><span class="line">  // dynamically alloc array of 20 ints</span><br><span class="line">  d_arr = malloc(sizeof(int)*N);</span><br><span class="line">  if(d_arr == NULL) &#123;</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  for(i=0; i &lt; N; i++) &#123;</span><br><span class="line">    array[i] = i;</span><br><span class="line">    d_arr[i] = i*2;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</blockquote>
+</div>
+<h3 id="2-5-2-二维数组"><a href="#2-5-2-二维数组" class="headerlink" title="2.5.2. 二维数组"></a>2.5.2. 二维数组</h3><p><em>2.5.2. Two-Dimensional Arrays</em></p>
+<p>C 支持多维数组，但我们只讨论二维（2D）数组，因为一维和二维数组是 C 程序员最常用的。</p>
+<blockquote>
+<p>C supports multidimensional arrays, but we limit our discussion of multidimensional arrays to two-dimensional (2D) arrays, since 1D and 2D arrays are the most commonly used by C programmers.</p>
+</blockquote>
+<h4 id="静态分配的二维数组"><a href="#静态分配的二维数组" class="headerlink" title="静态分配的二维数组"></a>静态分配的二维数组</h4><p><em>Statically Allocated 2D Arrays</em></p>
+<p>要静态声明一个多维数组变量，需要指定每一维的大小。例如：</p>
+<blockquote>
+<p>To statically declare a multidimensional array variable, specify the size of each dimension. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int   matrix[50][100];</span><br><span class="line">short little[10][10];</span><br></pre></td></tr></table></figure>
+
+<p>这里 <code>matrix</code> 是一个 50 行 100 列的 <code>int</code> 二维数组，<code>little</code> 是一个 10 行 10 列的 <code>short</code> 二维数组。</p>
+<blockquote>
+<p>Here, <code>matrix</code> is a 2D array of <code>int</code> values with 50 rows and 100 columns, and <code>little</code> is a 2D array of <code>short</code> values with 10 rows and 10 columns.</p>
+</blockquote>
+<p>要访问单个元素，需要同时给出行下标和列下标：</p>
+<blockquote>
+<p>To access an individual element, indicate both the row and the column index:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int   val;</span><br><span class="line">short num;</span><br><span class="line"></span><br><span class="line">val = matrix[3][7];  // get int value in row 3, column 7 of matrix</span><br><span class="line">num = little[8][4];  // get short value in row 8, column 4 of little</span><br></pre></td></tr></table></figure>
+
+<p><a href="2.5-arrays.html">图 1</a> 把二维数组画成一个整数值矩阵，二维数组中的某个特定元素由行下标和列下标确定。</p>
+<blockquote>
+<p><a href="2.5-arrays.html">Figure 1</a> illustrates the 2D array as a matrix of integer values, where a specific element in the 2D array is indexed by row and column index values.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C2-C_depth/images/matrix.png" alt="Accessing matrix[2][3] is like indexing into a grid at row 2 and column 3."></p>
+<p><strong>图 1.</strong> 表示为矩阵的二维数组。访问 matrix[2][3] 就像在网格中取第 2 行第 3 列的格子。</p>
+<p><em>Figure 1. A two-dimensional array represented as a matrix. Accessing matrix[2][3] is like indexing into a grid at row 2 and column 3.</em></p>
+<p>程序常用嵌套循环遍历二维数组的元素。例如，下面的嵌套循环把 <code>matrix</code> 中的所有元素初始化为 0：</p>
+<blockquote>
+<p>Programs often access the elements of a 2D array by iterating with nested loops. For example, the following nested loop initializes all elements in <code>matrix</code> to 0:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int i, j;</span><br><span class="line"></span><br><span class="line">for (i = 0; i &lt; 50; i++) &#123;  // for each row i</span><br><span class="line">    for (j = 0; j &lt; 100; j++) &#123; // iterate over each column element in row i</span><br><span class="line">        matrix[i][j] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="二维数组参数"><a href="#二维数组参数" class="headerlink" title="二维数组参数"></a>二维数组参数</h4><p><em>Two-Dimensional Array Parameters</em></p>
+<p>把一维数组实参传给函数的规则同样适用于二维数组实参：形参得到的是二维数组基地址的值（<code>&amp;arr[0][0]</code>）。换句话说，形参指向实参的数组元素，因此函数可以修改传入数组中存放的值。</p>
+<blockquote>
+<p>The same rules for passing one-dimensional array arguments to functions apply to passing two-dimensional array arguments: the parameter gets the value of the base address of the 2D array (<code>&amp;arr[0][0]</code>). In other words, the parameter points to the argument’s array elements and therefore the function can change values stored in the passed array.</p>
+</blockquote>
+<p>对于多维数组形参，你必须指明形参是一个多维数组，但可以不指定第一维的大小（这样设计更通用）。其他各维的大小必须完整指定，以便编译器生成正确的数组偏移量。下面是一个二维的例子：</p>
+<blockquote>
+<p>For multidimensional array parameters, you must indicate that the parameter is a multidimensional array, but you can leave the size of the first dimension unspecified (for good generic design). The sizes of other dimensions must be fully specified so that the compiler can generate the correct offsets into the array. Here’s a 2D example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">// a C constant definition: COLS is defined to be the value 100</span><br><span class="line">#define COLS  (100)</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> * init_matrix: initializes the passed matrix elements to the</span><br><span class="line"> *              product of their index values</span><br><span class="line"> *   m: a 2D array (the column dimension must be 100)</span><br><span class="line"> *   rows: the number of rows in the matrix</span><br><span class="line"> *   return: does not return a value</span><br><span class="line"> */</span><br><span class="line">void init_matrix(int m[][COLS], int rows) &#123;</span><br><span class="line">    int i, j;</span><br><span class="line">    for (i = 0; i &lt; rows; i++) &#123;</span><br><span class="line">        for (j = 0; j &lt; COLS; j++) &#123;</span><br><span class="line">            m[i][j] = i*j;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int matrix[50][COLS];</span><br><span class="line">    int bigger[90][COLS];</span><br><span class="line"></span><br><span class="line">    init_matrix(matrix, 50);</span><br><span class="line">    init_matrix(bigger, 90);</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><code>matrix</code> 和 <code>bigger</code> 两个数组都可以作为实参传给 <code>init_matrix</code> 函数，因为它们的列维度与形参定义中的相同。</p>
+<blockquote>
+<p>Both the <code>matrix</code> and the <code>bigger</code> arrays can be passed as arguments to the <code>init_matrix</code> function because they have the same column dimension as the parameter definition.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注</p><p>二维数组的形参定义中必须指定列维度，这样编译器才能计算从二维数组基地址到某一行元素起始处的偏移量。这一偏移量的计算方式取决于二维数组在内存中的布局。</p>
+<blockquote>
+<p>The column dimension must be specified in the parameter definition of a 2D array so that the compiler can calculate the offset from the base address of the 2D array to the start of a particular row of elements. The offset calculation follows from the layout of 2D arrays in memory.</p>
+</blockquote>
+</div>
+<h4 id="二维数组的内存布局"><a href="#二维数组的内存布局" class="headerlink" title="二维数组的内存布局"></a>二维数组的内存布局</h4><p><em>Two-Dimensional Array Memory Layout</em></p>
+<p>静态分配的二维数组在内存中按<strong>行主序</strong>（row-major order）排列，即第 0 行的所有元素在最前面，接着是第 1 行的所有元素，依此类推。例如，对于下面这个二维整数数组的声明：</p>
+<blockquote>
+<p>Statically allocated 2D arrays are arranged in memory in <strong>row-major order</strong>, meaning that all of row 0’s elements come first, followed by all of row 1’s elements, and so on. For example, given the following declaration of a 2D array of integers:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int arr[3][4];  // int array with 3 rows and 4 columns</span><br></pre></td></tr></table></figure>
+
+<p>它在内存中的布局可能如<a href="2.5-arrays.html">图 2</a> 所示。</p>
+<blockquote>
+<p>its layout in memory might look like <a href="2.5-arrays.html">Figure 2</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C2-C_depth/images/2Dmem.png" alt="Declaring an array as &quot;int arr[3][4]&quot; yields three rows, each of which has four elements. Row 0 consists of arr[0][0], arr[0][1], arr[0][2], and arr[0][3]. Row 1 consists of arr[1][0], arr[1][1], etc."></p>
+<p><strong>图 2.</strong> 按行主序排列的二维数组布局。</p>
+<p><em>Figure 2. The layout of a two-dimensional array in row-major order.</em></p>
+<p>注意，所有数组元素都被分配在连续的内存地址上。也就是说，二维数组的基地址就是 <code>[0][0]</code> 元素的内存地址（<code>&amp;arr[0][0]</code>），后续元素按行主序连续存放（例如，第 1 行整行之后紧跟着第 2 行整行，依此类推）。</p>
+<blockquote>
+<p>Note that all array elements are allocated to contiguous memory addresses. That is, the base address of the 2D array is the memory address of the <code>[0][0]</code> element (<code>&amp;arr[0][0]</code>), and subsequent elements are stored contiguously in row-major order (e.g., the entirety of row 1 is followed immediately by the entirety of row 2, and so on).</p>
+</blockquote>
+<h4 id="动态分配的二维数组"><a href="#动态分配的二维数组" class="headerlink" title="动态分配的二维数组"></a>动态分配的二维数组</h4><p><em>Dynamically Allocated 2D Arrays</em></p>
+<p>动态分配二维数组有两种方法。对于一个 <em>N</em>x<em>M</em> 的二维数组，可以：</p>
+<blockquote>
+<p>Dynamically allocated 2D arrays can be allocated in two ways. For an <em>N</em>x<em>M</em> 2D array, either:</p>
+</blockquote>
+<ol>
+<li>调用一次 <code>malloc</code>，分配一大块堆空间来存放全部 <em>N</em>x<em>M</em> 个数组元素。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Make a single call to <code>malloc</code>, allocating one large chunk of heap space to store all <em>N</em>x<em>M</em> array elements.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>多次调用 <code>malloc</code>，分配一个「数组的数组」。首先分配一个由 <em>N</em> 个指向元素类型的指针组成的一维数组，二维数组的每一行对应其中一个指针。然后分配 <em>N</em> 个大小为 <em>M</em> 的一维数组，分别存放二维数组每一行的各列值。把这 <em>N</em> 个数组各自的地址赋给第一个数组中的 <em>N</em> 个指针元素。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Make multiple calls to <code>malloc</code>, allocating an array of arrays. First, allocate a 1D array of <em>N</em> pointers to the element type, with a 1D array of pointers for each row in the 2D array. Then, allocate <em>N</em> 1D arrays of size <em>M</em> to store the set of column values for each row in the 2D array. Assign the addresses of each of these <em>N</em> arrays to the elements of the first array of <em>N</em> pointers.</li>
+</ol>
+</blockquote>
+<p>程序员选用哪种方法，变量声明、分配代码和访问数组元素的语法都会随之不同。</p>
+<blockquote>
+<p>The variable declarations, allocation code, and array element access syntax differ depending on which of these two methods a programmer chooses to use.</p>
+</blockquote>
+<h4 id="方法-1：节省内存的分配方式"><a href="#方法-1：节省内存的分配方式" class="headerlink" title="方法 1：节省内存的分配方式"></a>方法 1：节省内存的分配方式</h4><p><em>Method 1: Memory-Efficient Allocation</em></p>
+<p>在这种方法中，一次 <code>malloc</code> 调用就分配存放 <em>N</em>x<em>M</em> 个值所需的全部字节。这种方法的好处是更节省内存，因为全部 <em>N</em>x<em>M</em> 个元素的空间被一次性地分配在连续的内存位置上。</p>
+<blockquote>
+<p>In this method, a single call to <code>malloc</code> allocates the total number of bytes needed to store the <em>N</em>x<em>M</em> array of values. This method has the benefit of being more memory efficient because the entire space for all <em>N</em>x<em>M</em> elements will be allocated at once, in contiguous memory locations.</p>
+</blockquote>
+<p><code>malloc</code> 调用返回所分配空间的起始地址（数组的基地址），它（与一维数组一样）应当存放在一个指针变量中。实际上，用这种方法分配一维数组还是二维数组，在语义上没有任何区别：<code>malloc</code> 调用返回的是一块所申请字节数的连续堆内存的起始地址。由于用这种方法分配二维数组看起来与分配一维数组完全一样，程序员必须自己在这块单一的堆内存空间之上显式地映射二维的行列下标（编译器没有隐含的行或列的概念，因此无法把双下标语法解释为对这块 malloc 空间的访问）。</p>
+<blockquote>
+<p>The call to <code>malloc</code> returns the starting address of the allocated space (the base address of the array), which (like a 1D array) should be stored in a pointer variable. In fact, there is no semantic difference between allocating a 1D or 2D array using this method: the call to <code>malloc</code> returns the starting address of a contiguously allocated chunk of heap memory of the requested number of bytes. Because allocation of a 2D array using this method looks just like allocation for a 1D array, the programmer has to explicitly map 2D row and column indexing on top of this single chunk of heap memory space (the compiler has no implicit notion of rows or columns and thus cannot interpret double indexing syntax into this malloc’ed space).</p>
+</blockquote>
+<p>下面是一段用方法 1 动态分配二维数组的 C 代码示例：</p>
+<blockquote>
+<p>Here’s an example C code snippet that dynamically allocates a 2D array using method 1:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">#define N 3</span><br><span class="line">#define M 4</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int *two_d_array;    // the type is a pointer to an int (the element type)</span><br><span class="line"></span><br><span class="line">    // allocate in a single malloc of N x M int-sized elements:</span><br><span class="line">    two_d_array = malloc(sizeof(int) * N * M);</span><br><span class="line"></span><br><span class="line">    if (two_d_array == NULL) &#123;</span><br><span class="line">        printf(&quot;ERROR: malloc failed!\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p><a href="2.5-arrays.html">图 3</a> 给出了用这种方法分配二维数组的例子，并展示了调用 <code>malloc</code> 之后内存可能的样子。</p>
+<blockquote>
+<p><a href="2.5-arrays.html">Figure 3</a> shows an example of allocating a 2D array using this method and illustrates what memory might look like after the call to <code>malloc</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C2-C_depth/images/2Donemalloc.png" alt="We can allocate an array with malloc(sizeof(int) \* (3\*4)) and store the base address in a stack pointer variable. Because malloc returns a contiguous chunk of memory, we can treat the memory as a collection of rows and columns in row-major order like a statically allocated array."></p>
+<p><strong>图 3.</strong> 用一次 malloc 调用分配二维数组的结果。</p>
+<p><em>Figure 3. The results of allocating a 2D array with a single call to malloc.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>可以用 <code>malloc(sizeof(int) * (3*4))</code> 分配数组，并把基地址存放在栈上的指针变量中。由于 <code>malloc</code> 返回的是一块连续内存，我们可以像对待静态分配的数组那样，把这块内存看作按行主序排列的若干行和列。</p>
+</div>
+<p>与动态分配的一维数组一样，二维数组的指针变量分配在栈上。然后，这个指针被赋予 <code>malloc</code> 调用的返回值，它代表堆内存中那块由 <em>N</em>x<em>M</em> 个 <code>int</code> 存储位置组成的连续内存的基地址。</p>
+<blockquote>
+<p>Like 1D dynamically allocated arrays, the pointer variable for a 2D array is allocated on the stack. That pointer is then assigned the value returned by the call to <code>malloc</code>, which represents the base address of the contiguous chunk of <em>N</em>x<em>M</em> <code>int</code> storage locations in the heap memory.</p>
+</blockquote>
+<p>由于这种方法为二维数组只使用一块 malloc 空间，内存分配的效率达到了最高（整个二维数组只需调用一次 <code>malloc</code>）。由于所有元素在连续内存中彼此紧挨着，而且每次访问只需经过指针变量的一层间接访问，这也是访问内存更高效的方式。</p>
+<blockquote>
+<p>Because this method uses a single chunk of malloc’ed space for the 2D array, the memory allocation is as efficient as possible (it only requires one call to <code>malloc</code> for the entire 2D array). It’s the more efficient way to access memory due to all elements being located close together in contiguous memory, with each access requiring only a single level of indirection from the pointer variable.</p>
+</blockquote>
+<p>然而，用这种方法分配时，C 编译器分不清分配的是二维数组还是一维数组。因此，用这种方法分配二维数组时，<em>不能</em>使用静态声明二维数组的双下标语法（<code>[i][j]</code>），而必须由程序员根据行下标和列下标显式地计算在这块连续堆内存中的偏移量（<code>[i*M + j]</code>，其中 <code>M</code> 是列维度）。</p>
+<blockquote>
+<p>However, the C compiler does not know the difference between a 2D or 1D array allocation using this method. As a result, the double indexing syntax (<code>[i][j]</code>) of statically declared 2D arrays <em>cannot</em> be used when allocating a 2D array using this method. Instead, the programmer must explicitly compute the offset into the contiguous chunk of heap memory using a function of row and column index values (<code>[i*M + j]</code>, where <code>M</code> is the column dimension).</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 其实也可以用双下标</p><p>如果列数 <code>M</code> 在编译时已知（比如用 <code>#define M 4</code> 定义），可以把指针声明成「指向含 M 个 int 的数组的指针」：<code>int (*two_d_array)[M] = malloc(sizeof(int) * N * M);</code>，之后就能直接写 <code>two_d_array[i][j]</code>，内存仍是一整块连续空间。这种写法在 C89 中就合法（译者已用 <code>gcc -std=c89 -pedantic</code> 编译验证）；C99 起的可变长数组类型还允许 <code>M</code> 是运行时的变量。原书为了入门简单，没有介绍这种写法。</p>
+</div>
+<p>下面是程序员组织代码以初始化二维数组全部元素的一个例子：</p>
+<blockquote>
+<p>Here’s an example of how a programmer would structure code to initialize all the elements of a 2D array:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// access using [] notation:</span><br><span class="line">//   cannot use [i][j] syntax because the compiler has no idea where the</span><br><span class="line">//   next row starts within this chunk of heap space, so the programmer</span><br><span class="line">//   must explicitly add a function of row and column index values</span><br><span class="line">//   (i*M+j) to map their 2D view of the space into the 1D chunk of memory</span><br><span class="line">for (i = 0; i &lt; N; i++) &#123;</span><br><span class="line">    for (j = 0; j &lt; M; j++) &#123;</span><br><span class="line">        two_d_array[i*M + j] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h5 id="方法-1（单次-malloc）与函数参数"><a href="#方法-1（单次-malloc）与函数参数" class="headerlink" title="方法 1（单次 malloc）与函数参数"></a>方法 1（单次 malloc）与函数参数</h5><p><em>Method 1 (Single malloc) and Function Parameters</em></p>
+<p>通过一次 <code>malloc</code> 分配的 <code>int</code> 数组，其基地址是一个指向 <code>int</code> 的指针，因此可以传给带有（<code>int *</code>）形参的函数。此外，还必须把行数和列数传给函数，以便它正确计算二维数组中的偏移量。例如：</p>
+<blockquote>
+<p>The base address of an array of <code>int</code> types allocated via a single <code>malloc</code> is a pointer to an <code>int</code>, so it can be passed to a function with an (<code>int *</code>) parameter. Additionally, the function must be passed row and column dimensions so that it can correctly compute offsets into the 2D array. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * initialize all elements in a 2D array to 0</span><br><span class="line"> *  arr: the array</span><br><span class="line"> *  rows: number of rows</span><br><span class="line"> *  cols: number of columns</span><br><span class="line"> */</span><br><span class="line">void init2D(int *arr, int rows, int cols) &#123;</span><br><span class="line">    int i, j;</span><br><span class="line">    for (i = 0; i &lt; rows; i++) &#123;</span><br><span class="line">        for (j = 0; j &lt; cols; j++) &#123;</span><br><span class="line">            arr[i*cols + j] = 0;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int *array;</span><br><span class="line">    array = malloc(sizeof(int) * N * M);</span><br><span class="line">    if (array != NULL) &#123;</span><br><span class="line">        init2D(array, N, M);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<h4 id="方法-2：对程序员友好的方式"><a href="#方法-2：对程序员友好的方式" class="headerlink" title="方法 2：对程序员友好的方式"></a>方法 2：对程序员友好的方式</h4><p><em>Method 2: The Programmer-Friendly Way</em></p>
+<p>动态分配二维数组的第二种方法把数组存成由 <em>N</em> 个一维数组组成的数组（每行一个一维数组）。它需要调用 <em>N+1</em> 次 <code>malloc</code>：一次为行数组组成的数组分配空间，再为 <em>N</em> 行中每一行的列数组各分配一次。因此，<em>同一行内</em>的元素位置是连续的，但二维数组不同行之间的元素并不连续。分配和元素访问都不如方法 1 高效，变量的类型定义也可能有点让人困惑。不过，用这种方法，程序员可以使用双下标语法访问二维数组中的单个元素（第一个下标是行数组中的下标，第二个下标是该行中列元素数组的下标）。</p>
+<blockquote>
+<p>The second method for dynamically allocating a 2D array stores the array as an array of <em>N</em> 1D arrays (one 1D array per row). It requires <em>N+1</em> calls to <code>malloc</code>: one <code>malloc</code> for the array of row arrays, and one <code>malloc</code> for each of the <em>N</em> row’s column arrays. As a result, the element locations <em>within a row</em> are contiguous, but elements are not contiguous across rows of the 2D array. Allocation and element access are not as efficient as in method 1, and the type definitions for variables can be a bit more confusing. However, using this method, a programmer can use double indexing syntax to access individual elements of the 2D array (the first index is an index into the array of rows, the second index is an index into the array of column elements within that row).</p>
+</blockquote>
+<p>下面是一个用方法 2 分配二维数组的例子（为了便于阅读，去掉了错误检测和处理代码）：</p>
+<blockquote>
+<p>Here is an example of allocating a 2D array using method 2 (with the error detection and handling code removed for readability):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">// the 2D array variable is declared to be `int **` (a pointer to an int *)</span><br><span class="line">// a dynamically allocated array of dynamically allocated int arrays</span><br><span class="line">// (a pointer to pointers to ints)</span><br><span class="line">int **two_d_array;</span><br><span class="line">int i;</span><br><span class="line"></span><br><span class="line">// allocate an array of N pointers to ints</span><br><span class="line">// malloc returns the address of this array (a pointer to (int *)&#x27;s)</span><br><span class="line">two_d_array = malloc(sizeof(int *) * N);</span><br><span class="line"></span><br><span class="line">// for each row, malloc space for its column elements and add it to</span><br><span class="line">// the array of arrays</span><br><span class="line">for (i = 0; i &lt; N; i++) &#123;</span><br><span class="line">// malloc space for row i&#x27;s M column elements</span><br><span class="line">    two_d_array[i] = malloc(sizeof(int) * M);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，注意变量的类型以及传给 <code>malloc</code> 调用的大小。为了引用这个动态分配的二维数组，程序员声明了一个 <code>int **</code> 类型的变量（<code>two_d_array</code>），它将存放一个动态分配的 <code>int *</code> 元素数组的地址。<code>two_d_array</code> 中的每个元素都存放着一个动态分配的 <code>int</code> 值数组的地址（<code>two_d_array[i]</code> 的类型是 <code>int *</code>）。</p>
+<blockquote>
+<p>In this example, note the types of the variables and the sizes passed to the calls to <code>malloc</code>. To refer to the dynamically allocated 2D array, the programmer declares a variable (<code>two_d_array</code>) of type <code>int **</code> that will store the address of a dynamically allocated array of <code>int *</code> element values. Each element in <code>two_d_array</code> stores the address of a dynamically allocated array of <code>int</code> values (the type of <code>two_d_array[i]</code> is <code>int *</code>).</p>
+</blockquote>
+<p><a href="2.5-arrays.html">图 4</a> 展示了执行完上例中 <em>N+1</em> 次 <code>malloc</code> 调用之后内存可能的样子。</p>
+<blockquote>
+<p><a href="2.5-arrays.html">Figure 4</a> shows what memory might look like after the above example’s <em>N+1</em> calls to <code>malloc</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C2-C_depth/images/2Dnmallocs.png" alt="two_d_array is a stack variable that points to a dynamically allocated array of pointers. Each of those pointers points to a 1D array of integers."></p>
+<p><strong>图 4.</strong> 用 N+1 次 malloc 调用分配二维数组之后的内存布局。</p>
+<p><em>Figure 4. The arrangement of memory after allocating a 2D array with N+1 malloc calls.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p><code>two_d_array</code> 是一个栈变量，指向一个动态分配的指针数组；其中每个指针又指向一个一维整数数组。</p>
+</div>
+<p>注意，使用这种方法时，只有同一次 <code>malloc</code> 调用分配的元素在内存中是连续的。也就是说，每一行内的元素是连续的，但不同行（即使是相邻的行）的元素并不连续。</p>
+<blockquote>
+<p>Note that when using this method, only the elements allocated as part of a single call to <code>malloc</code> are contiguous in memory. That is, elements within each row are contiguous, but elements from different rows (even neighboring rows) are not.</p>
+</blockquote>
+<p>分配好之后，就可以用双下标记法访问二维数组的单个元素。第一个下标指定外层 <code>int *</code> 指针数组中的一个元素（哪一行），第二个下标指定内层 <code>int</code> 数组中的一个元素（该行中的哪一列）。</p>
+<blockquote>
+<p>Once allocated, individual elements of the 2D array can be accessed using double-indexing notation. The first index specifies an element in the outer array of <code>int *</code> pointers (which row), and the second index specifies an element in the inner <code>int</code> array (which column within the row).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int i, j;</span><br><span class="line"></span><br><span class="line">for (i = 0; i &lt; N; i++) &#123;</span><br><span class="line">    for (j = 0; j &lt; M; j++) &#123;</span><br><span class="line">        two_d_array[i][j] = 0;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>为了理解双下标是如何求值的，看看表达式中以下几个部分的类型和值：</p>
+<blockquote>
+<p>To understand how double indexing is evaluated, consider the type and value of the following parts of the expression:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">      two_d_array: an array of int pointers, it stores the base address of an</span><br><span class="line">                array of (int *) values. Its type is int** (a pointer to int *).</span><br><span class="line"></span><br><span class="line">   two_d_array[i]: the ith index into the array of arrays, it stores an (int *)</span><br><span class="line">                value that represents the base address of an array of (int)</span><br><span class="line">                values.  Its type is int*.</span><br><span class="line"></span><br><span class="line">two_d_array[i][j]: the jth element pointed to by the ith element of the array of</span><br><span class="line">                arrays, it stores an int value (the value in row i, column j</span><br><span class="line">                of the 2D array).  Its type is int.</span><br></pre></td></tr></table></figure>
+
+<h5 id="方法-2（数组的数组）与函数参数"><a href="#方法-2（数组的数组）与函数参数" class="headerlink" title="方法 2（数组的数组）与函数参数"></a>方法 2（数组的数组）与函数参数</h5><p><em>Method 2 (An Array of Arrays) and Function Parameters</em></p>
+<p>数组实参的类型是 <code>int **</code>（指向 <code>int</code> 指针的指针），函数形参的类型与实参一致。此外，还应当把行数和列数传给函数。由于这与方法 1 是不同的类型，两种数组无法共用同一个函数（它们不是同一种 C 类型）。</p>
+<blockquote>
+<p>The array argument’s type is <code>int **</code> (a pointer to a pointer to an <code>int</code>), and the function parameter matches its argument’s type. Additionally, row and column sizes should be passed to the function. Because this is a different type from method 1, both array types cannot use a common function (they are not the same C type).</p>
+</blockquote>
+<p>下面是一个以方法 2（数组的数组）分配的二维数组为参数的函数示例：</p>
+<blockquote>
+<p>Here’s an example function that takes a method 2 (array of arrays) 2D array as a parameter:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * initialize a 2D array</span><br><span class="line"> * arr: the array</span><br><span class="line"> * rows: number of rows</span><br><span class="line"> * cols: number of columns</span><br><span class="line"> */</span><br><span class="line">void init2D_Method2(int **arr, int rows, int cols) &#123;</span><br><span class="line">    int i,j;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; rows; i++) &#123;</span><br><span class="line">        for (j = 0; j &lt; cols; j++) &#123;</span><br><span class="line">            arr[i][j] = 0;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> * main: example of calling init2D_Method2</span><br><span class="line"> */</span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int **two_d_array;</span><br><span class="line"></span><br><span class="line">    // some code to allocate the row array and multiple col arrays</span><br><span class="line">    // ...</span><br><span class="line"></span><br><span class="line">    init2D_Method2(two_d_array, N, M);</span><br><span class="line">    ...</span><br></pre></td></tr></table></figure>
+
+<p>在这里，函数的实现可以使用双下标语法。与静态声明的二维数组不同，行和列两个维度都需要作为参数传入：<code>rows</code> 参数指定最外层数组（行数组组成的数组）的边界，<code>cols</code> 参数指定内层数组（每一行的列值数组）的边界。</p>
+<blockquote>
+<p>Here, the function implementation can use double-indexing syntax. Unlike statically declared 2D arrays, both the row and column dimensions need to be passed as parameters: the <code>rows</code> parameter specifies the bounds on the outermost array (the array of row arrays), and the <code>cols</code> parameter specifies the bounds on the inner arrays (the array column values for each row).</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">2.4. 动态内存分配</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C2-C_depth/2.6-strings.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.6. 字符串与字符串库</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-1-%E4%B8%80%E7%BB%B4%E6%95%B0%E7%BB%84"><span class="toc-text">2.5.1. 一维数组</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-2-%E4%BA%8C%E7%BB%B4%E6%95%B0%E7%BB%84"><span class="toc-text">2.5.2. 二维数组</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

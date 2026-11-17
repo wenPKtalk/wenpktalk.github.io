@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（二）：DuckLake 怎么存数据 · Summary</title>
+  <meta name="description" content="DuckLake 是一种开放的 Lakehouse 格式：表的元数据放在一个普通的 SQL 数据库（catalog）里，数据放在不可变的 Parquet 文件里。这一篇先看它的整体结构，再看一次写、存、读、提交分别发生了什么。 DuckLake 本体：参考实现 ducklake 扩展图中颜色：🟦 写路径 · 🟩 读路径 · 🟪 维护 · 🟧 元数据 &#x2F; catalog · 🟨">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（二）：DuckLake 怎么存数据 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-02-how-ducklake-stores-data/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="DuckLake 是一种开放的 Lakehouse 格式：表的元数据放在一个普通的 SQL 数据库（catalog）里，数据放在不可变的 Parquet 文件里。这一篇先看它的整体结构，再看一次写、存、读、提交分别发生了什么。 DuckLake 本体：参考实现 ducklake 扩展图中颜色：🟦 写路径 · 🟩 读路径 · 🟪 维护 · 🟧 元数据 &#x2F; catalog · 🟨">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-02-how-ducklake-stores-data/ducklake-datapath.png">
+<meta property="article:published_time" content="2026-11-16T07:02:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.901Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-02-how-ducklake-stores-data/ducklake-datapath.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/" class="current" aria-current="page">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>一、入门与全景</span>
+      </nav>
+      <span class="book-position">第 2 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（二）：DuckLake 怎么存数据</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:02:00.000Z">2026-11-16</time>
+      <span>· 约 5 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>DuckLake 是一种开放的 Lakehouse 格式：表的元数据放在一个普通的 SQL 数据库（catalog）里，数据放在不可变的 Parquet 文件里。这一篇先看它的整体结构，再看一次写、存、读、提交分别发生了什么。</p>
+<h2 id="DuckLake-本体：参考实现-ducklake-扩展"><a href="#DuckLake-本体：参考实现-ducklake-扩展" class="headerlink" title="DuckLake 本体：参考实现 ducklake 扩展"></a>DuckLake 本体：参考实现 <code>ducklake</code> 扩展</h2><p>图中颜色：🟦 写路径 · 🟩 读路径 · 🟪 维护 · 🟧 元数据 &#x2F; catalog · 🟨 DuckDB 引擎 · 🟥 限制或坑。</p>
+<blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>正式发布</strong>：规范 1.0 官方称 production-ready（2026-04-13），1.1 于 2026-10-21 发布。<code>ducklake</code> 扩展在 DuckDB 扩展列表里属于 <strong>Secondary</strong> 级（best-effort 支持）。删除向量功能为 🟡 experimental。</p>
+</blockquote>
+<p><strong>定位：</strong> 元数据放在 SQL 数据库里，数据是 Parquet。每个 DuckDB 客户端各自直连 catalog，乐观并发，冲突了重试。</p>
+<pre class="mermaid">flowchart LR
+  subgraph CLIENTS[&quot;多个独立的 DuckDB 进程（各自 ATTACH）&quot;]
+    C1[&quot;DuckDB A&lt;br/&gt;ducklake 扩展&quot;]
+    C2[&quot;DuckDB B&lt;br/&gt;ducklake 扩展&quot;]
+  end
+  subgraph CAT[&quot;Catalog 数据库（PG / SQLite / DuckDB / Quack 远程）&quot;]
+    SNAP[&quot;ducklake_snapshot&lt;br/&gt;ducklake_snapshot_changes&quot;]
+    META[&quot;ducklake_table / column&lt;br/&gt;ducklake_data_file / delete_file&quot;]
+    STATS[&quot;ducklake_table_stats&lt;br/&gt;ducklake_table_column_stats&quot;]
+    INL[&quot;ducklake_inlined_data_*&lt;br/&gt;小写入内联（默认 ≤10 行）&quot;]
+  end
+  OBJ[(&quot;对象存储 / 本地盘&lt;br/&gt;Parquet 数据文件&lt;br/&gt;Puffin 删除向量&quot;)]
+  C1 --&gt;|&quot;① 写 Parquet&quot;| OBJ
+  C1 --&gt;|&quot;② 首次提交：取当前快照&lt;br/&gt;插入元数据行&quot;| META
+  C1 --&gt;|&quot;小批量写入&quot;| INL
+  C2 --&gt;|&quot;读：按快照列出文件&lt;br/&gt;min/max 剪枝&quot;| META
+  C2 --&gt;|&quot;读 Parquet&quot;| OBJ
+  RETRY[&quot;③ 冲突重试 i&gt;0：&lt;br/&gt;加载全 catalog 统计&lt;br/&gt;（无 table_id 过滤）&quot;]
+  C1 -.-&gt; RETRY -.-&gt; STATS
+  MAINT[&quot;expire_snapshots / cleanup&lt;br/&gt;merge_adjacent_files&lt;br/&gt;由客户端调用&quot;]
+  MAINT -.-&gt; CAT
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef read fill:#DCFCE7,stroke:#15803D,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  classDef maint fill:#F3E8FF,stroke:#7E22CE,color:#1f2937
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class C1,C2 duck
+  class SNAP,META,STATS,INL meta
+  class RETRY warn
+  class MAINT maint</pre>
+
+<p><strong>提交路径（按 DuckLake <code>c506b268</code> 源码核实）</strong></p>
+<ul>
+<li><code>DuckLakeTransactionState::Commit</code>（<code>src/storage/ducklake_transaction_state.cpp:2727-2733</code>）：第一次提交只调用 <code>context.get_snapshot()</code>；只有 <code>i &gt; 0</code>（冲突重试）时，才执行没有 <code>table_id</code> 过滤的全 catalog 统计查询（<code>ducklake_metadata_manager.cpp:4925-4928</code>）。</li>
+</ul>
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>元数据就是普通 SQL 表。</strong> 任何能连 PG 的组件都能直接查快照和文件清单，不必走 DuckDB。</li>
+<li><strong>Data inlining：</strong> 小写入先放在 catalog 里，之后批量刷成 Parquet，解决小文件问题。</li>
+<li><strong>冲突代价跟 catalog 规模挂钩。</strong> 建表冲突按”schema + 表名”判定，删表冲突按 table id 判定（<code>ducklake_transaction_state.cpp:181-205</code>、<code>:233</code>），所以<strong>不同表</strong>的 <code>CREATE OR REPLACE</code> 逻辑上不冲突。但只要两个提交有交错，后提交的一方仍要走一次重试，也就要付一次全 catalog 统计加载。</li>
+</ul>
+<h2 id="数据路径：写-存-读-生命周期"><a href="#数据路径：写-存-读-生命周期" class="headerlink" title="数据路径：写 &#x2F; 存 &#x2F; 读 &#x2F; 生命周期"></a>数据路径：写 &#x2F; 存 &#x2F; 读 &#x2F; 生命周期</h2><p><img src="/2026/11/16/ducklake-02-how-ducklake-stores-data/ducklake-datapath.png" alt="DuckLake 数据路径"></p>
+<p>四个容易踩的误区，这张图专门纠正：</p>
+<ol>
+<li><strong>写”不总”落 Parquet</strong>：小写入直接 <strong>inline 进 catalog 数据库</strong>，之后再 flush 成 Parquet。所以一次 <code>COMMIT</code> 可能只改了元数据库、没碰对象存储。</li>
+<li><strong>删除 &#x3D; 加过滤，不是重写</strong>：<code>DELETE</code> 只写一个 <strong>delete file</strong> 记被删 row-id，原数据文件不可变、不动；读时叠加过滤。这也是时间旅行&#x2F;删除便宜的原因。</li>
+<li><strong>扫描前先按 stats 剪文件</strong>：不是在 planning 阶段，而是<strong>扫描所在的 pipeline 被调度时</strong>——<code>Pipeline::Schedule</code> → <code>Reset</code> → 扫描的 <code>InitializeGlobalState</code> 里<strong>单线程</strong>物化文件清单（<code>ducklake_multi_file_reader.cpp:288</code>，源码注释说明这是为了避免 worker 一起挤在 <code>GetFiles()</code> 的锁上），把过滤条件翻译成对 catalog 列级 min&#x2F;max 的 SQL，<strong>整文件跳过</strong>不可能匹配的 Parquet；打开文件时还会按运行时过滤器再判一次能否跳过（<code>DuckLakeMultiFileReader::InitializeReader</code>）。worker 只拿到存活文件，再拆 morsel。</li>
+<li><strong>sink 是屏障 + 超内存 spill</strong>（见<a href="/2026/11/16/ducklake-05-memory-and-admission/" title="DuckLake 专栏（五）：内存模型与并发准入">第 5 篇</a>）。</li>
+</ol>
+<p><strong>存储真相</strong>：元数据在<strong>事务性 SQL catalog</strong>（PG &#x2F; DuckDB &#x2F; SQLite，含 snapshots、文件清单、列级 stats、inlined 小数据）；数据在<strong>不可变 Parquet + delete files</strong>。<strong>维护操作</strong>（<code>merge_adjacent_files</code> 合并小文件、<code>flush_inlined_data</code>、<code>expire_snapshots</code>）都只追加<strong>新 snapshot</strong>，不影响正在读旧快照的查询（<strong>快照隔离</strong>）。</p>
+<p><strong>并发写 &#x3D; 乐观并发</strong>：多写者竞争把下一个 <code>snapshot_id</code> 写进 catalog；<code>snapshot_id</code> 单调递增 + catalog PK 冲突检测 → 冲突则按 <code>ducklake_max_retry_count</code>(10) &#x2F; <code>ducklake_retry_wait_ms</code>(100) &#x2F; <code>ducklake_retry_backoff</code>(1.5) 重试。</p>
+<h2 id="Parquet-加密"><a href="#Parquet-加密" class="headerlink" title="Parquet 加密"></a>Parquet 加密</h2><ul>
+<li>DuckLake 提供**整库”加密模式”**：<code>ATTACH &#39;ducklake:…&#39; (DATA_PATH &#39;…&#39;, ENCRYPTED)</code>，写出的所有 Parquet 用 <strong>Apache Parquet 加密</strong>。</li>
+<li><strong>密钥自动生成、每文件一把</strong>，存在 catalog 的 <code>ducklake_data_file.encryption_key</code>（delete file 同理）；读时自动从 catalog 取 key 解密。</li>
+<li><strong>信任边界 &#x3D; catalog</strong>：密钥明文存在元数据库，加密保护的是<strong>不受信任的对象存储</strong>（文档示例 <code>DATA_PATH &#39;untrusted_location/&#39;</code>）。</li>
+<li><strong>无 BYOK &#x2F; KMS 接口</strong>（stable 文档未提供）：密钥完全系统托管。</li>
+</ul>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-01-versions-and-maturity/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-03-connections-and-threads/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（三）：DuckDB 多连接与线程分工</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#DuckLake-%E6%9C%AC%E4%BD%93%EF%BC%9A%E5%8F%82%E8%80%83%E5%AE%9E%E7%8E%B0-ducklake-%E6%89%A9%E5%B1%95"><span class="toc-text">DuckLake 本体：参考实现 ducklake 扩展</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%95%B0%E6%8D%AE%E8%B7%AF%E5%BE%84%EF%BC%9A%E5%86%99-%E5%AD%98-%E8%AF%BB-%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">数据路径：写 &#x2F; 存 &#x2F; 读 &#x2F; 生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Parquet-%E5%8A%A0%E5%AF%86"><span class="toc-text">Parquet 加密</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

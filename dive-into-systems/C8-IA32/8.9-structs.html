@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>8.9. 汇编中的结构体 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;structs.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.9. structs in Assembly 结构体是在 C 中">
+<meta property="og:type" content="website">
+<meta property="og:title" content="8.9. 汇编中的结构体 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/8.9-structs.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C8-IA32&#x2F;structs.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  8.9. structs in Assembly 结构体是在 C 中">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/structArray.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/struct2wrong.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/struct2right.png">
+<meta property="article:published_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:48.005Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C8-IA32/images/structArray.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html" class="current" aria-current="page">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>8. 32 位 x86 汇编（IA32）</span>
+      </nav>
+      <span class="book-position">第 100 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">8.9. 汇编中的结构体</h1>
+  
+  
+    <p class="article-meta"><span>约 11 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C8-IA32/structs.html">https://diveintosystems.org/book/C8-IA32/structs.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>8.9. structs in Assembly</em></p>
+<p><a href="../C2-C_depth/2.7-structs.html">结构体</a>是在 C 中创建数据类型集合的另一种方式。与数组不同，结构体可以把不同的数据类型组合在一起。C 像存放一维数组那样存放 <code>struct</code>，其数据元素（字段）连续存放。</p>
+<blockquote>
+<p>A <a href="../C2-C_depth/2.7-structs.html">struct</a> is another way to create a collection of data types in C. Unlike arrays, structs enable different data types to be grouped together. C stores a <code>struct</code> like a single-dimension array, where the data elements (fields) are stored contiguously.</p>
+</blockquote>
+<p>我们再来看第 1 章中的 <code>struct studentT</code>：</p>
+<blockquote>
+<p>Let’s revisit <code>struct studentT</code> from Chapter 1:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct studentT &#123;</span><br><span class="line">    char name[64];</span><br><span class="line">    int  age;</span><br><span class="line">    int  grad_yr;</span><br><span class="line">    float gpa;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct studentT student;</span><br></pre></td></tr></table></figure>
+
+<p><a href="8.9-structs.html">图 1</a> 展示了 <code>student</code> 在内存中的布局。为了举例，假设 <code>student</code> 从地址 x<sub>0</sub> 开始。每个 x<sub>i</sub> 表示某个字段的地址。</p>
+<blockquote>
+<p><a href="8.9-structs.html">Figure 1</a> shows how <code>student</code> is laid out in memory. For the sake of example, assume that <code>student</code> starts at address x<sub>0</sub>. Each x<sub>i</sub> denotes the address of a field.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C8-IA32/images/structArray.png" alt="structArray"></p>
+<p><strong>图 1.</strong> student 结构体的内存布局</p>
+<p><em>Figure 1. The memory layout of the student struct</em></p>
+<p>各字段按照声明的顺序在内存中一个挨一个地连续存放。在<a href="8.9-structs.html">图 1</a> 中，<code>age</code> 字段被分配在紧跟 <code>name</code> 字段之后的内存位置（字节偏移 x<sub>64</sub>），后面依次是 <code>grad_yr</code>（字节偏移 x<sub>68</sub>）和 <code>gpa</code>（字节偏移 x<sub>72</sub>）字段。这种组织方式使访问字段既节省内存又高效。</p>
+<blockquote>
+<p>The fields are stored contiguously next to one another in memory in the order in which they are declared. In <a href="8.9-structs.html">Figure 1</a>, the <code>age</code> field is allocated at the memory location directly after the <code>name</code> field (at byte offset x<sub>64</sub>) and is followed by the <code>grad_yr</code> (byte offset x<sub>68</sub>) and <code>gpa</code> (byte offset x<sub>72</sub>) fields. This organization enables memory-efficient access to the fields.</p>
+</blockquote>
+<p>为了理解编译器如何生成处理 <code>struct</code> 的汇编代码，考虑函数 <code>initStudent</code>：</p>
+<blockquote>
+<p>To understand how the compiler generates assembly code to work a <code>struct</code>, consider the function <code>initStudent</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void initStudent(struct studentT *s, char *nm, int ag, int gr, float g) &#123;</span><br><span class="line">    strncpy(s-&gt;name, nm, 64);</span><br><span class="line">    s-&gt;grad_yr = gr;</span><br><span class="line">    s-&gt;age = ag;</span><br><span class="line">    s-&gt;gpa = g;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>initStudent</code> 函数以一个 <code>struct studentT</code> 的基地址作为第一个参数，以各字段想要设置的值作为其余参数。下面的清单给出了这个函数的汇编。一般来说，<code>initStudent</code> 函数的参数 <em>i</em> 位于栈地址 <code>(ebp+8)</code> + 4 × <em>i</em> 处。</p>
+<blockquote>
+<p>The <code>initStudent</code> function uses the base address of a <code>struct studentT</code> as its first parameter, and the desired values for each field as its remaining parameters. The listing that follows depicts this function in assembly. In general, parameter <em>i</em> to function <code>initStudent</code> is located at stack address <code>(ebp+8)</code> + 4 × <em>i</em>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这里的 <em>i</em> 从 0 开始数：<code>s</code> 是参数 0，位于 <code>%ebp+8</code>；<code>nm</code> 是参数 1，位于 <code>%ebp+0xc</code>；依此类推，<code>g</code> 是参数 4，位于 <code>%ebp+0x18</code>，与清单一致。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;initStudent&gt;:</span><br><span class="line"> &lt;+0&gt;:   push  %ebp                     # save ebp</span><br><span class="line"> &lt;+1&gt;:   mov   %esp,%ebp                # update ebp (new stack frame)</span><br><span class="line"> &lt;+3&gt;:   sub   $0x18,%esp               # add 24 bytes to stack frame</span><br><span class="line"> &lt;+6&gt;:   mov   0x8(%ebp),%eax           # copy first parameter (s) to eax</span><br><span class="line"> &lt;+9&gt;:   mov   0xc(%ebp),%edx           # copy second parameter (nm) to edx</span><br><span class="line"> &lt;+12&gt;   mov   $0x40,0x8(%esp)          # copy 0x40 (or 64) to esp+8</span><br><span class="line"> &lt;+16&gt;:  mov   %edx,0x4(%esp)           # copy nm to esp+4</span><br><span class="line"> &lt;+20&gt;:  mov   %eax,(%esp)              # copy s to top of stack (esp)</span><br><span class="line"> &lt;+23&gt;:  call  0x8048320 &lt;strncpy@plt&gt;  # call strncpy(s-&gt;name, nm, 64)</span><br><span class="line"> &lt;+28&gt;:  mov   0x8(%ebp),%eax           # copy s to eax</span><br><span class="line"> &lt;+32&gt;:  mov   0x14(%ebp),%edx          # copy fourth parameter (gr) to edx</span><br><span class="line"> &lt;+35&gt;:  mov   %edx,0x44(%eax)          # copy gr to offset eax+68 (s-&gt;grad_yr)</span><br><span class="line"> &lt;+38&gt;:  mov   0x8(%ebp),%eax           # copy s to eax</span><br><span class="line"> &lt;+41&gt;:  mov   0x10(%ebp),%edx          # copy third parameter (ag) to edx</span><br><span class="line"> &lt;+44&gt;:  mov   %edx,0x40(%eax)          # copy ag to offset eax+64 (s-&gt;age)</span><br><span class="line"> &lt;+47&gt;:  mov   0x8(%ebp),%edx           # copy s to edx</span><br><span class="line"> &lt;+50&gt;:  mov   0x18(%ebp),%eax          # copy g to eax</span><br><span class="line"> &lt;+53&gt;:  mov   %eax,0x48(%edx)          # copy g to offset edx+72 (s-&gt;gpa)</span><br><span class="line"> &lt;+56&gt;:  leave                          # prepare to leave the function</span><br><span class="line"> &lt;+57&gt;:  ret                            # return</span><br></pre></td></tr></table></figure>
+
+<p>留意每个字段的字节偏移，是理解这段代码的关键。下面是几点需要记住的事情。</p>
+<blockquote>
+<p>Being mindful of the byte offsets of each field is key to understanding this code. Here are a few things to keep in mind.</p>
+</blockquote>
+<ul>
+<li><code>strncpy</code> 调用以 <code>s</code> 的 <code>name</code> 字段的基地址、数组 <code>nm</code> 的地址和一个长度说明作为它的三个实参。回想一下，由于 <code>name</code> 是 <code>struct studentT</code> 中的第一个字段，<code>s</code> 的地址与 <code>s→name</code> 的地址是同一个。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>strncpy</code> call takes the base address of the <code>name</code> field of <code>s</code>, the address of array <code>nm</code>, and a length specifier as its three arguments. Recall that because <code>name</code> is the first field in <code>struct studentT</code>, the address of <code>s</code> is synonymous with the address of <code>s→name</code>.</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>与第 7 章相同，原书网页把 <code>-&gt;</code> 排版成了箭头「→」，代码中要写作 <code>s-&gt;name</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;+6&gt;:   mov   0x8(%ebp),%eax           # copy first parameter (s) to eax</span><br><span class="line">&lt;+9&gt;:   mov   0xc(%ebp),%edx           # copy second parameter (nm) to edx</span><br><span class="line">&lt;+12&gt;   mov   $0x40,0x8(%esp)          # copy 0x40 (or 64) to esp+8</span><br><span class="line">&lt;+16&gt;:  mov   %edx,0x4(%esp)           # copy nm to esp+4</span><br><span class="line">&lt;+20&gt;:  mov   %eax,(%esp)              # copy s to top of stack (esp)</span><br><span class="line">&lt;+23&gt;:  call  0x8048320 &lt;strncpy@plt&gt;  # call strncpy(s-&gt;name, nm, 64)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>代码的下一部分（指令 <code>&lt;initStudent+28&gt;</code> 到 <code>&lt;initStudent+35&gt;</code>）把参数 <code>gr</code> 的值放到距 <code>s</code> 起始处偏移 68 的位置。回顾一下<a href="8.9-structs.html">图 1</a> 中的内存布局可以看出，这个地址对应于 <code>s→grad_yr</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The next part of the code (instructions <code>&lt;initStudent+28&gt;</code> thru <code>&lt;initStudent+35&gt;</code>) places the value of the <code>gr</code> parameter at an offset of 68 from the start of <code>s</code>. Revisiting the memory layout in <a href="8.9-structs.html">Figure 1</a> shows that this address corresponds to <code>s→grad_yr</code>.</li>
+</ul>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;+28&gt;:  mov   0x8(%ebp),%eax           # copy s to eax</span><br><span class="line">&lt;+32&gt;:  mov   0x14(%ebp),%edx          # copy fourth parameter (gr) to edx</span><br><span class="line">&lt;+35&gt;:  mov   %edx,0x44(%eax)          # copy gr to offset eax+68 (s-&gt;grad_yr)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>下一段代码（指令 <code>&lt;initStudent+38&gt;</code> 到 <code>&lt;initStudent+53&gt;</code>）把参数 <code>ag</code> 复制到 <code>s→age</code> 字段。之后，参数 <code>g</code> 的值被复制到 <code>s→gpa</code> 字段（字节偏移 72）：</li>
+</ul>
+<blockquote>
+<ul>
+<li>The next section of code (instructions <code>&lt;initStudent+38&gt;</code> thru <code>&lt;initStudent+53&gt;</code>) copies the <code>ag</code> parameter to the <code>s→age</code> field. Afterward, the <code>g</code> parameter value is copied to the <code>s→gpa</code> field (byte offset 72):</li>
+</ul>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&lt;+38&gt;:  mov   0x8(%ebp),%eax           # copy s to eax</span><br><span class="line">&lt;+41&gt;:  mov   0x10(%ebp),%edx          # copy third parameter (ag) to edx</span><br><span class="line">&lt;+44&gt;:  mov   %edx,0x40(%eax)          # copy ag to offset eax+64 (s-&gt;age)</span><br><span class="line">&lt;+47&gt;:  mov   0x8(%ebp),%edx           # copy s to edx</span><br><span class="line">&lt;+50&gt;:  mov   0x18(%ebp),%eax          # copy g to eax</span><br><span class="line">&lt;+53&gt;:  mov   %eax,0x48(%edx)          # copy g to offset edx+72 (s-&gt;gpa)</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-9-1-数据对齐与结构体"><a href="#8-9-1-数据对齐与结构体" class="headerlink" title="8.9.1. 数据对齐与结构体"></a>8.9.1. 数据对齐与结构体</h3><p><em>8.9.1. Data Alignment and structs</em></p>
+<p>考虑下面这个修改过的 <code>struct studentT</code> 声明：</p>
+<blockquote>
+<p>Consider the following modified declaration of <code>struct studentT</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct studentTM &#123;</span><br><span class="line">    char name[63]; //updated to 63 instead of 64</span><br><span class="line">    int  age;</span><br><span class="line">    int  grad_yr;</span><br><span class="line">    float gpa;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct studentTM student2;</span><br></pre></td></tr></table></figure>
+
+<p><code>name</code> 字段的大小被改成了 63 字节，而不是原来的 64 字节。想想这会如何影响 <code>struct</code> 在内存中的布局。你可能会想当然地把它想象成<a href="8.9-structs.html">图 2</a> 那样。</p>
+<blockquote>
+<p>The size of the <code>name</code> field is modified to be 63 bytes, instead of the original 64. Consider how this affects the way the <code>struct</code> is laid out in memory. It may be tempting to visualize it as in <a href="8.9-structs.html">Figure 2</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C8-IA32/images/struct2wrong.png" alt="struct2wrong"></p>
+<p><strong>图 2.</strong> 更新后的 struct studentTM 的一种错误内存布局。注意结构体的「name」字段从 64 字节减少到了 63 字节。</p>
+<p><em>Figure 2. An incorrect memory layout for the updated struct studentTM. Note that the struct’s “name” field is reduced from 64 to 63 bytes.</em></p>
+<p>在这种描绘中，<code>age</code> 字段出现在紧跟 <code>name</code> 字段之后的那个字节。但这是错误的。<a href="8.9-structs.html">图 3</a> 描绘了实际的内存布局。</p>
+<blockquote>
+<p>In this depiction, the <code>age</code> field occupies the byte immediately following the <code>name</code> field. But this is incorrect. <a href="8.9-structs.html">Figure 3</a> depicts the actual layout in memory.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C8-IA32/images/struct2right.png" alt="struct2right"></p>
+<p><strong>图 3.</strong> 更新后的 struct studentTM 的正确内存布局。字节 x<sub>63</sub> 是编译器为满足内存对齐约束而添加的，它不对应任何字段。</p>
+<p><em>Figure 3. The correct memory layout for the updated struct studentTM. Byte x<sub>63</sub> is added by the compiler to satisfy memory alignment constraints, but it doesn’t correspond to any of the fields.</em></p>
+<p>IA32 的对齐策略要求：两字节的数据类型（即 <code>short</code>）位于两字节对齐的地址上，四字节的数据类型（<code>int</code>、<code>float</code>、<code>long</code> 和指针类型）位于四字节对齐的地址上，八字节的数据类型（<code>double</code>、<code>long long</code>）位于八字节对齐的地址上。对于 <code>struct</code>，编译器会在字段之间添加空字节作为<strong>填充</strong>（padding），以确保每个字段都满足其对齐要求。例如，在上面代码片段声明的 <code>struct</code> 中，编译器在字节 x<sub>63</sub> 处添加了一个字节的空白（即填充），确保 <code>age</code> 字段从一个四的倍数的地址开始。在内存中正确对齐的值可以在单次操作中被读取或写入，从而提高效率。</p>
+<blockquote>
+<p>IA32’s alignment policy requires that two-byte data types (i.e., <code>short</code>) reside at a two-byte-aligned address whereas four-byte data types (<code>int</code>, <code>float</code>, <code>long</code>, and pointer types) reside at four-byte-aligned addresses, and eight-byte data types (<code>double</code>, <code>long long</code>) reside at eight-byte-aligned addresses. For a <code>struct</code>, the compiler adds empty bytes as <strong>padding</strong> between fields to ensure that each field satisfies its alignment requirements. For example, in the <code>struct</code> declared in the previous code snippet, the compiler adds a byte of empty space (or padding) at byte x<sub>63</sub> to ensure that the <code>age</code> field starts at an address that is at a multiple of four. Values aligned properly in memory can be read or written in a single operation, enabling greater efficiency.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · i386 Linux 上 double 的对齐</p><p>在 32 位 x86 Linux（i386 System V ABI）上，结构体中的 <code>double</code> 和 <code>long long</code> 字段其实只按 4 字节对齐。译者用 <code>clang -target i386-linux-gnu</code> 检查：<code>struct { char c; double d; }</code> 中 <code>d</code> 的偏移是 4，整个结构体 12 字节；<code>long long</code> 字段同样位于偏移 4。而在 x86-64 Linux 上，同一个结构体中 <code>d</code> 的偏移是 8，大小是 16。所以原文说的「八字节类型位于八字节对齐的地址上」对 x86-64 成立，对 IA32 Linux 的结构体布局并不成立。</p>
+</div>
+<p>考虑把 <code>struct</code> 定义成下面这样时会发生什么：</p>
+<blockquote>
+<p>Consider what happens when a <code>struct</code> is defined as follows:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">struct studentTM &#123;</span><br><span class="line">    int  age;</span><br><span class="line">    int  grad_yr;</span><br><span class="line">    float gpa;</span><br><span class="line">    char name[63];</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">struct studentTM student3;</span><br></pre></td></tr></table></figure>
+
+<p>把 <code>name</code> 数组移到最后，就把那个填充字节移到了结构体的末尾，确保 <code>age</code>、<code>grad_yr</code> 和 <code>gpa</code> 都是四字节对齐的。</p>
+<blockquote>
+<p>Moving the <code>name</code> array to the end moves the byte of padding to the end of the struct, ensuring that <code>age</code>, <code>grad_yr</code>, and <code>gpa</code> are four-byte aligned.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C8-IA32/8.8-matrices.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">8.8. 矩阵</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">8.10. 现实世界：缓冲区溢出</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#8-9-1-%E6%95%B0%E6%8D%AE%E5%AF%B9%E9%BD%90%E4%B8%8E%E7%BB%93%E6%9E%84%E4%BD%93"><span class="toc-text">8.9.1. 数据对齐与结构体</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>11.2. 存储设备 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;devices.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.2. Storage Devices 系统设">
+<meta property="og:type" content="website">
+<meta property="og:title" content="11.2. 存储设备 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/11.2-devices.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;devices.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.2. Storage Devices 系统设">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MemoryBus.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/StorageDevices.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/IOBus.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DiskParts.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MemoryBus.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html" class="current" aria-current="page">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>11. 存储与存储器层次结构</span>
+      </nav>
+      <span class="book-position">第 121 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">11.2. 存储设备</h1>
+  
+  
+    <p class="article-meta"><span>约 22 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C11-MemHierarchy/devices.html">https://diveintosystems.org/book/C11-MemHierarchy/devices.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>11.2. Storage Devices</em></p>
+<p>系统设计者根据程序访问数据的方式，对<a href="11.1-mem_hierarchy.html">存储器层次结构</a>中的设备进行分类。CPU 上的程序可以直接访问<strong>主存储</strong>（primary storage）设备。也就是说，CPU 的汇编指令编码了指令要取的数据的确切位置。主存储的例子包括 CPU 寄存器和主存（RAM），汇编指令直接引用它们（例如在 IA32 汇编中分别写作 <code>%reg</code> 和 <code>(%reg)</code>）。</p>
+<blockquote>
+<p>Systems designers classify devices in the <a href="11.1-mem_hierarchy.html">memory hierarchy</a> according to how programs access their data. <strong>Primary storage</strong> devices can be accessed directly by a program on the CPU. That is, the CPU’s assembly instructions encode the exact location of the data that the instructions should retrieve. Examples of primary storage include CPU registers and main memory (RAM), which assembly instructions reference directly (for example, in IA32 assembly as <code>%reg</code> and <code>(%reg)</code>, respectively).</p>
+</blockquote>
+<p>与之不同，CPU 指令不能直接引用<strong>辅助存储</strong>（secondary storage）设备。要访问辅助存储设备的内容，程序必须先请求该设备把数据复制到主存储（通常是内存）中。最常见的辅助存储设备是硬盘驱动器和固态硬盘这样的磁盘设备，它们持久地存储文件数据。其他例子还有软盘、磁带盒，甚至远程文件服务器。</p>
+<blockquote>
+<p>In contrast, CPU instructions cannot directly refer to <strong>secondary storage</strong> devices. To access the contents of a secondary storage device, a program must first request that the device copy its data into primary storage (typically memory). The most familiar types of secondary storage devices are disk devices such as hard disk drives and solid-state drives, which persistently store file data. Other examples include floppy disks, magnetic tape cartridges, or even remote file servers.</p>
+</blockquote>
+<p>尽管你以前可能没有用这些术语思考过主存储和辅助存储的区别，但很可能已经在程序中遇到过它们的差异。例如，声明并赋值普通变量（主存储）之后，程序可以立即在算术运算中使用它们。而处理文件数据（辅助存储）时，程序必须先<a href="../C2-C_depth/2.8-IO.html">把文件中的值读到内存变量中</a>，才能访问它们。</p>
+<blockquote>
+<p>Even though you may not have considered the distinction between primary and secondary storage in these terms before, it’s likely that you have encountered their differences in programs already. For example, after declaring and assigning ordinary variables (primary storage), a program can immediately use them in arithmetic operations. When working with file data (secondary storage), the program must <a href="../C2-C_depth/2.8-IO.html">read values from the file into memory variables</a> before it can access them.</p>
+</blockquote>
+<p>对存储设备进行分类的其他几个重要标准，来自它们的性能和容量特征。最值得关注的三个度量是：</p>
+<blockquote>
+<p>Several other important criteria for classifying memory devices arise from their performance and capacity characteristics. The three most interesting measures are:</p>
+</blockquote>
+<ul>
+<li><strong>容量</strong>（capacity）：设备能存储的数据量。容量通常以字节为单位度量。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Capacity</strong>: The amount of data a device can store. Capacity is typically measured in bytes.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>延迟</strong>（latency）：设备在接到执行数据读取操作的指令后，到给出数据所需的时间。延迟通常以秒的若干分之一（例如毫秒或纳秒）或 CPU 周期数来度量。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Latency</strong>: The amount of time it takes for a device to respond with data after it has been instructed to perform a data retrieval operation. Latency is typically measured in either fractions of a second (for example, milliseconds or nanoseconds) or CPU cycles.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>传输速率</strong>（transfer rate）：在某段时间内，能在设备和主存之间移动的数据量。传输速率也称为<strong>吞吐量</strong>（throughput），通常以每秒字节数来度量。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Transfer rate</strong>: The amount of data that can be moved between the device and main memory over some interval of time. Transfer rate is also known as <strong>throughput</strong> and is typically measured in bytes per second.</li>
+</ul>
+</blockquote>
+<p>考察现代计算机中的各种设备就会发现，它们在这三个度量上的性能都相差悬殊。性能差异主要来自两个因素：<em>距离</em>，以及实现设备所用的<em>技术不同</em>。</p>
+<blockquote>
+<p>Exploring the variety of devices in a modern computer reveals a huge disparity in device performance across all three of these measures. The performance variance primarily arises from two factors: <em>distance</em> and <em>variations in the technologies</em> used to implement the devices.</p>
+</blockquote>
+<p>距离之所以有影响，是因为归根结底，程序想用的任何数据都必须送到 CPU 的运算部件 ALU 那里处理。CPU 设计者把寄存器放在离 ALU 很近的地方，以尽量缩短信号在两者之间传播的时间。因此，尽管寄存器只能存几个字节、数量也不多，但其中存放的值几乎可以立即供 ALU 使用！与之不同，磁盘这样的辅助存储设备要通过各种控制器设备把数据传到内存，这些控制器之间用更长的导线相连。额外的距离和中间处理大大拖慢了辅助存储。</p>
+<blockquote>
+<p>Distance contributes because, ultimately, any data that a program wants to use must be available to the CPU’s arithmetic components, the ALU, for processing. CPU designers place registers close to the ALU to minimize the time it takes for a signal to propagate between the two. Thus, while registers can store only a few bytes and there aren’t many of them, the values stored are available to the ALU almost immediately! In contrast, secondary storage devices like disks transfer data to memory through various controller devices that are connected by longer wires. The extra distance and intermediate processing slows down secondary storage considerably.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注 · 格蕾丝·霍珀的「纳秒」（Grace Hopper’s “Nanoseconds”）</p><p>计算机先驱、美国海军少将格蕾丝·霍珀（Grace Hopper）在演讲时，经常给听众分发 11.8 英寸（约 30 厘米）长的电线。这些电线代表电信号在一纳秒内传播的最大距离，被称为「格蕾丝·霍珀纳秒」。她用它们来说明卫星通信的延迟局限，并演示为什么计算设备必须做得小才能快。霍珀讲解她的纳秒的录像<a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=9eyFDBPk4Yw">可以在 YouTube 上找到</a>。</p>
+<blockquote>
+<p>When speaking to an audience, computing pioneer and U.S. Navy Admiral Grace Hopper frequently handed out 11.8-inch strands of wire to audience members. These strands represented the maximum distance that an electrical signal travels in one nanosecond and were called “Grace Hopper nanoseconds”. She used them to describe the latency limitations of satellite communication and to demonstrate why computing devices need to be small in order to be fast. Recordings of Grace Hopper presenting her nanoseconds are <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=9eyFDBPk4Yw">available on YouTube</a>.</p>
+</blockquote>
+</div>
+<p>底层技术也会显著影响设备的性能。寄存器和缓存由相对简单的电路构成，只包含少量逻辑门。它们体积小、复杂度低，保证了电信号能快速地通过，从而降低了延迟。另一个极端是传统硬盘，它包含能存储数百 GB 数据的旋转磁盘片。尽管它们的存储密度高，但由于需要通过机械方式把部件对准并旋转到正确的位置，访问延迟相对较高。</p>
+<blockquote>
+<p>The underlying technology also significantly affects device performance. Registers and caches are built from relatively simple circuits, consisting of just a few logic gates. Their small size and minimal complexity ensures that electrical signals can propagate through them quickly, reducing their latencies. On the opposite end of the spectrum, traditional hard disks contain spinning magnetic platters that store hundreds of gigabytes. Although they offer dense storage, their access latency is relatively high due to the requirements of mechanically aligning and rotating components into the correct positions.</p>
+</blockquote>
+<p>本节余下的部分考察主存储和辅助存储设备的细节，并分析它们的性能特征。</p>
+<blockquote>
+<p>The remainder of this section examines the details of primary and secondary storage devices and analyzes their performance characteristics.</p>
+</blockquote>
+<h3 id="11-2-1-主存储"><a href="#11-2-1-主存储" class="headerlink" title="11.2.1. 主存储"></a>11.2.1. 主存储</h3><p><em>11.2.1. Primary Storage</em></p>
+<p>主存储设备由<strong>随机存取存储器</strong>（random access memory，RAM）构成，这意味着访问数据所需的时间不受数据在设备中位置的影响。也就是说，RAM 不需要操心把部件移到正确位置或倒带之类的事情。有两种广泛使用的 RAM：<strong>静态 RAM</strong>（SRAM）和<strong>动态 RAM</strong>（DRAM），两者在现代计算机中都起着重要作用。<a href="11.2-devices.html">表 1</a> 描述了常见主存储设备的性能度量以及它们使用的 RAM 类型。</p>
+<blockquote>
+<p>Primary storage devices consist of <strong>random access memory</strong> (RAM), which means the time it takes to access data is not affected by the data’s location in the device. That is, RAM doesn’t need to worry about things like moving parts into the correct position or rewinding tape spools. There are two widely used types of RAM, <strong>static RAM</strong> (SRAM) and <strong>dynamic RAM</strong> (DRAM), and both play an important role in modern computers. <a href="11.2-devices.html">Table 1</a> characterizes the performance measures of common primary storage devices and the types of RAM they use.</p>
+</blockquote>
+<p><strong>表 1.</strong> 2020 年典型工作站的主存储设备特征</p>
+<p><em>Table 1. Primary Storage Device Characteristics of a Typical 2020 Workstation</em></p>
+<table>
+<thead>
+<tr>
+<th>设备</th>
+<th>容量</th>
+<th>大致延迟</th>
+<th>RAM 类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>寄存器</td>
+<td>4–8 字节</td>
+<td>&lt; 1 ns</td>
+<td>SRAM</td>
+</tr>
+<tr>
+<td>CPU 缓存</td>
+<td>1–32 MB</td>
+<td>5 ns</td>
+<td>SRAM</td>
+</tr>
+<tr>
+<td>主存</td>
+<td>4–64 GB</td>
+<td>100 ns</td>
+<td>DRAM</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Capacity</th>
+<th>Approx. latency</th>
+<th>RAM type</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Register</td>
+<td>4 - 8 bytes</td>
+<td>&lt; 1 ns</td>
+<td>SRAM</td>
+</tr>
+<tr>
+<td>CPU cache</td>
+<td>1 - 32 megabytes</td>
+<td>5 ns</td>
+<td>SRAM</td>
+</tr>
+<tr>
+<td>Main memory</td>
+<td>4 - 64 gigabytes</td>
+<td>100 ns</td>
+<td>DRAM</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>SRAM 把数据存储在小型电路（例如<a href="../C5-Arch/5.4.3-storagecircs.html">锁存器</a>）中。SRAM 通常是最快的存储器类型，设计者把它直接集成到 CPU 中，用来构建<a href="../C5-Arch/5.4.3-storagecircs.html">寄存器</a>和缓存。SRAM 的制造成本、运行成本（功耗）和占用的面积都相对较高。这些成本合在一起，限制了 CPU 能包含的 SRAM 存储量。</p>
+<blockquote>
+<p>SRAM stores data in small electrical circuits (for example, <a href="../C5-Arch/5.4.3-storagecircs.html">latches</a>). SRAM is typically the fastest type of memory, and designers integrate it directly into a CPU to build <a href="../C5-Arch/5.4.3-storagecircs.html">registers</a> and caches. SRAM is relatively expensive in its cost to build, cost to operate (power consumption), and in the amount of space it occupies. Collectively, those costs limit the amount of SRAM storage that a CPU can include.</p>
+</blockquote>
+<p>DRAM 使用一种叫作<em>电容</em>的、能保持电荷的电子元件来存储数据。它之所以被称为「动态」的，是因为 DRAM 系统必须频繁地刷新电容中的电荷，才能保持所存储的值。现代系统用 DRAM 在内存条上实现主存，内存条通过一种称为<strong>内存总线</strong>（memory bus）的高速互连与 CPU 相连。</p>
+<blockquote>
+<p>DRAM stores data using electrical components called <em>capacitors</em> that hold an electrical charge. It’s called “dynamic” because a DRAM system must frequently refresh the charge of its capacitors to maintain a stored value. Modern systems use DRAM to implement main memory on modules that connect to the CPU via a high-speed interconnect called the <strong>memory bus</strong>.</p>
+</blockquote>
+<p><a href="11.2-devices.html">图 1</a> 展示了主存储设备相对于内存总线的位置。要从内存中取一个值，CPU 把它想取的数据的地址放到内存总线上，并发出信号让内存模块执行一次读操作。经过短暂的延迟后，内存模块通过总线把存放在所请求地址处的值发送给 CPU。</p>
+<blockquote>
+<p><a href="11.2-devices.html">Figure 1</a> illustrates the positions of primary storage devices relative to the memory bus. To retrieve a value from memory, the CPU puts the address of the data it would like to retrieve on the memory bus and signals that the memory modules should perform a read. After a short delay, the memory module sends the value stored at the requested address across the bus to the CPU.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/MemoryBus.png" alt="The registers and ALU are nearby one another on the CPU. The CPU connects to main memory via a memory bus, which consists of several collections of wires for exchanging addresses, data, and control signals between the CPU and memory."></p>
+<p><strong>图 1.</strong> 主存储与内存总线体系结构</p>
+<p><em>Figure 1. Primary storage and memory bus architecture</em></p>
+<p>尽管 CPU 和主存在物理上只相距几英寸，但数据在 CPU 和主存之间移动时必须经过内存总线。它们之间额外的距离和电路，使主存的延迟比 CPU 上的存储更高、传输速率更低。因此，内存总线有时被称为<strong>冯·诺依曼瓶颈</strong>（von Neumann bottleneck）。当然，尽管性能较低，主存仍然是必不可少的部件，因为它能存储的数据比 CPU 上能放下的多出几个数量级。与其他形式的存储一样，容量和速度之间存在明显的权衡。</p>
+<blockquote>
+<p>Even though the CPU and main memory are physically just a few inches away from each other, data must travel through the memory bus when it moves between the CPU and main memory. The extra distance and circuitry between them increases the latency and reduces the transfer rate of main memory relative to on-CPU storage. As a result, the memory bus is sometimes referred to as the <strong>von Neumann bottleneck</strong>. Of course, despite its lower performance, main memory remains an essential component because it stores several orders of magnitude more data than can fit on the CPU. Consistent with other forms of storage, there’s a clear trade-off between capacity and speed.</p>
+</blockquote>
+<p><strong>CPU 缓存</strong>（cache，读音同「cash」）无论在物理位置上，还是在性能和容量特征上，都介于寄存器和主存之间。CPU 缓存通常直接在 CPU 上存储几 KB 到几 MB 的数据，但在物理上，缓存离 ALU 不像寄存器那么近。因此，访问缓存比访问主存快，但要让数据可用于计算，它比寄存器多需要几个周期。</p>
+<blockquote>
+<p><strong>CPU cache</strong> (pronounced “cash”) occupies the middle ground between registers and main memory, both physically and in terms of its performance and capacity characteristics. A CPU cache typically stores a few kilobytes to megabytes of data directly on the CPU, but physically, caches are not quite as close to the ALU as registers. Thus, caches are faster to access than main memory, but they require a few more cycles than registers to make data available for computation.</p>
+</blockquote>
+<p>缓存中的内容不需要程序员显式地加载，CPU 内部的控制电路会自动把主存内容的一个子集存放到缓存中。CPU 会有策略地控制把主存的哪个子集存放到缓存中，以便尽可能多的内存请求能由（性能高得多的）缓存来满足。本章后面的小节会介绍构建缓存时的设计决策，以及决定缓存中存放哪些数据的算法。</p>
+<blockquote>
+<p>Rather than the programmer explicitly loading values into the cache, control circuitry within the CPU automatically stores a subset of the main memory’s contents in the cache. CPUs strategically control which subset of main memory they store in caches so that as many memory requests as possible can be serviced by the (much higher performance) cache. Later sections of this chapter describe the design decisions that go into cache construction and the algorithms that should govern which data they store.</p>
+</blockquote>
+<p>真实的系统包含多级缓存，它们表现得就像一个微型的存储器层次结构。也就是说，CPU 可能有一个非常小而快的 <strong>L1 缓存</strong>，它存放稍大稍慢的 <strong>L2 缓存</strong>内容的一个子集，而 L2 缓存又存放更大更慢的 <strong>L3 缓存</strong>内容的一个子集。本节余下的部分描述只有一级缓存的系统，但真实系统中各级缓存之间的交互，与后面详细介绍的单级缓存和主存之间的交互非常相似。</p>
+<blockquote>
+<p>Real systems incorporate multiple levels of caches that behave like their own miniature version of the memory hierarchy. That is, a CPU might have a very small and fast <strong>L1 cache</strong> that stores a subset of a slightly larger and slower <strong>L2 cache</strong>, which in turns stores a subset of a larger and slower <strong>L3 cache</strong>. The remainder of this section describes a system with just a single cache, but the interaction between caches on a real system behaves much like the interaction between a single cache and main memory detailed later.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注</p><p>如果你好奇自己系统上缓存和主存的大小，<code>lscpu</code> 命令会打印 CPU 的信息（包括缓存容量），运行 <code>free -m</code> 则会以 MB 为单位显示系统的主存容量。</p>
+<blockquote>
+<p>If you’re curious about the sizes of the caches and main memory on your system, the <code>lscpu</code> command prints information about the CPU (including its cache capacities). Running <code>free -m</code> shows the system’s main memory capacity in megabytes.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · 在 macOS 上</p><p>macOS 没有 <code>lscpu</code> 和 <code>free</code>，可以用 <code>sysctl</code> 查询。译者在 Apple M1 Pro 上运行 <code>sysctl hw.memsize hw.l1dcachesize hw.l2cachesize hw.cachelinesize hw.perflevel0.l2cachesize hw.perflevel1.l2cachesize</code>，得到主存 17179869184 字节（16 GB）、L1 数据缓存 65536 字节、L2 缓存 4194304 字节、缓存行 128 字节；<code>hw.perflevel0</code> 和 <code>hw.perflevel1</code> 分别报告两类核心簇的 L2（12 MB 与 4 MB）。注意这台机器报告的缓存行（<code>hw.cachelinesize</code>）是 128 字节；缓存行大小会影响本章后面讨论的空间局部性，以及第 14 章的伪共享。</p>
+</div>
+<h3 id="11-2-2-辅助存储"><a href="#11-2-2-辅助存储" class="headerlink" title="11.2.2. 辅助存储"></a>11.2.2. 辅助存储</h3><p><em>11.2.2. Secondary Storage</em></p>
+<p>在物理上，辅助存储设备接入系统的位置离 CPU 比主存还要远。与大多数其他计算机设备相比，辅助存储设备多年来经历了翻天覆地的变化，而且它们的设计仍然比其他部件更加多样。标志性的<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Punched_card">穿孔卡片</a>让人工操作员通过在一张类似索引卡的厚纸上打小孔来存储数据。穿孔卡片的设计可以追溯到 1890 年的美国人口普查，它忠实地存储着用户数据（通常是程序），一直用到 20 世纪 60 年代，乃至 70 年代。</p>
+<blockquote>
+<p>Physically, secondary storage devices connect to a system even farther away from the CPU than main memory. Compared to most other computer equipment, secondary storage devices have evolved dramatically over the years, and they continue to exhibit more diverse designs than other components. The iconic <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Punched_card">punch card</a> allowed a human operator to store data by making small holes in a thick piece of paper, similar to an index card. Punch cards, whose design dates back to the U.S. census of 1890, faithfully stored user data (often programs) through the 1960s and into the 1970s.</p>
+</blockquote>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Magnetic_tape_data_storage">磁带机</a>把数据存储在一卷磁带上。尽管磁带机通常以低廉的成本提供很高的存储密度（在很小的体积中存储大量信息），但由于必须把磁带卷到正确的位置，它的访问速度很慢。尽管大多数计算机用户如今已不常接触磁带机，但它仍常用于批量存储操作（例如大型数据备份），在这类场景中，预计很少需要把数据读回来。现代磁带机把磁带卷装进小盒子里，以方便使用。</p>
+<blockquote>
+<p>A <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Magnetic_tape_data_storage">tape drive</a> stores data on a spool of magnetic tape. Although they generally offer good storage density (lots of information in a small size) for a low cost, tape drives are slow to access because they must wind the spool to the correct location. Although most computer users don’t encounter them often anymore, tape drives are still frequently used for bulk storage operations (for example, large data backups) in which reading the data back is expected to be rare. Modern tape drives arrange the magnetic tape spool into small cartridges for ease of use.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/StorageDevices.png" alt="Photos of classic secondary storage devices."></p>
+<p><strong>图 2.</strong> （a）穿孔卡片、（b）磁带卷和（c）各种尺寸软盘的示例照片。图片来自<a target="_blank" rel="noopener" href="https://www.wikipedia.org/">维基百科</a>。</p>
+<p><em>Figure 2. Example photos of (a) a punch card, (b) a magnetic tape spool, and (c) a variety of floppy disk sizes. Images from <a target="_blank" rel="noopener" href="https://www.wikipedia.org/">Wikipedia</a>.</em></p>
+<p><a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Floppy_disk">软盘</a>和<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Optical_disc">光盘</a>等可移动介质是另一种流行的辅助存储形式。软盘包含一片磁性记录介质，它在读写内容的磁头上方旋转。<a href="11.2-devices.html">图 2</a> 展示了穿孔卡片、磁带机和软盘的照片。CD、DVD 和蓝光光盘等光盘通过盘面上的微小凹坑来存储信息。光驱用激光照射光盘来读取它，凹坑的有无决定光束是否被反射，以此编码 0 和 1。</p>
+<blockquote>
+<p>Removable media like <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Floppy_disk">floppy disks</a> and <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Optical_disc">optical discs</a> are another popular form of secondary storage. Floppy disks contain a spindle of magnetic recording media that rotates over a disk head that reads and writes its contents. <a href="11.2-devices.html">Figure 2</a> shows photos of a punch card, a tape drive, and a floppy disk. Optical discs such as CD, DVD, and Blu-ray store information via small indentations on the disc. The drive reads a disc by shining a laser at it, and the presence or absence of indentations causes the beam to reflect (or not), encoding zeros and ones.</p>
+</blockquote>
+<h4 id="现代辅助存储"><a href="#现代辅助存储" class="headerlink" title="现代辅助存储"></a>现代辅助存储</h4><p><em>Modern Secondary Storage</em></p>
+<p><strong>表 2.</strong> 2020 年典型工作站的辅助存储设备特征</p>
+<p><em>Table 2. Secondary Storage Device Characteristics of a Typical 2020 Workstation</em></p>
+<table>
+<thead>
+<tr>
+<th>设备</th>
+<th>容量</th>
+<th>延迟</th>
+<th>传输速率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>闪存盘</td>
+<td>0.5–2 TB</td>
+<td>0.1–1 ms</td>
+<td>200–3,000 MB&#x2F;s</td>
+</tr>
+<tr>
+<td>传统硬盘</td>
+<td>0.5–10 TB</td>
+<td>5–10 ms</td>
+<td>100–200 MB&#x2F;s</td>
+</tr>
+<tr>
+<td>远程网络服务器</td>
+<td>差别很大</td>
+<td>20–200 ms</td>
+<td>差别很大</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Device</th>
+<th>Capacity</th>
+<th>Latency</th>
+<th>Transfer rate</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Flash disk</td>
+<td>0.5 - 2 terabytes</td>
+<td>0.1 - 1 ms</td>
+<td>200 - 3,000 megabytes &#x2F; second</td>
+</tr>
+<tr>
+<td>Traditional hard disk</td>
+<td>0.5 - 10 terabytes</td>
+<td>5 - 10 ms</td>
+<td>100 - 200 megabytes &#x2F; second</td>
+</tr>
+<tr>
+<td>Remote network server</td>
+<td>Varies considerably</td>
+<td>20 - 200 ms</td>
+<td>Varies considerably</td>
+</tr>
+</tbody></table>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 表 2 的数字已经过时</p>
+<ul>
+<li><strong>SSD</strong>：表中闪存盘的传输速率上限是 3,000 MB&#x2F;s。采用 PCIe 5.0 接口的消费级 NVMe 固态硬盘已远超这个数：三星 2025 年发布的 9100 PRO 顺序读&#x2F;写可达 14,800&#x2F;13,400 MB&#x2F;s（4TB、8TB 型号；1TB、2TB 型号读取为 14,700 MB&#x2F;s），容量最高 8TB。<a target="_blank" rel="noopener" href="https://news.samsung.com/us/samsung-announces-9100-pro-series-ssds-with-breakthrough-pcie-5-0-performance/">Samsung Newsroom：Samsung Announces the 9100 PRO Series SSDs</a></li>
+<li><strong>HDD</strong>：表中硬盘容量上限是 10TB。2024 年 1 月，希捷推出采用热辅助磁记录（HAMR）技术的 Mozaic 3+ 平台，单张盘片面密度超过 3TB，Exos 系列硬盘容量达到 30TB 以上，并计划在未来几年提高到每盘片 4TB、5TB 以上。容量涨了，但机械结构决定的寻道和旋转延迟（毫秒级）这一点并没有改变。<a target="_blank" rel="noopener" href="https://www.seagate.com/stories/articles/seagates-breakthrough-30tb-plus-hard-drives-ramp-volume-marking-an-inflection-point-in-the-storage-industry-pr/">Seagate：Seagate’s Breakthrough 30TB+ Hard Drives Ramp Volume</a></li>
+</ul>
+</div>
+<p><a href="11.2-devices.html">表 2</a> 描述了当今工作站上常见的辅助存储设备。<a href="11.2-devices.html">图 3</a> 展示了从辅助存储到主存的路径通常要经过几个中间设备控制器。例如，典型的硬盘连接到串行 ATA（SATA）控制器，后者连接到系统 I&#x2F;O 控制器，再由 I&#x2F;O 控制器连接到内存总线。这些中间设备向操作系统和程序员屏蔽了与磁盘通信的细节，使磁盘更易于使用。但是，数据流经这些额外的设备时，也会引入传输延迟。</p>
+<blockquote>
+<p><a href="11.2-devices.html">Table 2</a> characterizes the secondary storage devices commonly available to workstations today. <a href="11.2-devices.html">Figure 3</a> displays how the path from secondary storage to main memory generally passes through several intermediate device controllers. For example, a typical hard disk connects to a Serial ATA controller, which connects to the system I&#x2F;O controller, which in turn connects to the memory bus. These intermediate devices make disks easier to use by abstracting the disk communication details from the OS and programmer. However, they also introduce transfer delays as data flows through the additional devices.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/IOBus.png" alt="The CPU cache is located on the CPU, in between the registers and the CPU’s connection to the memory bus. Also connected to the memory bus is an I/O controller, which in turn connects to several other more specific controllers like SATA, USB, and IDE."></p>
+<p><strong>图 3.</strong> 辅助存储与 I&#x2F;O 总线体系结构</p>
+<p><em>Figure 3. Secondary storage and I&#x2F;O bus architecture</em></p>
+<p>当今最常见的两种辅助存储设备是<strong>硬盘驱动器</strong>（HDD）和基于闪存的<strong>固态硬盘</strong>（SSD）。硬盘由几张用可磁记录材料制成的扁平圆形盘片组成。盘片高速旋转，转速通常在每分钟 5,000 到 15,000 转之间。盘片旋转时，一根末端带有磁头的小机械臂在盘片上移动，在同心的磁道（盘片上处于同一直径的区域）上读写数据。</p>
+<blockquote>
+<p>The two most common secondary storage devices today are <strong>hard disk drives</strong> (HDDs) and flash-based <strong>solid-state drives</strong> (SSDs). A hard disk consists of a few flat, circular platters made from a material that allows for magnetic recording. The platters rotate quickly, typically at speeds between 5,000 and 15,000 revolutions per minute. As the platters spin, a small mechanical arm with a disk head at the tip moves across the platter to read or write data on concentric tracks (regions of the platter located at the same diameter).</p>
+</blockquote>
+<p><a href="11.2-devices.html">图 4</a> 展示了<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hard_disk_drive">硬盘</a>的主要部件。访问数据之前，磁盘必须让磁头对准包含所需数据的磁道。对准需要伸出或收回磁臂，直到磁头位于该磁道上方。移动磁臂称为<strong>寻道</strong>（seeking），由于需要机械运动，寻道会给数据访问带来一小段<strong>寻道时间</strong>（seek time）延迟（几毫秒）。磁臂到位后，磁盘还必须等待盘片转动，直到磁头正好位于存放所需数据的位置上方。这又引入了另一段短暂的延迟（再几毫秒），称为<strong>旋转延迟</strong>（rotational latency）。因此，由于其机械特性，硬盘的访问延迟比前面介绍的主存储设备高得多。</p>
+<blockquote>
+<p><a href="11.2-devices.html">Figure 4</a> illustrates the major components of a <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Hard_disk_drive">hard disk</a>. Before accessing data, the disk must align the disk head with the track that contains the desired data. Alignment requires extending or retracting the arm until the head sits above the track. Moving the disk arm is called <strong>seeking</strong>, and because it requires mechanical motion, seeking introduces a small <strong>seek time</strong> delay to accessing data (a few milliseconds). When the arm is in the correct position, the disk must wait for the platter to rotate until the disk head is directly above the location that stores the desired data. This introduces another short delay (a few more milliseconds), known as <strong>rotational latency</strong>. Thus, due to their mechanical characteristics, hard disks exhibit significantly higher access latencies than the primary storage devices described earlier.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DiskParts.png" alt="A photo of the internals of a hard disk with its parts labeled."></p>
+<p><strong>图 4.</strong> 硬盘驱动器的主要部件</p>
+<p><em>Figure 4. The major components of a hard disk drive</em></p>
+<p>在过去几年里，没有活动部件（因而延迟更低）的 SSD 迅速崛起。它们之所以被称为固态硬盘，是因为不依赖机械运动。尽管存在多种固态技术，但<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Flash_memory">闪存</a>在商用 SSD 设备中占据绝对主导地位。闪存的技术细节超出了本书的范围，只需知道基于闪存的设备读、写和擦除数据的速度都比传统硬盘快。尽管它们的存储密度还比不上机械硬盘，但在笔记本电脑等大多数消费类设备中，它们已基本取代了旋转磁盘。</p>
+<blockquote>
+<p>In the past few years, SSDs, which have no moving parts (and thus lower latency) have quickly risen to prominence. They are known as solid-state drives because they don’t rely on mechanical movement. Although several solid-state technologies exist, <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Flash_memory">flash memory</a> reigns supreme in commercial SSD devices. The technical details of flash memory are beyond the scope of this book, but it suffices to say that flash-based devices allow for reading, writing, and erasing data at speeds faster than traditional hard disks. Though they don’t yet store data as densely as their mechanical counterparts, they’ve largely replaced spinning disks in most consumer devices like laptops.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">11.1. 存储器层次结构</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">11.3. 局部性</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-1-%E4%B8%BB%E5%AD%98%E5%82%A8"><span class="toc-text">11.2.1. 主存储</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-2-2-%E8%BE%85%E5%8A%A9%E5%AD%98%E5%82%A8"><span class="toc-text">11.2.2. 辅助存储</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

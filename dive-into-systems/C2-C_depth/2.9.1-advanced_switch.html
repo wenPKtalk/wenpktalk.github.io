@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.9.1. 常量、switch、enum 与 typedef · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;advanced_switch.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.9.1. Constants, switc">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2.9.1. 常量、switch、enum 与 typedef · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;advanced_switch.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.9.1. Constants, switc">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html" class="current" aria-current="page">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>2. 深入 C 语言编程</span>
+      </nav>
+      <span class="book-position">第 26 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">2.9.1. 常量、switch、enum 与 typedef</h1>
+  
+  
+    <p class="article-meta"><span>约 17 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/advanced_switch.html">https://diveintosystems.org/book/C2-C_depth/advanced_switch.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>2.9.1. Constants, switch, enum, and typedef</em></p>
+<p>常量、switch 语句、枚举类型和 typedef 是 C 语言中有助于写出更易读、更易维护的代码的特性。常量、枚举类型和 typedef 用来在程序中为字面值和类型定义别名。switch 语句可以用来代替某些串联的 <code>if-else if</code> 语句。</p>
+<blockquote>
+<p>Constants, switch statements, enumerated types, and typedef are features of the C language that are useful for creating more readable code and maintainable code. Constants, enumerated types, and typedefs are used to define aliases for literal values and types in programs. Switch statements can be used in place of some chaining <code>if-else if</code> statements.</p>
+</blockquote>
+<h4 id="C-常量"><a href="#C-常量" class="headerlink" title="C 常量"></a>C 常量</h4><p><em>C Constants</em></p>
+<p><strong>常量</strong>（constant）是 C 字面值的别名。用常量代替字面值，可以让代码更易读、更易修改。在 C 中，常量在函数体之外用如下语法定义：</p>
+<blockquote>
+<p>A <strong>constant</strong> is an alias for a C literal value. Constants are used in place of the literal value to make code more readable and easier to modify. In C, constants are defined outside of a function body using the following syntax:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>严格地说，<code>#define</code> 定义的是预处理器的<strong>宏</strong>（macro）：编译之前，预处理器会把代码中的宏名原样替换成后面的文本，所以它其实可以写在文件的任何位置（只要在使用之前）。宏值外面加括号是个好习惯，可以避免替换后与周围的运算符结合出错。除了宏，C 中还可以用 <code>const</code> 变量和 <code>enum</code> 常量表示常量；C23 还新增了 <code>constexpr</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">#define const_name (literal_value)</span><br></pre></td></tr></table></figure>
+
+<p>下面是一段定义并使用三个常量（<code>N</code>、<code>PI</code> 和 <code>NAME</code>）的程序片段：</p>
+<blockquote>
+<p>Here is an example of a partial program that defines and uses three constants (<code>N</code>, <code>PI</code>, and <code>NAME</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">#define N    (20)        // N:  alias for the literal value 20</span><br><span class="line">#define PI   (3.14)      // PI: alias for the literal value 3.14</span><br><span class="line">#define NAME (&quot;Sarita&quot;)  // NAME: alias for the string literal &quot;Sarita&quot;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">  int array[N];   // an array of 20 ints</span><br><span class="line">  int *d_arr, i;</span><br><span class="line">  double area, circ, radius;</span><br><span class="line"></span><br><span class="line">  radius = 12.3;</span><br><span class="line">  area = PI*radius*radius;</span><br><span class="line">  circ = 2*PI*radius;</span><br><span class="line"></span><br><span class="line">  d_arr = malloc(sizeof(int)*N);</span><br><span class="line">  if(d_arr == NULL) &#123;</span><br><span class="line">    printf(&quot;Sorry, %s, malloc failed!\n&quot;, NAME);</span><br><span class="line">    exit(1);</span><br><span class="line">  &#125;</span><br><span class="line">  for(i=0; i &lt; N; i++) &#123;</span><br><span class="line">    array[i] = i;</span><br><span class="line">    d_arr[i] = i*2;</span><br><span class="line">  &#125;</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<p>使用常量能让代码更易读（在表达式中，<code>PI</code> 比 <code>3.14</code> 更有意义），也让代码更易修改。例如，要改变上面程序中数组的边界和 pi 值的精度，程序员只需修改常量的定义并重新编译；所有用到这些常量的代码都会使用新的值。例如：</p>
+<blockquote>
+<p>Using constants makes the code more readable (in an expression, <code>PI</code> has more meaning than <code>3.14</code>). Using constants also makes code easier to modify. For example, to change the bounds of the arrays and the precision of the value of pi in the above program, the programmer only needs to change their constant definitions and recompile; all the code that uses the constant will use their new values. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">#define N    (50)        // redefine N from 20 to 50</span><br><span class="line">#define PI   (3.14159)   // redefine PI to higher precision</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">  int array[N];  // now allocates an array of size 50</span><br><span class="line">  ...</span><br><span class="line">  area = PI*radius*radius;        // now uses 3.14159 for PI</span><br><span class="line">  d_arr = malloc(sizeof(int)*N);  // now mallocs array of 50 ints</span><br><span class="line">  ...</span><br><span class="line">  for(i=0; i &lt; N; i++) &#123;    // now iterates over 50 elements</span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<p>要记住，常量不是左值——它们是 C 类型字面值的别名。因此，它们的值不能像变量那样在运行时改变。例如，下面的代码会导致编译错误：</p>
+<blockquote>
+<p>It is important to remember that constants are not lvalues—​they are aliases for literal values of C types. As a result, their values cannot be changed at runtime like those of variables. The following code, for example, causes a compilation error:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#define N  20</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">  ...</span><br><span class="line">  N = 50;  // compilation error: `20 = 50` is not valid C</span><br></pre></td></tr></table></figure>
+
+<h4 id="switch-语句"><a href="#switch-语句" class="headerlink" title="switch 语句"></a>switch 语句</h4><p><em>Switch statements</em></p>
+<p>C 的 <code>switch</code> 语句可以代替某些（但不是全部）串联的 <code>if</code>-<code>else if</code> 代码序列。虽然 <code>switch</code> 并没有为 C 语言增加任何表达能力，但它常常能写出更简洁的分支代码，还可能让编译器生成比等价的串联 <code>if</code>-<code>else if</code> 代码执行得更高效的分支代码。</p>
+<blockquote>
+<p>The C <code>switch</code> statement can be used in place of some, but not all, chaining <code>if</code>-<code>else if</code> code sequences. While <code>switch</code> doesn’t provide any additional expressive power to the C programming language, it often yields more concise code branching sequences. It may also allow the compiler to produce branching code that executes more efficiently than equivalent chaining <code>if</code>-<code>else if</code> code.</p>
+</blockquote>
+<p><code>switch</code> 语句的 C 语法如下：</p>
+<blockquote>
+<p>The C syntax for a <code>switch</code> statement looks like:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">switch (&lt;expression&gt;) &#123;</span><br><span class="line"></span><br><span class="line">   case &lt;literal value 1&gt;:</span><br><span class="line">        &lt;statements&gt;;</span><br><span class="line">        break;         // breaks out of switch statement body</span><br><span class="line">   case &lt;literal value 2&gt;:</span><br><span class="line">        &lt;statements&gt;;</span><br><span class="line">        break;         // breaks out of switch statement body</span><br><span class="line">   ...</span><br><span class="line">   default:            // default label is optional</span><br><span class="line">        &lt;statements&gt;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>switch 语句的执行过程如下：</p>
+<blockquote>
+<p>A switch statement is executed as follows:</p>
+</blockquote>
+<ol>
+<li>首先对 <code>expression</code> 求值。</li>
+</ol>
+<blockquote>
+<ol>
+<li>The <code>expression</code> evaluates first.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>接着，<code>switch</code> 查找与表达式的值相匹配的 <code>case</code> 字面值。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Next, the <code>switch</code> searches for a <code>case</code> literal value that matches the value of the expression.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>找到匹配的 <code>case</code> 字面值后，就从紧跟其后的语句开始执行。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Upon finding a matching <code>case</code> literal, it begins executing the statements that immediately follow it.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>如果没有找到匹配的 <code>case</code>，并且存在 <code>default</code> 标签，就从 <code>default</code> 标签处的语句开始执行。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>If no matching <code>case</code> is found, it will begin executing the statements in the <code>default</code> label if one is present.</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li>否则，<code>switch</code> 语句体中的语句都不会执行。</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>Otherwise, no statements in the body of the <code>switch</code> statement get executed.</li>
+</ol>
+</blockquote>
+<p>关于 <code>switch</code> 语句的几条规则：</p>
+<blockquote>
+<p>A few rules about <code>switch</code> statements:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 两处更准确的说法</p>
+<ul>
+<li>下面第一条说 <code>case</code> 后面必须是字面值、<em>不能</em>是表达式，这说得太严了：C 标准要求的是<strong>整型常量表达式</strong>，即编译时就能算出的整数值。所以 <code>case &#39;A&#39;:</code>、<code>case N:</code>（<code>N</code> 是 <code>#define</code> 宏）、<code>case MON:</code>（枚举常量）乃至 <code>case BASE + 2:</code> 都是合法的；不合法的是含变量、要到运行时才能算出的表达式。</li>
+<li>最后一条说 <code>default</code> 标签「如果有，必须放在最后」，这也不对：<code>default</code> 可以出现在 <code>switch</code> 体中的任何位置，放在最后只是惯例。</li>
+</ul>
+<p>译者用 <code>gcc -std=c99 -pedantic -Wall</code> 编译了一个把 <code>default</code> 放在最前、<code>case</code> 写成 <code>BASE + 2</code> 和枚举常量的 <code>switch</code>，没有任何警告，运行结果也正确。</p>
+</div>
+<ul>
+<li>每个 <code>case</code> 关联的值必须是字面值——它<em>不能</em>是表达式。原表达式只与各个 <code>case</code> 关联的字面值进行<em>相等</em>匹配。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The value associated with each <code>case</code> must be a literal value — it <em>cannot</em> be an expression. The original expression gets matched for <em>equality</em> only with the literal values associated with each <code>case</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>执行到 <code>break</code> 语句时，<code>switch</code> 语句体中剩余的所有语句都不再执行。也就是说，<code>break</code> 跳出 <code>switch</code> 语句体，从整个 <code>switch</code> 代码块之后的下一条语句继续执行。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Reaching a <code>break</code> statement stops the execution of all remaining statements inside the body of the <code>switch</code> statement. That is, <code>break</code> breaks out of the body of the <code>switch</code> statement and continues execution with the next statement after the entire <code>switch</code> block.</li>
+</ul>
+</blockquote>
+<ul>
+<li>值相匹配的 <code>case</code> 语句标记的是将要执行的 C 语句序列的起点——执行会跳到 <code>switch</code> 体内的某个位置开始执行代码。因此，如果某个 <code>case</code> 的末尾没有 <code>break</code> 语句，后续各 <code>case</code> 下的语句会依次执行，直到执行了一条 <code>break</code> 语句或到达 <code>switch</code> 语句体的末尾为止。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>case</code> statement with a matching value marks the starting point into the sequence of C statements that will be executed — execution jumps to a location inside the <code>switch</code> body to start executing code. Thus, if there is no <code>break</code> statement at the end of a particular <code>case</code>, then the statements under the subsequent <code>case</code> statements execute in order until either a <code>break</code> statement is executed or the end of the body of the <code>switch</code> statement is reached.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>default</code> 标签是可选的。如果有，它必须放在最后。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>default</code> label is optional. If present, it must be at the end.</li>
+</ul>
+</blockquote>
+<p>下面是一个含 <code>switch</code> 语句的示例程序：</p>
+<blockquote>
+<p>Here’s an example program with a <code>switch</code> statement:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int num, new_num = 0;</span><br><span class="line"></span><br><span class="line">    printf(&quot;enter a number between 6 and 9: &quot;);</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;num);</span><br><span class="line"></span><br><span class="line">    switch(num) &#123;</span><br><span class="line">        case 6:</span><br><span class="line">            new_num = num + 1;</span><br><span class="line">            break;</span><br><span class="line">        case 7:</span><br><span class="line">            new_num = num;</span><br><span class="line">            break;</span><br><span class="line">        case 8:</span><br><span class="line">            new_num = num - 1;</span><br><span class="line">            break;</span><br><span class="line">        case 9:</span><br><span class="line">            new_num = num + 2;</span><br><span class="line">            break;</span><br><span class="line">        default:</span><br><span class="line">            printf(&quot;Hey, %d is not between 6 and 9\n&quot;, num);</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;num %d  new_num %d\n&quot;, num, new_num);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面是这段代码的几次运行示例：</p>
+<blockquote>
+<p>Here are some example runs of this code:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">./a.out</span><br><span class="line">enter a number between 6 and 9: 9</span><br><span class="line">num 9  new_num 11</span><br><span class="line"></span><br><span class="line">./a.out</span><br><span class="line">enter a number between 6 and 9: 6</span><br><span class="line">num 6  new_num 7</span><br><span class="line"></span><br><span class="line">./a.out</span><br><span class="line">enter a number between 6 and 9: 12</span><br><span class="line">Hey, 12 is not between 6 and 9</span><br><span class="line">num 12  new_num 0</span><br></pre></td></tr></table></figure>
+
+<h4 id="枚举类型"><a href="#枚举类型" class="headerlink" title="枚举类型"></a>枚举类型</h4><p><em>Enumerated Types</em></p>
+<p><strong>枚举类型</strong>（enumerated type，<code>enum</code>）是定义一组相关整数常量的一种方式。switch 语句和枚举类型常常一起使用。</p>
+<blockquote>
+<p>An <strong>enumerated type</strong> (<code>enum</code>) is a way to define a group of related integer constants. Often switch statements and enumerated types are used together.</p>
+</blockquote>
+<p>枚举类型应当在函数体之外定义，语法如下（<code>enum</code> 是 C 的关键字）：</p>
+<blockquote>
+<p>The enumerated type should be defined outside of a function body, using the following syntax (<code>enum</code> is a keyword in C):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">enum type_name &#123;</span><br><span class="line">   CONST_1_NAME,</span><br><span class="line">   CONST_2_NAME,</span><br><span class="line">   ...</span><br><span class="line">   CONST_N_NAME</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>注意，常量字段由一个以逗号分隔的名字列表指定，并没有显式地给出值。默认情况下，列表中的第一个常量被赋值为 0，第二个为 1，依此类推。</p>
+<blockquote>
+<p>Note that the constant fields are specified by a comma separated list of names and are not explicitly given values. By default, the first constant in the list is assigned the value 0, the second the value 1, and so on.</p>
+</blockquote>
+<p>下面是一个为一周中的各天定义枚举类型的例子：</p>
+<blockquote>
+<p>Below is an example of defining an enumerated type for the days of the week:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">enum days_of_week &#123;</span><br><span class="line">   MON,</span><br><span class="line">   TUES,</span><br><span class="line">   WED,</span><br><span class="line">   THURS,</span><br><span class="line">   FRI</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>枚举类型的变量用类型名 <code>enum type_name</code> 来声明，它所定义的常量值可以用在表达式中。例如：</p>
+<blockquote>
+<p>A variable of an enumerated type value is declared using the type name <code>enum type_name</code>, and the constant values it defines can be used in expressions. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">enum days_of_week day;</span><br><span class="line"></span><br><span class="line">day = THURS;</span><br><span class="line"></span><br><span class="line">if (day &gt; WED) &#123;</span><br><span class="line">  printf(&quot;The weekend is arriving soon!\n&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>枚举类型类似于用 <code>#define</code> 定义一组常量，如下所示：</p>
+<blockquote>
+<p>An enumerated types is similar to defining a set of constants using <code>#define</code> like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#define MON    0</span><br><span class="line">#define TUES   1</span><br><span class="line">#define WED    2</span><br><span class="line">#define THURS  3</span><br><span class="line">#define FRI    4</span><br></pre></td></tr></table></figure>
+
+<p>枚举类型中的常量值可以像常量那样使用，让程序更易读、代码更易更新。不过，枚举类型的一个优点是把一组相关的整数常量组织在一起。它还是一种类型定义，所以变量和参数可以声明为枚举类型，而常量只是字面值的别名。此外，枚举类型中各常量的具体值是从 <code>0</code> 开始依次隐式赋予的，程序员不必逐个指定。</p>
+<blockquote>
+<p>The constant values in the enumerated type can be used in a similar way as constants are used to make a program easier to read and code easier to update. However, an enumerated type has an advantage of grouping together a set of related integer constants together. It also is a type definition so variables and parameters can be declared to be an enumerated type, whereas constants are aliases for literal values. In addition, in enumerated types the specific values of each constant is implicitly assigned in sequence starting at <code>0</code>, so the programmer doesn’t have to specify each constant’s value.</p>
+</blockquote>
+<p>枚举类型的另一个好处是，可以很容易地向集合中添加或删除常量，而不必修改所有常量的值。例如，如果用户想把星期六和星期日加入这组日子，同时保持各天的相对顺序，只需把它们加到枚举类型定义中，而不必像用 <code>#define</code> 定义常量那样显式地重新定义其他常量的值：</p>
+<blockquote>
+<p>Another nice feature of enumerated types is that it is easy to add or remove constants from the set without having to change all their values. For example, if the user wanted to add Saturday and Sunday to the set of days and maintain the relative ordering of the days, they can add them to the enumerated type definition without having to explicitly redefine the values of the others as they would need to do with <code>#define</code> constant definitions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">enum days_of_week &#123;</span><br><span class="line">   SUN,        // SUN will now be 0</span><br><span class="line">   MON,        // MON will now be 1, and so on</span><br><span class="line">   TUES,</span><br><span class="line">   WED,</span><br><span class="line">   THURS,</span><br><span class="line">   FRI,</span><br><span class="line">   SAT</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>虽然枚举类型中的常量会被隐式赋值，程序员也可以用 <code>= val</code> 语法给它们指定具体的值。例如，如果程序员希望一周各天的值从 1 而不是从 0 开始，可以这样写：</p>
+<blockquote>
+<p>Although values are implicitly assigned to the constants an enumerated type, the programmer can also assign specific values to them using <code>= val</code> syntax. For example, if the programmer wanted the values of the days of the week to start at 1 instead of 0, they could do the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">enum days_of_week &#123;</span><br><span class="line">   SUN = 1,  // start the sequence at 1</span><br><span class="line">   MON,      // this is 2 (next value after 1)</span><br><span class="line">   TUES,     // this is 3, and so on</span><br><span class="line">   WED,</span><br><span class="line">   THURS,</span><br><span class="line">   FRI,</span><br><span class="line">   SAT</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>由于枚举类型为一组 <code>int</code> 字面值定义了别名，枚举类型的值打印出来是它的 <code>int</code> 值，而不是别名的名字。例如，按照上面 <code>enum days_of_week</code> 的定义，下面的代码打印的是 <code>3</code>，而不是字符串 <code>&quot;TUES&quot;</code>：</p>
+<blockquote>
+<p>Because an enumerated type defines aliases for a set of <code>int</code> literal values, the value of an enumerated type prints out as its <code>int</code> value and not as the name of the alias. For example, given the above definition of the <code>enum days_of_week</code>, the following prints <code>3</code> not the string <code>&quot;TUES&quot;</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">enum days_of_week day;</span><br><span class="line"></span><br><span class="line">day = TUES;</span><br><span class="line">printf(&quot;Today is %d\n&quot;, day);</span><br></pre></td></tr></table></figure>
+
+<p>枚举类型常常与 switch 语句结合使用，如下面的示例代码所示。这个例子还展示了一个多个 case 共用同一组语句的 switch 语句，以及一个在下一个 case 语句之前没有 <code>break</code> 的 case 语句（当 <code>val</code> 为 <code>FRI</code> 时，在遇到 <code>break</code> 之前会执行两条 <code>printf</code> 语句；当 <code>val</code> 为 <code>MON</code> 或 <code>WED</code> 时，在 <code>break</code> 之前只执行其中一条 <code>printf</code> 语句）：</p>
+<blockquote>
+<p>Enumerated types are often used in combination with switch statements as shown in the example code below. The example also shows a switch statement with several cases associated with the same set of statements, and a case statement that does not have a <code>break</code> before the next case statement (when <code>val</code> is <code>FRI</code> two <code>printf</code> statements are executed before a <code>break</code> is encountered, and when <code>val</code> is <code>MON</code> or <code>WED</code> only one of the <code>printf</code> statements is executed before the <code>break</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">// an int because we are using scanf to assign its value</span><br><span class="line">int val;</span><br><span class="line"></span><br><span class="line">printf(&quot;enter a value between %d and %d: &quot;, SUN, SAT);</span><br><span class="line">scanf(&quot;%d&quot;, &amp;val);</span><br><span class="line"></span><br><span class="line">switch (val) &#123;</span><br><span class="line">  case FRI:</span><br><span class="line">     printf(&quot;Orchestra practice today\n&quot;);</span><br><span class="line">  case MON:</span><br><span class="line">  case WED:</span><br><span class="line">     printf(&quot;PSYCH 101 and CS 231 today\n&quot;);</span><br><span class="line">     break;</span><br><span class="line">  case TUES:</span><br><span class="line">  case THURS:</span><br><span class="line">     printf(&quot;Math 311 and HIST 140 today\n&quot;);</span><br><span class="line">     break;</span><br><span class="line">  case SAT:</span><br><span class="line">     printf(&quot;Day off!\n&quot;);</span><br><span class="line">     break;</span><br><span class="line">  case SUN:</span><br><span class="line">     printf(&quot;Do weekly pre-readings\n&quot;);</span><br><span class="line">     break;</span><br><span class="line">  default:</span><br><span class="line">     printf(&quot;Error: %d is not a valid day\n&quot;, val);</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="typedef"><a href="#typedef" class="headerlink" title="typedef"></a>typedef</h4><p><em>typedef</em></p>
+<p>C 提供了用关键字 <code>typedef</code> 定义新类型的方式，新类型是某个已有类型的别名。定义之后，就可以用这个新的类型别名声明变量。这一特性常用来让程序更易读，并使用更短的类型名，常用于结构体和枚举类型。用 <code>typedef</code> 定义新类型的格式如下：</p>
+<blockquote>
+<p>C provides a way to define a new type that is an alias for an existing type using the keyword <code>typedef</code>. Once defined, variables can be declared using this new alias for the type. This feature is commonly used to make the program more readable and to use shorter type names, often for structs and enumerated types. The following is the format for defining a new type with <code>typedef</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">typedef existing_type_name new_type_alias_name;</span><br></pre></td></tr></table></figure>
+
+<p>下面是一段使用 typedef 的程序片段：</p>
+<blockquote>
+<p>Here is an example partial program that uses typedefs:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#define MAXNAME  (30)</span><br><span class="line">#define MAXCLASS (40)</span><br><span class="line"></span><br><span class="line">enum class_year &#123;</span><br><span class="line">  FIRST = 1,</span><br><span class="line">  SECOND,</span><br><span class="line">  JUNIOR,</span><br><span class="line">  SENIOR,</span><br><span class="line">  POSTGRAD</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// classYr is an alias for enum class_year</span><br><span class="line">typedef enum class_year classYr;</span><br><span class="line"></span><br><span class="line">struct studentT &#123;</span><br><span class="line">  char name[MAXNAME];</span><br><span class="line">  classYr year;     // use classYr type alias for field type</span><br><span class="line">  float gpa;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">// studentT is an alias for struct studentT</span><br><span class="line">typedef struct studentT  studentT;</span><br><span class="line"></span><br><span class="line">// ull is an alias for unsigned long long</span><br><span class="line">typedef unsigned long long ull;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line"></span><br><span class="line">  // declare variables using typedef type names</span><br><span class="line">  studentT class[MAXCLASS];</span><br><span class="line">  classYr yr;</span><br><span class="line">  ull num;</span><br><span class="line"></span><br><span class="line">  num = 123456789;</span><br><span class="line">  yr = JUNIOR;</span><br><span class="line">  strcpy(class[0].name, &quot;Sarita&quot;);</span><br><span class="line">  class[0].year = SENIOR;</span><br><span class="line">  class[0].gpa = 3.75;</span><br><span class="line"></span><br><span class="line">  ...</span><br></pre></td></tr></table></figure>
+
+<p>由于 typedef 常与结构体一起使用，C 提供了把 typedef 与结构体定义合二为一的语法：在结构体定义前加上 <code>typedef</code>，并在结构体定义的右花括号 <code>}</code> 之后写出类型别名。例如，下面的代码既定义了结构体类型 <code>struct studentT</code>，又定义了该类型的别名 <code>studentT</code>：</p>
+<blockquote>
+<p>Because typedef is often used with structs, C provides syntax for combining a typedef and a struct definition together by prefixing the struct definition with <code>typedef</code> and listing the name of the type alias after the closing <code>}</code> in the struct definition. For example, the following defines both a struct type <code>struct studentT</code> and an alias for the type named <code>studentT</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct studentT &#123;</span><br><span class="line">  char name[MAXNAME];</span><br><span class="line">  classYr year;     // use classYr type alias for field type</span><br><span class="line">  float gpa;</span><br><span class="line">&#125; studentT;</span><br></pre></td></tr></table></figure>
+
+<p>这个定义与上例中在结构体定义之后单独进行 typedef 是等价的。</p>
+<blockquote>
+<p>This definition is equivalent to doing the typedef separately, after the the struct definition as in the previous example.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C2-C_depth/2.9-advanced.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">2.9. C 的一些高级特性</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.9.2. 命令行参数</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

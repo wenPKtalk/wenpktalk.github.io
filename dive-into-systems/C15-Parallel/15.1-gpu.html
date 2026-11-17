@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C15-Parallel&#x2F;gpu.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  15.1. Heterogeneous Computing: Ha">
+<meta property="og:type" content="website">
+<meta property="og:title" content="15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/15.1-gpu.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C15-Parallel&#x2F;gpu.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  15.1. Heterogeneous Computing: Ha">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/gpugpu.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/gridblockthr.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.961Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.961Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/gpugpu.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html" class="current" aria-current="page">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>15. 展望：其他并行系统与并行编程模型</span>
+      </nav>
+      <span class="book-position">第 159 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</h1>
+  
+  
+    <p class="article-meta"><span>约 38 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/gpu.html">https://diveintosystems.org/book/C15-Parallel/gpu.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>15.1. Heterogeneous Computing: Hardware Accelerators, GPGPU Computing, and CUDA</em></p>
+<p><strong>异构计算</strong>（heterogeneous computing）是指利用计算机中多种不同的处理单元进行计算。这些处理单元往往具有不同的指令集架构（ISA），其中一些由操作系统管理，另一些则不由操作系统管理。通常，异构计算指的是同时利用计算机的 CPU 核心和一个或多个加速单元——例如<strong>图形处理器</strong>（GPU）或<strong>现场可编程门阵列</strong>（FPGA）——来支持并行计算<sup>1</sup>。</p>
+<blockquote>
+<p><strong>Heterogeneous computing</strong> is computing using multiple, different processing units found in a computer. These processing units often have different ISAs, some managed by the OS, and others not. Typically, heterogeneous computing means support for parallel computing using the computer’s CPU cores and one or more of its accelerator units such as <strong>graphics processing units</strong> (GPUs) or <strong>field programmable gate arrays</strong> (FPGAs)<sup>1</sup>.</p>
+</blockquote>
+<p>针对大规模的数据密集型和计算密集型问题，开发者越来越多地采用异构计算方案。这类问题在科学计算中无处不在，也广泛出现在大数据处理、分析与信息提取等更多样的应用中。通过同时利用计算机上 CPU 和加速单元的处理能力，程序员可以提高应用程序的并行执行程度，从而获得更好的性能和可扩展性。</p>
+<blockquote>
+<p>It is increasingly common for developers to implement heterogeneous computing solutions to large, data-intensive and computation-intensive problems. These types of problems are pervasive in scientific computing, as well as in a more diverse range of applications to Big Data processing, analysis, and information extraction. By making use of the processing capabilities of both the CPU and the accelerator units that are available on a computer, a programmer can increase the degree of parallel execution in their application, resulting in improved performance and scalability.</p>
+</blockquote>
+<p>本节介绍如何利用硬件加速器进行异构计算，以支持通用并行计算。我们重点讨论 GPU 和 CUDA 编程语言。</p>
+<blockquote>
+<p>In this section, we introduce heterogeneous computing using hardware accelerators to support general-purpose parallel computing. We focus on GPUs and the CUDA programming language.</p>
+</blockquote>
+<h3 id="15-1-1-硬件加速器"><a href="#15-1-1-硬件加速器" class="headerlink" title="15.1.1. 硬件加速器"></a>15.1.1. 硬件加速器</h3><p><em>15.1.1. Hardware Accelerators</em></p>
+<p>除了 CPU 之外，计算机中还有其他为执行特定任务而设计的处理单元。它们不像 CPU 那样是通用处理单元，而是专用硬件：经过优化，用来实现某些设备特有的功能，或在系统中执行特定类型的处理。FPGA、Cell 处理器和 GPU 就是这类处理单元的三个例子。</p>
+<blockquote>
+<p>In addition to the CPU, computers have other processing units that are designed to perform specific tasks. These units are not general-purpose processing units like the CPU, but are special-purpose hardware that is optimized to implement functionality that is specific to certain devices or that is used to perform specialized types of processing in the system. FPGAs, Cell processors, and GPUs are three examples of these types of processing units.</p>
+</blockquote>
+<h4 id="FPGA"><a href="#FPGA" class="headerlink" title="FPGA"></a>FPGA</h4><p><em>FPGAs</em></p>
+<p>FPGA 是一种由逻辑门、存储器和互连部件组成的集成电路。它是可重新编程的，也就是说可以被重新配置，从而在硬件中实现特定的功能；FPGA 常被用来为专用集成电路（ASIC）做原型验证。FPGA 运行所需的功耗通常低于一颗完整的 CPU，因此能效较高。FPGA 集成到计算机系统中的方式举例来说包括：用作设备控制器、处理传感器数据、执行密码运算，以及测试新的硬件设计（由于可重编程，设计可以在 FPGA 上实现、调试和测试）。FPGA 可以被设计成包含大量简单处理单元的电路。FPGA 还是低延迟器件，可以直接连接到系统总线上。因此，人们用它来实现非常快速的并行计算，这类计算的特点是：在多个数据输入通道上进行规则的、相互独立的并行处理。不过，对 FPGA 重新编程需要很长时间，因此它的用途仅限于加速并行工作负载中的某些特定部分，或运行固定不变的程序负载<sup>2</sup>。</p>
+<blockquote>
+<p>An FPGA is an integrated circuit that consists of gates, memory, and interconnection components. They are reprogrammable, meaning that they can be reconfigured to implement specific functionality in hardware, and they are often used to prototype application-specific integrated circuits (ASICs). FPGAs typically require less power to run than a full CPU, resulting in energy-efficient operation. Some example ways in which FPGAs are integrated into a computer system include as device controllers, for sensor data processing, for cryptography, and for testing new hardware designs (because they are reprogrammable, designs can be implemented, debugged, and tested on an FPGA). FPGAs can be designed as a circuit with a high number of simple processing units. FPGAs are also low-latency devices that can be directly connected to system buses. As a result, they have been used to implement very fast parallel computation that consists of regular patterns of independent parallel processing on several data input channels. However, reprogramming FPGAs takes a long time, and their use is limited to supporting fast execution of specific parts of parallel workloads or for running a fixed program workload<sup>2</sup>.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· FPGA 厂商格局</p><p>AMD 于 2022-02-14 完成对 Xilinx 的收购（2020-10-27 宣布）<a target="_blank" rel="noopener" href="https://www.amd.com/en/newsroom/press-releases/2022-2-14-amd-completes-acquisition-of-xilinx.html">AMD 公告</a>；Intel 于 2025 年 9 月把 Altera 51% 股权售予 Silver Lake（Intel 保留 49%），Altera 成为独立的 FPGA 公司 <a target="_blank" rel="noopener" href="https://www.edge-ai-vision.com/2025/09/altera-closes-silver-lake-investment-to-become-worlds-largest-pure-play-fpga-solutions-provider/">Altera 公告</a>。两大 FPGA 厂商一家并入 CPU&#x2F;GPU 厂商、一家独立。</p>
+</div>
+<h4 id="GPU-与-Cell-处理器"><a href="#GPU-与-Cell-处理器" class="headerlink" title="GPU 与 Cell 处理器"></a>GPU 与 Cell 处理器</h4><p><em>GPUs and Cell Processors</em></p>
+<p>Cell 处理器是一种多核处理器，由一个通用处理器和多个协处理器组成，这些协处理器专门用于加速某一类计算，例如多媒体处理。索尼 PlayStation 3 游戏机是第一个采用 Cell 架构的系统，它利用 Cell 协处理器实现快速图形处理。</p>
+<blockquote>
+<p>A Cell processor is a multicore processor consisting of one general-purpose processor and multiple co-processors that are specialized to accelerate a specific type of computation, such as multimedia processing. The Sony PlayStation 3 gaming system was the first Cell architecture, using the Cell coprocessors for fast graphics.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>补充两点背景：① PS3 其实另有一颗 NVIDIA 设计的 RSX 图形芯片负责主要的图形渲染，Cell 的 8 个 SPE 协处理器更多用于物理、音频、视频解码等计算，也可以辅助图形处理。② Cell 后来还被 IBM 用在 Roadrunner 超级计算机上，它在 2008 年成为世界上第一台持续性能突破 1 PetaFLOPS（每秒千万亿次浮点运算）的机器。Cell 架构之后没有后续产品，但”一个通用核 + 多个专用核”的思路在今天的手机&#x2F;笔记本 SoC 里随处可见。</p>
+</div>
+<p>GPU 负责计算机图形计算——它们对图像数据进行运算，以实现高速图形渲染和图像处理。GPU 将计算结果写入帧缓冲区（frame buffer），再由帧缓冲区把数据送到计算机的显示器上。在电脑游戏应用的推动下，如今台式机和笔记本电脑都标配了复杂的 GPU。</p>
+<blockquote>
+<p>GPUs perform computer graphics computations — they operate on image data to enable high-speed graphics rendering and image processing. A GPU writes its results to a frame buffer, which delivers the data to the computer’s display. Driven by computer gaming applications, today sophisticated GPUs come standard in desktop and laptop systems.</p>
+</blockquote>
+<p>在 2000 年代中期，并行计算研究者认识到，将加速器与计算机的 CPU 核心结合使用来支持通用并行计算具有很大潜力。</p>
+<blockquote>
+<p>In the mid 2000s, parallel computing researchers recognized the potential of using accelerators in combination with a computer’s CPU cores to support general-purpose parallel computing.</p>
+</blockquote>
+<h3 id="15-1-2-GPU-体系结构概览"><a href="#15-1-2-GPU-体系结构概览" class="headerlink" title="15.1.2. GPU 体系结构概览"></a>15.1.2. GPU 体系结构概览</h3><p><em>15.1.2. GPU architecture overview</em></p>
+<p>GPU 硬件是为计算机图形和图像处理而设计的。从历史上看，GPU 的发展一直由电子游戏产业推动。为了支持更精细的画面和更快的帧渲染，一块 GPU 设备包含数千个专用处理器，它们专门被设计用来高效地并行处理图像数据，例如二维图像中各个像素的值。</p>
+<blockquote>
+<p>GPU hardware is designed for computer graphics and image processing. Historically, GPU development has been driven by the video game industry. To support more detailed graphics and faster frame rendering, a GPU device consists of thousands of special-purpose processors, specifically designed to efficiently manipulate image data, such as the individual pixel values of a two-dimensional image, in parallel.</p>
+</blockquote>
+<p>GPU 所实现的硬件执行模型是<strong>单指令多线程</strong>（single instruction&#x2F;multiple thread，SIMT），它是 SIMD 的一种变体。SIMT 类似于多线程版的 SIMD：同一条指令由运行在各个处理单元上的多个线程以锁步方式执行。在 SIMT 中，线程总数可以多于处理单元总数，因此需要把多组线程调度到处理器上，去执行同一段指令序列。</p>
+<blockquote>
+<p>The hardware execution model implemented by GPUs is <strong>single instruction&#x2F;multiple thread</strong> (SIMT), a variation of SIMD. SIMT is like multithreaded SIMD, where a single instruction is executed in lockstep by multiple threads running on the processing units. In SIMT, the total number of threads can be larger than the total number of processing units, requiring the scheduling of multiple groups of threads on the processors to execute the same sequence of instructions.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · SIMT 与 SIMD 的区别</p><p>对程序员来说，最大的区别是：SIMD 要你<strong>显式</strong>操作向量寄存器（比如用 AVX intrinsics 一次算 8 个 float）；SIMT 让你写<strong>普通的标量代码</strong>，按”一个线程处理一个元素”来思考，硬件再把 32 个线程打包成一个 warp 去执行。当一个 warp 内的线程走进 <code>if/else</code> 的不同分支时，硬件会把两个分支依次执行、并屏蔽掉不该执行的线程，这叫<strong>分支发散</strong>（warp divergence），会降低效率——这是写 GPU 代码时要注意的第一个性能陷阱。</p>
+</div>
+<p>举个例子，NVIDIA 的 GPU 由若干个流式多处理器（streaming multiprocessor，SM）组成，每个 SM 都有自己的执行控制单元和存储空间（寄存器、L1 缓存和共享内存）。每个 SM 包含若干个标量处理器（scalar processor，SP）核心。SM 中有一个线程束调度器（warp scheduler），负责调度 <strong>warp</strong>（线程束，即一组应用程序线程），让它们在 SP 核心上以锁步方式执行。在锁步执行中，一个 warp 中的每个线程在每个周期都执行同一条指令，但处理的数据不同。例如，如果应用程序要把一张彩色图像转换为灰度图，那么 warp 中的每个线程会同时执行同一段指令序列，把一个像素的 RGB 值设置成对应的灰度值。warp 中的每个线程在不同的像素数据上执行这些指令，于是图像中的多个像素被并行地更新。由于线程是以锁步方式执行的，处理器的设计可以得到简化，让多个核心共享同一套指令控制单元。每个单元都包含缓存和多个寄存器，用来存放由这些并行处理核心以锁步方式处理的数据。</p>
+<blockquote>
+<p>As an example, NVIDIA GPUs consist of several streaming multiprocessors (SMs), each of which has its own execution control units and memory space (registers, L1 cache, and shared memory). Each SM consists of several scalar processor (SP) cores. The SM includes a warp scheduler that schedules <strong>warps</strong>, or sets of application threads, to execute in lockstep on its SP cores. In lockstep execution, each thread in a warp executes the same instruction each cycle but on different data. For example, if an application is changing a color image to grayscale, each thread in a warp executes the same sequence of instructions at the same time to set a pixel’s RGB value to its grayscale equivalent. Each thread in the warp executes these instructions on a different pixel data value, resulting in multiple pixels of the image being updated in parallel. Because the threads are executed in lockstep, the processor design can be simplified so that multiple cores share the same instruction control units. Each unit contains cache memory and multiple registers that it uses to hold data as it’s manipulated in lockstep by the parallel processing cores.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p>
+<ul>
+<li>原书的 SP 核心，就是 NVIDIA 文档中常说的 <strong>CUDA Core</strong>（例如 H100 的每个 SM 有 128 个 FP32 CUDA Core，见 <a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/">NVIDIA Hopper 架构详解</a>）。</li>
+<li>迄今为止，NVIDIA GPU 的 warp 大小一直是 <strong>32 个线程</strong>（AMD GPU 对应的概念叫 wavefront，传统上是 64，RDNA 架构起支持 32）。代码里不要写死，可以用内置变量 <code>warpSize</code>。</li>
+<li>这里说的”共享内存”（shared memory）是 SM 内部一块由程序员显式管理的片上高速存储（类似软件管理的缓存），只在同一个线程块内共享，和第 14 章”共享内存多线程”里的共享内存不是一回事，注意区分。</li>
+</ul>
+</div>
+<p><a href="15.1-gpu.html">图 1</a> 展示了一个简化的 GPU 体系结构，其中包括其中一个 SM 单元的详细视图。每个 SM 由多个 SP 核心、一个线程束调度器、一个执行控制单元、一个 L1 缓存和一块共享内存空间组成。</p>
+<blockquote>
+<p><a href="15.1-gpu.html">Figure 1</a> shows a simplified GPU architecture that includes a detailed view of one of its SM units. Each SM consists of multiple SP cores, a warp scheduler, an execution control unit, an L1 cache, and shared memory space.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C15-Parallel/images/gpugpu.png" alt="Example GPU architecture with showing multiple SM units with32 SP cores."></p>
+<p><strong>图 1.</strong> 一个简化的 GPU 体系结构示例，共有 2,048 个核心。图中 GPU 被划分为 64 个 SM 单元，并展示了其中一个 SM 的细节，它由 32 个 SP 核心组成。SM 的线程束调度器把线程 warp 调度到它的 SP 上执行。一个 warp 中的线程在 SP 核心上以锁步方式执行。</p>
+<p><em>Figure 1. An example of a simplified GPU architecture with 2,048 cores. This shows the GPU divided into 64 SM units, and the details of one SM consisting of 32 SP cores. The SM’s warp scheduler schedules thread warps on its SPs. A warp of threads executes in lockstep on the SP cores.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中标签</p><p>GPU Global Memory＝GPU 全局内存（即显存）；L2 Cache＝所有 SM 共享的二级缓存；Interface to Host＝与主机（CPU）的接口（通常是 PCIe）；右侧放大的 SM 中：Warp Scheduler &amp; Execution Cntrl＝线程束调度器与执行控制，Register File＝寄存器文件，L1 Cache＝一级缓存，Shared Memory＝共享内存。图中 4 组 × 16 个 SM ＝ 64 个 SM，每个 SM 32 个 SP，共 2,048 个核心。</p>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 真实 GPU 的规模</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>本图示意</th>
+<th>NVIDIA H100 SXM5（2022）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SM 数</td>
+<td>64</td>
+<td>132（完整芯片 144）</td>
+</tr>
+<tr>
+<td>每 SM 的 FP32 核</td>
+<td>32</td>
+<td>128</td>
+</tr>
+<tr>
+<td>FP32 核总数</td>
+<td>2,048</td>
+<td>16,896</td>
+</tr>
+<tr>
+<td>显存</td>
+<td>—</td>
+<td>80 GB HBM3，&gt; 3 TB&#x2F;s；L2 50 MB</td>
+</tr>
+</tbody></table>
+<p>来源：<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/">NVIDIA Hopper 架构详解</a>。下一代 Blackwell 有 2,080 亿晶体管，由两颗裸片经 10 TB&#x2F;s 互连组成一颗 GPU，支持 FP4，第五代 NVLink 最多连 576 颗 GPU。<a target="_blank" rel="noopener" href="https://www.nvidia.com/en-us/data-center/technologies/blackwell-architecture/">NVIDIA Blackwell</a></p>
+</div>
+<h3 id="15-1-3-GPGPU-计算"><a href="#15-1-3-GPGPU-计算" class="headerlink" title="15.1.3. GPGPU 计算"></a>15.1.3. GPGPU 计算</h3><p><em>15.1.3. GPGPU Computing</em></p>
+<p><strong>通用 GPU</strong>（General Purpose GPU，GPGPU）计算是指把专用的 GPU 处理器用于通用的并行计算任务。GPGPU 计算把主机（host）CPU 核心上的计算与 GPU 处理器上的 SIMT 计算结合起来。GPGPU 计算最适合这样的并行应用（或应用中的某些部分）：它们可以被构造成在多维数据网格上进行的流式处理（stream processing）计算。</p>
+<blockquote>
+<p><strong>General Purpose GPU</strong> (GPGPU) computing applies special-purpose GPU processors to general-purpose parallel computing tasks. GPGPU computing combines computation on the host CPU cores with SIMT computation on the GPU processors. GPGPU computing performs best on parallel applications (or parts of applications) that can be constructed as a stream processing computation on a grid of multidimensional data.</p>
+</blockquote>
+<p>主机操作系统并不管理 GPU 的处理器和内存。因此，程序员需要自己在 GPU 上为程序数据分配空间，并在主机内存与 GPU 内存之间复制数据。GPGPU 编程语言和库通常会提供访问 GPU 内存的编程接口，向程序员隐藏显式管理 GPU 内存的部分甚至全部难度。例如在 CUDA 中，程序员可以调用 CUDA 库函数，显式地在 GPU 上分配 CUDA 内存，并在 GPU 上的 CUDA 内存与主机内存之间复制数据。CUDA 程序员也可以使用 CUDA 统一内存（unified memory），它是 CUDA 在主机内存和 GPU 内存之上抽象出的单一内存空间。CUDA 统一内存向 CUDA 程序员隐藏了 GPU 内存与主机内存相互分离这一事实，以及两者之间的内存复制。</p>
+<blockquote>
+<p>The host operating system does not manage the GPU’s processors or memory. As a result, space for program data needs to be allocated on the GPU and the data copied between the host memory and the GPU memory by the programmer. GPGPU programming languages and libraries typically provide programming interfaces to GPU memory that hide some or all of the difficulty of explicitly managing GPU memory from the programmer. For example, in CUDA a programmer can include calls to CUDA library functions to explicitly allocate CUDA memory on the GPU and to copy data between CUDA memory on the GPU and host memory. A CUDA programmer can also use CUDA unified memory, which is CUDA’s abstraction of a single memory space on top of host and GPU memory. CUDA unified memory hides the separate GPU and host memory, and the memory copies between the two, from the CUDA programmer.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 统一内存走向硬件</p>
+<ul>
+<li><strong>NVIDIA Grace Hopper（GH200）</strong>：72 核 Arm CPU 与 Hopper GPU 之间用 NVLink-C2C 相连，带宽 900 GB&#x2F;s（约 PCIe Gen5 x16 的 7 倍），<strong>硬件保证一致性</strong>，CPU 和 GPU 线程可同时透明访问对方内存并做原子操作。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/nvidia-grace-hopper-superchip-architecture-in-depth/">NVIDIA 博客</a></li>
+<li><strong>AMD Instinct MI300A</strong>（2023-12 发布）：Zen 4 CPU 与 CDNA3 GPU 封装在一起，<strong>共用 128 GB HBM3</strong>（5.3 TB&#x2F;s）<a target="_blank" rel="noopener" href="https://www.amd.com/en/products/accelerators/instinct/mi300/mi300a.html">AMD 产品页</a>；AMD 文档称其为带硬件缓存一致性的完全统一内存架构 <a target="_blank" rel="noopener" href="https://instinct.docs.amd.com/projects/amdgpu-docs/en/develop/gpu-partitioning/mi300a/overview.html">AMD MI300A 概览</a>。超算 El Capitan 就用它。</li>
+</ul>
+</div>
+<p>GPU 对线程同步的支持也很有限，这意味着 GPGPU 并行计算尤其适合这样的并行应用：要么是易并行（embarrassingly parallel）的，要么包含大量相互独立、基于流的并行计算且同步点很少。GPU 是大规模并行处理器，任何对数据执行长串相互独立、相同（或基本相同）计算步骤的程序，都可能非常适合作为 GPGPU 并行应用。当主机内存与设备内存之间的内存复制较少时，GPGPU 计算的表现也会更好。如果 GPU 与 CPU 之间的数据传输占据了大部分执行时间，或者应用需要细粒度的同步，那么 GPGPU 计算的表现可能不佳，与程序的 CPU 多线程版本相比几乎没有提升，甚至毫无提升。</p>
+<blockquote>
+<p>GPUs also provide limited support for thread synchronization, which means that GPGPU parallel computing performs particularly well for parallel applications that are either embarrassingly parallel or have large extents of independent parallel stream-based computation with very few synchronization points. GPUs are massively parallel processors, and any program that performs long sequences of independent identical (or mostly identical) computation steps on data may perform well as a GPGPU parallel application. GPGPU computing also performs well when there are few memory copies between host and device memory. If GPU-CPU data transfer dominates execution time, or if an application requires fine-grained synchronization, GPGPU computing may not perform well or provide much, if any, gain over a multithreaded CPU version of the program.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 判断”值不值得上 GPU”的粗略算法</p><p>一个常用的思考工具是<strong>算术强度</strong>（arithmetic intensity）＝ 每从内存搬运 1 字节数据所做的浮点运算次数，以及据此画出的 <strong>Roofline 模型</strong>。本节后面的例子”向量乘一个标量”每读写 8 字节只做 1 次乘法，算术强度极低，在真实机器上几乎一定是被内存带宽（以及 CPU↔GPU 的 PCIe 传输）卡住的——它适合用来学习 CUDA 语法，但不是 GPU 能体现优势的场景。矩阵乘法、卷积这类每个数据被反复使用的计算才是 GPU 的主场，这也是深度学习和 GPU 绑定在一起的根本原因。</p>
+</div>
+<h3 id="15-1-4-CUDA"><a href="#15-1-4-CUDA" class="headerlink" title="15.1.4. CUDA"></a>15.1.4. CUDA</h3><p><em>15.1.4. CUDA</em></p>
+<p>CUDA（Compute Unified Device Architecture，统一计算设备架构）<sup>3</sup>是 NVIDIA 为在其图形设备上进行 GPGPU 计算而提供的编程接口。CUDA 是为异构计算而设计的：程序中的一些函数运行在主机 CPU 上，另一些运行在 GPU 设备上。程序员通常用 C 或 C++ 编写 CUDA 程序，用注解（annotation）标明哪些是 CUDA 核函数，并调用 CUDA 库函数来管理 GPU 设备内存。CUDA <strong>核函数</strong>（kernel function）是在 GPU 上执行的函数，而 CUDA <strong>线程</strong>是 CUDA 程序中最基本的执行单位。CUDA 线程以 warp 为单位进行调度，在 GPU 的 SM 上以锁步方式执行，各自在 GPU 内存中属于自己的那部分数据上执行 CUDA 核函数代码。核函数用 <em><code>global</code></em> 注解，以区别于主机函数。CUDA <em><code>device</code></em> 函数是可以从 CUDA 核函数中调用的辅助函数。</p>
+<blockquote>
+<p>CUDA (Compute Unified Device Architecture)<sup>3</sup> is NVIDIA’s programming interface for GPGPU computing on its graphics devices. CUDA is designed for heterogeneous computing in which some program functions run on the host CPU, and others run on the GPU device. Programmers typically write CUDA programs in C or C++ with annotations that specify CUDA kernel functions, and they make calls to CUDA library functions to manage GPU device memory. A CUDA <strong>kernel function</strong> is a function that is executed on the GPU, and a CUDA <strong>thread</strong> is the basic unit of execution in a CUDA program. CUDA threads are scheduled in warps that execute in lockstep on the GPU’s SMs, executing CUDA kernel code on their part of data stored in GPU memory. Kernel functions are annotated with <em><code>global</code></em> to distinguish them from host functions. CUDA <em><code>device</code></em> functions are helper functions that can be called from a CUDA kernel function.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 原文排版问题</p><p>原网页这里显示成斜体的 <em>global</em> &#x2F; <em>device</em>，实际应为带双下划线的限定符 <strong><code>__global__</code></strong> 和 **<code>__device__</code>**（AsciiDoc 把成对的下划线当成了斜体标记）。后面的代码清单，以及原书附带的完整代码 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/scalar_multiply_cuda.cu">scalar_multiply_cuda.cu</a>，写的都是 <code>__global__ void scalar_multiply(...)</code>。此外还有 <code>__host__</code>（默认，可省略），<code>__host__ __device__</code> 可同时为两端编译。</p>
+</div>
+<p>CUDA 程序的内存空间分为主机内存和 GPU 内存两部分。程序必须显式地分配和释放 GPU 内存空间，用来存放由 CUDA 核函数处理的程序数据。CUDA 程序员要么显式地在主机内存与 GPU 内存之间来回复制数据，要么使用 CUDA 统一内存——它提供了一个由 GPU 和主机直接共享的内存空间视图。下面是 CUDA 基本的内存分配、内存释放以及显式内存复制函数的示例：</p>
+<blockquote>
+<p>The memory space of a CUDA program is separated into host and GPU memory. The program must explicitly allocate and free GPU memory space to store program data manipulated by CUDA kernels. The CUDA programmer must either explicitly copy data to and from the host and GPU memory, or use CUDA unified memory that presents a view of memory space that is directly shared by the GPU and host. Here is an example of CUDA’s basic memory allocation, memory deallocation, and explicit memory copy functions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">/* &quot;returns&quot; through pass-by-pointer param dev_ptr GPU memory of size bytes</span><br><span class="line"> * returns cudaSuccess or a cudaError value on error</span><br><span class="line"> */</span><br><span class="line">cudaMalloc(void **dev_ptr, size_t size);</span><br><span class="line"></span><br><span class="line">/* free GPU memory</span><br><span class="line"> * returns cudaSuccess or cudaErrorInvalidValue on error</span><br><span class="line"> */</span><br><span class="line">cudaFree(void *data);</span><br><span class="line"></span><br><span class="line">/* copies data from src to dst, direction is based on value of kind</span><br><span class="line"> *   kind: cudaMemcpyHosttoDevice is copy from cpu to gpu memory</span><br><span class="line"> *   kind: cudaMemcpyDevicetoHost is copy from gpu to cpu memory</span><br><span class="line"> * returns cudaSuccess or a cudaError value on error</span><br><span class="line"> */</span><br><span class="line">cudaMemcpy(void *dst, const void *src, size_t count, cudaMemcpyKind kind);</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p>
+<ul>
+<li>注释中的枚举值大小写不准确，真正的名字是 <code>cudaMemcpyHostToDevice</code> &#x2F; <code>cudaMemcpyDeviceToHost</code>（主机→设备 &#x2F; 设备→主机），下面的完整程序里写的是对的。</li>
+<li>这里列出的是<strong>函数原型</strong>而不是调用。所有这些函数都返回 <code>cudaError_t</code>，真实代码应该检查返回值，常见写法是包一个宏：<code>#define CHECK(x) do { cudaError_t e = (x); if (e != cudaSuccess) { fprintf(stderr, &quot;%s\n&quot;, cudaGetErrorString(e)); exit(1); } } while (0)</code>。</li>
+<li>使用统一内存时，把 <code>cudaMalloc</code> 换成 <code>cudaMallocManaged(&amp;ptr, size)</code>，CPU 和 GPU 就可以用同一个指针访问，不再需要手写 <code>cudaMemcpy</code>（但别忘了在 CPU 读结果前 <code>cudaDeviceSynchronize()</code>）。</li>
+</ul>
+</div>
+<p>CUDA 线程被组织成<strong>线程块</strong>（block），线程块又被组织成<strong>网格</strong>（grid）。网格可以把线程块组织成一维、二维或三维的形式；同样，线程块也可以把线程组织成一维、二维或三维的形式。每个线程由两部分唯一确定：它在所属线程块中的 (<em>x</em>,<em>y</em>,<em>z</em>) 位置，以及该线程块在网格中的 (<em>x</em>,<em>y</em>,<em>z</em>) 位置。例如，程序员可以像下面这样定义二维的线程块和网格维度：</p>
+<blockquote>
+<p>CUDA threads are organized into <strong>blocks</strong>, and the blocks are organized into a <strong>grid</strong>. Grids can be organized into one-, two-, or three-dimensional groupings of blocks. Blocks, likewise, can be organized into one-, two-, or three-dimensional groupings of threads. Each thread is uniquely identified by its thread (<em>x</em>,<em>y</em>,<em>z</em>) position in its containing block’s (<em>x</em>,<em>y</em>,<em>z</em>) position in the grid. For example, a programmer could define two-dimensional block and grid dimensions as the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dim3 blockDim(16,16);  // 256 threads per block, in a 16x16 2D arrangement</span><br><span class="line">dim3 gridDim(20,20);   // 400 blocks per grid, in a 20x20 2D arrangement</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：每个线程块 256 个线程，按 16×16 的二维排列；每个网格 400 个线程块，按 20×20 的二维排列。另外要注意，CUDA 里 <code>gridDim</code> 和 <code>blockDim</code> 也是核函数内部可用的<strong>内置变量名</strong>，这里在主机代码里用同名变量只是为了好理解，实际工程中通常起别的名字（如 <code>grid</code>、<code>block</code>）以免混淆。</p>
+</div>
+<p>调用核函数时，要在调用中指定”网格中的线程块”布局和”线程块中的线程”布局。例如，下面调用一个名为 <code>do_something</code> 的核函数，用上面定义的 <code>gridDim</code> 和 <code>blockDim</code> 指定网格和线程块的布局（并传入参数 <code>dev_array</code> 和 100）：</p>
+<blockquote>
+<p>When a kernel is invoked, its blocks&#x2F;grid and thread&#x2F;block layout is specified in the call. For example, here is a call to a kernel function named <code>do_something</code> specifying the grid and block layout using <code>gridDim</code> and <code>blockDim</code> defined above (and passing parameters <code>dev_array</code> and 100):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ret = do_something&lt;&lt;&lt;gridDim,blockDim&gt;&gt;&gt;(dev_array, 100);</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这行是示意写法，实际上<strong>核函数的返回类型必须是 <code>void</code><strong>，<code>ret = ...&lt;&lt;&lt;...&gt;&gt;&gt;(...)</code> 无法通过编译。核函数调用是</strong>异步</strong>的：CPU 发起调用后立刻返回，错误要用 <code>cudaGetLastError()</code>（检查启动参数错误）和 <code>cudaDeviceSynchronize()</code>（等待执行完并取得运行时错误）来获取。<code>&lt;&lt;&lt;...&gt;&gt;&gt;</code> 里还可以写第 3、4 个参数：动态共享内存大小和 CUDA 流（stream）。</p>
+</div>
+<p><a href="15.1-gpu.html">图 2</a> 展示了线程块二维排列的一个例子。在这个例子中，网格是一个 3 × 2 的线程块数组，每个线程块是一个 4 × 3 的线程数组。</p>
+<blockquote>
+<p><a href="15.1-gpu.html">Figure 2</a> shows an example of a two-dimensional arrangement of thread blocks. In this example, the grid is a 3 × 2 array of blocks, and each block is a 4 × 3 array of threads.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C15-Parallel/images/gridblockthr.png" alt="An grid of 2D blocks, each block contains a 2D set of threads."></p>
+<p><strong>图 2.</strong> CUDA 线程模型。由线程块组成的网格，线程块由线程组成。线程块和线程都可以组织成一维、二维或三维的布局。本例展示了一个由二维线程块组成的网格，每个网格有 3 × 2 个线程块，每个线程块中有一组二维排列的线程，每块 4 × 3 个线程。</p>
+<p><em>Figure 2. The CUDA thread model. A grid of blocks of threads. Blocks and threads can be organized into one-, two-, or three-dimensional layouts. This example shows a grid of two-dimensional blocks, 3 × 2 blocks per grid, and each block has a two-dimensional set of threads, 4 × 3 threads per block).</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 用图做一道练习</p><p>图中 Block (x,y) 即 <code>blockIdx</code>，Thread(x,y) 即块内的 <code>threadIdx</code>；这里 <code>blockDim</code> &#x3D; (4, 3)。以放大的 Block (2,1) 中的 Thread(1,2) 为例，代入下文的公式：row &#x3D; <code>blockIdx.y * blockDim.y + threadIdx.y</code> &#x3D; 1×3+2 &#x3D; <strong>5</strong>，col &#x3D; <code>blockIdx.x * blockDim.x + threadIdx.x</code> &#x3D; 2×4+1 &#x3D; <strong>9</strong>。整个网格共 (3×4) 列 × (2×3) 行 &#x3D; 12 × 6 个线程。</p>
+</div>
+<p>线程在这个布局中的位置，由它在所属线程块中的 (<em>x</em>,<em>y</em>) 坐标（<code>threadId.x</code>、<code>threadId.y</code>）以及它所在线程块在网格中的 (<em>x</em>,<em>y</em>) 坐标（<code>blockIdx.x</code>、<code>blockIdx.y</code>）共同给出。注意，线程块和线程的坐标都基于 (<em>x</em>,<em>y</em>)，x 轴为水平方向，y 轴为竖直方向，(0,0) 元素位于左上角。CUDA 核函数中还有表示线程块维度的变量（<code>blockDim.x</code> 和 <code>blockDim.y</code>）。因此，对于任何一个正在执行核函数的线程，它在”由线程块组成的二维数组中的、由线程组成的二维数组”里的（行，列）位置，在逻辑上可以这样确定：</p>
+<blockquote>
+<p>A thread’s position in this layout is given by the (<em>x</em>,<em>y</em>) coordinate in its containing block (<code>threadId.x</code>, <code>threadId.y</code>) and by the (<em>x</em>,<em>y</em>) coordinate of its block in the grid (<code>blockIdx.x</code>, <code>blockIdx.y</code>). Note that block and thread coordinates are (<em>x</em>,<em>y</em>) based, with the x-axis being horizontal, and the y-axis vertical. The (0,0) element is in the upper left. The CUDA kernel also has variables that are defined to the block dimensions (<code>blockDim.x</code> and <code>blockDim.y</code>). Thus, for any thread executing the kernel, its (row, col) position in the two-dimensional array of threads in the two-dimensional array of blocks can be logically identified as follows:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>原文这里的 <code>threadId.x</code> 是笔误，正确的内置变量名是 **<code>threadIdx.x</code>**（与 <code>blockIdx</code> 对称，下面代码里写的是对的）。速记：<code>threadIdx</code>（块内第几个线程）、<code>blockIdx</code>（网格内第几个块）、<code>blockDim</code>（每块多少线程）、<code>gridDim</code>（网格多少块）。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int row = blockIdx.y * blockDim.y + threadIdx.y;</span><br><span class="line">int col = blockIdx.x * blockDim.x + threadIdx.x;</span><br></pre></td></tr></table></figure>
+
+<p>虽然并非必须，但 CUDA 程序员通常会让线程块和线程的组织方式与程序数据的逻辑组织方式相匹配。例如，如果程序处理的是一个二维矩阵，那么把线程和线程块也组织成二维排列通常是合理的。这样，就可以用线程所在块的 (<em>x</em>,<em>y</em>) 以及它在块内的 (<em>x</em>,<em>y</em>)，把线程在二维线程块中的位置与二维数组中的一个或多个数据值对应起来。</p>
+<blockquote>
+<p>Although not strictly necessary, CUDA programmers often organize blocks and threads to match the logical organization of program data. For example, if a program is manipulating a two-dimensional matrix, it often makes sense to organize threads and blocks into a two-dimensional arrangement. This way, a thread’s block (<em>x</em>,<em>y</em>) and its thread (<em>x</em>,<em>y</em>) within a block can be used to associate a thread’s position in the two-dimensional blocks of threads with one or more data values in the two-dimensional array.</p>
+</blockquote>
+<h4 id="CUDA-程序示例：标量乘法"><a href="#CUDA-程序示例：标量乘法" class="headerlink" title="CUDA 程序示例：标量乘法"></a>CUDA 程序示例：标量乘法</h4><p><em>Example CUDA Program: Scalar Multiply</em></p>
+<p>作为一个例子，考虑一个对向量做标量乘法的 CUDA 程序：</p>
+<blockquote>
+<p>As an example, consider a CUDA program that performs scalar multiplication of a vector:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = a * x    // where x is a vector and a is a scalar value</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：x 是一个向量，a 是一个标量值。即把向量的每个元素都乘以 a。</p>
+</div>
+<p>由于程序数据是一维数组，因此使用一维的”网格中的线程块”布局和一维的”线程块中的线程”布局就很合适。这并非必须，但这样能让线程到数据的映射更简单。</p>
+<blockquote>
+<p>Because the program data comprises one-dimensional arrays, using a one-dimensional layout of blocks&#x2F;grid and threads&#x2F;block works well. This is not necessary, but it makes the mapping of threads to data easier.</p>
+</blockquote>
+<p>运行时，该程序的 main 函数会依次完成以下工作：</p>
+<blockquote>
+<p>When run, the main function of this program will do the following:</p>
+</blockquote>
+<ol>
+<li>在主机端为向量 <code>x</code> 分配内存并初始化。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Allocate host-side memory for the vector <code>x</code> and initialize it.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>在设备端为向量 <code>x</code> 分配内存，并把它从主机内存复制到 GPU 内存。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Allocate device-side memory for the vector <code>x</code> and copy it from host memory to GPU memory.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>调用一个 CUDA 核函数并行地完成向量的标量乘法，传入的参数是向量 <code>x</code> 在设备上的地址和标量值 <code>a</code>。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Invoke a CUDA kernel function to perform vector scalar multiply in parallel, passing as arguments the device address of the vector <code>x</code> and the scalar value <code>a</code>.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>把结果从 GPU 内存复制回主机内存中的向量 <code>x</code>。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>Copy the result from GPU memory to host memory vector <code>x</code>.</li>
+</ol>
+</blockquote>
+<p>在接下来的例子中，我们展示一个执行上述步骤、实现向量标量乘法的 CUDA 程序。我们从代码清单中删去了部分错误处理和细节，完整的代码可以在这里获取：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/scalar_multiply_cuda.cu">scalar_multiply_cuda.cu</a>。</p>
+<blockquote>
+<p>In the example that follows, we show a CUDA program that performs these steps to implement scalar vector multiplication. We have removed some error handling and details from the code listing, but the full solution is available here: <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/scalar_multiply_cuda.cu">scalar_multiply_cuda.cu</a>.</p>
+</blockquote>
+<p>该 CUDA<sup>3</sup> 程序的 main 函数执行上面列出的四个步骤：</p>
+<blockquote>
+<p>The main function of the CUDA<sup>3</sup> program performs the four steps listed above:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;cuda.h&gt;</span><br><span class="line"></span><br><span class="line">#define BLOCK_SIZE       64     /* threads per block */</span><br><span class="line">#define N              10240    /* vector size */</span><br><span class="line"></span><br><span class="line">// some host-side init function</span><br><span class="line">void init_array(int *vector, int size, int step);</span><br><span class="line"></span><br><span class="line">// host-side function: main</span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line"></span><br><span class="line">  int *vector, *dev_vector, scalar;</span><br><span class="line"></span><br><span class="line">  scalar = 3;     // init scalar to some default value</span><br><span class="line">  if(argc == 2) &#123; // get scalar&#x27;s value from a command line argument</span><br><span class="line">    scalar = atoi(argv[1]);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  // 1. allocate host memory space for the vector (missing error handling)</span><br><span class="line">  vector = (int *)malloc(sizeof(int)*N);</span><br><span class="line"></span><br><span class="line">  // initialize vector in host memory</span><br><span class="line">  // (a user-defined initialization function not listed here)</span><br><span class="line">  init_array(vector, N, 7);</span><br><span class="line"></span><br><span class="line">  // 2. allocate GPU device memory for vector (missing error handling)</span><br><span class="line">  cudaMalloc(&amp;dev_vector, sizeof(int)*N);</span><br><span class="line"></span><br><span class="line">  // 2. copy host vector to device memory (missing error handling)</span><br><span class="line">  cudaMemcpy(dev_vector, vector, sizeof(int)*N, cudaMemcpyHostToDevice);</span><br><span class="line"></span><br><span class="line">  // 3. call the CUDA scalar_multiply kernel</span><br><span class="line">  // specify the 1D layout for blocks/grid (N/BLOCK_SIZE)</span><br><span class="line">  //    and the 1D layout for threads/block (BLOCK_SIZE)</span><br><span class="line">  scalar_multiply&lt;&lt;&lt;(N/BLOCK_SIZE), BLOCK_SIZE&gt;&gt;&gt;(dev_vector, scalar);</span><br><span class="line"></span><br><span class="line">  // 4. copy device vector to host memory (missing error handling)</span><br><span class="line">  cudaMemcpy(vector, dev_vector, sizeof(int)*N, cudaMemcpyDeviceToHost);</span><br><span class="line"></span><br><span class="line">  // ...(do something on the host with the result copied into vector)</span><br><span class="line"></span><br><span class="line">  // free allocated memory space on host and GPU</span><br><span class="line">  cudaFree(dev_vector);</span><br><span class="line">  free(vector);</span><br><span class="line"></span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注 · 读代码要点</p>
+<ul>
+<li>代码注释与正文的四个步骤一一对应：1. 分配并初始化主机内存；2. 分配设备内存并把向量复制过去；3. 启动核函数，网格为 <code>N/BLOCK_SIZE</code> 个块、每块 <code>BLOCK_SIZE</code> 个线程（一维布局）；4. 把结果复制回主机。”missing error handling” 意为”此处省略了错误处理”。</li>
+<li>这里 N &#x3D; 10240 恰好是 BLOCK_SIZE &#x3D; 64 的整数倍（160 个块）。一般情况下 N 不能整除时，要<strong>向上取整</strong>：<code>(N + BLOCK_SIZE - 1) / BLOCK_SIZE</code>，同时核函数里加越界判断（见下一段代码的译注）。</li>
+<li>第 3 步和第 4 步之间没有显式同步也是正确的：默认流上的 <code>cudaMemcpy</code> 会等前面的核函数执行完才开始复制。</li>
+<li>编译运行（需要 NVIDIA GPU 和 CUDA Toolkit）：<code>nvcc -o scalar_multiply scalar_multiply_cuda.cu &amp;&amp; ./scalar_multiply 5</code>。</li>
+</ul>
+</div>
+<p>每个 CUDA 线程都执行 CUDA 核函数 <code>scalar_multiply</code>。CUDA 核函数是从<strong>单个线程</strong>的视角来编写的，通常包括两个主要步骤：(1) 调用线程根据自己在所属线程块中的位置以及线程块在网格中的位置，确定自己负责哪一部分数据；(2) 调用线程对自己负责的那部分数据执行与应用相关的计算。在这个例子中，每个线程恰好负责数组中一个元素的标量乘法。核函数代码首先根据调用线程的线程块编号和线程编号计算出一个唯一的索引值，然后用这个值作为数组下标，对自己负责的数组元素执行标量乘法（<code>array[index] = array[index] * scalar</code>）。运行在 GPU 各个 SM 单元上的 CUDA 线程各自计算出不同的索引值，从而并行地更新数组元素。</p>
+<blockquote>
+<p>Each CUDA thread executes the CUDA kernel function <code>scalar_multiply</code>. A CUDA kernel function is written from an individual thread’s point of view. It typically consists of two main steps: (1) the calling thread determines which portion of the data it is responsible for based on its thread’s position in its enclosing block and its block’s position in the grid; (2) and the calling thread performs application-specific computation on its portion of the data. In this example, each thread is responsible for computing scalar multiplication on exactly one element in the array. The kernel function code first calculates a unique index value based on the calling thread’s block and thread identifier. It then uses this value as an index into the array of data to perform scalar multiplication on its array element (<code>array[index] = array[index] * scalar</code>). CUDA threads running on the GPU’s SM units each compute a different index value to update array elements in parallel.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * CUDA kernel function that performs scalar multiply</span><br><span class="line"> * of a vector on the GPU device</span><br><span class="line"> *</span><br><span class="line"> * This assumes that there are enough threads to associate</span><br><span class="line"> * each array[i] element with a signal thread</span><br><span class="line"> * (in general, each thread would be responsible for a set of data elements)</span><br><span class="line"> */</span><br><span class="line">__global__ void scalar_multiply(int *array, int scalar) &#123;</span><br><span class="line"></span><br><span class="line">  int index;</span><br><span class="line"></span><br><span class="line">  // compute the calling thread&#x27;s index value based on</span><br><span class="line">  // its position in the enclosing block and grid</span><br><span class="line">  index = blockIdx.x * blockDim.x + threadIdx.x;</span><br><span class="line"></span><br><span class="line">  // the thread&#x27;s uses its index value is to</span><br><span class="line">  // perform scalar multiply on its array element</span><br><span class="line">  array[index] = array[index] * scalar;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注 · 更稳妥的写法</p><p>注释大意：这里假设线程数足够多，可以让每个 <code>array[i]</code> 元素各对应一个线程（”signal thread” 是 “single thread” 的笔误）；一般情况下，每个线程会负责一组数据元素。实际工程中常见的是下面这种带<strong>越界检查</strong>和<strong>网格跨步循环</strong>（grid-stride loop）的写法，线程数和数据量就解耦了：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">__global__ <span class="type">void</span> <span class="title function_">scalar_multiply</span><span class="params">(<span class="type">int</span> *<span class="built_in">array</span>, <span class="type">int</span> scalar, <span class="type">int</span> n)</span> &#123;</span><br><span class="line">  <span class="keyword">for</span> (<span class="type">int</span> i = blockIdx.x * blockDim.x + threadIdx.x; i &lt; n;</span><br><span class="line">       i += blockDim.x * gridDim.x) &#123;</span><br><span class="line">    <span class="built_in">array</span>[i] = <span class="built_in">array</span>[i] * scalar;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</div>
+<h4 id="CUDA-线程调度与同步"><a href="#CUDA-线程调度与同步" class="headerlink" title="CUDA 线程调度与同步"></a>CUDA 线程调度与同步</h4><p><em>CUDA Thread Scheduling and Synchronization</em></p>
+<p>每个 CUDA 线程块由 GPU 的一个 SM 单元来运行。SM 从同一个线程块中调度一个 warp 的线程，让它们在自己的处理器核心上运行。一个 warp 中的所有线程以锁步方式执行同一组指令，处理的通常是不同的数据。这些线程共享指令流水线，但各自拥有自己的寄存器，以及存放局部变量和参数的栈空间。</p>
+<blockquote>
+<p>Each CUDA thread block is run by a GPU SM unit. An SM schedules a warp of threads from the same thread block to run its processor cores. All threads in a warp execute the same set of instructions in lockstep, typically on different data. Threads share the instruction pipeline but get their own registers and stack space for local variables and parameters.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新 · warp 不再保证锁步</p><p>从 Volta 架构开始，NVIDIA GPU 采用<strong>独立线程调度</strong>，同一 warp 中不同分支的语句可以交错执行。NVIDIA 官方建议 “Do not assume lock-step execution.”，warp 内线程有数据依赖时要显式调用 <code>__syncwarp()</code>。很多老教程和老代码默认 warp 内线程天然同步，在新 GPU 上可能出错。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/using-cuda-warp-level-primitives/">NVIDIA：Using CUDA Warp-Level Primitives</a></p>
+</div>
+<p>由于线程块是被调度到单个 SM 上执行的，增加每个线程块的线程数可以提高并行执行的程度。由于 SM 以 warp 为单位把线程调度到其处理单元上运行，如果每个线程块的线程数是 warp 大小的整数倍，那么计算中就不会浪费 SM 的处理器核心。实践中，让每个线程块的线程数取 SM 处理核心数的一个较小倍数，效果通常不错。</p>
+<blockquote>
+<p>Because blocks of threads are scheduled on individual SMs, increasing the threads per block increases the degree of parallel execution. Because the SM schedules thread warps to run on its processing units, if the number of threads per block is a multiple of the warp size, no SM processor cores are wasted in the computation. In practice, using a number of threads per block that is a small multiple of the number of processing cores of an SM works well.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>实践中常用的块大小是 128 或 256（必须 ≤ 1024，且最好是 32 的倍数）。更深一层的概念叫<strong>占用率</strong>（occupancy）：一个 SM 上能同时驻留多少个 warp，受每个线程用的寄存器数、每块用的共享内存量等限制。驻留的 warp 越多，某个 warp 等内存时调度器就越有机会切换到别的 warp 去”掩盖延迟”——GPU 正是靠大量线程而不是靠大缓存来容忍内存延迟的，这一点和 CPU 的设计哲学正好相反。</p>
+</div>
+<p>CUDA 保证：一次核函数调用中的所有线程都执行完之后，后续核函数调用中的线程才会被调度执行。因此，两次独立的核函数调用之间存在一个隐式的同步点。然而，在单次核函数调用内部，各个线程块会以任意顺序被调度到 GPU 的 SM 上执行核函数代码。因此，程序员不应假设不同线程块中的线程之间有任何执行顺序。CUDA 对线程同步提供了一定的支持，但只限于同一个线程块内的线程。</p>
+<blockquote>
+<p>CUDA guarantees that all threads from a single kernel call complete before any threads from a subsequent kernel call are scheduled. Thus, there is an implicit synchronization point between separate kernel calls. Within a single kernel call, however, thread blocks are scheduled to run the kernel code in any order on the GPU SMs. As a result, a programmer should not assume any ordering of execution between threads in different thread blocks. CUDA provides some support for synchronizing threads, but only for threads that are in the same thread block.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p>
+<ul>
+<li>块内同步用的是 <code>__syncthreads()</code>（屏障，barrier），常和 <code>__shared__</code> 共享内存配合使用；此外还有原子操作 <code>atomicAdd()</code> 等可以跨线程块使用。</li>
+<li>第一句的”保证”只对<strong>同一个 CUDA 流</strong>中的核函数成立；放在不同流中的核函数可以并发执行。</li>
+</ul>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新 · 超出线程块的同步</p>
+<ul>
+<li>Hopper（H100）在线程层级中新增<strong>线程块簇</strong>（thread block cluster）：线程 → 线程块 → 簇 → 网格。同一簇内的线程块保证同时被调度到多个 SM 上，可以相互同步，并通过分布式共享内存读写彼此的共享内存。<a target="_blank" rel="noopener" href="https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/">NVIDIA Hopper 架构详解</a></li>
+<li><strong>协作组</strong>（Cooperative Groups）API 用 <code>this_thread_block()</code>、<code>this_cluster()</code>、<code>this_grid()</code> 统一表示不同范围的线程组，并在其上做屏障同步。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/cuda-programming-guide/04-special-topics/cooperative-groups.html">CUDA 编程指南 · Cooperative Groups</a></li>
+</ul>
+</div>
+<h3 id="15-1-5-其他-GPGPU-编程语言"><a href="#15-1-5-其他-GPGPU-编程语言" class="headerlink" title="15.1.5. 其他 GPGPU 编程语言"></a>15.1.5. 其他 GPGPU 编程语言</h3><p><em>15.1.5. Other Languages for GPGPU Programming</em></p>
+<p>还有其他一些用于 GPGPU 计算的编程语言。OpenCL、OpenACC 和 OpenHMPP 就是三个例子，它们可以用来为任何图形设备编程（不局限于 NVIDIA 的设备）。OpenCL（Open Computing Language，开放计算语言）的编程模型与 CUDA 相似：两者都在目标体系结构之上实现了一种较底层的编程模型（或者说实现了一层较薄的编程抽象）。OpenCL 面向多种多样的异构计算平台，这些平台由主机 CPU 与其他计算单元组成，后者可以是 CPU，也可以是 GPU、FPGA 等加速器。OpenACC（Open Accelerator，开放加速器）是一种比 CUDA 或 OpenCL 抽象层次更高的编程模型，它的设计目标是可移植性和易用性：程序员对代码中需要并行执行的部分加上注解，编译器就会生成能在 GPU 上运行的并行代码。OpenHMPP（Open Hybrid Multicore Programming，开放混合多核编程）是另一种为异构编程提供较高层次编程抽象的语言。</p>
+<blockquote>
+<p>There are other programming languages for GPGPU computing. OpenCL, OpenACC, and OpenHMPP are three examples of languages that can be used to program any graphics device (they are not specific to NVIDIA devices). OpenCL (Open Computing Language) has a similar programming model to CUDA’s; both implement a lower-level programming model (or implement a thinner programming abstraction) on top of the target architectures. OpenCL targets a wide range of heterogeneous computing platforms that include a host CPU combined with other compute units, which could include CPUs or accelerators such as GPUs and FPGAs. OpenACC (Open Accelerator) is a higher-level abstraction programming model than CUDA or OpenCL. It is designed for portability and programmer ease. A programmer annotates portions of their code for parallel execution, and the compiler generates parallel code that can run on GPUs. OpenHMPP (Open Hybrid Multicore Programming) is another language that provides a higher-level programming abstraction for heterogeneous programming.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 今天常见的选择</p>
+<ul>
+<li><strong>HIP</strong>（AMD ROCm）：写法几乎与 CUDA 相同，并有与 CUDA 库 API 兼容的配套库，便于移植。<a target="_blank" rel="noopener" href="https://rocm.docs.amd.com/projects/HIP/en/latest/what_is_hip.html">ROCm 文档</a></li>
+<li><strong>SYCL 2020</strong>（Khronos 标准）：单源 C++ 异构编程；PyTorch 2.4 借助 SYCL 支持 Intel GPU。<a target="_blank" rel="noopener" href="https://www.khronos.org/sycl/">Khronos SYCL</a></li>
+<li><strong>Triton</strong>：用 Python 写深度学习 GPU 计算核的语言和编译器。<a target="_blank" rel="noopener" href="https://triton-lang.org/main/index.html">Triton 文档</a></li>
+</ul>
+<p>原文提到的 OpenHMPP，在近年资料里已基本看不到了。</p>
+</div>
+<h3 id="15-1-6-参考文献"><a href="#15-1-6-参考文献" class="headerlink" title="15.1.6. 参考文献"></a>15.1.6. 参考文献</h3><p><em>15.1.6. References</em></p>
+<ol>
+<li><p>“A Survey Of Techniques for Architecting and Managing Asymmetric Multicore Processors”, Sparsh Mittal, in ACM Computing Surveys 48(3), February 2016</p>
+</li>
+<li><p>“FPGAs and the Road to Reprogrammable HPC”, inside HPC, July 2019 (<a target="_blank" rel="noopener" href="https://insidehpc.com/2019/07/fpgas-and-the-road-to-reprogrammable-hpc/">https://insidehpc.com/2019/07/fpgas-and-the-road-to-reprogrammable-hpc/</a>)</p>
+</li>
+<li><p>CUDA Toolkit documentation: <a target="_blank" rel="noopener" href="https://docs.nvidia.com/cuda/index.html">https://docs.nvidia.com/cuda/index.html</a></p>
+</li>
+<li><p>“GPU Programming”, from CSinParallel: <a target="_blank" rel="noopener" href="https://csinparallel.org/csinparallel/modules/gpu_programming.html">https://csinparallel.org/csinparallel/modules/gpu_programming.html</a>, and CSinParallel has other GPU programming modules: <a target="_blank" rel="noopener" href="https://csinparallel.org/">https://csinparallel.org</a></p>
+</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C15-Parallel/15.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">15. 展望：其他并行系统与并行编程模型</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C15-Parallel/15.2-distrmem.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">15.2. 分布式内存系统、消息传递与 MPI</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-1-%E7%A1%AC%E4%BB%B6%E5%8A%A0%E9%80%9F%E5%99%A8"><span class="toc-text">15.1.1. 硬件加速器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-2-GPU-%E4%BD%93%E7%B3%BB%E7%BB%93%E6%9E%84%E6%A6%82%E8%A7%88"><span class="toc-text">15.1.2. GPU 体系结构概览</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-3-GPGPU-%E8%AE%A1%E7%AE%97"><span class="toc-text">15.1.3. GPGPU 计算</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-4-CUDA"><span class="toc-text">15.1.4. CUDA</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-5-%E5%85%B6%E4%BB%96-GPGPU-%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"><span class="toc-text">15.1.5. 其他 GPGPU 编程语言</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-1-6-%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">15.1.6. 参考文献</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

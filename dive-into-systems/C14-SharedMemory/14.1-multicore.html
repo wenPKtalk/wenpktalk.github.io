@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.1. 多核系统编程 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;multicore.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.1. Programming Multi">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.1. 多核系统编程 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.1-multicore.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;multicore.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.1. Programming Multi">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/concurrency_1.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/concurrency_2.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/multithread-vas.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/single-core-thread.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/dual-core-thread.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/quad-core-thread.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/concurrency_1.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html" class="current" aria-current="page">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 144 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.1. 多核系统编程</h1>
+  
+  
+    <p class="article-meta"><span>约 14 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/multicore.html">https://diveintosystems.org/book/C14-SharedMemory/multicore.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.1. Programming Multicore Systems</em></p>
+<p>如今程序员熟悉的大多数常用语言都诞生于多核时代之前。因此，许多语言无法<em>隐式地</em>（即自动地）利用多核处理器来加快程序的执行。程序员必须专门编写软件，来利用系统上的多个核心。</p>
+<blockquote>
+<p>Most of the common languages that programmers know today were created prior to the multicore age. As a result, many languages cannot <em>implicitly</em> (or automatically) employ multicore processors to speed up the execution of a program. Instead, programmers must specifically write software to leverage the multiple cores on a system.</p>
+</blockquote>
+<h3 id="14-1-1-多核系统对进程执行的影响"><a href="#14-1-1-多核系统对进程执行的影响" class="headerlink" title="14.1.1. 多核系统对进程执行的影响"></a>14.1.1. 多核系统对进程执行的影响</h3><p><em>14.1.1. The Impact of Multicore Systems on Process Execution</em></p>
+<p>回想一下，<a href="../C13-OS/13.2-processes.html"><strong>进程</strong></a>可以看作正在运行的程序的抽象。每个进程都在自己的虚拟地址空间中执行。操作系统（OS）调度进程在 CPU 上执行；当 CPU 改变它当前执行的进程时，就发生了<strong>上下文切换</strong>（context switch）。</p>
+<blockquote>
+<p>Recall that a <a href="../C13-OS/13.2-processes.html"><strong>process</strong></a> can be thought of as an abstraction of a running program. Each process executes in its own virtual address space. The operating system (OS) schedules processes for execution on the CPU; a <strong>context switch</strong> occurs when the CPU changes which process it currently executes.</p>
+</blockquote>
+<p><a href="14.1-multicore.html">图 1</a> 展示了五个示例进程可能如何在单核 CPU 上执行。</p>
+<blockquote>
+<p><a href="14.1-multicore.html">Figure 1</a> illustrates how five example processes may execute on a single-core CPU.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/concurrency_1.png" alt="concurrency example with 5 processes"></p>
+<p><strong>图 1.</strong> 五个进程共享单个 CPU 核心时的执行时间序列</p>
+<p><em>Figure 1. An execution time sequence for five processes as they share a single CPU core</em></p>
+<p>横轴是时间，每个时间片占一个时间单位。方框表示某个进程正在使用这个单核 CPU。假设每个进程执行完整的一个时间片之后才发生上下文切换。所以，进程 1 在时间步 T1 和 T3 使用 CPU。</p>
+<blockquote>
+<p>The horizontal axis is time, with each time slice taking one unit of time. A box indicates when a process is using the single-core CPU. Assume that each process executes for one full time slice before a context switch occurs. So, Process 1 uses the CPU during time steps T1 and T3.</p>
+</blockquote>
+<p>在这个例子中，进程的执行顺序是 P1、P2、P1、P2、P4、P2、P3、P4、P5、P3、P5。这里我们花点时间区分两种时间度量。<strong>CPU 时间</strong>度量一个进程在 CPU 上执行所用的时间。与之不同，<strong>挂钟时间</strong>（wall-clock time）度量的是人所感知到的进程完成所用的时间。由于上下文切换，挂钟时间常常比 CPU 时间长得多。例如，进程 1 的 CPU 时间是两个时间单位，而它的挂钟时间是三个时间单位。</p>
+<blockquote>
+<p>In this example, the order of process execution is P1, P2, P1, P2, P4, P2, P3, P4, P5, P3, P5. We take a moment here to distinguish between two measures of time. The <strong>CPU time</strong> measures the amount of time a process takes to execute on a CPU. In contrast, the <strong>wall-clock time</strong> measures the amount of time a human perceives a process takes to complete. The wall-clock time is often significantly longer than the CPU time, due to context switches. For example, Process 1’s CPU time requires two time units, whereas its wall-clock time is three time units.</p>
+</blockquote>
+<p>当一个进程的总执行时间与另一个进程的相重叠时，这两个进程就是<strong>并发</strong>（concurrently）运行的。在单核时代，操作系统利用并发营造出计算机能同时做许多事情的错觉（例如，你可以同时打开计算器程序、Web 浏览器和文字处理文档）。实际上，每个进程都是串行执行的，由操作系统决定<a href="../C13-OS/13.2-processes.html">进程执行和完成的顺序</a>（而且这个顺序在后续运行中常常不同）。</p>
+<blockquote>
+<p>When the total execution time of one process overlaps with another, the processes are running <strong>concurrently</strong> with each other. Operating systems employed concurrency in the single-core era to give the illusion that a computer can execute many things at once (e.g., you can have a calculator program, a web browser, and a word processing document all open at the same time). In truth, each process executes serially and the operating system determines the <a href="../C13-OS/13.2-processes.html">order in which processes execute and complete</a> (which often differs in subsequent runs).</p>
+</blockquote>
+<p>回到这个例子，可以看到进程 1 和进程 2 是彼此并发运行的，因为它们的执行在时间点 T2–T4 上有重叠。同样，进程 2 与进程 4 并发运行，因为它们的执行在时间点 T4–T6 上有重叠。与之不同，进程 2 与进程 3 <em>不是</em>并发运行的，因为它们的执行没有任何重叠；进程 3 从时间 T7 才开始运行，而进程 2 在时间 T6 就完成了。</p>
+<blockquote>
+<p>Returning to the example, observe that Process 1 and Process 2 run concurrently with each other, since their executions overlap at time points T2-T4. Likewise, Process 2 runs concurrently with Process 4, as their executions overlap at time points T4-T6. In contrast, Process 2 does <em>not</em> run concurrently with Process 3, because they share no overlap in their execution; Process 3 only starts running at time T7, whereas Process 2 completes at time T6.</p>
+</blockquote>
+<p>多核 CPU 让操作系统能够把不同的进程调度到各个可用的核心上，使进程能够<em>同时</em>执行。来自运行在多个核心上的进程的指令同时执行，称为<strong>并行执行</strong>（parallel execution）。<a href="14.1-multicore.html">图 2</a> 展示了我们的示例进程可能如何在双核系统上执行。</p>
+<blockquote>
+<p>A multicore CPU enables the OS to schedule a different process to each available core, allowing processes to execute <em>simultaneously</em>. The simultaneous execution of instructions from processes running on multiple cores is referred to as <strong>parallel execution</strong>. <a href="14.1-multicore.html">Figure 2</a> shows how our example processes might execute on a dual-core system.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/concurrency_2.png" alt="parallel example with 2 cores"></p>
+<p><strong>图 2.</strong> 五个进程的执行时间序列，扩展为包含两个 CPU 核心（一个为深蓝色，另一个为浅绿色）。</p>
+<p><em>Figure 2. An execution time sequence for five processes, extended to include two CPU cores (one in dark blue, the other in light green).</em></p>
+<p>在这个例子中，两个 CPU 核心用不同的颜色表示。假设进程的执行顺序仍然是 P1、P2、P1、P2、P4、P2、P3、P4、P5、P3、P5。多个核心的存在让某些进程能够<em>更早</em>执行。例如，在时间单位 T1 内，第一个核心执行进程 1，同时第二个核心执行进程 2。在时间 T2，第一个核心执行进程 2，第二个核心执行进程 1。因此，进程 1 在时间 T2 之后就执行完了，而进程 2 在时间 T3 执行完。</p>
+<blockquote>
+<p>In this example, the two CPU cores are colored differently. Suppose that the process execution order is again P1, P2, P1, P2, P4, P2, P3, P4, P5, P3, P5. The presence of multiple cores enables certain processes to execute <em>sooner</em>. For example, during time unit T1, the first core executes Process 1 while the second core executes Process 2. At time T2, the first core executes Process 2 while the second executes Process 1. Thus, Process 1 finishes executing after time T2, whereas Process 2 finishes executing at time T3.</p>
+</blockquote>
+<p>注意，多个进程的并行执行只是增加了任一时刻正在执行的进程数。在<a href="14.1-multicore.html">图 2</a> 中，所有进程在时间单位 T7 之前都执行完了。然而，每个单独的进程完成所需的 CPU 时间仍然与<a href="14.1-multicore.html">图 1</a> 中所示的相同。例如，无论在单核还是多核系统上执行，进程 2 都需要三个时间单位（即它的 <em>CPU 时间</em>保持不变）。多核处理器提高的是进程执行的<strong>吞吐量</strong>（throughput），即在给定时间段内能够完成的进程数。因此，尽管单个进程的 CPU 时间保持不变，它的挂钟时间却可能减少。</p>
+<blockquote>
+<p>Note that the parallel execution of multiple processes increases just the number of processes that execute at any one time. In <a href="14.1-multicore.html">Figure 2</a>, all the processes complete execution by time unit T7. However, each individual process still requires the same amount of CPU time to complete as shown in <a href="14.1-multicore.html">Figure 1</a>. For example, Process 2 requires three time units regardless of execution on a single or multicore system (i.e., its <em>CPU time</em> remains the same). A multicore processor increases the <strong>throughput</strong> of process execution, or the number of processes that can complete in a given period of time. Thus, while the CPU time of an individual process remains unchanged, its wall-clock time may decrease.</p>
+</blockquote>
+<h3 id="14-1-2-用线程加快进程执行"><a href="#14-1-2-用线程加快进程执行" class="headerlink" title="14.1.2. 用线程加快进程执行"></a>14.1.2. 用线程加快进程执行</h3><p><em>14.1.2. Expediting Process Execution with Threads</em></p>
+<p>加快单个进程执行的一种方式，是把它分解成称为<strong>线程</strong>（thread）的轻量级的独立执行流。<a href="14.1-multicore.html">图 3</a> 展示了一个进程被多线程化为两个线程时，其虚拟地址空间如何变化。每个线程都有自己私有的调用栈内存，而所有线程<em>共享</em>分配给这个多线程进程的程序数据、指令和堆。</p>
+<blockquote>
+<p>One way to speed up the execution of a single process is to decompose it into lightweight, independent execution flows called <strong>threads</strong>. <a href="14.1-multicore.html">Figure 3</a> shows how a process’s virtual address space changes when it is multithreaded with two threads. While each thread has its own private allocation of call stack memory, all threads <em>share</em> the program data, instructions, and the heap allocated to the multithreaded process.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/multithread-vas.png" alt="multithread process with 2 threads"></p>
+<p><strong>图 3.</strong> 比较单线程进程与有两个线程的多线程进程的虚拟地址空间</p>
+<p><em>Figure 3. Comparing the virtual address space of a single-threaded and a multithreaded process with two threads</em></p>
+<p>操作系统调度线程的方式与调度进程的方式相同。在多核处理器上，操作系统可以把不同的线程调度到不同的核心上运行，从而加快多线程程序的执行。能够并行执行的线程数的最大值等于系统上物理核心的数目。如果线程数超过了物理核心数，其余的线程就必须等待轮到它们执行（类似于进程在单核上的执行方式）。</p>
+<blockquote>
+<p>The operating system schedules threads in the same manner as it schedules processes. On a multicore processor, the OS can speed up the execution of a multithreaded program by scheduling the different threads to run on separate cores. The maximum number of threads that can execute in parallel is equal to the number of physical cores on the system. If the number of threads exceeds the number of physical cores, the remaining threads must wait their turn to execute (similar to how processes execute on a single core).</p>
+</blockquote>
+<h4 id="一个例子：标量乘法"><a href="#一个例子：标量乘法" class="headerlink" title="一个例子：标量乘法"></a>一个例子：标量乘法</h4><p><em>An Example: Scalar Multiplication</em></p>
+<p>作为如何用多线程加速应用程序的第一个例子，考虑对数组 <code>array</code> 和某个整数 <code>s</code> 执行标量乘法的问题。在标量乘法中，数组中的每个元素都通过与 <code>s</code> 相乘而被缩放。</p>
+<blockquote>
+<p>As an initial example of how to use multithreading to speed up an application, consider the problem of performing scalar multiplication of an array <code>array</code> and some integer <code>s</code>. In scalar multiplication, each element in the array is scaled by multiplying the element with <code>s</code>.</p>
+</blockquote>
+<p>下面是标量乘法函数的一个串行实现：</p>
+<blockquote>
+<p>A serial implementation of a scalar multiplication function follows:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void scalar_multiply(int * array, long length, int s) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 0; i &lt; length; i++) &#123;</span><br><span class="line">      array[i] = array[i] * s;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设 <code>array</code> 总共有 <em>N</em> 个元素。要用 <em>t</em> 个线程创建这个应用程序的多线程版本，需要：</p>
+<blockquote>
+<p>Suppose that <code>array</code> has <em>N</em> total elements. To create a multithreaded version of this application with <em>t</em> threads, it is necessary to:</p>
+</blockquote>
+<ol>
+<li>创建 <em>t</em> 个线程。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Create <em>t</em> threads.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>给每个线程分配输入数组的一个子集（即 <em>N</em>&#x2F;<em>t</em> 个元素）。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Assign each thread a subset of the input array (i.e., <em>N</em>&#x2F;<em>t</em> elements).</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>让每个线程把它所分到的数组子集中的元素乘以 <code>s</code>。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Instruct each thread to multiply the elements in its array subset by <code>s</code>.</li>
+</ol>
+</blockquote>
+<p>假设 <code>scalar_multiply</code> 的串行实现乘一个有 1 亿个元素的输入数组需要 60 秒。为了构建一个用 <em>t</em> &#x3D; 4 个线程执行的版本，我们给每个线程分配整个输入数组的四分之一（2500 万个元素）。</p>
+<blockquote>
+<p>Suppose that the serial implementation of <code>scalar_multiply</code> spends 60 seconds multiplying an input array of 100 million elements. To build a version that executes with <em>t</em>&#x3D; 4 threads, we assign each thread one fourth of the total input array (25 million elements).</p>
+</blockquote>
+<p><a href="14.1-multicore.html">图 4</a> 展示了在单个核心上运行四个线程时会发生什么。和之前一样，执行顺序由操作系统决定。在这个场景中，假设线程的执行顺序是线程 1、线程 3、线程 2、线程 4。在单核处理器上（用方框表示），每个线程依次执行。因此，在一个核心上运行的这个多线程进程仍然需要 60 秒（考虑到创建线程的开销，也许还要稍长一点）。</p>
+<blockquote>
+<p><a href="14.1-multicore.html">Figure 4</a> shows what happens when we run four threads on a single core. As before, the execution order is left to the operating system. In this scenario, assume that the thread execution order is Thread 1, Thread 3, Thread 2, Thread 4. On a single-core processor (represented by the squares), each thread executes sequentially. Thus, the multithreaded process running on one core will still take 60 seconds to run (perhaps a little longer, given the overhead of creating threads).</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/single-core-thread.png" alt="multithreaded process on one core"></p>
+<p><strong>图 4.</strong> 在单核 CPU 上运行四个线程</p>
+<p><em>Figure 4. Running four threads on a single-core CPU</em></p>
+<p>现在假设我们在双核系统上运行这个多线程进程。<a href="14.1-multicore.html">图 5</a> 展示了结果。同样假设 <em>t</em> &#x3D; 4 个线程，线程的执行顺序是线程 1、线程 3、线程 2、线程 4。两个核心用带阴影的方框表示。由于系统是双核的，线程 1 和线程 3 在时间步 T1 并行执行。然后线程 2 和线程 4 在时间步 T2 并行执行。因此，原本需要 60 秒运行的多线程进程，现在只需 30 秒。</p>
+<blockquote>
+<p>Now suppose that we run our multithreaded process on a dual-core system. <a href="14.1-multicore.html">Figure 5</a> shows the result. Again, assume <em>t</em> &#x3D; 4 threads, and that the thread execution order is Thread 1, Thread 3, Thread 2, Thread 4. Our two cores are represented by shaded squares. Since the system is dual-core, Thread 1 and Thread 3 execute in parallel during time step T1. Threads 2 and 4 then execute in parallel during time step T2. Thus, the multithreaded process that originally took 60 seconds to run now runs in 30 seconds.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/dual-core-thread.png" alt="multithreaded process on two cores"></p>
+<p><strong>图 5.</strong> 在双核 CPU 上运行四个线程</p>
+<p><em>Figure 5. Running four threads on a dual-core CPU</em></p>
+<p>最后，假设这个多线程进程（<em>t</em> &#x3D; 4）在四核 CPU 上运行。<a href="14.1-multicore.html">图 6</a> 展示了这样的一个执行序列。<a href="14.1-multicore.html">图 6</a> 中的四个核心各用不同的阴影表示。在四核系统上，每个线程都在时间片 T1 内并行执行。因此，在四核 CPU 上，原本需要 60 秒的多线程进程现在只需 15 秒。</p>
+<blockquote>
+<p>Finally, suppose that the multithreaded process (<em>t</em> &#x3D; 4) is run on a quad-core CPU. <a href="14.1-multicore.html">Figure 6</a> shows one such execution sequence. Each of the four cores in <a href="14.1-multicore.html">Figure 6</a> is shaded differently. On the quad-core system, each thread executes in parallel during time slice T1. Thus, on a quad-core CPU, the multithreaded process that originally took 60 seconds now runs in 15 seconds.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/quad-core-thread.png" alt="multithreaded process on four cores"></p>
+<p><strong>图 6.</strong> 在四核 CPU 上运行四个线程</p>
+<p><em>Figure 6. Running four threads on a quad-core CPU</em></p>
+<p>一般来说，如果线程数与核心数（<em>c</em>）相同，并且操作系统把每个线程调度到不同的核心上并行运行，那么多线程进程的运行时间应该大约是原来的 1&#x2F;<em>c</em>。这样的线性加速比是理想情况，在实践中并不常见。例如，如果有许多其他进程（或多线程进程）在等待使用 CPU，它们会争夺数量有限的核心，导致进程之间的<strong>资源争用</strong>（resource contention）。如果指定的线程数超过了 CPU 核心数，每个线程都必须等待轮到它运行。我们会在<a href="14.4-performance.html">本章后面</a>探讨其他经常妨碍线性加速的因素。</p>
+<blockquote>
+<p>In general, if the number of threads matches the number of cores (<em>c</em>) and the operating system schedules each thread to run on a separate core in parallel, then the multithreaded process should run in approximately 1&#x2F;<em>c</em> of the time. Such linear speedup is ideal, but not frequently observed in practice. For example, if there are many other processes (or multithreaded processes) waiting to use the CPU, they will all compete for the limited number of cores, resulting in <strong>resource contention</strong> among the processes. If the number of specified threads exceeds the number of CPU cores, each thread must wait its turn to run. We explore other factors that often prevent linear speedup <a href="14.4-performance.html">later in this chapter</a>.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14. 多核时代的共享内存利用</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.2-posix.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.2. 你好，线程！编写你的第一个多线程程序</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-1-%E5%A4%9A%E6%A0%B8%E7%B3%BB%E7%BB%9F%E5%AF%B9%E8%BF%9B%E7%A8%8B%E6%89%A7%E8%A1%8C%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="toc-text">14.1.1. 多核系统对进程执行的影响</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-1-2-%E7%94%A8%E7%BA%BF%E7%A8%8B%E5%8A%A0%E5%BF%AB%E8%BF%9B%E7%A8%8B%E6%89%A7%E8%A1%8C"><span class="toc-text">14.1.2. 用线程加快进程执行</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

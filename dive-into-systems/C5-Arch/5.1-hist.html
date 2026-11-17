@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5.1. 现代计算机体系结构的起源 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;hist.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.1. The Origin of Modern Computing A">
+<meta property="og:type" content="website">
+<meta property="og:title" content="5.1. 现代计算机体系结构的起源 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/5.1-hist.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;hist.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.1. The Origin of Modern Computing A">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html" class="current" aria-current="page">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span>
+      </nav>
+      <span class="book-position">第 58 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">5.1. 现代计算机体系结构的起源</h1>
+  
+  
+    <p class="article-meta"><span>约 23 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C5-Arch/hist.html">https://diveintosystems.org/book/C5-Arch/hist.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>5.1. The Origin of Modern Computing Architectures</em></p>
+<p>追溯现代计算机体系结构的渊源时，人们很容易认为现代计算机是一条线性演变链条中的一环，每台机器只是对前一台的改进。虽然这种「继承式改进」的看法对某些类别的体系结构可能成立（想想从最初的 iPhone 到 iPhone X 的逐代改进），但体系结构这棵树的根源远没有那么清晰。</p>
+<blockquote>
+<p>When tracing the ancestry of modern computing architecture, it is tempting to consider that modern computers are part of a linear chain of successive transmutations, with each machine simply an improvement of the one that previously existed. While this view of inherited improvements in computer design may hold true for certain classes of architecture (consider the iterative improvements of the iPhone X from the original iPhone), the root of the architectural tree is much less defined.</p>
+</blockquote>
+<p>从 18 世纪到 20 世纪初，数学家充当了最早的<em>人类</em>计算机，为科学和工程应用进行相关计算<sup>1</sup>。「computer」一词最初指的是「从事计算的人」。女性数学家常常担任计算员的角色。事实上，雇用女性作为人类计算员的做法如此普遍，以至于计算量曾用「千女孩」（kilo-girls）来衡量，即一千名人类计算员一小时能完成的工作量<sup>2</sup>。当时人们普遍认为女性比男性更擅长数学计算，因为她们往往更有条理。女性不能担任工程师的职位，因此她们被分派去做更「琐碎」的工作，比如进行复杂的计算。</p>
+<blockquote>
+<p>From the 1700s until the early 1900s, mathematicians served as the first <em>human</em> computers for calculations related to applications of science and engineering<sup>1</sup>. The word “computer” originally referred to “one who computes”. Women mathematicians often served in the role of computer. In fact, the use of women as human computers was so pervasive that computational complexity was measured in “kilo-girls”, or the amount of work a thousand human computers could complete in one hour<sup>2</sup>. Women were widely considered to be better at doing mathematical calculations than men, as they tended to be more methodical. Women were not allowed to hold the position of engineer. As such, they were relegated to more “menial” work, such as computing complex calculations.</p>
+</blockquote>
+<p>第一台通用数字计算机——<em>分析机</em>（Analytical Engine）——是由英国数学家查尔斯·巴贝奇（Charles Babbage）设计的，一些人把他誉为计算机之父。分析机是他最初的发明——差分机（Difference Engine）——的扩展，差分机是一台能计算多项式函数的机械计算器。阿达·洛芙莱斯（Ada Lovelace）或许应当被称为计算之母，她是第一个编写计算机程序的人，也是第一个发表可以用查尔斯·巴贝奇的分析机来计算的算法的人。她在笔记中认识到了分析机的通用性：「分析机根本不会自己创造任何东西。它能做的，是我们知道如何命令它去做的任何事情。<sup>3</sup>」然而，与现代计算机不同，分析机是一台机械装置，而且只建造了一部分。后来成为现代计算机直接前身的那些机器，它们的大多数设计者在开发自己的机器时，并不知道巴贝奇和洛芙莱斯的工作。</p>
+<blockquote>
+<p>The first general-purpose digital computer, the <em>Analytical Engine</em>, was designed by British mathematician Charles Babbage, who is credited by some as the father of the computer. The Analytical Engine was an extension of his original invention, the Difference Engine, a mechanical calculator that was capable of calculating polynomial functions. Ada Lovelace, who perhaps should be known as the mother of computing, was the very first person to develop a computer program and the first to publish an algorithm that could be computed using Charles Babbage’s Analytical Engine. In her notes is included her recognition of the general-purpose nature of the Analytical Engine: “[t]he Analytical Engine has no pretensions whatever to originate anything. It can do whatever we know how to order it to perform.<sup>3</sup>“ However, unlike modern computers, the Analytical Engine was a mechanical device and was only partially built. Most of the designers of what became the direct forerunners to the modern computer were unaware of the work of Babbage and Lovelace when they developed their own machines.</p>
+</blockquote>
+<p>因此，更准确的说法也许是：现代计算机体系结构是从 1930 年代和 1940 年代涌现出的一锅思想与创新的「原始汤」中诞生的。例如，1937 年，MIT 的学生克劳德·香农（Claude Shannon）写出了可能是有史以来最有影响力的硕士论文。香农借鉴了乔治·布尔（George Boole，创立布尔代数的数学家）的工作，证明了布尔逻辑可以应用于电路，可以用来设计电气开关。这将促成二进制计算系统的发展，以及后来大部分的数字电路设计。尽管许多早期的电子计算机由男性设计，但女性（她们不被允许成为工程师）成为了编程的先驱，主导了许多早期软件创新的设计与开发，比如编程语言、编译器、算法和操作系统。</p>
+<blockquote>
+<p>Thus, it is perhaps more accurate to think about modern computer architecture rising out of a primordial soup of ideas and innovations that arose in the 1930s and 1940s. For example, in 1937, Claude Shannon, a student at MIT, wrote what would go on to be perhaps the most influential masters thesis of all time. Drawing upon the work of George Boole (the mathematician who developed Boolean algebra), Shannon showed that Boolean logic could be applied to circuits and could be used to develop electrical switches. This would lead to the development of the binary computing system, and much of future digital circuit design. While men would design many early electronic computers, women (who were not allowed to be engineers) became programming pioneers, leading the design and development of many early software innovations, such as programming languages, compilers, algorithms, and operating systems.</p>
+</blockquote>
+<p>本书无法全面讨论计算机体系结构的兴起（更详细的介绍请参见乔治·戴森（George Dyson）的《图灵的大教堂》（<em>Turing’s Cathedral</em>）<sup>4</sup> 和沃尔特·艾萨克森（Walter Isaacson）的《创新者》（<em>The Innovators</em>）<sup>6</sup>）；不过，我们简要列举 1930 年代和 1940 年代出现的、对现代计算机体系结构的兴起起了关键作用的几项重要创新。</p>
+<blockquote>
+<p>A comprehensive discussion of the rise of computer architecture is not possible in this book (see <em>Turing’s Cathedral</em><sup>4</sup> by George Dyson and <em>The Innovators</em><sup>6</sup> by Walter Isaacson for more detailed coverage); however, we briefly enumerate several significant innovations that occurred in the 1930s and 1940s that were instrumental in the rise of modern computer architecture.</p>
+</blockquote>
+<h3 id="5-1-1-图灵机"><a href="#5-1-1-图灵机" class="headerlink" title="5.1.1. 图灵机"></a>5.1.1. 图灵机</h3><p><em>5.1.1. The Turing Machine</em></p>
+<p>1937 年，英国数学家艾伦·图灵（Alan Turing）提出了<sup>7</sup>一种理论计算机——「逻辑计算机器」（Logical Computing Machine）。图灵用这台机器证明了数学家戴维·希尔伯特（David Hilbert）和威廉·阿克曼（Wilhelm Ackermann）在 1928 年提出的判定问题（德语为 <em>Entscheidungsproblem</em>）不存在解。判定问题要求的是一个算法：它以一个陈述为输入，判断该陈述是否普遍有效。图灵通过证明<em>停机问题</em>（机器 <em>X</em> 在输入 <em>y</em> 上会停机吗？）对于图灵的机器是不可判定的，证明了这样的算法不存在。作为这一证明的一部分，图灵描述了一种能执行任何其他计算机器所能执行的任务的通用机器。图灵在普林斯顿大学的博士导师阿隆佐·丘奇（Alonzo Church）首先把<em>逻辑计算机器</em>称为<em>图灵机</em>（Turing machine），并把它的通用形式称为<em>通用图灵机</em>（universal Turing machine）。</p>
+<blockquote>
+<p>In 1937, British mathematician Alan Turing proposed<sup>7</sup> the “Logical Computing Machine”, a theoretical computer. Turing used this machine to prove that there exists no solution to the decision problem (in German, the <em>Entscheidungsproblem</em>), posed by the mathematicians David Hilbert and Wilhelm Ackermann in 1928. The decision problem is an algorithm that takes a statement as input and determines whether the statement is universally valid. Turing proved that no such algorithm exists by showing that the <em>halting problem</em> (will machine <em>X</em> halt on input <em>y</em>?) was undecidable for Turing’s machine. As part of this proof, Turing described a universal machine that is capable of performing the tasks of any other computing machine. Alonzo Church, Turing’s dissertation advisor at Princeton University, was the first to refer to the <em>logical computing machine</em> as the <em>Turing machine</em>, and its universal form as the <em>universal Turing machine</em>.</p>
+</blockquote>
+<p>图灵后来回到英国，在第二次世界大战期间作为布莱切利园（Bletchley Park）密码破译小组的成员为国效力。他在设计和建造 <em>Bombe</em> 的过程中发挥了关键作用，这是一种机电装置，帮助破译了恩尼格玛（Enigma）密码机产生的密码，纳粹德国在第二次世界大战期间普遍用这种机器保护敏感通信。</p>
+<blockquote>
+<p>Turing later returned to England and served his country as part of the code breaking unit in Bletchley Park during World War II. He was instrumental in the design and construction of the <em>Bombe</em>, an electromechanical device that helped break the cipher produced by the Enigma machine, which was commonly used by Nazi Germany to protect sensitive communication during World War II.</p>
+</blockquote>
+<p>战后，图灵设计了<em>自动计算机</em>（automatic computing engine，ACE）。ACE 是一台存储程序计算机，也就是说，程序指令和数据都被加载到计算机的内存中，由这台通用计算机来运行。他在 1946 年发表的论文，可能是对这种计算机最详细的描述<sup>8</sup>。</p>
+<blockquote>
+<p>After the war, Turing designed the <em>automatic computing engine</em> (ACE). The ACE was a stored-program computer, meaning that both the program instructions and its data are loaded into the computer memory and run by the general-purpose computer. His paper, published in 1946, is perhaps the most detailed description of such a computer<sup>8</sup>.</p>
+</blockquote>
+<h3 id="5-1-2-早期的电子计算机"><a href="#5-1-2-早期的电子计算机" class="headerlink" title="5.1.2. 早期的电子计算机"></a>5.1.2. 早期的电子计算机</h3><p><em>5.1.2. Early Electronic Computers</em></p>
+<p>第二次世界大战大大加速了早期计算机的发展。然而，由于第二次世界大战中军事行动的保密性质，战时紧张活动所催生的许多创新的细节，直到多年以后才被公开承认。一个很好的例子是巨人计算机（Colossus），它由英国工程师汤米·弗劳尔斯（Tommy Flowers）设计，用于帮助破译纳粹德国用来加密高层情报通信的洛伦兹（Lorenz）密码。艾伦·图灵的部分工作为它的设计提供了帮助。Colossus 建成于 1943 年，可以说是第一台可编程的、数字的、全电子的计算机。不过，它是一台专用计算机，专为破译密码而设计。英国皇家海军女子服务队（Women’s Royal Naval Service，WRNS，人称「Wrens」）担任 Colossus 的操作员。尽管《<em>Tunny 总报告</em>》（<em>General Report of the Tunny</em>）<sup>14</sup>指出几名 Wrens 在密码工作方面表现出了才能，但她们没有一个人被授予密码分析员的职位，而是被分派去做 Colossus 更琐碎的操作任务<sup>5</sup>,<sup>15</sup>。</p>
+<blockquote>
+<p>World War II accelerated much of the development of early computers. However, due to the classified nature of military operations in World War II, many of the details of innovations that occurred as a result of the frenetic activity during the war was not publicly acknowledged until years later. A good example of this is Colossus, a machine designed by British engineer Tommy Flowers to help break the Lorenz cipher, which was used by Nazi Germany to encode high-level intelligence communication. Some of Alan Turing’s work aided in its design. Built in 1943, Colossus is arguably the first programmable, digital, and fully electronic computer. However, it was a special-purpose computer, designed specifically for code breaking. The Women’s Royal Naval Service (WRNS, known as the “Wrens”) served as operators of Colossus. In spite of the <em>General Report of the Tunny</em><sup>14</sup> noting that several of the Wrens showed ability in cryptographic work, none of them were given the position of cryptographer, and instead were delegated more menial Colossus operation tasks<sup>5</sup>,<sup>15</sup>.</p>
+</blockquote>
+<p>在大西洋彼岸，美国的科学家和工程师也在努力打造自己的计算机。哈佛大学教授霍华德·艾肯（Howard Aiken，他同时也是美国海军预备役的海军中校）设计了 Mark I，一台机电式的、通用的可编程计算机。它建成于 1944 年，曾协助原子弹的设计。艾肯在建造这台计算机时基本不知道图灵的工作，他的动力是让查尔斯·巴贝奇的分析机变成现实<sup>6</sup>。Mark I 的一个关键特性是完全自动，能在无人干预的情况下连续运行好几天<sup>6</sup>。这将成为未来计算机设计的一项基本特性。</p>
+<blockquote>
+<p>On the other side of the Atlantic, American scientists and engineers were hard at work creating computers of their own. Harvard professor Howard Aiken (who was also a Naval Commander in the U.S. Navy Reserves) designed the Mark I, an electromechanical, general-purpose programmable computer. Built in 1944, it aided in the design of the atomic bomb. Aiken built his computer largely unaware of Turing’s work and was motivated by the goal of bringing Charles Babbage’s analytical engine to life<sup>6</sup>. A key feature of the Mark I was that it was fully automatic and able to run for days without human intervention<sup>6</sup>. This would be a foundational feature in future computer design.</p>
+</blockquote>
+<p>与此同时，宾夕法尼亚大学的美国工程师约翰·莫奇利（John Mauchly）和普雷斯珀·埃克特（Presper Eckert）于 1945 年设计并建造了<em>电子数字积分计算机</em>（Electronic Numerical Integrator and Computer，ENIAC）。ENIAC 可以说是现代计算机的前身。它是数字的（尽管它用的是十进制而不是二进制）、全电子的、可编程的、通用的。尽管最初版本的 ENIAC 没有存储程序能力，但在 1940 年代结束之前就为它加上了这一功能。ENIAC 由美国陆军弹道研究实验室出资建造，主要用于计算弹道轨迹。后来，它还被用来协助氢弹的设计。</p>
+<blockquote>
+<p>Meanwhile, American engineers John Mauchly and Presper Eckert of the University of Pennsylvania designed and built the <em>Electronic Numerical Integrator and Computer</em> (ENIAC) in 1945. ENIAC is arguably the forerunner of modern computers. It was digital (though it used decimal rather than binary), fully electronic, programmable, and general purpose. While the original version of ENIAC did not have stored-program capabilities, this feature was built into it before the end of the decade. ENIAC was financed and built for the U.S. Army’s Ballistic Research Laboratory and was designed primarily to calculate ballistic trajectories. Later, it would be used to aid in the design of the hydrogen bomb.</p>
+</blockquote>
+<p>第二次世界大战期间，男性被征召入伍，于是女性被雇来作为人类计算员支援战事。随着第一批电子计算机的出现，女性成为了第一批程序员，因为编程当时被视为文秘工作。因此毫不奇怪，编程领域的许多早期创新，例如第一个编译器、程序模块化的概念、调试和汇编语言，都归功于女性发明者。例如，格蕾丝·霍珀（Grace Hopper）开发了第一个编译器（A-0）和第一种高级编程语言（FLOW-MATIC），后者对第一种与机器无关的编程语言 COBOL 的设计产生了重大影响。霍珀也是 Mark I 的程序员，并撰写了描述其操作的书。</p>
+<blockquote>
+<p>As men were drafted into the armed forces during World War II, women were hired to help in the war effort as human computers. With the arrival of the first electronic computers, women became the first programmers, as programming was considered secretarial work. It should come as no surprise that many of the early innovations in programming, such as the first compiler, the notion of modularizing programs, debugging, and assembly language, are credited to women inventors. Grace Hopper, for example, developed the first compiler (A-0) and the first high-level programming language (FLOW-MATIC), the latter which heavily influenced the design of COBOL, the first machine-independent programming language. Hopper was also a programmer for the Mark I and wrote the book that described its operation.</p>
+</blockquote>
+<p>ENIAC 的程序员是六位女性：Jean Jennings Bartik、Betty Snyder Holberton、Kay McNulty Mauchly、Frances Bilas Spence、Marlyn Wescoff Meltzer 和 Ruth Lichterman Teitelbaum。与 Wrens 不同，ENIAC 的女性程序员在工作中获得了很大的自主权：她们只拿到了 ENIAC 的接线图，就被要求弄清楚它是如何工作的、如何给它编程。除了在如何为世界上最早的电子通用计算机之一编程（和调试）这一问题上的创新之外，ENIAC 的程序员们还提出了算法流程图的思想，并发展了子程序和嵌套等重要的编程概念。与格蕾丝·霍珀一样，Jean Jennings Bartik 和 Betty Snyder Holberton 后来都在计算领域有过很长的职业生涯，是早期的计算先驱。遗憾的是，女性在早期计算中所做贡献的全貌并不为人所知。由于无法得到晋升，许多女性在第二次世界大战后离开了这一领域。想进一步了解早期的女性程序员，我们推荐读者阅读珍妮特·阿巴特（Janet Abbate）的《<em>Recoding Gender</em>》<sup>11</sup>、观看 LeAnn Erickson 执导的 PBS 纪录片《<em>Top Secret Rosies</em>》<sup>12</sup>，以及凯西·克莱曼（Kathy Kleiman）的《<em>The Computers</em>》<sup>13</sup>。</p>
+<blockquote>
+<p>The ENIAC programmers were six women: Jean Jennings Bartik, Betty Snyder Holberton, Kay McNulty Mauchly, Frances Bilas Spence, Marlyn Wescoff Meltzer, and Ruth Lichterman Teitelbaum. Unlike the Wrens, the ENIAC women were given a great deal of autonomy in their task; given just the wiring diagrams of ENIAC, they were told to figure out how it worked and how to program it. In addition to their innovation in solving how to program (and debug) one of the world’s first electronic general-purpose computers, the ENIAC programmers also developed the idea of algorithmic flow charts, and developed important programming concepts such as subroutines and nesting. Like Grace Hopper, Jean Jennings Bartik and Betty Snyder Holberton would go on to have long careers in computing, and are some of the early computing pioneers. Unfortunately, the full extent of women’s contributions in early computing is not known. Unable to advance, many women left the field after World War II. To learn more about early women programmers, we encourage readers to check out <em>Recoding Gender</em> <sup>11</sup> by Janet Abbate, <em>Top Secret Rosies</em>, a PBS documentary<sup>12</sup> directed by LeAnn Erickson, and <em>“The Computers”</em> by Kathy Kleiman<sup>13</sup>.</p>
+</blockquote>
+<p>对计算机的潜力感兴趣的不只是英国人和美国人。在德国，康拉德·楚泽（Konrad Zuse）开发出了第一台机电式通用数字可编程计算机 Z3，于 1941 年完成。楚泽的设计独立于图灵等人的工作。值得注意的是，楚泽的设计使用的是二进制（而不是十进制），是第一台使用二进制的此类计算机。然而，Z3 在柏林遭受的空袭中被摧毁，楚泽直到 1950 年才得以继续他的工作。他的工作在很多年后才得到广泛认可。他被普遍视为德国的计算机之父。</p>
+<blockquote>
+<p>The British and the Americans were not the only ones interested in the potential of computers. In Germany, Konrad Zuse developed the first electromechanical general-purpose digital programmable computer, the Z3, which was completed in 1941. Zuse came up with his design independently of the work of Turing and others. Notably, Zuse’s design used binary (rather than decimal), the first computer of its kind to use the binary system. However, the Z3 was destroyed during aerial bombing of Berlin, and Zuse was unable to continue his work until 1950. His work largely went unrecognized until years later. He is widely considered the father of computing in Germany.</p>
+</blockquote>
+<h3 id="5-1-3-那么，冯·诺依曼知道些什么？"><a href="#5-1-3-那么，冯·诺依曼知道些什么？" class="headerlink" title="5.1.3. 那么，冯·诺依曼知道些什么？"></a>5.1.3. 那么，冯·诺依曼知道些什么？</h3><p><em>5.1.3. So What Did von Neumann Know?</em></p>
+<p>从我们对现代计算机体系结构起源的讨论中可以看出，1930 年代和 1940 年代出现的多项创新，促成了我们今天所知的计算机的兴起。1945 年，约翰·冯·诺依曼（John von Neumann）发表了一篇论文《EDVAC 报告书的第一份草案》（First draft of a report on the EDVAC）<sup>9</sup>，其中描述的体系结构正是现代计算机的基础。EDVAC 是 ENIAC 的继任者。它与 ENIAC 的不同之处在于，它是二进制而非十进制的计算机，并且是一台存储程序计算机。今天，这份对 EDVAC 体系结构设计的描述被称为<em>冯·诺依曼体系结构</em>。</p>
+<blockquote>
+<p>From our discussion of the origin of modern computer architecture, it is apparent that in the 1930s and 1940s there were several innovations that led to the rise of the computer as we know it today. In 1945, John von Neumann published a paper, “First draft of a report on the EDVAC”<sup>9</sup>, which describes an architecture on which modern computers are based. EDVAC was the successor of ENIAC. It differed from ENIAC in that it was a binary computer instead of decimal, and it was a stored-program computer. Today, this description of EDVAC’s architectural design is known as the <em>von Neumann architecture</em>.</p>
+</blockquote>
+<p><strong>冯·诺依曼体系结构</strong>（von Neumann architecture）描述的是一种通用计算机，即设计用来运行任何程序的计算机。它还采用存储程序模型，也就是说，程序指令和数据都被加载到计算机上运行。在冯·诺依曼模型中，指令和数据没有区别：两者都被加载到计算机的内部存储器中，程序指令从存储器中取出，由计算机的功能单元执行，功能单元在程序数据上执行程序指令。</p>
+<blockquote>
+<p>The <strong>von Neumann architecture</strong> describes a general-purpose computer, one that is designed to run any program. It also uses a stored-program model, meaning that program instructions and data are both loaded onto the computer to run. In the von Neumann model there is no distinction between instructions and data; both are loaded into the computer’s internal memory, and program instructions are fetched from memory and executed by the computer’s functional units that execute program instructions on program data.</p>
+</blockquote>
+<p>约翰·冯·诺依曼的贡献穿插在前面几个计算故事之中。他是匈牙利裔数学家，曾任普林斯顿高等研究院（Institute for Advanced Study）和普林斯顿大学的教授，也曾是艾伦·图灵早期的导师之一。后来，冯·诺依曼成为曼哈顿计划的研究科学家，这让他结识了霍华德·艾肯和 Mark I；之后他又担任 ENIAC 项目的顾问，并与埃克特和莫奇利保持经常的通信。他那篇描述 EDVAC 的著名论文，源于他在离散变量自动电子计算机（Electronic Discrete Variable Automatic Computer，EDVAC）上的工作；EDVAC 由埃克特和莫奇利向美国陆军提出，在宾夕法尼亚大学建造。EDVAC 包含了几项体系结构设计创新，它们构成了几乎所有现代计算机的基础：它是通用的，使用二进制数制，具有内部存储器，并且是全电子的。在很大程度上，由于冯·诺依曼是这篇论文的唯一作者<sup>9</sup>，论文所描述的体系结构设计主要被归功于冯·诺依曼，并被称为冯·诺依曼体系结构。需要指出的是，图灵在 1946 年非常详细地描述了一台类似机器的设计。然而，由于冯·诺依曼的论文发表在图灵的论文之前，冯·诺依曼获得了这些创新的主要功劳。</p>
+<blockquote>
+<p>John von Neumann’s contributions weave in and out of several of the previous stories in computing. A Hungarian mathematician, he was a professor at both the Institute of Advanced Study and Princeton University, and he served as an early mentor to Alan Turing. Later, von Neumann became a research scientist on the Manhattan Project, which led him to Howard Aiken and the Mark I; he would later serve as a consultant on the ENIAC project, and correspond regularly with Eckert and Mauchly. His famous paper describing EDVAC came from his work on the Electronic Discrete Variable Automatic Computer (EDVAC), proposed to the U.S. Army by Eckert and Mauchly, and built at the University of Pennsylvania. EDVAC included several architectural design innovations that form the foundation of almost all modern computers: it was general purpose, used the binary numeric system, had internal memory, and was fully electric. In large part because von Neumann was the sole author of the paper<sup>9</sup>, the architectural design the paper describes is primarily credited to von Neumann and has become known as the von Neumann architecture. It should be noted that Turing described in great detail the design of a similar machine in 1946. However, since von Neumann’s paper was published before Turing’s, von Neumann received the chief credit for these innovations.</p>
+</blockquote>
+<p>不管冯·诺依曼体系结构「真正」是谁发明的，冯·诺依曼本人的贡献都不应被低估。他是一位杰出的数学家和科学家，他对数学的贡献涵盖从集合论到量子力学和博弈论的诸多领域。在计算领域，他还被认为是<em>归并排序</em>（merge sort）算法的发明者。沃尔特·艾萨克森在他的《创新者》一书中认为，冯·诺依曼最大的长处之一，在于他广泛协作的能力，以及凭直觉看出新概念重要性的能力<sup>6</sup>。许多早期的计算机设计者彼此孤立地工作。艾萨克森认为，冯·诺依曼目睹了 Mark I 计算机的缓慢，从而凭直觉意识到真正的电子计算机的价值，以及在存储器中存储和修改程序的必要性。因此可以说，冯·诺依曼甚至比埃克特和莫奇利更深刻地把握并充分认识到了全电子存储程序计算机的威力<sup>6</sup>。</p>
+<blockquote>
+<p>Regardless of who “really” invented the von Neumann architecture, von Neumann’s own contributions should not be diminished. He was a brilliant mathematician and scientist. His contributions to mathematics range from set theory to quantum mechanics and game theory. In computing, he is also regarded as the inventor of the <em>merge sort</em> algorithm. Walter Isaacson, in his book <em>The Innovators</em>, argued that one of von Neumann’s greatest strengths lay in his ability to collaborate widely and to intuitively see the importance of novel concepts<sup>6</sup>. A lot of the early designers of the computer worked in isolation from one another. Isaacson argues that by witnessing the slowness of the Mark I computer, von Neumann was able to intuitively realize the value of a truly electronic computer, and the need to store and modify programs in memory. It could therefore be argued that von Neumann, even more than Eckert and Mauchly, grasped and fully appreciated the power of a fully electronic stored-program computer<sup>6</sup>.</p>
+</blockquote>
+<h3 id="5-1-4-参考文献"><a href="#5-1-4-参考文献" class="headerlink" title="5.1.4. 参考文献"></a>5.1.4. 参考文献</h3><p><em>5.1.4. References</em></p>
+<ol>
+<li><p>David Alan Grier, <em>“When Computers Were Human”</em>, Princeton University Press, 2005.</p>
+</li>
+<li><p>Megan Garber, <em>“Computing Power Used to be Measured in ‘Kilo-Girls’”</em>. The Atlantic, October 16, 2013. <a target="_blank" rel="noopener" href="https://www.theatlantic.com/technology/archive/2013/10/computing-power-used-to-be-measured-in-kilo-girls/280633/">https://www.theatlantic.com/technology/archive/2013/10/computing-power-used-to-be-measured-in-kilo-girls/280633/</a></p>
+</li>
+<li><p>Betty Alexandra Toole, <em>“Ada, The Enchantress of Numbers”</em>. Strawberry Press, 1998.</p>
+</li>
+<li><p>George Dyson, <em>Turing’s Cathedral: the origins of the digital universe</em>. Pantheon. 2012.</p>
+</li>
+<li><p>Jack Copeland, <em>“Colossus: The Secrets of Bletchley Park’s Code-breaking Computers”</em>.</p>
+</li>
+<li><p>Walter Isaacson. <em>“The Innovators: How a group of inventors, hackers, genius and geeks created the digital revolution”</em>. Simon and Schuster. 2014.</p>
+</li>
+<li><p>Alan M. Turing. <em>“On computable numbers, with an application to the Entscheidungsproblem”</em>. <em>Proceedings of the London mathematical society</em> 2(1). pp. 230—​265. 1937.</p>
+</li>
+<li><p>Brian Carpenter and Robert Doran. <em>“The other Turing Machine”</em>. <em>The Computer Journal</em> 20(3) pp. 269—​279. 1977.</p>
+</li>
+<li><p>John von Neumann. <em>“First Draft of a Report on the EDVAC (1945)”</em>. Reprinted in <em>IEEE Annals of the history of computing</em> 4. pp. 27—​75. 1993.</p>
+</li>
+<li><p>Arthur Burks, Herman Goldstine, John von Neumann. <em>“Preliminary discussion of the logical design of an electronic computing instrument (1946)”</em>. Reprinted by <em>The Origins of Digital Computers</em> (Springer), pp. 399—​413. 1982.</p>
+</li>
+<li><p>Janet Abbate. <em>“Recoding gender: Women’s changing participation in computing”</em>. MIT Press. 2012.</p>
+</li>
+<li><p>LeAnn Erickson. <em>“Top Secret Rosies: The Female Computers of World War II”</em>. Public Broadcasting System. 2010.</p>
+</li>
+<li><p>Kathy Kleiman, <em>“The Computers”</em>. <a target="_blank" rel="noopener" href="http://eniacprogrammers.org/">http://eniacprogrammers.org/</a></p>
+</li>
+<li><p><em>“Breaking Teleprinter Ciphers at Bletchley Park: An edition of I.J. Good, D. Michie and G. Timms: General Report on Tunny with Emphasis on Statistical Methods (1945)”</em>. Editors: Reeds, Diffie, Fields. Wiley, 2015.</p>
+</li>
+<li><p>Janet Abbate, <em>“Recoding Gender”</em>, MIT Press, 2012.</p>
+</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C5-Arch/5.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">5. 冯·诺依曼早已知道的事：计算机体系结构</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C5-Arch/5.2-von.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">5.2. 冯·诺依曼体系结构</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-1-%E5%9B%BE%E7%81%B5%E6%9C%BA"><span class="toc-text">5.1.1. 图灵机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-2-%E6%97%A9%E6%9C%9F%E7%9A%84%E7%94%B5%E5%AD%90%E8%AE%A1%E7%AE%97%E6%9C%BA"><span class="toc-text">5.1.2. 早期的电子计算机</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-3-%E9%82%A3%E4%B9%88%EF%BC%8C%E5%86%AF%C2%B7%E8%AF%BA%E4%BE%9D%E6%9B%BC%E7%9F%A5%E9%81%93%E4%BA%9B%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">5.1.3. 那么，冯·诺依曼知道些什么？</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-4-%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">5.1.4. 参考文献</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

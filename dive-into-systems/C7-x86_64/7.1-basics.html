@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>7.1. 潜入汇编：基础知识 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C7-x86_64&#x2F;basics.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  7.1. Diving into Assembly: Basics">
+<meta property="og:type" content="website">
+<meta property="og:title" content="7.1. 潜入汇编：基础知识 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/7.1-basics.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C7-x86_64&#x2F;basics.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  7.1. Diving into Assembly: Basics">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/register.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.986Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.986Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/register.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html" class="current" aria-current="page">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>7. 64 位 x86 汇编（x86-64）</span>
+      </nav>
+      <span class="book-position">第 74 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">7.1. 潜入汇编：基础知识</h1>
+  
+  
+    <p class="article-meta"><span>约 21 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/basics.html">https://diveintosystems.org/book/C7-x86_64/basics.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>7.1. Diving into Assembly: Basics</em></p>
+<p>为了初步了解 x64 汇编，我们修改<a href="7.0-index.html">第 6 章</a>中的 <code>adder</code> 函数，简化它的行为。修改后的函数（<code>adder2</code>）如下：</p>
+<blockquote>
+<p>For a first look at x64 assembly, we modify the <code>adder</code> function from <a href="7.0-index.html">Chapter 6</a> to simplify its behavior. The modified function (<code>adder2</code>) is shown below:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">//adds two to an integer and returns the result</span><br><span class="line">int adder2(int a) &#123;</span><br><span class="line">    return a + 2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void)&#123;</span><br><span class="line">    int x = 40;</span><br><span class="line">    x = adder2(x);</span><br><span class="line">    printf(&quot;x is: %d\n&quot;, x);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>要编译这段代码，使用以下命令：</p>
+<blockquote>
+<p>To compile this code, use the following command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o adder adder.c</span><br></pre></td></tr></table></figure>
+
+<p>接下来，用 <code>objdump</code> 命令查看这段代码对应的汇编：</p>
+<blockquote>
+<p>Next, let’s view the corresponding assembly of this code by using the <code>objdump</code> command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ objdump -d adder &gt; output</span><br><span class="line">$ less output</span><br></pre></td></tr></table></figure>
+
+<p>用 <code>less</code> 查看文件 <code>output</code> 时，输入 <code>/adder2</code> 搜索与 <code>adder2</code> 相关的代码片段。与 <code>adder2</code> 相关的部分应该类似下面这样：</p>
+<blockquote>
+<p>Search for the code snippet associated with <code>adder2</code> by typing <code>/adder2</code> while examining the file <code>output</code> using <code>less</code>. The section associated with <code>adder2</code> should look similar to the following:</p>
+</blockquote>
+<p><em><code>adder2</code> 函数的汇编输出</em></p>
+<blockquote>
+<p><em>Assembly output for the <code>adder2</code> function</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">0000000000400526 &lt;adder2&gt;:</span><br><span class="line">  400526:       55                      push   %rbp</span><br><span class="line">  400527:       48 89 e5                mov    %rsp,%rbp</span><br><span class="line">  40052a:       89 7d fc                mov    %edi,-0x4(%rbp)</span><br><span class="line">  40052d:       8b 45 fc                mov    -0x4(%rbp),%eax</span><br><span class="line">  400530:       83 c0 02                add    $0x2,%eax</span><br><span class="line">  400533:       5d                      pop    %rbp</span><br><span class="line">  400534:       c3                      retq</span><br></pre></td></tr></table></figure>
+
+<p>如果你还不明白这是怎么回事，不必担心。我们会在后面的小节中更详细地介绍汇编。目前，我们先来研究一下这些单独指令的结构。</p>
+<blockquote>
+<p>Don’t worry if you don’t understand what’s going on just yet. We will cover assembly in greater detail in later sections. For now, let’s study the structure of these individual instructions.</p>
+</blockquote>
+<p>上例中的每一行都包含一条指令在程序内存中的 64 位地址、与这条指令对应的字节，以及指令本身的文本表示。例如，<code>55</code> 是指令 <code>push %rbp</code> 的机器码表示，这条指令位于程序内存中的地址 <code>0x400526</code> 处。注意，<code>0x400526</code> 是与 <code>push %rbp</code> 指令相关的完整 64 位地址的缩写；为了便于阅读，前导零被省略了。</p>
+<blockquote>
+<p>Each line in the preceding example contains an instruction’s 64-bit address in program memory, the bytes corresponding to the instruction, and the plaintext representation of the instruction itself. For example, <code>55</code> is the machine code representation of the instruction <code>push %rbp</code>, and the instruction occurs at address <code>0x400526</code> in program memory. Note that <code>0x400526</code> is an abbreviation of the full 64-bit address associated with the <code>push %rbp</code> instruction; the leading zeroes are ignored for readability.</p>
+</blockquote>
+<p>要注意，一行 C 代码常常会被翻译成多条汇编指令。运算 <code>a + 2</code> 用 <code>mov -0x4(%rbp), %eax</code> 和 <code>add $0x2, %eax</code> 两条指令表示。</p>
+<blockquote>
+<p>It is important to note that a single line of C code often translates to multiple instructions in assembly. The operation <code>a + 2</code> is represented by the two instructions <code>mov -0x4(%rbp), %eax</code> and <code>add $0x2, %eax</code>.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 你的汇编可能看起来不一样！（Your assembly may look different!）</p><p>如果你一边读一边跟着编译代码，可能会注意到你得到的一些汇编示例与书中所示的不同。任何编译器输出的确切汇编指令，都取决于编译器的版本和底层的操作系统。本书中的大多数汇编示例是在运行 Ubuntu 或红帽企业版 Linux（RHEL）的系统上生成的。</p>
+<p>在接下来的示例中，我们不使用任何优化选项。例如，编译任何示例文件（<code>example.c</code>）都使用命令 <code>gcc -o example example.c</code>。因此，接下来的示例中会有许多看似多余的指令。记住，编译器并不「聪明」——它只是遵循一系列规则，把人类可读的代码翻译成机器语言。在这个翻译过程中，出现一些冗余并不罕见。优化编译器在优化过程中会去掉许多这样的冗余，我们会在<a href="../C12-CodeOpt/12.0-index.html">后面的章节</a>中介绍优化。</p>
+<blockquote>
+<p>If you are compiling your code along with us, you may notice that some of your assembly examples look different from what is shown in this book. The precise assembly instructions that are output by any compiler depend on that compiler’s version and the underlying operating system. Most of the assembly examples in this book were generated on systems running Ubuntu or Red Hat Enterprise Linux (RHEL).</p>
+<p>In the examples that follow, we do not use any optimization flags. For example, we compile any example file (<code>example.c</code>) using the command <code>gcc -o example example.c</code>. Consequently, there are many seemingly redundant instructions in the examples that follow. Remember that the compiler is not “smart” — it simply follows a series of rules to translate human-readable code into machine language. During this translation process, it is not uncommon for some redundancy to occur. Optimizing compilers remove many of these redundancies during optimization, which is covered in a <a href="../C12-CodeOpt/12.0-index.html">later chapter</a>.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>较新的 GCC 和 Linux 发行版默认生成位置无关可执行文件（PIE），所以你用 <code>objdump</code> 看到的地址通常是 <code>0x1129</code> 这样从很小的值开始的相对地址，而不是书中的 <code>0x400526</code>；不开优化时函数开头还可能多出一条 <code>endbr64</code> 指令（Intel CET 控制流保护）。这些差异不影响理解本章内容。</p>
+</div>
+<h3 id="7-1-1-寄存器"><a href="#7-1-1-寄存器" class="headerlink" title="7.1.1. 寄存器"></a>7.1.1. 寄存器</h3><p><em>7.1.1. Registers</em></p>
+<p>回想一下，<strong>寄存器</strong>是直接位于 CPU 上的、字大小的存储单元。可能会有分别用于数据、指令和地址的寄存器。例如，Intel CPU 共有 16 个用于存储 64 位数据的寄存器：</p>
+<blockquote>
+<p>Recall that a <strong>register</strong> is a word-sized storage unit located directly on the CPU. There may be separate registers for data, instructions, and addresses. For example, the Intel CPU has a total of 16 registers for storing 64-bit data:</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· x86 的寄存器要翻倍了</p><p>本章讲的 16 个通用寄存器是 x86-64 自诞生以来的配置。Intel 公布的 <strong>APX</strong>（Advanced Performance Extensions，高级性能扩展）把通用寄存器从 16 个增加到 32 个，让编译器能把更多值留在寄存器里；Intel 称用 APX 编译的代码加载指令减少约 10%、存储指令减少 20% 以上。这需要新处理器和新编译器支持，本章的知识仍然完全适用。<a target="_blank" rel="noopener" href="https://www.intel.com/content/www/us/en/developer/articles/technical/advanced-performance-extensions-apx.html">Intel：Introducing Intel APX</a></p>
+</div>
+<p><code>%rax</code>、<code>%rbx</code>、<code>%rcx</code>、<code>%rdx</code>、<code>%rdi</code>、<code>%rsi</code>、<code>%rsp</code>、<code>%rbp</code>，以及 <code>%r8</code>–<code>%r15</code>。除了 <code>%rsp</code> 和 <code>%rbp</code> 之外，所有寄存器都存放通用的 64 位数据。尽管程序可能会把寄存器的内容解释为整数或地址等，但寄存器本身并不加以区分。程序可以读写全部十六个寄存器。</p>
+<blockquote>
+<p><code>%rax</code>, <code>%rbx</code>, <code>%rcx</code>, <code>%rdx</code>, <code>%rdi</code>, <code>%rsi</code>, <code>%rsp</code>, <code>%rbp</code>, and <code>%r8</code>-<code>%r15</code>. All the registers save for <code>%rsp</code> and <code>%rbp</code> hold general-purpose 64-bit data. While a program may interpret a register’s contents as, say, an integer or an address, the register itself makes no distinction. Programs can read from or write to all sixteen registers.</p>
+</blockquote>
+<p>寄存器 <code>%rsp</code> 和 <code>%rbp</code> 分别称为<strong>栈指针</strong>（stack pointer）和<strong>帧指针</strong>（frame pointer，或称<strong>基址指针</strong>，base pointer）。编译器把这两个寄存器保留给维护程序栈布局的操作。例如，寄存器 <code>%rsp</code> 总是指向栈顶。在早期的 x86 系统（例如 IA32）中，帧指针通常用来跟踪活动栈帧的底部，并帮助引用参数。不过，在 x86-64 系统中，基址指针用得比较少。编译器通常把前六个参数依次存放在寄存器 <code>%rdi</code>、<code>%rsi</code>、<code>%rdx</code>、<code>%rcx</code>、<code>%r8</code> 和 <code>%r9</code> 中。寄存器 <code>%rax</code> 存放函数的返回值。</p>
+<blockquote>
+<p>The registers <code>%rsp</code> and <code>%rbp</code> are known as the <strong>stack pointer</strong> and the <strong>frame pointer</strong> (or <strong>base pointer</strong>), respectively. The compiler reserves these registers for operations that maintain the layout of the program stack. For example, register <code>%rsp</code> always points to the top of the stack. In earlier x86 systems (e.g., IA32), the frame pointer commonly tracked the base of the active stack frame and helped to reference parameters. However, the base pointer is less frequently used in x86-64 systems. Compilers typically store the first six parameters in registers <code>%rdi</code>, <code>%rsi</code>, <code>%rdx</code>, <code>%rcx</code>, <code>%r8</code> and <code>%r9</code>, respectively. Register <code>%rax</code> stores the return value from a function.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 帧指针回来了</p><p>原文说 x86-64 上帧指针用得少了：编译器优化时常省略 <code>%rbp</code> 帧指针（<code>-fomit-frame-pointer</code>），把它当普通寄存器用。近年风向有变：Canonical 宣布从 <strong>Ubuntu 24.04 LTS</strong> 起，其 GCC 包在 64 位平台上<strong>默认启用帧指针</strong>，几乎所有软件包都用帧指针重新构建，理由是这样软件更容易做性能分析，而带来的性能损失相对很小。所以在新版 Ubuntu 上反汇编系统库，你会更常看到 <code>push %rbp; mov %rsp,%rbp</code> 这样的函数开头。<a target="_blank" rel="noopener" href="https://ubuntu.com/blog/ubuntu-performance-engineering-with-frame-pointers-by-default">Ubuntu 博客：Performance engineering on Ubuntu leaps forward with frame pointers by default</a></p>
+</div>
+<p>最后一个值得一提的寄存器是 <code>%rip</code>，即<strong>指令指针</strong>（instruction pointer），有时也称为<strong>程序计数器</strong>（PC）。它指向 CPU 要执行的下一条指令。与前面提到的 16 个寄存器不同，程序不能直接写寄存器 <code>%rip</code>。</p>
+<blockquote>
+<p>The last register worth mentioning is <code>%rip</code> or the <strong>instruction pointer</strong>, sometimes called the <strong>program counter</strong> (PC). It points to the next instruction to be executed by the CPU. Unlike the 16 registers mentioned previously, programs cannot write directly to register <code>%rip</code>.</p>
+</blockquote>
+<h3 id="7-1-2-寄存器的进阶记法"><a href="#7-1-2-寄存器的进阶记法" class="headerlink" title="7.1.2. 寄存器的进阶记法"></a>7.1.2. 寄存器的进阶记法</h3><p><em>7.1.2. Advanced Register Notation</em></p>
+<p>由于 x86-64 是 32 位 x86 体系结构的扩展（而后者本身又是更早的 16 位版本的扩展），这种 ISA 提供了访问每个寄存器低 32 位、低 16 位和低字节的机制。<a href="7.1-basics.html">表 1</a> 列出了全部 16 个寄存器，以及访问其组成字节的 ISA 记法。</p>
+<blockquote>
+<p>Since x86-64 is an extension of the 32-bit x86 architecture (which itself was an extension of an earlier 16-bit version), the ISA provides mechanisms to access the lower 32 bits, 16 bits, and lower bytes of each register. <a href="7.1-basics.html">Table 1</a> lists each of the 16 registers and the ISA notations to access their component bytes.</p>
+</blockquote>
+<p><strong>表 1.</strong> x86-64 寄存器及访问其低位字节的方式</p>
+<p><em>Table 1. x86-64 Registers and Mechanisms for Accessing Lower Bytes</em></p>
+<table>
+<thead>
+<tr>
+<th>64 位寄存器</th>
+<th>32 位寄存器</th>
+<th>低 16 位</th>
+<th>低 8 位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>%rax</code></td>
+<td><code>%eax</code></td>
+<td><code>%ax</code></td>
+<td><code>%al</code></td>
+</tr>
+<tr>
+<td><code>%rbx</code></td>
+<td><code>%ebx</code></td>
+<td><code>%bx</code></td>
+<td><code>%bl</code></td>
+</tr>
+<tr>
+<td><code>%rcx</code></td>
+<td><code>%ecx</code></td>
+<td><code>%cx</code></td>
+<td><code>%cl</code></td>
+</tr>
+<tr>
+<td><code>%rdx</code></td>
+<td><code>%edx</code></td>
+<td><code>%dx</code></td>
+<td><code>%dl</code></td>
+</tr>
+<tr>
+<td><code>%rdi</code></td>
+<td><code>%edi</code></td>
+<td><code>%di</code></td>
+<td><code>%dil</code></td>
+</tr>
+<tr>
+<td><code>%rsi</code></td>
+<td><code>%esi</code></td>
+<td><code>%si</code></td>
+<td><code>%sil</code></td>
+</tr>
+<tr>
+<td><code>%rsp</code></td>
+<td><code>%esp</code></td>
+<td><code>%sp</code></td>
+<td><code>%spl</code></td>
+</tr>
+<tr>
+<td><code>%rbp</code></td>
+<td><code>%ebp</code></td>
+<td><code>%bp</code></td>
+<td><code>%bpl</code></td>
+</tr>
+<tr>
+<td><code>%r8</code></td>
+<td><code>%r8d</code></td>
+<td><code>%r8w</code></td>
+<td><code>%r8b</code></td>
+</tr>
+<tr>
+<td><code>%r9</code></td>
+<td><code>%r9d</code></td>
+<td><code>%r9w</code></td>
+<td><code>%r9b</code></td>
+</tr>
+<tr>
+<td><code>%r10</code></td>
+<td><code>%r10d</code></td>
+<td><code>%r10w</code></td>
+<td><code>%r10b</code></td>
+</tr>
+<tr>
+<td><code>%r11</code></td>
+<td><code>%r11d</code></td>
+<td><code>%r11w</code></td>
+<td><code>%r11b</code></td>
+</tr>
+<tr>
+<td><code>%r12</code></td>
+<td><code>%r12d</code></td>
+<td><code>%r12w</code></td>
+<td><code>%r12b</code></td>
+</tr>
+<tr>
+<td><code>%r13</code></td>
+<td><code>%r13d</code></td>
+<td><code>%r13w</code></td>
+<td><code>%r13b</code></td>
+</tr>
+<tr>
+<td><code>%r14</code></td>
+<td><code>%r14d</code></td>
+<td><code>%r14w</code></td>
+<td><code>%r14b</code></td>
+</tr>
+<tr>
+<td><code>%r15</code></td>
+<td><code>%r15d</code></td>
+<td><code>%r15w</code></td>
+<td><code>%r15b</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>64-bit Register</th>
+<th>32-bit Register</th>
+<th>Lower 16 Bits</th>
+<th>Lower 8 Bits</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>%rax</code></td>
+<td><code>%eax</code></td>
+<td><code>%ax</code></td>
+<td><code>%al</code></td>
+</tr>
+<tr>
+<td><code>%rbx</code></td>
+<td><code>%ebx</code></td>
+<td><code>%bx</code></td>
+<td><code>%bl</code></td>
+</tr>
+<tr>
+<td><code>%rcx</code></td>
+<td><code>%ecx</code></td>
+<td><code>%cx</code></td>
+<td><code>%cl</code></td>
+</tr>
+<tr>
+<td><code>%rdx</code></td>
+<td><code>%edx</code></td>
+<td><code>%dx</code></td>
+<td><code>%dl</code></td>
+</tr>
+<tr>
+<td><code>%rdi</code></td>
+<td><code>%edi</code></td>
+<td><code>%di</code></td>
+<td><code>%dil</code></td>
+</tr>
+<tr>
+<td><code>%rsi</code></td>
+<td><code>%esi</code></td>
+<td><code>%si</code></td>
+<td><code>%sil</code></td>
+</tr>
+<tr>
+<td><code>%rsp</code></td>
+<td><code>%esp</code></td>
+<td><code>%sp</code></td>
+<td><code>%spl</code></td>
+</tr>
+<tr>
+<td><code>%rbp</code></td>
+<td><code>%ebp</code></td>
+<td><code>%bp</code></td>
+<td><code>%bpl</code></td>
+</tr>
+<tr>
+<td><code>%r8</code></td>
+<td><code>%r8d</code></td>
+<td><code>%r8w</code></td>
+<td><code>%r8b</code></td>
+</tr>
+<tr>
+<td><code>%r9</code></td>
+<td><code>%r9d</code></td>
+<td><code>%r9w</code></td>
+<td><code>%r9b</code></td>
+</tr>
+<tr>
+<td><code>%r10</code></td>
+<td><code>%r10d</code></td>
+<td><code>%r10w</code></td>
+<td><code>%r10b</code></td>
+</tr>
+<tr>
+<td><code>%r11</code></td>
+<td><code>%r11d</code></td>
+<td><code>%r11w</code></td>
+<td><code>%r11b</code></td>
+</tr>
+<tr>
+<td><code>%r12</code></td>
+<td><code>%r12d</code></td>
+<td><code>%r12w</code></td>
+<td><code>%r12b</code></td>
+</tr>
+<tr>
+<td><code>%r13</code></td>
+<td><code>%r13d</code></td>
+<td><code>%r13w</code></td>
+<td><code>%r13b</code></td>
+</tr>
+<tr>
+<td><code>%r14</code></td>
+<td><code>%r14d</code></td>
+<td><code>%r14w</code></td>
+<td><code>%r14b</code></td>
+</tr>
+<tr>
+<td><code>%r15</code></td>
+<td><code>%r15d</code></td>
+<td><code>%r15w</code></td>
+<td><code>%r15b</code></td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>前八个寄存器（<code>%rax</code>、<code>%rbx</code>、<code>%rcx</code>、<code>%rdx</code>、<code>%rdi</code>、<code>%rsi</code>、<code>%rsp</code> 和 <code>%rbp</code>）是 x86 中 32 位寄存器的 64 位扩展，访问它们的低 32 位、低 16 位和最低有效字节有一套共同的机制。要访问前八个寄存器的低 32 位，只需把寄存器名中的 <code>r</code> 换成 <code>e</code>。因此，对应于寄存器 <code>%rax</code> 低 32 位的寄存器是 <code>%eax</code>。要访问这八个寄存器各自的低 16 位，就取寄存器名的最后两个字母。所以，访问寄存器 <code>%rax</code> 低两个字节的方式是 <code>%ax</code>。</p>
+<blockquote>
+<p>The first eight registers (<code>%rax</code>, <code>%rbx</code>, <code>%rcx</code>, <code>%rdx</code>, <code>%rdi</code>, <code>%rsi</code>, <code>%rsp</code>, and <code>%rbp</code>) are 64-bit extensions of 32-bit registers in x86 and have a common mechanism for accessing their lower 32 bits, lower 16 bits, and least-significant byte. To access the lower 32 bits of the first eight registers, simply replace the <code>r</code> in the register name with <code>e</code>. Thus, the register corresponding to the lower 32 bits of register <code>%rax</code> is register <code>%eax</code>. To access the lower 16 bits of each of these eight registers, reference the last two letters of the register’s name. So, the mechanism to access the lower two bytes of register <code>%rax</code> is <code>%ax</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C7-x86_64/images/register.png" alt="Register %rax’s names for accessing a subset of the register’s bits. %eax refers to its lower 32 bits, %ax refers to its lower 16 bits, %al refers to the low-order byte (bits 0-7), and %ah refers to the second byte (bits 8-15)."></p>
+<p><strong>图 1.</strong> 引用寄存器 %rax 各部分的名字。</p>
+<p><em>Figure 1. The names that refer to subsets of register %rax.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p><code>%eax</code> 指 <code>%rax</code> 的低 32 位，<code>%ax</code> 指低 16 位，<code>%al</code> 指最低字节（第 0–7 位），<code>%ah</code> 指第二个字节（第 8–15 位）。</p>
+</div>
+<p>对于列出的前四个寄存器，ISA 还提供了另一种机制来访问其低 16 位中的八位部分。<a href="7.1-basics.html">图 1</a> 描绘了寄存器 <code>%rax</code> 的访问方式。要访问前四个寄存器低 16 位中的<em>高</em>字节和<em>低</em>字节，就取寄存器名的最后两个字母，并根据想要哪个字节，把最后一个字母换成 <code>h</code>（表示<em>高</em>）或 <code>l</code>（表示<em>低</em>）。例如，<code>%al</code> 引用寄存器 <code>%ax</code> 的低八位，而 <code>%ah</code> 引用寄存器 <code>%ax</code> 的高八位。这些八位寄存器常用于在某些运算中存放单字节的值，比如移位（32 位寄存器移位不能超过 32 位，而数字 32 只需要一个字节就能存下）。</p>
+<blockquote>
+<p>The ISA provides a separate mechanism to access the eight-bit components within the lower 16 bits of the first four listed registers. <a href="7.1-basics.html">Figure 1</a> depicts the access mechanisms for register <code>%rax</code>. The <em>higher</em> and <em>lower</em> bytes within the lower 16 bits of the first four listed registers can be accessed by taking the last two letters of the register name and replacing the last letter with either an <code>h</code> (for <em>higher</em>) or an <code>l</code> (for <em>lower</em>) depending on which byte is desired. For example, <code>%al</code> references the lower eight-bits of register <code>%ax</code>, whereas <code>%ah</code> references the higher eight-bits of register <code>%ax</code>. These eight-bit registers are commonly used for storing single-byte values for certain operations, such as bitwise shifts (a 32-bit register cannot be shifted more than 32 places, and the number 32 requires only a single byte of storage).</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 编译器可能会根据类型选用寄存器的组成部分（Compiler may choose component registers depending on type）</p><p>阅读汇编代码时要记住，编译器在处理 64 位值（例如指针或 <code>long</code> 类型）时通常使用 64 位寄存器，在处理 32 位类型（例如 <code>int</code>）时则使用 32 位的组成部分寄存器。在 x86-64 中，32 位的组成部分寄存器与完整的 64 位寄存器混合使用是非常常见的。例如，在前面示例的 <code>adder2</code> 函数中，编译器引用的是组成部分寄存器 <code>%eax</code> 而不是 <code>%rax</code>，因为在 64 位系统上 <code>int</code> 类型通常占 32 位（四个字节）。如果 <code>adder2</code> 函数的参数是 <code>long</code> 而不是 <code>int</code>，编译器就会把 <code>a</code> 存放在寄存器 <code>%rax</code> 而不是 <code>%eax</code> 中。</p>
+<blockquote>
+<p>When reading assembly code, keep in mind that the compiler typically uses the 64-bit registers when dealing with 64-bit values (e.g., pointers or <code>long</code> types) and the 32-bit component registers when dealing with 32-bit types (e.g., <code>int</code>). In x86-64, it is very common to see 32-bit component registers intermixed with the full 64-bit registers. For example, in the <code>adder2</code> function shown in the previous example, the compiler references component register <code>%eax</code> instead of <code>%rax</code> since <code>int</code> types typically take up 32 bits (four bytes) of space on 64-bit systems. If the <code>adder2</code> function had a <code>long</code> parameter instead of a <code>int</code>, the compiler would store <code>a</code> in register <code>%rax</code> instead of register <code>%eax</code>.</p>
+</blockquote>
+</div>
+<p>最后八个寄存器（<code>%r8</code>–<code>%r15</code>）不属于 IA32 ISA。不过，它们也有访问不同字节部分的机制。要访问后八个寄存器的低 32 位、低 16 位或低字节，就分别在寄存器名的末尾加上字母 <code>d</code>、<code>w</code> 或 <code>b</code>。因此，<code>%r9d</code> 访问寄存器 <code>%r9</code> 的低 32 位，<code>%r9w</code> 访问它的低 16 位，<code>%r9b</code> 访问它的最低字节。</p>
+<blockquote>
+<p>The last eight registers (<code>%r8</code>-<code>%r15</code>) were not part of the IA32 ISA. However, they also have mechanisms to access their different byte components. To access the lower 32 bits, 16 bits, or byte of the last eight registers, append the letter <code>d</code>, <code>w</code>, or <code>b</code>, respectively, to the end of the register’s name. Thus, <code>%r9d</code> accesses the lower 32 bits of register <code>%r9</code>, whereas <code>%r9w</code> accesses the lower 16 bits, and <code>%r9b</code> accesses the lowest byte of register <code>%r9</code>.</p>
+</blockquote>
+<h3 id="7-1-3-指令的结构"><a href="#7-1-3-指令的结构" class="headerlink" title="7.1.3. 指令的结构"></a>7.1.3. 指令的结构</h3><p><em>7.1.3. Instruction Structure</em></p>
+<p>每条指令由一个指明它做什么的操作码（<strong>opcode</strong>）和一个或多个告诉指令如何去做的<strong>操作数</strong>（operand）组成。例如，指令 <code>add $0x2, %eax</code> 的操作码是 <code>add</code>，操作数是 <code>$0x2</code> 和 <code>%eax</code>。</p>
+<blockquote>
+<p>Each instruction consists of an operation code (or <strong>opcode</strong>) that specifies what it does, and one or more <strong>operands</strong> that tell the instruction how to do it. For example, the instruction <code>add $0x2, %eax</code> has the opcode <code>add</code> and the operands <code>$0x2</code> and <code>%eax</code>.</p>
+</blockquote>
+<p>每个操作数对应于某个特定运算的源位置或目标位置。双操作数指令通常遵循「源，目标」（<code>S</code>, <code>D</code>）的格式，第一个操作数指定源寄存器，第二个操作数指定目标。</p>
+<blockquote>
+<p>Each operand corresponds to a source or destination location for a specific operation. Two operand instructions typically follow the source, destination (<code>S</code>, <code>D</code>) format, where the first operand specifies a source register, and the second operand specifies the destination.</p>
+</blockquote>
+<p>操作数有多种类型：</p>
+<blockquote>
+<p>There are multiple types of operands:</p>
+</blockquote>
+<ul>
+<li><strong>常数（字面量）</strong>值前面带有 <code>$</code> 符号。例如，在指令 <code>add $0x2, %eax</code> 中，<code>$0x2</code> 是一个字面值，对应于十六进制值 0x2。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Constant (literal)</strong> values are preceded by the <code>$</code> sign. For example, in the instruction <code>add $0x2, %eax</code>, <code>$0x2</code> is a literal value that corresponds to the hexadecimal value 0x2.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>寄存器</strong>形式指单个寄存器。指令 <code>mov %rsp, %rbp</code> 指明，源寄存器（<code>%rsp</code>）中的值应当被复制到目标位置（寄存器 <code>%rbp</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Register</strong> forms refer to individual registers. The instruction <code>mov %rsp, %rbp</code> specifies that the value in the source register (<code>%rsp</code>) should be copied to the destination location (register <code>%rbp</code>).</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>内存</strong>形式对应于主存（RAM）中的某个值，常用于地址查找。内存地址形式可以包含寄存器和常数值的组合。例如，在指令 <code>mov -0x4(%rbp),%eax</code> 中，操作数 <code>-0x4(%rbp)</code> 就是内存形式的一个例子。它大致可以翻译为：「把 -0x4 加到寄存器 <code>%rbp</code> 中的值上（即从 <code>%rbp</code> 中减去 0x4），然后执行一次内存查找」。如果这听起来像是指针解引用，那是因为它就是！</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Memory</strong> forms correspond to some value inside main memory (RAM) and are commonly used for address lookups. Memory address forms can contain a combination of registers and constant values. For example, in the instruction <code>mov -0x4(%rbp),%eax</code>, the operand <code>-0x4(%rbp)</code> is an example of a memory form. It loosely translates to “add -0x4 to the value in register <code>%rbp</code> (i.e., subtract 0x4 from <code>%rbp</code>), and then perform a memory lookup.” If this sounds like a pointer dereference, that’s because it is!</li>
+</ul>
+</blockquote>
+<h3 id="7-1-4-一个关于操作数的例子"><a href="#7-1-4-一个关于操作数的例子" class="headerlink" title="7.1.4. 一个关于操作数的例子"></a>7.1.4. 一个关于操作数的例子</h3><p><em>7.1.4. An Example with Operands</em></p>
+<p>详细解释操作数的最好方式是举一个简短的例子。假设内存中包含以下值：</p>
+<blockquote>
+<p>The best way to explain operands in detail is to present a quick example. Suppose that memory contains the following values:</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>地址</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x804</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>0x808</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x80c</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>0x810</td>
+<td>0x1E</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Address</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0x804</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>0x808</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x80c</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>0x810</td>
+<td>0x1E</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>我们再假设下面这些寄存器中存放着所示的值：</p>
+<blockquote>
+<p>Let’s also assume that the following registers contain the values shown:</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>寄存器</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%rax</td>
+<td>0x804</td>
+</tr>
+<tr>
+<td>%rbx</td>
+<td>0x10</td>
+</tr>
+<tr>
+<td>%rcx</td>
+<td>0x4</td>
+</tr>
+<tr>
+<td>%rdx</td>
+<td>0x1</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Register</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%rax</td>
+<td>0x804</td>
+</tr>
+<tr>
+<td>%rbx</td>
+<td>0x10</td>
+</tr>
+<tr>
+<td>%rcx</td>
+<td>0x4</td>
+</tr>
+<tr>
+<td>%rdx</td>
+<td>0x1</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>那么，<a href="7.1-basics.html">表 2</a> 中的操作数会求值为表中所示的值。表中的每一行把一个操作数与它的形式（例如常数、寄存器、内存）、它的含义以及它的值对应起来。注意，在这里记号 M[x] 表示由地址 x 指定的内存位置上的值。</p>
+<blockquote>
+<p>Then the operands in <a href="7.1-basics.html">Table 2</a> evaluate to the values shown there. Each row of the table matches an operand with its form (e.g., constant, register, memory), how it is translated, and its value. Note that the notation M[x] in this context denotes the value at the memory location specified by address x.</p>
+</blockquote>
+<p><strong>表 2.</strong> 操作数示例</p>
+<p><em>Table 2. Example operands</em></p>
+<table>
+<thead>
+<tr>
+<th>操作数</th>
+<th>形式</th>
+<th>含义</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%rcx</td>
+<td>寄存器</td>
+<td>%rcx</td>
+<td>0x4</td>
+</tr>
+<tr>
+<td>(%rax)</td>
+<td>内存</td>
+<td>M[%rax] 即 M[0x804]</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>$0x808</td>
+<td>常数</td>
+<td>0x808</td>
+<td>0x808</td>
+</tr>
+<tr>
+<td>0x808</td>
+<td>内存</td>
+<td>M[0x808]</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x8(%rax)</td>
+<td>内存</td>
+<td>M[%rax + 8] 即 M[0x80c]</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>(%rax, %rcx)</td>
+<td>内存</td>
+<td>M[%rax + %rcx] 即 M[0x808]</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x4(%rax, %rcx)</td>
+<td>内存</td>
+<td>M[%rax + %rcx + 4] 即 M[0x80c]</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>0x800(,%rdx,4)</td>
+<td>内存</td>
+<td>M[0x800 + %rdx*4] 即 M[0x804]</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>(%rax, %rdx, 8)</td>
+<td>内存</td>
+<td>M[%rax + %rdx*8] 即 M[0x80c]</td>
+<td>0x12</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Operand</th>
+<th>Form</th>
+<th>Translation</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>%rcx</td>
+<td>Register</td>
+<td>%rcx</td>
+<td>0x4</td>
+</tr>
+<tr>
+<td>(%rax)</td>
+<td>Memory</td>
+<td>M[%rax] or M[0x804]</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>$0x808</td>
+<td>Constant</td>
+<td>0x808</td>
+<td>0x808</td>
+</tr>
+<tr>
+<td>0x808</td>
+<td>Memory</td>
+<td>M[0x808]</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x8(%rax)</td>
+<td>Memory</td>
+<td>M[%rax + 8] or M[0x80c]</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>(%rax, %rcx)</td>
+<td>Memory</td>
+<td>M[%rax + %rcx] or M[0x808]</td>
+<td>0xFD</td>
+</tr>
+<tr>
+<td>0x4(%rax, %rcx)</td>
+<td>Memory</td>
+<td>M[%rax + %rcx + 4] or M[0x80c]</td>
+<td>0x12</td>
+</tr>
+<tr>
+<td>0x800(,%rdx,4)</td>
+<td>Memory</td>
+<td>M[0x800 + %rdx*4] or M[0x804]</td>
+<td>0xCA</td>
+</tr>
+<tr>
+<td>(%rax, %rdx, 8)</td>
+<td>Memory</td>
+<td>M[%rax + %rdx*8] or M[0x80c]</td>
+<td>0x12</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>在<a href="7.1-basics.html">表 2</a> 中，记号 <code>%rcx</code> 表示寄存器 <code>%rcx</code> 中存放的值。与之不同，M[<code>%rax</code>] 表示应当把 <code>%rax</code> 中的值当作一个地址，并对它解引用（查找该地址处的值）。因此，操作数 <code>(%rax)</code> 对应于 M[0x804]，也就是值 0xCA。</p>
+<blockquote>
+<p>In <a href="7.1-basics.html">Table 2</a>, the notation <code>%rcx</code> indicates the value stored in register <code>%rcx</code>. In contrast, M[<code>%rax</code>] indicates that the value inside <code>%rax</code> should be treated as an address, and to dereference (look up) the value at that address. Therefore, the operand <code>(%rax)</code> corresponds to M[0x804] which corresponds to the value 0xCA.</p>
+</blockquote>
+<p>在继续之前，有几点重要说明。尽管<a href="7.1-basics.html">表 2</a> 列出了许多合法的操作数形式，但并不是所有形式在所有情况下都可以互换使用。具体来说：</p>
+<blockquote>
+<p>A few important notes before continuing. Although <a href="7.1-basics.html">Table 2</a> shows many valid operand forms, not all forms can be used interchangeably in all circumstances. Specifically:</p>
+</blockquote>
+<ul>
+<li>常数形式不能作为目标操作数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Constant forms cannot serve as destination operands.</li>
+</ul>
+</blockquote>
+<ul>
+<li>在同一条指令中，内存形式不能<em>同时</em>作为源操作数和目标操作数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Memory forms cannot serve as <em>both</em> the source and destination operand in a single instruction.</li>
+</ul>
+</blockquote>
+<ul>
+<li>在有比例因子的运算中（见<a href="7.1-basics.html">表 2</a> 的最后两个操作数），比例因子是括号中的第三个参数。比例因子只能是 1、2、4 或 8 之一。</li>
+</ul>
+<blockquote>
+<ul>
+<li>In cases of scaling operations (see the last two operands in <a href="7.1-basics.html">Table 2</a>), the scaling factor is a third parameter in the parentheses. Scaling factors can be one of 1, 2, 4, or 8.</li>
+</ul>
+</blockquote>
+<p><a href="7.1-basics.html">表 2</a> 是供参考的；不过，理解关键的操作数形式会帮助读者更快地读懂汇编语言。</p>
+<blockquote>
+<p><a href="7.1-basics.html">Table 2</a> is provided as a reference; however, understanding key operand forms will help improve the reader’s speed in parsing assembly language.</p>
+</blockquote>
+<h3 id="7-1-5-指令后缀"><a href="#7-1-5-指令后缀" class="headerlink" title="7.1.5. 指令后缀"></a>7.1.5. 指令后缀</h3><p><em>7.1.5. Instruction Suffixes</em></p>
+<p>在接下来的例子中，有几处常见指令和算术指令带有一个后缀，表示在代码层面被操作的数据的<em>大小</em>（与<em>类型</em>相关）。编译器会自动把代码翻译成带有相应后缀的指令。<a href="7.1-basics.html">表 3</a> 列出了 x86-64 指令的常见后缀。</p>
+<blockquote>
+<p>In several cases in upcoming examples, common and arithmetic instructions have a suffix that indicates the <em>size</em> (associated with the <em>type</em>) of the data being operated on at the code level. The compiler automatically translates code to instructions with the appropriate suffix. <a href="7.1-basics.html">Table 3</a> shows the common suffixes for x86-64 instructions.</p>
+</blockquote>
+<p><strong>表 3.</strong> 指令后缀示例</p>
+<p><em>Table 3. Example Instruction Suffixes</em></p>
+<table>
+<thead>
+<tr>
+<th>后缀</th>
+<th>C 类型</th>
+<th>大小（字节）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>b</td>
+<td><code>char</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>w</td>
+<td><code>short</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>l</td>
+<td><code>int</code> 或 <code>unsigned</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>s</td>
+<td><code>float</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>q</td>
+<td><code>long</code>、<code>unsigned long</code>、所有指针</td>
+<td>8</td>
+</tr>
+<tr>
+<td>d</td>
+<td><code>double</code></td>
+<td>8</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Suffix</th>
+<th>C Type</th>
+<th>Size (bytes)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>b</td>
+<td><code>char</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td>w</td>
+<td><code>short</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td>l</td>
+<td><code>int</code> or <code>unsigned</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>s</td>
+<td><code>float</code></td>
+<td>4</td>
+</tr>
+<tr>
+<td>q</td>
+<td><code>long</code>, <code>unsigned long</code>, all pointers</td>
+<td>8</td>
+</tr>
+<tr>
+<td>d</td>
+<td><code>double</code></td>
+<td>8</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>注意，与条件执行有关的指令会根据求值的条件带有不同的后缀。我们会在<a href="7.4-conditional_control_loops.html">后面的小节</a>中介绍与条件执行相关的指令。</p>
+<blockquote>
+<p>Note that instructions involved with conditional execution have different suffixes based on the evaluated condition. We cover instructions associated with conditional execution in a <a href="7.4-conditional_control_loops.html">later section</a>.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C7-x86_64/7.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">7. 64 位 x86 汇编（x86-64）</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C7-x86_64/7.2-common.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">7.2. 常用指令</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-1-%E5%AF%84%E5%AD%98%E5%99%A8"><span class="toc-text">7.1.1. 寄存器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-2-%E5%AF%84%E5%AD%98%E5%99%A8%E7%9A%84%E8%BF%9B%E9%98%B6%E8%AE%B0%E6%B3%95"><span class="toc-text">7.1.2. 寄存器的进阶记法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-3-%E6%8C%87%E4%BB%A4%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-text">7.1.3. 指令的结构</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-4-%E4%B8%80%E4%B8%AA%E5%85%B3%E4%BA%8E%E6%93%8D%E4%BD%9C%E6%95%B0%E7%9A%84%E4%BE%8B%E5%AD%90"><span class="toc-text">7.1.4. 一个关于操作数的例子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-1-5-%E6%8C%87%E4%BB%A4%E5%90%8E%E7%BC%80"><span class="toc-text">7.1.5. 指令后缀</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

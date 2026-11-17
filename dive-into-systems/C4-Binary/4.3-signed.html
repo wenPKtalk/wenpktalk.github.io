@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4.3. 有符号二进制整数 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;signed.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.3. Signed Binary Integers 到目前为止">
+<meta property="og:type" content="website">
+<meta property="og:title" content="4.3. 有符号二进制整数 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/4.3-signed.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;signed.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.3. Signed Binary Integers 到目前为止">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/SignedMagnitude.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/TwosComplement.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/SignedMagnitude.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html" class="current" aria-current="page">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>4. 二进制与数据表示</span>
+      </nav>
+      <span class="book-position">第 46 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">4.3. 有符号二进制整数</h1>
+  
+  
+    <p class="article-meta"><span>约 18 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C4-Binary/signed.html">https://diveintosystems.org/book/C4-Binary/signed.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>4.3. Signed Binary Integers</em></p>
+<p>到目前为止，我们对二进制数的讨论仅限于<em>无符号</em>（严格非负的）整数。本节介绍另一种包含负数的二进制解释方式。由于变量的存储空间是有限的，有符号的二进制编码必须能区分负值、零和正值。对有符号数进行运算，还需要一种对数取负的方法。</p>
+<blockquote>
+<p>So far, we’ve limited the discussion of binary numbers to <em>unsigned</em> (strictly non-negative) integers. This section presents an alternative interpretation of binary that incorporates negative numbers. Given that a variable has finite storage space, a signed binary encoding must distinguish between negative values, zero, and positive values. Manipulating signed numbers additionally requires a procedure for negating a number.</p>
+</blockquote>
+<p>有符号二进制编码必须把位序列在负值和非负值之间进行划分。在实践中，系统设计者构建的是<em>通用</em>系统，所以各分一半是个不偏不倚的好选择。因此，本章介绍的有符号数编码表示的负值和非负值的个数相等。</p>
+<blockquote>
+<p>A signed binary encoding must divide bit sequences between negative and non-negative values. In practice, systems designers build <em>general-purpose</em> systems, so a 50% &#x2F; 50% split is a good middle-of-the-road choice. Therefore, the signed number encodings that this chapter presents represent an equal number of negative and non-negative values.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 非负与正（Non-Negative versus Positive）</p><p>注意，<em>非负</em>（non-negative）和<em>正</em>（positive）之间有一个细微但重要的区别：严格正值的集合不包括零，而非负值的集合包括零。即使把可用的位序列在负值和非负值之间各分一半，非负值中仍必须留一个给零。因此，在位数固定的情况下，一种数制最终表示的负值可能比正值多（例如二进制补码系统）。</p>
+<blockquote>
+<p>Note that there’s a subtle but important difference between <em>non-negative</em> and <em>positive</em>. The set of strictly positive values excludes zero, whereas the non-negative set includes zero. Even after dividing the available bit sequences 50% &#x2F; 50% between negative and non-negative values, one of the non-negative values must still be reserved for zero. Thus, with a fixed number of bits, a number system may end up representing more negative values than positive values (e.g., in the two’s complement system).</p>
+</blockquote>
+</div>
+<p>有符号数编码用一位来区分<em>负</em>数集合和<em>非负</em>数集合。按照惯例，最左边的一位表示一个数是负数（1）还是非负数（0）。这个最左边的位称为<strong>高位</strong>（high-order bit）或<strong>最高有效位</strong>（most significant bit）。</p>
+<blockquote>
+<p>Signed number encodings use one bit to distinguish between the sets of <em>negative</em> numbers and <em>non-negative</em> numbers. By convention, the left-most bit indicates whether a number is negative (1) or non-negative (0). This leftmost bit is known as the <strong>high-order bit</strong> or the <strong>most significant bit</strong>.</p>
+</blockquote>
+<p>本章介绍两种可能的有符号二进制编码——<em>原码</em>（signed magnitude）和<em>补码</em>（two’s complement）。尽管其中只有一种编码（补码）至今仍在实际使用，但对比两者有助于说明它们的重要特性。</p>
+<blockquote>
+<p>This chapter presents two potential signed binary encodings — <em>signed magnitude</em> and <em>two’s complement</em>. Even though only one of these encodings (two’s complement) is still used in practice, comparing them will help to illustrate their important characteristics.</p>
+</blockquote>
+<h3 id="4-3-1-原码"><a href="#4-3-1-原码" class="headerlink" title="4.3.1. 原码"></a>4.3.1. 原码</h3><p><em>4.3.1. Signed Magnitude</em></p>
+<p><strong>原码</strong>（signed magnitude，又称符号-数值表示）把高位专门当作符号位。也就是说，高位是 0 还是 1 并不影响数的绝对值，它<em>只</em>决定这个值是正（高位为 0）还是负（高位为 1）。与补码相比，原码的十进制转换和取负过程相对简单：</p>
+<blockquote>
+<p>The <strong>signed magnitude</strong> representation treats the high-order bit exclusively as a sign bit. That is, whether the high-order bit is a 0 or a 1 does not affect the absolute value of the number, it <em>only</em> determines whether the value is positive (high-order bit 0) or negative (high-order bit 1). Compared to two’s complement, signed magnitude makes the decimal conversion and negation procedures relatively straightforward:</p>
+</blockquote>
+<ul>
+<li>要计算一个 <em>N</em> 位原码序列的十进制值，用熟悉的<a href="4.1-bases.html">无符号方法</a>计算数位 d<sub>0</sub> 到 d<sub>N-2</sub> 的值，然后检查最高有效位 d<sub>N-1</sub>：如果它是 1，这个值就是负数，否则就不是。</li>
+</ul>
+<blockquote>
+<ul>
+<li>To compute a decimal value for an <em>N</em>-bit signed magnitude sequence, compute the value of digits d<sub>0</sub> through d<sub>N-2</sub> using the familiar <a href="4.1-bases.html">unsigned method</a>. Then, check the most significant bit, d<sub>N-1</sub>: if it’s 1, the value is negative; otherwise it isn’t.</li>
+</ul>
+</blockquote>
+<ul>
+<li>要对一个值取负，只需翻转最高有效位来改变它的符号。</li>
+</ul>
+<blockquote>
+<ul>
+<li>To negate a value, simply flip the most significant bit to change its sign.</li>
+</ul>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 关于取负的误解（Negation Misconception）</p><p>介绍原码纯粹是出于教学目的。虽然过去有些机器用过它（例如 1960 年代的 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/IBM_7090">IBM 7090</a>），但现代系统都不再用原码表示整数（不过，存储<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format">浮点值</a>的标准中<em>确实</em>包含类似的机制）。</p>
+<p>除非明确要求你考虑原码，否则在现代系统上，你<em>不应</em>以为翻转二进制数的第一位就能对这个数取负。</p>
+<blockquote>
+<p>Signed magnitude is presented purely for pedagogical purposes. Although it was used by some machines in the past (e.g., <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/IBM_7090">IBM’s 7090</a> in the 1960s), no modern systems use signed magnitude to represent integers (although a similar mechanism <em>is</em> part of the standard for storing <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Single-precision_floating-point_format">floating-point values</a>).</p>
+<p>Unless you’re explicitly asked to consider signed magnitude, you should <em>not</em> assume that flipping the first bit of a binary number will negate that number’s value on a modern system.</p>
+</blockquote>
+</div>
+<p><a href="4.3-signed.html">图 1</a> 展示了四位原码序列与十进制值之间的对应关系。乍一看，原码由于简单而显得颇有吸引力。遗憾的是，它有两个严重的缺点，让人不想用它。第一个缺点是它有<em>两种</em>零的表示。例如，用四位时，原码既表示<em>零</em>（0b0000），也表示<em>负零</em>（0b1000）。这给硬件设计者出了难题：硬件需要考虑两种位值不同、数值却相等的二进制序列。如此重要的一个数只有一种表示方式，硬件设计者的工作会轻松得多。</p>
+<blockquote>
+<p><a href="4.3-signed.html">Figure 1</a> shows how four-bit signed magnitude sequences correspond to decimal values. At first glance, signed magnitude might seem attractive due to its simplicity. Unfortunately, it suffers from two major drawbacks that make it unappealing. The first is that it presents <em>two</em> representations of zero. For example, with four bits, signed magnitude represents both <em>zero</em> (0b0000) and <em>negative zero</em> (0b1000). Consequently, it poses a challenge to hardware designers because the hardware will need to account for two possible binary sequences that are numerically equal despite having different bit values. The hardware designer’s job is much easier with just one way of representing such an important number.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/SignedMagnitude.png" alt="A circle with non-negative values on one side ranging from 0b0000 (0) to 0b0111 (7). The other side holds 0b1000 (-0) to 0b1111 (-7)."></p>
+<p><strong>图 1.</strong> 长度为四的位序列的原码值逻辑布局。</p>
+<p><em>Figure 1. A logical layout of signed magnitude values for bit sequences of length four.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>一个圆环：一侧是非负值，从 0b0000（0）到 0b0111（7）；另一侧是 0b1000（-0）到 0b1111（-7）。</p>
+</div>
+<p>原码的另一个缺点是在负值和零之间存在一处不便的不连续。我们稍后会更详细地介绍<a href="4.5-overflow.html">溢出</a>，但四位序列 0b1111 加 1 会「翻转」回 0b0000。对原码来说，这意味着 0b1111（-7）+ 1 可能被误当作 0，而不是预期的 -6。这个问题可以解决，但解决办法同样会使硬件设计复杂化，实际上把负整数和非负整数之间的任何转换都变成了需要格外小心处理的特殊情况。</p>
+<blockquote>
+<p>The other drawback of signed magnitude is that it exhibits an inconvenient discontinuity between negative values and zero. While we’ll cover <a href="4.5-overflow.html">overflow</a> in more detail later, adding 1 to the four-bit sequence 0b1111 “rolls over” back to 0b0000. With signed magnitude, this effect means 0b1111 (-7) + 1 might be mistaken for 0 rather than the expected -6. This problem is solvable, but the solution again complicates the design of the hardware, essentially turning any transition between negative and non-negative integers into a special case that requires extra care.</p>
+</blockquote>
+<p>由于这些原因，原码在实践中已基本消失，补码一统天下。</p>
+<blockquote>
+<p>For these reasons, signed magnitude has largely disappeared in practice, and two’s complement reigns supreme.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 补码已写进 C 标准</p><p>原书说补码「一统天下」，如今这已经是语言标准层面的规定：C23 删除了对补码以外的有符号整数表示（原码、反码）的支持，要求有符号整数一律采用二进制补码。这是把各家编译器早已采用的做法写进了标准。<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/23">cppreference：C23</a></p>
+</div>
+<h3 id="4-3-2-补码"><a href="#4-3-2-补码" class="headerlink" title="4.3.2. 补码"></a>4.3.2. 补码</h3><p><em>4.3.2. Two’s Complement</em></p>
+<p><strong>补码</strong>（two’s complement，二进制补码）编码以一种优雅的方式解决了原码的问题。和原码一样，补码数的高位表示这个值是否应解释为负数。不同的是，高位也会影响数的值。那么，它是如何同时做到这两点的呢？</p>
+<blockquote>
+<p><strong>Two’s complement</strong> encoding solves signed magnitude’s problems in an elegant way. Like signed magnitude, the high-order bit of a two’s complement number indicates whether or not the value should be interpreted as negative. In contrast though, the high-order bit also affects the value of the number. So, how can it do both?</p>
+</blockquote>
+<p>计算 <em>N</em> 位补码数的十进制值，与熟悉的<a href="4.1-bases.html">无符号方法</a>类似，只是高位对总值的贡献要取负。也就是说，对于 <em>N</em> 位补码序列，第一位对和的贡献不是 d<sub>N-1</sub> × 2<sup>N-1</sup>，而是 <strong>-d<sub>N-1</sub></strong> × 2<sup>N-1</sup>（注意负号）。因此，如果最高有效位是 1，总值就是负数，因为第一位对和的贡献的绝对值最大；否则，第一位对和毫无贡献，结果为非负数。完整的公式是：</p>
+<blockquote>
+<p>Computing a decimal value for an <em>N</em>-bit two’s complement number is similar to the familiar <a href="4.1-bases.html">unsigned method</a>, except the high-order bit’s contribution to the overall value is negated. That is, for an <em>N</em>-bit two’s complement sequence, instead of the first bit contributing d<sub>N-1</sub> × 2<sup>N-1</sup> to the sum, it contributes <strong>-d<sub>N-1</sub></strong> × 2<sup>N-1</sup> (note the negative sign). Therefore, if the most significant bit is a 1, the overall value will be negative because that first bit contributes the largest absolute value to the sum. Otherwise, the first bit contributes nothing to the sum, and the result is non-negative. The full formula is:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>-（d<sub>N-1</sub> × 2<sup>N-1</sup>）＋（d<sub>N-2</sub> × 2<sup>N-2</sup>）＋ … ＋（d<sub>2</sub> × 2<sup>2</sup>）＋（d<sub>1</sub> × 2<sup>1</sup>）＋（d<sub>0</sub> × 2<sup>0</sup>）</p>
+<p>^ 注意，只有第一项前面带负号！</p>
+<blockquote>
+<p><strong>-</strong> (d<sub>N-1</sub> × 2<sup>N-1</sup>)    +    (d<sub>N-2</sub> × 2<sup>N-2</sup>)    +    …​    +    (d<sub>2</sub> × 2<sup>2</sup>)    +    (d<sub>1</sub> × 2<sup>1</sup>)    +    (d<sub>0</sub> × 2<sup>0</sup>)</p>
+<p>^ note the leading negative sign for just the first term!</p>
+</blockquote>
+</div>
+<p><a href="4.3-signed.html">图 2</a> 展示了补码中四位序列的布局。按这个定义，零只有一种表示——全为 0 的位序列。由于只有一个<em>零</em>序列，补码表示的负值比正值多一个。以四位序列为例，补码表示的最小值是 0b1000（-8），而最大值只有 0b0111（7）。幸运的是，这个怪癖并不妨碍硬件设计，也很少给应用程序带来问题。</p>
+<blockquote>
+<p><a href="4.3-signed.html">Figure 2</a> illustrates the layout of four-bit sequences in two’s complement. This definition encodes just one representation of zero — a sequence of bits that are all 0’s. With only a single <em>zero</em> sequence, two’s complement represents one more negative value than positive. Using four-bit sequences as an example, two’s complement represents a minimum value of 0b1000 (-8), but a maximum value of only 0b0111 (7). Fortunately, this quirk doesn’t hinder hardware design and rarely causes problems for applications.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/TwosComplement.png" alt="A circle with non-negative values on one side ranging from 0b0000 (0) to 0b0111 (7). The other side holds 0b1111 (-1) to 0b1000 (-8)."></p>
+<p><strong>图 2.</strong> 长度为四的位序列的补码值逻辑布局。</p>
+<p><em>Figure 2. A logical layout of two’s complement values for bit sequences of length four.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>一个圆环：一侧是非负值，从 0b0000（0）到 0b0111（7）；另一侧是 0b1111（-1）到 0b1000（-8）。</p>
+</div>
+<p>与原码相比，补码还简化了负数与零之间的过渡。无论用多少位存储，一个全为 1 的补码数总是表示 -1。全为 1 的位序列加 1 会「翻转」为零，这让补码很方便，因为 -1 + 1 <em>本来就应该</em>等于零。</p>
+<blockquote>
+<p>Compared to signed magnitude, two’s complement also simplifies the transition between negative numbers and zero. Regardless of the number of bits used to store it, a two’s complement number consisting of all ones will always hold the value -1. Adding 1 to a bit sequence of all 1’s “rolls over” to zero, which makes two’s complement convenient, since -1 + 1 <em>should</em> produce zero.</p>
+</blockquote>
+<h4 id="取负"><a href="#取负" class="headerlink" title="取负"></a>取负</h4><p><em>Negation</em></p>
+<p>对补码数取负比对原码值取负稍微麻烦一点。要对一个 <em>N</em> 位值取负，就要求出它相对于 2<sup>N</sup> 的<strong>补</strong>（complement）（这正是这种编码名称的由来）。换句话说，要对 <em>N</em> 位值 <em>X</em> 取负，就要找到一个位序列 <em>Y</em>（<em>X</em> 的补），使得 <em>X</em> + <em>Y</em> &#x3D; 2<sup>N</sup>。</p>
+<blockquote>
+<p>Negating a two’s complement number is slightly trickier than negating a signed magnitude value. To negate an <em>N</em>-bit value, determine its <strong>complement</strong> with respect to 2<sup>N</sup> (this is where the encoding’s name comes from). In other words, to negate an <em>N</em>-bit value <em>X</em>, find a bit sequence <em>Y</em> (<em>X</em>‘s complement) such that <em>X</em> + <em>Y</em> &#x3D; 2<sup>N</sup>.</p>
+</blockquote>
+<p>幸运的是，实践中有一个对补码数取负的快捷方法：翻转所有位，再加一。例如，要对八位值 13 取负，先<a href="4.2-conversion.html">求出 13 的二进制值</a>。由于 13 是 8、4 和 1 之和，就把第 3、2 和 0 位置为 1：</p>
+<blockquote>
+<p>Fortunately, there’s a quick shortcut for negating a two’s complement number in practice: flip all the bits and add one. For example, to negate the eight-bit value 13, first <a href="4.2-conversion.html">determine the binary value of 13</a>. Because 13 is the sum of 8, 4, and 1, set the bits in positions 3, 2, and 0:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">00001101  (decimal 13)</span><br></pre></td></tr></table></figure>
+
+<p>接着，「翻转各位」（把所有的零变成一，反之亦然）：</p>
+<blockquote>
+<p>Next, “flip the bits” (change all zeros to ones, and vice versa):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">11110010</span><br></pre></td></tr></table></figure>
+
+<p>最后，加一得到 0b11110011。果然，应用补码位序列的解释公式可以看出，这个值是 -13：</p>
+<blockquote>
+<p>Finally, adding one yields 0b11110011. Sure enough, applying the formula for interpreting a two’s complement bit sequence shows that the value is -13:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注</p><p>-(1 × 2<sup>7</sup>)    +    (1 × 2<sup>6</sup>)    +    (1 × 2<sup>5</sup>)    +    (1 × 2<sup>4</sup>)    +    (0 × 2<sup>3</sup>)    +    (0 × 2<sup>2</sup>)    +    (1 × 2<sup>1</sup>)    +    (1 × 2<sup>0</sup>)</p>
+<p>  &#x3D;    -128 + 64 + 32 + 16 + 0 + 0 + 2 + 1    &#x3D;    -13</p>
+</div>
+<p>如果你好奇这个看似神奇的快捷方法为什么有效，可以更形式化地考察对八位的 13 取负。要求 13 的补，就要解方程 0b00001101（13）+ <em>Y</em> &#x3D; 0b100000000（2<sup>8</sup>，需要多一位来表示）。这个方程可以变形为 <em>Y</em> &#x3D; 0b100000000 - 0b00001101。现在这显然是一个减法问题：</p>
+<blockquote>
+<p>If you’re curious as to why this seemingly magical shortcut works, consider the eight-bit negation of 13 more formally. To find 13’s complement, solve 0b00001101 (13) + <em>Y</em> &#x3D; 0b100000000 (2<sup>8</sup>, which requires an extra bit to represent). The equation can be rearranged as <em>Y</em> &#x3D; 0b100000000 - 0b00001101. This is clearly now a subtraction problem:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"> 100000000  (256)</span><br><span class="line">- 00001101   (13)</span><br></pre></td></tr></table></figure>
+
+<p>这样的减法看起来也许有点吓人，但我们可以把它表示成一种更容易计算的形式：(0b011111111 + 1) - 0b00001101。注意，这一改动只是把 2<sup>8</sup>（256）表示成了 (255 + 1)。改动之后，算式变成：</p>
+<blockquote>
+<p>While such a subtraction might seem daunting, we can express it in a way that’s easier to compute as (0b011111111 + 1) - 0b00001101. Note that this change simply expresses 2<sup>8</sup> (256) as (255 + 1). After that change, the arithmetic looks like:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"> 011111111  (255)  + 00000001  (1)</span><br><span class="line">- 00001101   (13)</span><br></pre></td></tr></table></figure>
+
+<p>事实证明，对于<em>任何</em>位值 <em>b</em>，1 - <em>b</em> 都等价于「翻转」这一位。因此，上例中的整个减法可以简化为只需翻转下面那个数的所有位。剩下要做的，就是加上把 256 表示成 255 + 1 时多出来的那个 +1。综合起来，我们只需翻转一个值的所有位再加一，就能算出它的补！</p>
+<blockquote>
+<p>As it turns out, for <em>any</em> bit value <em>b</em>, 1 - <em>b</em> is equivalent to “flipping” that bit. Thus, the entire subtraction in the preceding example can be reduced to just flipping all the bits of the lower number. All that’s left is to add the remaining +1 from expressing 256 as 255 + 1. Putting it all together, we can simply flip a value’s bits and add one to compute its complement!</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · C 编程中的有符号整数与无符号整数（C Programming With Signed versus Unsigned Integers）</p><p>在 C 中声明变量，除了分配空间之外，还告诉编译器你希望如何解释这个变量。声明 <code>int</code> 时，编译器把这个变量解释为有符号的补码整数。要分配无符号值，就声明 <code>unsigned int</code>。</p>
+<p>这一区别在 C 的其他地方也很重要，比如 <code>printf</code> 函数。正如本章一直在强调的，一个位序列可以有不同的解释方式！对于 <code>printf</code>，解释方式取决于你使用的格式占位符。例如：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int example = -100;</span><br><span class="line"></span><br><span class="line">    /* Print example int using both signed and unsigned placeholders. */</span><br><span class="line">    printf(&quot;%d  %u\n&quot;, example, example);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>尽管这段代码两次传给 <code>printf</code> 的是同一个变量（<code>example</code>），它打印出的却是 <code>-100 4294967196</code>。要小心地正确解释你的值！</p>
+<blockquote>
+<p>In addition to allocating space, declaring variables in C also tells the compiler how you’d like the variable to be interpreted. When you declare an <code>int</code>, the compiler interprets the variable as a signed two’s complement integer. To allocate an unsigned value, declare an <code>unsigned int</code>.</p>
+<p>The distinction is also relevant to C in other places, like the <code>printf</code> function. As this chapter has been stressing throughout, a bit sequence can be interpreted in different ways! With <code>printf</code>, the interpretation depends on the formatting placeholder you use. For example:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int example = -100;</span><br><span class="line"></span><br><span class="line">    /* Print example int using both signed and unsigned placeholders. */</span><br><span class="line">    printf(&quot;%d  %u\n&quot;, example, example);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Even though this code passes <code>printf</code> the same variable (<code>example</code>) twice, it prints <code>-100 4294967196</code>. Be careful to interpret your values correctly!</p>
+</blockquote>
+</div>
+<h4 id="符号扩展"><a href="#符号扩展" class="headerlink" title="符号扩展"></a>符号扩展</h4><p><em>Sign Extension</em></p>
+<p>有时，你可能想对两个用不同位数存储的数进行算术运算。例如，在 C 中你可能想把一个 32 位的 <code>int</code> 和一个 16 位的 <code>short</code> 相加。这种情况下，较小的数需要进行<strong>符号扩展</strong>（sign extension），说白了就是把它的最高有效位重复若干次，直到位序列的长度扩展到目标长度。虽然在 C 中编译器会替你处理这些位，但了解这个过程是如何进行的仍然很有帮助。</p>
+<blockquote>
+<p>Occasionally, you may find yourself wanting to perform an arithmetic operation on two numbers that are stored using different numbers of bits. For example, in C you may want to add a 32-bit <code>int</code> and a 16-bit <code>short</code>. In such cases, the smaller number needs to be <strong>sign extended</strong>, which is a fancy way of saying that its most significant bit gets repeated as many times as necessary to extend the length of the bit sequence to the target length. Though the compiler will take care of wrangling the bits for you in C, it’s still helpful to understand how the process works.</p>
+</blockquote>
+<p>例如，要把四位序列 0b0110（6）扩展为八位序列，就取出高位（0），在前面添加四次，得到扩展后的值：0b<strong>0000</strong>0110（仍然是 6）。类似地，把 0b1011（-5）扩展为八位序列，就取出高位（这次是 1），在前面添加四次，得到扩展后的值：0b<strong>1111</strong>1011（仍然是 -5）。为了验证其正确性，看看每加一个新位之后值是如何变化的：</p>
+<blockquote>
+<p>For example, to extend the four-bit sequence 0b0110 (6) to an eight-bit sequence, take the high-order bit (0) and prepend it four times to produce the extended value: 0b<strong>0000</strong>0110 (still 6). Extending 0b1011 (-5) to an eight-bit sequence similarly takes the high-order bit (this time, 1) and prepends it four times to the resulting extended value: 0b<strong>1111</strong>1011 (still -5). To verify the correctness, consider how the value changes after adding each new bit:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">    0b1011 =                       -8 + 0 + 2 + 1  =  -5</span><br><span class="line">   0b11011 =                  -16 + 8 + 0 + 2 + 1  =  -5</span><br><span class="line">  0b111011 =             -32 + 16 + 8 + 0 + 2 + 1  =  -5</span><br><span class="line"> 0b1111011 =        -64 + 32 + 16 + 8 + 0 + 2 + 1  =  -5</span><br><span class="line">0b11111011 =  -128 + 64 + 32 + 16 + 8 + 0 + 2 + 1  =  -5</span><br></pre></td></tr></table></figure>
+
+<p>从这些例子可以看出，非负数（高位为零）在前面添加零之后仍然是非负数。同样，负数（高位为一）在扩展时前面添加一之后仍然是负数。</p>
+<blockquote>
+<p>As evidenced by the examples, numbers that are non-negative (high-order bit of zero) remain non-negative after adding zeros to the front. Likewise, negatives (high-order bit of one) remain negative after prepending ones to extended values.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 无符号数的零扩展（Unsigned Zero Extension）</p><p>对于无符号值（例如用 <code>unsigned</code> 限定符显式声明的 C 变量），把它扩展为更长的位序列需要的是<strong>零扩展</strong>（zero extension），因为 <code>unsigned</code> 限定符使这个值永远不会被解释为负数。零扩展只是在扩展后位序列的高位前面添加零。例如，0b1110（按无符号解释是 14！）扩展为 0b<strong>0000</strong>1110，尽管原来的第一位是 1。</p>
+<blockquote>
+<p>For an unsigned value (e.g., a C variable explicitly declared with an <code>unsigned</code> qualifier), extending it to a longer bit sequence instead requires <strong>zero extension</strong>, since the <code>unsigned</code> qualifier prevents the value from ever being interpreted as negative. Zero extension simply prepends zeros to the high-order bits of the extended bit sequence. For example, 0b1110 (14 when interpreted as unsigned!) extends to 0b<strong>0000</strong>1110 despite the original leading 1.</p>
+</blockquote>
+</div>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C4-Binary/4.2-conversion.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">4.2. 进制之间的转换</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C4-Binary/4.4-arithmetic.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">4.4. 二进制整数运算</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-1-%E5%8E%9F%E7%A0%81"><span class="toc-text">4.3.1. 原码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-2-%E8%A1%A5%E7%A0%81"><span class="toc-text">4.3.2. 补码</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

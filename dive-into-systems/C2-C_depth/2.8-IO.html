@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.8. C 中的 I/O（标准 I/O 与文件 I/O） · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;IO.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.8. I&#x2F;O in C (Standard and Fil">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O） · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/2.8-IO.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;IO.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.8. I&#x2F;O in C (Standard and Fil">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html" class="current" aria-current="page">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>2. 深入 C 语言编程</span>
+      </nav>
+      <span class="book-position">第 24 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">2.8. C 中的 I/O（标准 I/O 与文件 I/O）</h1>
+  
+  
+    <p class="article-meta"><span>约 26 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/IO.html">https://diveintosystems.org/book/C2-C_depth/IO.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>2.8. I&#x2F;O in C (Standard and File)</em></p>
+<p>C 支持许多用于标准 I&#x2F;O 和文件 I&#x2F;O 的函数。本节讨论 C 中最常用的一些 I&#x2F;O 接口。</p>
+<blockquote>
+<p>C supports many functions for performing standard I&#x2F;O as well as file I&#x2F;O. In this section, we discuss some of the most commonly used interfaces for I&#x2F;O in C.</p>
+</blockquote>
+<h3 id="2-8-1-标准输入-输出"><a href="#2-8-1-标准输入-输出" class="headerlink" title="2.8.1. 标准输入&#x2F;输出"></a>2.8.1. 标准输入&#x2F;输出</h3><p><em>2.8.1. Standard Input&#x2F;Output</em></p>
+<p>每个运行中的程序一开始都有三个默认的 I&#x2F;O 流：标准输出（<code>stdout</code>）、标准输入（<code>stdin</code>）和标准错误（<code>stderr</code>）。程序可以向 <code>stdout</code> 和 <code>stderr</code> 写入（打印）输出，也可以从 <code>stdin</code> 读入输入值。<code>stdin</code> 通常被定义为从键盘读取输入，而 <code>stdout</code> 和 <code>stderr</code> 输出到终端。</p>
+<blockquote>
+<p>Every running program begins with three default I&#x2F;O streams: standard out (<code>stdout</code>), standard in (<code>stdin</code>), and standard error (<code>stderr</code>). A program can write (print) output to <code>stdout</code> and <code>stderr</code>, and it can read input values from <code>stdin</code>. <code>stdin</code> is usually defined to read in input from the keyboard, whereas <code>stdout</code> and <code>stderr</code> output to the terminal.</p>
+</blockquote>
+<p>C 的 <code>stdio.h</code> 库提供了用于打印到标准输出的 <code>printf</code> 函数，以及可用于从标准输入读取值的 <code>scanf</code> 函数。C 还有一次读写一个字符的函数（<code>getchar</code> 和 <code>putchar</code>），以及其他用于向标准 I&#x2F;O 流读写字符的函数和库。C 程序必须显式包含 <code>stdio.h</code> 才能调用这些函数。</p>
+<blockquote>
+<p>The C <code>stdio.h</code> library provides the <code>printf</code> function used for printing to standard out and the <code>scanf</code> function that can be used to read in values from standard in. C also has functions to read and write one character at a time (<code>getchar</code> and <code>putchar</code>), as well as other functions and libraries for reading and writing characters to standard I&#x2F;O streams. A C program must explicitly include <code>stdio.h</code> to call these functions.</p>
+</blockquote>
+<p>你可以改变运行中程序的 <code>stdin</code>、<code>stdout</code> 和&#x2F;或 <code>stderr</code> 读取或写入的位置。一种方法是把它们中的一个或全部重定向到文件进行读写。下面是一些把程序的 <code>stdin</code>、<code>stdout</code> 或 <code>stderr</code> 重定向到文件的 shell 命令示例（<code>$</code> 是 shell 提示符）：</p>
+<blockquote>
+<p>You can change the location that a running program’s <code>stdin</code>, <code>stdout</code> and&#x2F;or <code>stderr</code> read from or write to. One way to do this is by re-directing one or all of these to read or write to a file. Here are some example shell commands for redirecting a program’s <code>stdin</code>, <code>stdout</code>, or <code>stderr</code> to a file (<code>$</code> is the shell prompt):</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>&amp;&gt;</code> 是 bash（和 zsh）的扩展写法，在只支持 POSIX 语法的 <code>sh</code> 中不可用，可移植的写法是 <code>./a.out &gt; outfile.txt 2&gt;&amp;1</code>。另外示例注释中写的是 out.txt，命令里实际用的是 outfile.txt。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#  redirect a.out&#x27;s stdin to read from file infile.txt:</span><br><span class="line">$ ./a.out &lt; infile.txt</span><br><span class="line"></span><br><span class="line">#  redirect a.out&#x27;s stdout to print to file outfile.txt:</span><br><span class="line">$ ./a.out &gt; outfile.txt</span><br><span class="line"></span><br><span class="line"># redirect a.out&#x27;s stdout and stderr to a file out.txt</span><br><span class="line">$ ./a.out &amp;&gt; outfile.txt</span><br><span class="line"></span><br><span class="line"># redirect all three to different files:</span><br><span class="line">#   (&lt; redirects stdin, 1&gt; stdout, and 2&gt; stderr):</span><br><span class="line">$ ./a.out &lt; infile.txt 1&gt; outfile.txt 2&gt; errorfile.txt</span><br></pre></td></tr></table></figure>
+
+<h4 id="printf"><a href="#printf" class="headerlink" title="printf"></a>printf</h4><p><em>printf</em></p>
+<p>C 的 <code>printf</code> 函数类似于 Python 中格式化的 <code>print</code> 调用：调用者指定一个要打印的格式字符串。格式字符串中通常含有特殊的格式说明符，包括用来打印制表符（<code>\t</code>）或换行符（<code>\n</code>）的特殊字符，或者在输出中为某个值指定占位符（<code>%</code> 后跟一个类型说明符）。在传给 <code>printf</code> 的格式字符串中加入占位符时，要在格式字符串之后把对应的值作为额外参数传入。下面是调用 <code>printf</code> 的一些例子：</p>
+<blockquote>
+<p>C’s <code>printf</code> function resembles formatted <code>print</code> calls in Python, where the caller specifies a format string to print. The format string often contains special format specifiers, including special characters that will print tabs (<code>\t</code>) or newlines (<code>\n</code>), or that specify placeholders for values in the output (<code>%</code> followed by a type specifier). When adding placeholders in a format string passed to <code>printf</code>, pass their corresponding values as additional arguments following the format string. Here are some example calls to <code>printf</code>:</p>
+</blockquote>
+<p><em>printf.c</em></p>
+<blockquote>
+<p><em>printf.c</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">int x = 5, y = 10;</span><br><span class="line">float pi = 3.14;</span><br><span class="line"></span><br><span class="line">printf(&quot;x is %d and y is %d\n&quot;, x, y);</span><br><span class="line"></span><br><span class="line">printf(&quot;%g \t %s \t %d\n&quot;, pi, &quot;hello&quot;, y);</span><br></pre></td></tr></table></figure>
+
+<p>运行时，这些 <code>printf</code> 语句输出：</p>
+<blockquote>
+<p>When run, these <code>printf</code> statements output:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x is 5 and y is 10</span><br><span class="line">3.14 	 hello 	 10</span><br></pre></td></tr></table></figure>
+
+<p>注意第二次调用中制表符（<code>\t</code>）是如何打印出来的，以及不同类型的值使用的不同格式占位符（<code>%g</code>、<code>%s</code> 和 <code>%d</code>）。</p>
+<blockquote>
+<p>Note how the tab characters (<code>\t</code>) get printed in the second call, and the different formatting placeholders for different types of values (<code>%g</code>, <code>%s</code>, and <code>%d</code>).</p>
+</blockquote>
+<p>下面是常见 C 类型的一组格式占位符。注意 <code>long</code> 和 <code>long long</code> 值的占位符带有 <code>l</code> 或 <code>ll</code> 前缀。</p>
+<blockquote>
+<p>Here’s a set of formatting placeholders for common C types. Note that placeholders for <code>long</code> and <code>long long</code> values include an <code>l</code> or <code>ll</code> prefix.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">%f, %g: placeholders for a float or double value</span><br><span class="line">%d:     placeholder for a decimal value (char, short, int)</span><br><span class="line">%u:     placeholder for an unsigned decimal</span><br><span class="line">%c:     placeholder for a single character</span><br><span class="line">%s:     placeholder for a string value</span><br><span class="line">%p:     placeholder to print an address value</span><br><span class="line"></span><br><span class="line">%ld:    placeholder for a long value</span><br><span class="line">%lu:    placeholder for an unsigned long value</span><br><span class="line">%lld:   placeholder for a long long value</span><br><span class="line">%llu:   placeholder for an unsigned long long  value</span><br></pre></td></tr></table></figure>
+
+<p>下面是它们的一些用法示例：</p>
+<blockquote>
+<p>Here are some examples of their use:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">float labs;</span><br><span class="line">int midterm;</span><br><span class="line"></span><br><span class="line">labs = 93.8;</span><br><span class="line">midterm = 87;</span><br><span class="line"></span><br><span class="line">printf(&quot;Hello %s, here are your grades so far:\n&quot;, &quot;Tanya&quot;);</span><br><span class="line">printf(&quot;\t midterm: %d (out of %d)\n&quot;, midterm, 100);</span><br><span class="line">printf(&quot;\t lab ave: %f\n&quot;, labs);</span><br><span class="line">printf(&quot;\t final report: %c\n&quot;, &#x27;A&#x27;);</span><br></pre></td></tr></table></figure>
+
+<p>运行时，输出如下：</p>
+<blockquote>
+<p>When run, the output will look like this:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>输出中的 <code>93.800003</code> 不是笔误：93.8 无法用二进制浮点数精确表示，存进 <code>float</code> 后再按默认的 6 位小数打印，就显出了误差。第 4 章讲浮点表示时会解释原因。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Hello Tanya, here are your grades so far:</span><br><span class="line">	 midterm: 87 (out of 100)</span><br><span class="line">	 lab ave: 93.800003</span><br><span class="line">	 final report: A</span><br></pre></td></tr></table></figure>
+
+<p>C 还允许在格式占位符中指定字段宽度。下面是一些例子：</p>
+<blockquote>
+<p>C also allows you to specify the field width with format placeholders. Here are some examples:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">%5.3f: print float value in space 5 chars wide, with 3 places beyond decimal</span><br><span class="line">%20s:  print the string value in a field of 20 chars wide, right justified</span><br><span class="line">%-20s: print the string value in a field of 20 chars wide, left justified</span><br><span class="line">%8d:   print the int value in a field of 8 chars wide, right justified</span><br><span class="line">%-8d:  print the int value in a field of 8 chars wide, left justified</span><br></pre></td></tr></table></figure>
+
+<p>下面是一个在格式字符串的占位符中使用字段宽度说明符的较大例子：</p>
+<blockquote>
+<p>Here’s a larger example that uses field width specifiers with placeholders in the format string:</p>
+</blockquote>
+<p><em>printf_format.c</em></p>
+<blockquote>
+<p><em>printf_format.c</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt; // library needed for printf</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    float x, y;</span><br><span class="line">    char ch;</span><br><span class="line"></span><br><span class="line">    x = 4.50001;</span><br><span class="line">    y = 5.199999;</span><br><span class="line">    ch = &#x27;a&#x27;;      // ch stores ASCII value of &#x27;a&#x27; (the value 97)</span><br><span class="line"></span><br><span class="line">    // .1: print x and y with single precision</span><br><span class="line">    printf(&quot;%.1f %.1f\n&quot;, x, y);</span><br><span class="line"></span><br><span class="line">    printf(&quot;%6.1f \t %6.1f \t %c\n&quot;, x, y, ch);</span><br><span class="line"></span><br><span class="line">    // ch+1 is 98, the ASCII value of &#x27;b&#x27;</span><br><span class="line">    printf(&quot;%6.1f \t %6.1f \t %c\n&quot;, x+1, y+1, ch+1);</span><br><span class="line"></span><br><span class="line">    printf(&quot;%6.1f \t %6.1f \t %c\n&quot;, x*20, y*20, ch+2);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>运行时，程序输出如下：</p>
+<blockquote>
+<p>When run, the program output looks like this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">4.5 5.2</span><br><span class="line">   4.5 	    5.2 	 a</span><br><span class="line">   5.5 	    6.2 	 b</span><br><span class="line">  90.0 	  104.0 	 c</span><br></pre></td></tr></table></figure>
+
+<p>注意，最后三条 <code>printf</code> 语句中制表符和字段宽度的使用，使输出呈现出表格的样子。</p>
+<blockquote>
+<p>Note how the use of tabs and field width in the last three <code>printf</code> statements result in a tabular output.</p>
+</blockquote>
+<p>最后，C 还定义了以不同表示形式显示值的占位符：</p>
+<blockquote>
+<p>Finally, C defines placeholders for displaying values in different representations:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">%x:     print value in hexadecimal (base 16)</span><br><span class="line">%o:     print value in octal (base 8)</span><br><span class="line">%d:     print value in signed decimal  (base 10)</span><br><span class="line">%u:     print value in unsigned decimal (unsigned base 10)</span><br><span class="line">%e:     print float or double in scientific notation</span><br><span class="line">(there is no formatting option to display a value in binary)</span><br></pre></td></tr></table></figure>
+
+<p>下面是一个用占位符以不同表示形式打印值的例子：</p>
+<blockquote>
+<p>Here is an example using placeholders to print values in different representations:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">int x;</span><br><span class="line">char ch;</span><br><span class="line"></span><br><span class="line">x = 26;</span><br><span class="line">ch = &#x27;A&#x27;;</span><br><span class="line"></span><br><span class="line">printf(&quot;x is %d in decimal, %x in hexadecimal and %o in octal\n&quot;, x, x, x);</span><br><span class="line">printf(&quot;ch value is %d which is the ASCII value of  %c\n&quot;, ch, ch);</span><br></pre></td></tr></table></figure>
+
+<p>运行时，程序输出如下：</p>
+<blockquote>
+<p>When run, the program output looks like this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">x is 26 in decimal, 1a in hexadecimal and 32 in octal</span><br><span class="line">ch value is 65 which is the ASCII value of  A</span><br></pre></td></tr></table></figure>
+
+<h4 id="scanf"><a href="#scanf" class="headerlink" title="scanf"></a>scanf</h4><p><em>scanf</em></p>
+<p><code>scanf</code> 函数提供了一种从 <code>stdin</code> 读入值（通常是用户通过键盘输入的值）并存入程序变量的方法。<code>scanf</code> 函数对用户输入数据的确切格式有些挑剔，这使它对格式不正确的用户输入比较敏感。</p>
+<blockquote>
+<p>The <code>scanf</code> function provides one method for reading in values from <code>stdin</code> (usually from the user entering them via the keyboard) and storing them in program variables. The <code>scanf</code> function is a bit picky about the exact format in which the user enters data, which can make it sensitive to badly formed user input.</p>
+</blockquote>
+<p><code>scanf</code> 函数的参数与 <code>printf</code> 的类似：<code>scanf</code> 接收一个格式字符串，指定要读入的输入值的个数和类型，后面跟着用于存放这些值的程序变量的<em>位置</em>。程序通常把<em>取地址</em>（<code>&amp;</code>）运算符与变量名结合使用，得到变量在程序内存中的位置——变量的内存地址。下面是一个读入两个值（一个 <code>int</code> 和一个 <code>float</code>）的 <code>scanf</code> 调用示例：</p>
+<blockquote>
+<p>The arguments to the <code>scanf</code> function are similar to those of <code>printf</code>: <code>scanf</code> takes a format string that specifies the number and type of input values to read in, followed by the <em>locations</em> of program variables into which the values should be stored. Programs typically combine the <em>address of</em> (<code>&amp;</code>) operator with a variable name to produce the location of the variable in the program’s memory — the memory address of the variable. Here’s an example call to <code>scanf</code> that reads in two values (an <code>int</code> and a <code>float</code>):</p>
+</blockquote>
+<p><em>scanf_ex.c</em></p>
+<blockquote>
+<p><em>scanf_ex.c</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int x;</span><br><span class="line">float pi;</span><br><span class="line"></span><br><span class="line">// read in an int value followed by a float value (&quot;%d%g&quot;)</span><br><span class="line">// store the int value at the memory location of x (&amp;x)</span><br><span class="line">// store the float value at the memory location of pi (&amp;pi)</span><br><span class="line">scanf(&quot;%d%g&quot;, &amp;x, &amp;pi);</span><br></pre></td></tr></table></figure>
+
+<p>各个输入值之间必须至少用一个空白字符（例如空格、制表符、换行符）隔开。不过，<code>scanf</code> 在寻找每个数值字面量的起止位置时会跳过前后的空白字符。因此，用户输入数值 8 和 3.14 时，两个值前后可以有任意多的空白（两者之间至少有一个空白字符），<code>scanf</code> 总会读入 8 并赋给 <code>x</code>，读入 3.14 并赋给 <code>pi</code>。例如，下面这个两个值之间有很多空格的输入，会读入 8 存入 <code>x</code>，读入 3.14 存入 <code>pi</code>：</p>
+<blockquote>
+<p>Individual input values must be separated by at least one whitespace character (e.g., spaces, tabs, newlines). However, <code>scanf</code> skips over leading and trailing whitespace characters as it finds the start and end of each numeric literal value. As a result, a user could enter the value 8 and 3.14 with any amount of whitespace before or after the two values (and at least one or more whitespace characters between), and <code>scanf</code> will always read in 8 and assign it to <code>x</code> and read in 3.14 and assign it to <code>pi</code>. For example, this input with lots of spaces between the two values will result in reading in 8 and storing it in <code>x</code>, and 3.14 and storing in <code>pi</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">8                   3.14</span><br></pre></td></tr></table></figure>
+
+<p>程序员为 <code>scanf</code> 编写的格式字符串常常只由占位说明符组成，它们之间没有其他字符。要读入上面的两个数，格式字符串可以是这样的：</p>
+<blockquote>
+<p>Programmers often write format strings for <code>scanf</code> that only consist of placeholder specifiers without any other characters between them. For reading in the two numbers above, the format string might look like:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// read in an int and a float separated by at least one white space character</span><br><span class="line">scanf(&quot;%d%g&quot;,&amp;x, &amp;pi);</span><br></pre></td></tr></table></figure>
+
+<h4 id="getchar-与-putchar"><a href="#getchar-与-putchar" class="headerlink" title="getchar 与 putchar"></a>getchar 与 putchar</h4><p><em>getchar and putchar</em></p>
+<p>C 函数 <code>getchar</code> 和 <code>putchar</code> 分别从 <code>stdin</code> 读入、向 <code>stdout</code> 写出单个字符值。对于需要仔细检测和处理格式错误的用户输入的 C 程序，<code>getchar</code> 尤其有用（<code>scanf</code> 在这方面并不健壮）。</p>
+<blockquote>
+<p>The C functions <code>getchar</code> and <code>putchar</code> respectively read or write a single character value from <code>stdin</code> and to <code>stdout</code>. <code>getchar</code> is particularly useful in C programs that need to support careful error detection and handling of badly formed user input (<code>scanf</code> is not robust in this way).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">ch = getchar();  // read in the next char value from stdin</span><br><span class="line">putchar(ch);     // write the value of ch to stdout</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-2-文件输入-输出"><a href="#2-8-2-文件输入-输出" class="headerlink" title="2.8.2. 文件输入&#x2F;输出"></a>2.8.2. 文件输入&#x2F;输出</h3><p><em>2.8.2. File Input&#x2F;Output</em></p>
+<p>C 标准 I&#x2F;O 库（<code>stdio.h</code>）提供了用于文件 I&#x2F;O 的流接口。<strong>文件</strong>（file）存储的是持久数据：在创建它的程序执行结束后依然存在的数据。文本文件表示一个字符流，每个打开的文件都记录着它在字符流中的当前位置。打开文件时，当前位置从文件中的第一个字符开始，每读（或写）一个字符，当前位置就随之移动。要读取文件中的第 10 个字符，需要先读完前 9 个字符（或者用 <code>fseek</code> 函数显式地把当前位置移到第 10 个字符）。</p>
+<blockquote>
+<p>The C standard I&#x2F;O library (<code>stdio.h</code>) includes a stream interface for file I&#x2F;O. A <strong>file</strong> stores persistent data: data that lives beyond the execution of the program that created it. A text file represents a stream of characters, and each open file tracks its current position in the character stream. When opening a file, the current position starts at the very first character in the file, and it moves as a result of every character read (or written) to the file. To read the 10th character in a file, the first 9 characters need to first be read (or the current position must be explicitly moved to the 10th character using the <code>fseek</code> function).</p>
+</blockquote>
+<p>C 的文件接口把文件看作输入流或输出流，库函数从文件流中的下一个位置读取或向其写入。<code>fprintf</code> 和 <code>fscanf</code> 函数是 <code>printf</code> 和 <code>scanf</code> 在文件 I&#x2F;O 上的对应版本。它们用格式字符串指定要写入或读取什么，并带有为写入或读取的数据提供值或存储位置的参数。类似地，库还提供了 <code>fputc</code>、<code>fgetc</code>、<code>fputs</code> 和 <code>fgets</code> 函数，用于向文件流读写单个字符或字符串。尽管 C 中有许多支持文件 I&#x2F;O 的库，我们只详细介绍 <code>stdio.h</code> 库针对文本文件的流接口。</p>
+<blockquote>
+<p>C’s file interface views a file as an input or output stream, and library functions read from or write to the next position in the file stream. The <code>fprintf</code> and <code>fscanf</code> functions serve as the file I&#x2F;O counterparts to <code>printf</code> and <code>scanf</code>. They use a format string to specify what to write or read, and they include arguments that provide values or storage for the data that gets written or read. Similarly, the library provides the <code>fputc</code>, <code>fgetc</code>, <code>fputs</code>, and <code>fgets</code> functions for reading and writing individual characters or strings to file streams. Although there are many libraries that support file I&#x2F;O in C, we only present the <code>stdio.h</code> library’s stream interface to text files in detail.</p>
+</blockquote>
+<p>文本文件可能像 <code>stdin</code> 和 <code>stdout</code> 流一样含有特殊字符：换行符（<code>&#39;\n&#39;</code>）、制表符（<code>&#39;\t&#39;</code>）等。此外，读到文件数据的末尾时，C 的 I&#x2F;O 库会产生一个特殊的文件结束字符（<code>EOF</code>），表示文件结束。从文件读取的函数可以检测 <code>EOF</code>，以判断是否已经到达文件流的末尾。</p>
+<blockquote>
+<p>Text files may contain special chars like the <code>stdin</code> and <code>stdout</code> streams: newlines (<code>&#39;\n&#39;</code>), tabs (<code>&#39;\t&#39;</code>), etc. Additionally, upon reaching the end of a file’s data, C’s I&#x2F;O library generates a special end-of-file character (<code>EOF</code>) that represents the end of the file. Functions reading from a file can test for <code>EOF</code> to determine when they have reached the end of the file stream.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>更准确的说法是：文件里并没有一个叫 EOF 的字符。<code>EOF</code> 是 <code>&lt;stdio.h&gt;</code> 定义的一个负整数常量（通常是 -1），读取函数在没有更多数据可读时<em>返回</em>它。正因为它不是任何 <code>char</code> 值，下文示例才要用 <code>int</code> 变量接收 <code>getc</code> 的返回值。</p>
+</div>
+<h3 id="2-8-3-在-C-中使用文本文件"><a href="#2-8-3-在-C-中使用文本文件" class="headerlink" title="2.8.3. 在 C 中使用文本文件"></a>2.8.3. 在 C 中使用文本文件</h3><p><em>2.8.3. Using Text Files in C</em></p>
+<p>要在 C 中读写文件，按以下步骤操作：</p>
+<blockquote>
+<p>To read or write a file in C, follow these steps:</p>
+</blockquote>
+<ol>
+<li><p><em>声明</em>一个 <code>FILE *</code> 变量：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FILE *infile;</span><br><span class="line">FILE *outfile;</span><br></pre></td></tr></table></figure>
+
+<p> 这些声明创建了指向库所定义的 <code>FILE *</code> 类型的指针变量。在应用程序中不能对这些指针解引用，它们被传给 I&#x2F;O 库函数时，代表一个特定的文件流。</p>
+</li>
+</ol>
+<blockquote>
+<ol>
+<li><p><em>Declare</em> a <code>FILE *</code> variable:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">FILE *infile;</span><br><span class="line">FILE *outfile;</span><br></pre></td></tr></table></figure>
+
+<p>These declarations create pointer variables to a library-defined <code>FILE *</code> type. These pointers cannot be dereferenced in an application program. Instead, they refer to a specific file stream when passed to I&#x2F;O library functions.</p>
+</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li><p><em>打开</em>文件：调用 <code>fopen</code>，把变量与一个实际的文件流关联起来。打开文件时，<em>模式</em>（mode）参数决定程序是为读取（<code>&quot;r&quot;</code>）、写入（<code>&quot;w&quot;</code>）还是追加（<code>&quot;a&quot;</code>）而打开它：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">infile = fopen(&quot;input.txt&quot;, &quot;r&quot;);  // relative path name of file, read mode</span><br><span class="line">if (infile == NULL) &#123;</span><br><span class="line">    printf(&quot;Error: unable to open file %s\n&quot;, &quot;input.txt&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// fopen with absolute path name of file, write mode</span><br><span class="line">outfile = fopen(&quot;/home/me/output.txt&quot;, &quot;w&quot;);</span><br><span class="line">if (outfile == NULL) &#123;</span><br><span class="line">    printf(&quot;Error: unable to open outfile\n&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p> <code>fopen</code> 函数通过返回 <code>NULL</code> 来报告错误，例如给它的文件名无效，或者用户没有打开指定文件的权限（比如没有对 <code>output.txt</code> 文件的写权限）时，就会出错。</p>
+</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><p><em>Open</em> the file: associate the variable with an actual file stream by calling <code>fopen</code>. When opening a file, the <em>mode</em> parameter determines whether the program opens it for reading (<code>&quot;r&quot;</code>), writing (<code>&quot;w&quot;</code>), or appending (<code>&quot;a&quot;</code>):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">infile = fopen(&quot;input.txt&quot;, &quot;r&quot;);  // relative path name of file, read mode</span><br><span class="line">if (infile == NULL) &#123;</span><br><span class="line">    printf(&quot;Error: unable to open file %s\n&quot;, &quot;input.txt&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// fopen with absolute path name of file, write mode</span><br><span class="line">outfile = fopen(&quot;/home/me/output.txt&quot;, &quot;w&quot;);</span><br><span class="line">if (outfile == NULL) &#123;</span><br><span class="line">    printf(&quot;Error: unable to open outfile\n&quot;);</span><br><span class="line">    exit(1);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>The <code>fopen</code> function returns <code>NULL</code> to report errors, which may occur if it’s given an invalid filename or the user doesn’t have permission to open the specified file (e.g., not having write permissions to the <code>output.txt</code> file).</p>
+</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li><p><em>使用</em> I&#x2F;O 操作来读写文件或移动文件中的当前位置：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int ch;  // EOF is not a char value, but is an int.</span><br><span class="line">         // since all char values can be stored in int, use int for ch</span><br><span class="line"></span><br><span class="line">ch = getc(infile);      // read next char from the infile stream</span><br><span class="line">if (ch != EOF) &#123;</span><br><span class="line">    putc(ch, outfile);  // write char value to the outfile stream</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="3">
+<li><p><em>Use</em> I&#x2F;O operations to read, write, or move the current position in the file:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int ch;  // EOF is not a char value, but is an int.</span><br><span class="line">         // since all char values can be stored in int, use int for ch</span><br><span class="line"></span><br><span class="line">ch = getc(infile);      // read next char from the infile stream</span><br><span class="line">if (ch != EOF) &#123;</span><br><span class="line">    putc(ch, outfile);  // write char value to the outfile stream</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="4">
+<li><p><em>关闭</em>文件：程序不再需要文件时，用 <code>fclose</code> 关闭它：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fclose(infile);</span><br><span class="line">fclose(outfile);</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="4">
+<li><p><em>Close</em> the file: use <code>fclose</code> to close the file when the program no longer needs it:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">fclose(infile);</span><br><span class="line">fclose(outfile);</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<p><code>stdio</code> 库还提供了改变文件中当前位置的函数：</p>
+<blockquote>
+<p>The <code>stdio</code> library also provides functions to change the current position in a file:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// to reset current position to beginning of file</span><br><span class="line">void rewind(FILE *f);</span><br><span class="line"></span><br><span class="line">rewind(infile);</span><br><span class="line"></span><br><span class="line">// to move to a specific location in the file:</span><br><span class="line">fseek(FILE *f, long offset, int whence);</span><br><span class="line"></span><br><span class="line">fseek(f, 0, SEEK_SET);    // seek to the beginning of the file</span><br><span class="line">fseek(f, 3, SEEK_CUR);    // seek 3 chars forward from the current position</span><br><span class="line">fseek(f, -3, SEEK_END);   // seek 3 chars back from the end of the file</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-8-4-stdio-h-中的标准-I-O-与文件-I-O-函数"><a href="#2-8-4-stdio-h-中的标准-I-O-与文件-I-O-函数" class="headerlink" title="2.8.4. stdio.h 中的标准 I&#x2F;O 与文件 I&#x2F;O 函数"></a>2.8.4. <code>stdio.h</code> 中的标准 I&#x2F;O 与文件 I&#x2F;O 函数</h3><p><em>2.8.4. Standard and File I&#x2F;O Functions in <code>stdio.h</code></em></p>
+<p>C 的 <code>stdio.h</code> 库有许多函数，用于读写文件以及类似文件的标准流（<code>stdin</code>、<code>stdout</code> 和 <code>stderr</code>）。这些函数可以分为基于字符的、基于字符串的和格式化的 I&#x2F;O 函数。下面简要介绍其中一部分函数的更多细节：</p>
+<blockquote>
+<p>The C <code>stdio.h</code> library has many functions for reading and writing to files and to the standard file-like streams (<code>stdin</code>, <code>stdout</code>, and <code>stderr</code>). These functions can be classified into character-based, string-based, and formatted I&#x2F;O functions. Briefly, here’s some additional details about a subset of these functions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">// ---------------</span><br><span class="line">// Character Based</span><br><span class="line">// ---------------</span><br><span class="line"></span><br><span class="line">// returns the next character in the file stream (EOF is an int value)</span><br><span class="line">int fgetc(FILE *f);</span><br><span class="line"></span><br><span class="line">// writes the char value c to the file stream f</span><br><span class="line">// returns the char value written</span><br><span class="line">int fputc(int c, FILE *f);</span><br><span class="line"></span><br><span class="line">// pushes the character c back onto the file stream</span><br><span class="line">// at most one char (and not EOF) can be pushed back</span><br><span class="line">int ungetc(int c, FILE *f);</span><br><span class="line"></span><br><span class="line">// like fgetc and fputc but for stdin and stdout</span><br><span class="line">int getchar();</span><br><span class="line">int putchar(int c);</span><br><span class="line"></span><br><span class="line">// -------------</span><br><span class="line">// String  Based</span><br><span class="line">// -------------</span><br><span class="line"></span><br><span class="line">// reads at most n-1 characters into the array s stopping if a newline is</span><br><span class="line">// encountered, newline is included in the array which is &#x27;\0&#x27; terminated</span><br><span class="line">char *fgets(char *s, int n, FILE *f);</span><br><span class="line"></span><br><span class="line">// writes the string s (make sure &#x27;\0&#x27; terminated) to the file stream f</span><br><span class="line">int fputs(char *s, FILE *f);</span><br><span class="line"></span><br><span class="line">// ---------</span><br><span class="line">// Formatted</span><br><span class="line">// ---------</span><br><span class="line"></span><br><span class="line">// writes the contents of the format string to file stream f</span><br><span class="line">//   (with placeholders filled in with subsequent argument values)</span><br><span class="line">// returns the number of characters printed</span><br><span class="line">int fprintf(FILE *f, char *format, ...);</span><br><span class="line"></span><br><span class="line">// like fprintf but to stdout</span><br><span class="line">int printf(char *format, ...);</span><br><span class="line"></span><br><span class="line">// use fprintf to print stderr:</span><br><span class="line">fprintf(stderr, &quot;Error return value: %d\n&quot;, ret);</span><br><span class="line"></span><br><span class="line">// read values specified in the format string from file stream f</span><br><span class="line">//   store the read-in values to program storage locations of types</span><br><span class="line">//   matching the format string</span><br><span class="line">// returns number of input items converted and assigned</span><br><span class="line">//   or EOF on error or if EOF was reached</span><br><span class="line">int fscanf(FILE *f, char *format, ...);</span><br><span class="line"></span><br><span class="line">// like fscanf but reads from stdin</span><br><span class="line">int scanf(char *format, ...);</span><br></pre></td></tr></table></figure>
+
+<p>一般来说，<code>scanf</code> 和 <code>fscanf</code> 对格式错误的输入很敏感。不过，对于文件 I&#x2F;O，程序员往往可以假定输入文件格式良好，所以在这种情况下 <code>fscanf</code> 可能已经足够健壮。而用 <code>scanf</code> 时，格式错误的用户输入常常会导致程序崩溃。一次读入一个字符，并在把值转换成其他类型之前加上检查代码，会更健壮，但这需要程序员实现更复杂的 I&#x2F;O 功能。</p>
+<blockquote>
+<p>In general, <code>scanf</code> and <code>fscanf</code> are sensitive to badly formed input. However, for file I&#x2F;O, often programmers can assume that an input file is well formatted, so <code>fscanf</code> may be robust enough in such cases. With <code>scanf</code>, badly formed user input will often cause a program to crash. Reading in one character at a time and including code to test values before converting them to different types is more robust, but it requires the programmer to implement more complex I&#x2F;O functionality.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>实践中更常见的稳妥做法是：先用 <code>fgets</code> 读入一整行，再用 <code>sscanf</code> 或 <code>strtol</code> 之类的函数解析这一行。这样格式错误的输入最多导致这一行解析失败，而不会让输入流卡在半途。</p>
+</div>
+<p><code>fscanf</code> 的格式字符串可以使用以下语法，指定不同类型的值以及从文件流读取的方式：</p>
+<blockquote>
+<p>The format string for <code>fscanf</code> can include the following syntax specifying different types of values and ways of reading from the file stream:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">%d integer</span><br><span class="line">%f float</span><br><span class="line">%lf double</span><br><span class="line">%c character</span><br><span class="line">%s string, up to first white space</span><br><span class="line"></span><br><span class="line">%[...] string, up to first character not in brackets</span><br><span class="line">%[0123456789] would read in digits</span><br><span class="line">%[^...] string, up to first character in brackets</span><br><span class="line">%[^\n] would read everything up to a newline</span><br></pre></td></tr></table></figure>
+
+<p>要写对 <code>fscanf</code> 的格式字符串可能很棘手，尤其是从文件中混合读取数值和字符串或字符类型时。</p>
+<blockquote>
+<p>It can be tricky to get the <code>fscanf</code> format string correct, particularly when reading a mix of numeric and string or character types from a file.</p>
+</blockquote>
+<p>下面是几个使用不同格式字符串调用 <code>fscanf</code>（以及一个调用 <code>fprintf</code>）的例子（假定前面的 <code>fopen</code> 调用都已成功执行）：</p>
+<blockquote>
+<p>Here are a few example calls to <code>fscanf</code> (and one to <code>fprintf</code>) with different format strings (let’s assume that the <code>fopen</code> calls from above have executed successfully):</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>下面代码的最后一行只是示意：<code>x</code> 被声明为 <code>int</code>，却用 <code>%ld</code>（对应 <code>long *</code>）读取，而且 <code>b</code> 没有声明。实际写代码时，变量类型必须与转换说明严格匹配，<code>-Wall</code> 编译选项会对这类不匹配给出警告。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">int x;</span><br><span class="line">double d;</span><br><span class="line">char c, array[MAX];</span><br><span class="line"></span><br><span class="line">// write int &amp; char values to file separated by colon with newline at the end</span><br><span class="line">fprintf(outfile, &quot;%d:%c\n&quot;, x, c);</span><br><span class="line"></span><br><span class="line">// read an int &amp; char from file where int and char are separated by a comma</span><br><span class="line">fscanf(infile, &quot;%d,%c&quot;, &amp;x, &amp;c);</span><br><span class="line"></span><br><span class="line">// read a string from a file into array (stops reading at whitespace char)</span><br><span class="line">fscanf(infile,&quot;%s&quot;, array);</span><br><span class="line"></span><br><span class="line">// read a double and a string up to 24 chars from infile</span><br><span class="line">fscanf(infile, &quot;%lf %24s&quot;, &amp;d, array);</span><br><span class="line"></span><br><span class="line">// read in a string consisting of only char values in the specified set (0-5)</span><br><span class="line">// stops reading when...</span><br><span class="line">//   20 chars have been read OR</span><br><span class="line">//   a character not in the set is reached OR</span><br><span class="line">//   the file stream reaches end-of-file (EOF)</span><br><span class="line">fscanf(infile, &quot;%20[012345]&quot;, array);</span><br><span class="line"></span><br><span class="line">// read in a string; stop when reaching a punctuation mark from the set</span><br><span class="line">fscanf(infile, &quot;%[^.,:!;]&quot;, array);</span><br><span class="line"></span><br><span class="line">// read in two integer values: store first in long, second in int</span><br><span class="line">// then read in a char value following the int value</span><br><span class="line">fscanf(infile, &quot;%ld %d%c&quot;, &amp;x, &amp;b, &amp;c);</span><br></pre></td></tr></table></figure>
+
+<p>在上面的最后一个例子中，格式字符串在一个数字之后显式地读入一个字符值，以确保文件流的当前位置被正确地推进，便于后续的 <code>fscanf</code> 调用。例如，这种模式常用来显式读入（并丢弃）一个空白字符（比如 ‘\n’），以确保下一次 <code>fscanf</code> 调用从文件的下一行开始。如果<em>下一次</em> <code>fscanf</code> 调用要读入一个字符值，就必须多读这一个字符；否则，由于换行符没有被消耗掉，下一次 <code>fscanf</code> 调用会读到换行符，而不是预期的字符。如果下一次调用读入的是数值类型的值，那么 <code>fscanf</code> 会自动丢弃前导的空白字符，程序员就不需要显式地从文件流中读取 <code>\n</code> 字符。</p>
+<blockquote>
+<p>In the final example above, the format string explicitly reads in a character value after a number to ensure that the file stream’s current position gets properly advanced for any subsequent calls to <code>fscanf</code>. For example, this pattern is often used to explicitly read in (and discard) a whitespace character (like ‘\n’), to ensure that the next call to <code>fscanf</code> begins from the next line in the file. Reading an additional character is necessary if the <em>next</em> call to <code>fscanf</code> attempts to read in a character value. Otherwise, having not consumed the newline, the next call to <code>fscanf</code> will read the newline rather than the intended character. If the next call reads in a numeric type value, then leading whitespace chars are automatically discarded by <code>fscanf</code> and the programmer does not need to explicitly read the <code>\n</code> character from the file stream.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C2-C_depth/2.7-structs.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">2.7. C 结构体</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C2-C_depth/2.9-advanced.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.9. C 的一些高级特性</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-1-%E6%A0%87%E5%87%86%E8%BE%93%E5%85%A5-%E8%BE%93%E5%87%BA"><span class="toc-text">2.8.1. 标准输入&#x2F;输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-2-%E6%96%87%E4%BB%B6%E8%BE%93%E5%85%A5-%E8%BE%93%E5%87%BA"><span class="toc-text">2.8.2. 文件输入&#x2F;输出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-3-%E5%9C%A8-C-%E4%B8%AD%E4%BD%BF%E7%94%A8%E6%96%87%E6%9C%AC%E6%96%87%E4%BB%B6"><span class="toc-text">2.8.3. 在 C 中使用文本文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-8-4-stdio-h-%E4%B8%AD%E7%9A%84%E6%A0%87%E5%87%86-I-O-%E4%B8%8E%E6%96%87%E4%BB%B6-I-O-%E5%87%BD%E6%95%B0"><span class="toc-text">2.8.4. stdio.h 中的标准 I&#x2F;O 与文件 I&#x2F;O 函数</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

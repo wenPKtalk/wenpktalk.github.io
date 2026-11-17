@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>深入理解JVM-JVM内部结构：从 Java 7 到 JDK 21 · Summary</title>
+  <meta name="description" content="参考：James D. Bloom 的《JVM Internals》（2013，https:&#x2F;&#x2F;blog.jamesdbloom.com&#x2F;JVMInternals.html）。原文版权归作者所有，本文不是译文。阅读原文后，我按 JVM 规范和 HotSpot 的实际行为重新组织并改写了内容：  示例代码、javap 输出和线程列表都来自本机 JDK 21（21.0.9），源码可以直接下载：Gre">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解JVM-JVM内部结构：从 Java 7 到 JDK 21 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-JVM%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="参考：James D. Bloom 的《JVM Internals》（2013，https:&#x2F;&#x2F;blog.jamesdbloom.com&#x2F;JVMInternals.html）。原文版权归作者所有，本文不是译文。阅读原文后，我按 JVM 规范和 HotSpot 的实际行为重新组织并改写了内容：  示例代码、javap 输出和线程列表都来自本机 JDK 21（21.0.9），源码可以直接下载：Gre">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/jLPRKnD957wVNt7AF2CcuU9ILCfaCWDQ0Id8MhMA3qEcXP7GavfCS7MbAb6Kkt6Bco1gA5R9kY9cTJMIW0_xKqZF94_yXQtk3aCIsAfzSFEMxlDzvplNwKjnKp7Cn5XKY8zgEAOOoXZ4HnHLlwFXORYbHEEevaP5jvH4r9HrR0vezn2ulJMNXfx0ggWR61dWlb1puJSC_OweHtK3N2s1rjOsR-DbU4IBZ68KZuFxV1qbYfWA7euY-4K02EY6YemgqGyjVc_WeW10nLJFt6xtHK-xC573W7KLnL4CF9vQMWMFqaDlYo2Sk3ZNEUJhCX0oaN4-4bNYySxc8TyvKE8GYSR19KkoLsnl1DYv0fdDbFVtoSvJ-sF1BhoYA02H4a18LrIQnu74KFnkt4HZZ4uCWKkIP8yiix1g23dL8AxYc7N83IwP_UfjAui7rfFNWpYauL77rdEsBPb-GRRdoFpA8BwCDLDJejeznTHqp55U1pKXXDpGP6Z38sQJ3q8U8UIf-UjjZBxyxMbvSzvQ_MmjVx0MtfFvFHvzVmARsXY2e68gu3UG4cUE-eD-SCaNPRyiDaPEKxdtpSxEsTifQsE6q_GX0y8Z1bBKe-AqjPikvTzoer8-MIhi7nLd66rV65oIA0VbLiPQonjsaWSt1CS7k2c_SB_J5GZ8xS4BFh2pSsGlNNw_QIr_86jPw1FXFhsNByX1kSK7dKE-Aygu0bPccadZbq6fxQBVHmz9VXkyL6HckhBv-QWuJ_ONoSo2jVBL-hXyL9pXWA1Rzakj3i1pvgcRdqgjKhiKy86ryOviVE14LcOQxWit6sFqd1cZvxl4s2Yv9iQPxoJVUwRytlz3llkq_FykLEw_pfG6f01NUbnti9OEo6_RnuAFVP9Sil8mIzBFAbFfycOMQkKiBfJsD-ZGK4yddSIxniuLdC4Y-NnbActbClRw92aksqlPghA9VvaVyYXNslk3py_0Y68WDZlBdqhvjt3bMW_KZyv0Dml9BNjEZGwb99d7dAaRAR6ZuZhP_LhERHucKzRo1ximUPXCaPrL-zsRKlvFH-XXCcNd2lRwPEN5ciKChFT_CMVTah-lY_gJMgIsghzJ7hz-AkyNIeKjP_d-rDKWiG4agOYlCIaezT8rBGQ3thCC1nB6k3Qk6_3tgeS7_sF_jGR0n9cYoiaK-VgfAceGNusgq0nXX1C6KXdJrL0GN7BGt-ANXHEQUfBAYvTEEdjrt4HJoi2ztNMVWzD8tfJESktMpO6ORj9oF7fe_xvNMVq4FSXKuZ4bWauMPQvGN-eUFxYa2r9xZPjQH_rXiQz-44_t8EjmEdx98ZH3G-a5ErSuFAutRH6csbwVjD-z8Uall7c5NcKC-R4QlXj3XycKXiVrKQJUnSgO5W5xPwOwTFNIUiIhGQbU6oSl5RRiJ8gf8ZkhvTa7TYP59HGVa7o-l9azJAQ4ykOyIN_XVmPC9JBQeyJ2ob0KEQxEhZddjekBPESPBxkegmX49JA21l6Los6mbrvPqq_jzKc-EZY0V-35urGxtJ0XJ0ZXcayhNIOTrSN1DnBV9aBO0qqtHZHLHVWcDuQmLs2zxO1PutP0ZuPr0xf4WVrtRcapTe2rDaSMfWHMraP2bb21IZX_m-LfRVDAWPldVRm5Eg0pGbzJ7TKB7vdDMiaKVsrqDhCx7mlbc5JLx-0cDdr2sDjuB8gDRmPhPflMfBXiBJxX3ItzZ289-Xe12Gzh6F5fvXLlbuAd7aal7vAD0slfS-NvOxAM7SHT8aCCHzXk2GPRw-tBsrkLgLbcUHcRo8WPz8d781hxVpQCbRYuKjxzbK55DpI3o1V7RSrqC1EruTLzH9wy9kcjGNobzp87OGrSibTkaTjEGyZUuY3kLKnj74586p8KGqFypOIZ3agWxz0cbbSVXDpiRLQVRRd_kX3oEZRLWj8twgE7rIVQupNowBMpKOJX23GbOaxNaESlhQNF9FEuCZLVoY-Gz6xvu81-UjZY5whvuWW-bXrGtYsGz8epW0BD3hSGHKh9FTRCY2199zrw6si2JOrpWAF29OJLn5Zq7m00">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/TPFVJzjM5CVV_LSSbPVs0KP8mkW4KHCIJziY8P6A5yJ39RuaLXmRNJj3srB9urVC22GJOKE1Lg1H4LLgcsfIPS25_sNplKwUyYzCr_7Q95ibovRFEVTpl-TxptsY6uWOfQ8Yw0LPNKS45K7F8qdRaDKSh255nmCP2Q-XacA8ccfav1ynXC83IQALL6bU8oec49eSICG9qJRcDKKZC1P9HAFJuT7aqxoSBQXOro4qCOJ4MGEfEGN3Jm90GYCI9W7eSIGUJim805nC40k5GZDJNmhF1WYgPWIBKRQG2oJwnQ8e9bA9KQmOVPoQJ8mW9ApZTGWFzaIGMk31oAHWo8Q2mRkvzrhxxDnoxKFNDbtx5Jktg7tbDRVfxavtgzLpBFVs9NnDC3OmcLX7HCSFCmQHrTmZSEqRzsw_v-m9mgUUCq-_Wx7Kl9WKex0ipAx6-dj04SagUCrj-1PzZu2TMxDVhCPwZaNhXvtxKxfZqSeDHvLdnyHaQdec7eFPrLXV3WpjonS2_BLRvvJknVkUKwKVZkZU0Vljclrv36NEI8R4U2eQWm10Ikh3H_-RuRe2yl8ABraPxER1PpJ0HuUucWU0T10NOKoS4UFYl7zqdnZf9V_SH57i6qBVcTsj5gsTT2krpeKFWBIMHGei8IAZLGNhFSTIU4IVY_gUp86kQ0QKvu3kxj0trxmJc8Go67bPztz2K0Q-ZDOssN6xv-pvqIaeztL_enfSidTxn5wSzPpJB3AoUUXMgkpaBM2_DWnbw8UfjSiQRxtcTkU-GKzVKDE1yP1V4u4ohCagKfGVW3gRrBPfvORM_c3DJVhwX7lY1tqN1orOo0nRm8uEt0zdxBWTp04ih6E2L0ao1ieMUewby-_SrBy34HOZudGC_ZRDZq__C3-JOMSclMpIUfNz_furxc0ANFiLDPqHMSdqoCdyqcBcpzsZEtRuaiiIMBL2wx-2X8lQH707mFUbthdWR6hRtKgDlJiV0I_6Xy61aMTj-jpqNkzH-uhtVl36toH8rW_vsse7izgjL3ljBQ_HyZQllUQsQ--xjicUNx1gnRsz55Q4Pq9w2SQNyx8aONM5oBcyCGuB6I6P_azqCJvKAsaRwZWaqmA_g-FzcXYVtw-26zMVUDQuevTNmXEiIgMYyWy0">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/pPPVJzjM6CRlpwTu9MvMgPGuTX9g9L49ZQ-uo-wcgZg9JV3YsCXsXhHbaji6I5W2R86n1jYIheoKQOnk6k9F8huBv3ZcAbzXias8YKP5DLNYpZxlEQ-Vt_CS-PmdcevLFPULa9OHvLciuYneCvXNvaGv3TDOqWHFXHUcSKxIEKNM4-BN0b2qfwWgEPcVL5HPK87oUGeJgghCJIgIei884mi4WlHmyVCPCPMH1Kq3wj6Dba9Ant9Q4k0R111JL5vGhnezPYRes3W2iCLSZL4KDUuFeMyz7MH5lrgCKvdqbKHdCiTniNXik2qNU1ptnOPQy88cp0BjPLAndB476H_IHLqIGDEnBgP0KkGqO9x_J9Hrm0_Tz-I32yEm3bvrrvfEZNu8pDG3C3SEpJzNpEs6MLxidBurIxjMeqnMbxkrGdVfq3HU83Gm8E5p97CS1r-WS39w_dqThBDDChzZ_dXi_hqU7aj64NblNBvgafMVBXTNh4OJvIEWIOeEFkW_KUT6rN_zHfyRLGRoA0yO8a137f8G0MOAyg3bihrMqTpQi_xvZXYjNgi4UMHMAvtsbhb-ODQBlLQnSxJKEJenwyNBnc6lLKBvy0X7SmmNZ4BttGdaqJCl03KCqB0rNnX6E6Lxpuxu0q4w7elEvhGPE5zOxKllrWg0msFEf7k1-3GU79-80jrh5KLPTvVT8FKFaxwvXLIP1NkVd2_y06Rf7Nc_RXPNtIrZ3zb6t4VkgLwhQ8ly3t9wcFpNksJiAhTpJjv3NkOcR_w31Z331hozFNgxSTb-eAUSlBkRHsIfVXqzXARkeHkX3y07Xk5tReSFkSnauJMPt_68_WJ80_5QBWiH-zF_yrSM70RzxIxRt5LeRtCjb_r4qNu4tXq23S58V99xoWNwdBlWdZRMsHhP_DavSsxFrg4dnGFtvBEC-MwjuDLrRG7cUTiMiruaHxlMczz9wvWidg1d22LyCAgAwHbzD6eV82puM10b1VFFVIX1UMf-O85YGVHBAE7tZDF0Wfy5oLb3eGGDexmo9zib1bYWMP0mpwC40wEICEqi2G0B30kIfYkgy9n6YS2W5WGM0lrsD4e41wKGi11aGL85FQVA24b2Mf1vS9GWW70o-YN-2i_sMZLDnwbCXB4l1oaiQP60uoEuF_unu9LSKXA0R3M7jWQfrC4FdQCzSxVTQvKHs7EyXbukbZl7lvZbaZkDLDOxxOgrt-ZkRrmOBn70vMd1Alq54R3ENW_k7Ml7PAdPhHKwxKgtlMzhlHcfLTqcVspqqu88s5-hx7TEbqbrpzpUkJ1UaE81gUwHvLCaoBnBZfu8Cf_BIly2">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/VLDRInj157wVNt4mBot5cZMcNWZ19ExgIqqXlWXvsMGdSNKp8vEDGekWg4cWNYZKugsYgBHOYoccQeYQFvDPDq_-XRAJD6xJqgU5SxxpNSwU6SwQAZDp6GDbPtGogp8r0zafLQFpEab3IZMosDNHS4hD6QP2YHdJtsAGVAucepcYHIWZc87aTJL2ZD7v23Ke0qzVsEz_vUjiJapfoHc2ircGNlv1YPEcIj86XdS884oPXbcBQB0lv0iF8037JAicIT90RpzQS34GQhQ6rUHCkcLHW1L52SlXJbh5FoXxmnqK6ixYMV2vCp6Lp3Z5FYyoSCe4amBJqrCcQBfZMgS4cRffO7YeRlBL6rxCrwl7_33_UBlBBohsZoDhSSCwlAvNDq3MC07xPuaNI_RY4g-KwzLZX9wYTn4y3z74D4wQpvvtWPg5SV0eikABzBjHWKIG7-PX3AkpWPv4K037vD0Ry2W3IaY9Y2rqu2jb-wvQhnux0m2JD4VIC8e9PggJG51CWaUEA2EANyntCZZUdU4uiJwLci7u_bUxjjCehF5Ylh6wBaXay8n8IaZs_uCYbcDp-Xnbu6tRZdd14-fNV2FU_-6b9xpamY_y5REzrMRCgA513qnWacDOSyMDauVykLqhy9DTw_m8Nkk4CXYDmCFkIZEPq8ewkvTxvLwqWCQXkpi8CfB5D-Q5eVRKu-rkdF3lsrQvsbhBoJelNZdq6rKKyq90Z4Wm1DR5fbilJgpFftple3dmUBl6A-N6_Ggya51C4a9H689caHTBZUqYNxoD4sldFLylm2oZ6IhE3udJJr3Jf1cWAPX40854yBUCs0NVFEDx1zR7g_ObE7fkrwKFJaLOuVT5Nlk6CD74g-haZxRurMdAe0UKd66qPOH6-pVKAyjsuTBQAjTlpiIJMEDB-usZchLNRcpL400_-TAItxomb-_iwqjdRowB3tjbQ-EqUM3jUtjoDeo9biiOlm00">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/ZLDTJzfG6Bu_l-ADNYvk5jIgCKQfLACX8NCN9iwB8pq20LlIrhbiCT4e-16Onis9nYKkkgz46KpTm3BtNxQU5gxu2yk1ge0nssNVjy_Jv-FjWAPZLP-RZI8j4fPZMCMpe8MmfCo7vI3CuAX6wZOIcS5pKLrKP7qy_880vwvRgigSB0cAAXCLkFQwnQ2gAlE24bLKQEtmT7PskPkNJqBXG4GccWRSmmPA4j2n78mIU8a0F8eg4TKXwkaOT7kw4G0JuymuZkjsyMYXZa5MT0UC0v6W8x7wiYYA7g-dcLRixF6sUvee9AAH6BYwwfLXESA6V3lImtgKm8YYZySK7Upz5Pg8qzCqpI_Jt6Abk3-Ads7WmThzRXf7y3kn3QD3Oz0DT7F3D3xGhLS8tVfiwPlkRm3qFPhkRm6imIWFhMAtE2WALJ-ta16s4BqTtYwOHDTmUfXWI4GBvwMV1llm0oWjBj72kMaSeQa60ZyFhTvsBo-ADG8hcpSBSORn4tLscCYCgL9SC_CRvRqjQ9kOwFNXvsp7Zg1IN4Tspg3nPMidQwKobMAIfiwijmNhR8ScBr6bk5PLr7LjU3rL-fMstbpHqrtxvAEP_qRp-VBgffKxfDl9yhizQt69dkvQcGl6tAXKO5RTOeVeM3MD8_jmoIw-fgTf9X84HI8Wu428e2cqq9nhO-nCsD0OkBXASVqsPHTtNypLpJqvLufhmnph7XwJO5YHcNJwjL3AlV-pk6JjP6rZ1TtrwoZWeNJnmudHtbzfZA3-ZIGxguFF84Infa6DlxoQl9kJZscjhvJ6b-qlb-NTS_0H7Min722ERElWX1vaQoVxhoeR3-26gNO5oRAHBcMEpNogbBbgxgsQtNyMnmptCCDqBM7crvqKl7xWUlYQrGKqmaFRP2WiIKIUafHvkGtyFFBV6GeyOhKrJNqk3ldkZWKNL-LLmy6GtjRF2gzINZypIA_pxzgVZFBUySsFybIkwdEva507O8G3H9RcPgD_0G00">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/RP9TJzfW5CVl-obEv5f7GNoB8TfAivTaDthdlAZq4HjAIqgPYSkIeWvHaR6fYE0RKQVP13NPt9IgtsNojEMgNs6fnQsINJxdVyx_Tyvvpb12OMKb6HE8H9GNuwpCnY0npNBI32z6O8eL4iYbS6YAJGeA8udAA3-BWFIxH5bAYXmjoIAIWVIwX65PbcPeIP1ay7HJWK2FlrqSc-R3KH4b4a1sFR54OOKL8mA2TmG09SaSabj6_Tt3VggF0B2RQSL8akppzHBlNGwYfBIAsN0qqchn8PbX62f4jTioWVwGbsgpu502nS7ldabcnQWT37W9XLS41CybPJGkAO0pQNmnPsW5y-oJfMLUZho2FZ1__6pMYsRj46igpfzPsX91_9kjOt0oYAkRvlASiPyQV3OPx00s0HGD7YR4-EbUL-gBrsFW2Nb3lGm3uyJWPD0yFcWkBkEj4xlEqZ82Uei4yDg4ffhNTofEWhvqR5QoX57VCsiLytpUM3_HJolwnZd-dCMtNutS6IxlchTNJf2OS25f4ZmZL6YO2Jb4cWHdkYT4yhUwvhUfZeRllbbQ5gTAUE_QgAWDhOYp1GBdi_hcfRv-sIod8IvBKxo0dh9yu1cX6JhKssBv_iVgjZdw_fM-Mdjq0VrEDU_A3iVIIWHEVp1Jw_TgggdEDzLVE9FMT_FtQWhdwkPMIL_Pmzc2KLrwIhStxcUwcHw7tgWV6FifGrl3rQBT0D0IXu1cmzFeSSoZ6wEqe6-Vukrp9zlIiesh5PpF6UNlUkwejVS9WgAXK-OZqqfdqFv4mlx8lm6QX0707ul6V9MWILVS1mDWr8-DUjMbSjACQ8iqGVlQNbtZecHVvaJN0mK6mDb8utP7NwqPfGMSMZHhj_ZmGj_8M5e6Vvd3o_lcpKtZEgqNpd4rRrpKBMtfZOXpTQSKE2J55Jx6po9BopPLrJuKzqqD8P5BneG_">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/NPDjJzDG5CVVtqzn8YyDmmqGC8J0kbN9M4A0-COGSsalewvhb_OEZ8Pa4mHKT8k02A8PCSeqWX2V2flmOUXjkrVx2gPT8ztUdNF_v_xFxzo7OPrYZUOoCjBJafB56iw0FeT5TK5IKZ2BPPq4597CufnCULMXaz8Z0k7kWAYfEKNaL4qX6eHl18GHJLCNE5LMDUZeYVRstknk5wVc926j45s7SAZ5aWWKAocPm6C445KraMY-qK3FI7Uq7m6uCFvQE1pkZ_IXnO23eb9_CnRIAH_HA-PvFXgFjjlolGFn6z4s2v7e90kHI90CAsbtiQSNKOdA14mZRnfVxPCgUrvs_lvbfLTihm9tL3gPLIdKLzVjtMMh_8STbXgrDRFw2KIIKKEtDK8eqS0qpipp5utQCuIkPhusE3F4oYk3NJD3rm3hS6VSemxp4M-YgyBaw8Ihn7lYD-4U6fmPUe3dSKZ6IYh4oLZNWNq_TKxsNIFaTmm9he3gxtUiV84TRbj7lwpDSxPNSIvswglhQ1ejjfCyNRA_dDMtVqAIKAndiK3-aoKdeICUvoCytqQMW0wkBnRXuqskKKMdM158mctkuGHF0KstxEMQu_8ytzpiN9IS_NLh-pSpZFfgqJefUmxNuNzkrpROuTj6RSqv-6XzADdL3Ul3ddkehSR9Lb_hpQdrOylQEhQhovwZzRre6b_TCUTKiL7RPOVRplCdThbmcI-W37vuNwTOI4CNkB6i2bZMNONLdZ33SFOhb_c2ix_EYd-QyQHRdSJPAJmZapOKFjRAujz4iUXS77iihFJIFZY-p1UQQ_QtpvVvWdbnLF_anuZjLPhNstnZh52q3whrrM9RfxjJhPtcgOi3NI1vWTTCKkRLD9cND9h3CdJvkQHGeirYWG1RMx5-djkRbRRdmOt5e2F6yLoypn_ZQDSyVSQEbkpTvQiliLFnkk1i5asZ17IAweBIEGJSU2191c8-5aZkJg4437RAP9QwPQCJS0lCizVsEuFLjboa17HgKchELRcn61ecYfZBoFy0">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/jLLBSzDM5DxVNt4csf05ZkLtJF0G6oiiQCCqj1lAGh5kR3Mov97aC1Hdna0U3Wa9fGafXZ9sUPaP7gQTPXoZbly2lfAzybzehsJ7jWAhqkqzvtpt-xvxphbdD9rNzNnMGjgYAETubS-2bk45vOeefs61bpGy517m0f-NT4wHzJdnHmoiVoYeAdbPI2YgZ5LWlKE1QLLLhYGKIL612SI3mP3V7RoO4LEBCjOqO3qZa3Ybyt9Qmd0D0SGLLS1g3sWoCEsFHn009TCxOrasuWkZvI44MT5xnNngCTsZQ2Tp71TFnjsmN70owOsx80IiuHpu8iFCU7cH7WQzI1Tr2KCkFo-9ALXIH07IAiRwYN6u1dDNDHrdFKfUz-HKKTOb-SJOEN5i_1GiVomMoQlzzgqRLkNwn-BrzlixxUgMkNz06etE-exvjj9gR9FAcbLUQJMVj9ft4HguCJOr7xEQxwtQfbafTOro_qAhl69MIgJnV6fYFZO6l0RSDy1m4MwQIzWk321clBO57CV19JGr7_lmKmNQxn-GrQVclKFpZpsAW0gdWRmjTcxMoCuldVMTThK6cgJeu8K2w1bHWm8oVxxT-kkXkLUtcPHQZLkjHjEib3hLWwwnWGfJ3EVd0bme1jQB9XJGvL4Mh9j5zGjUV3OPYap7u09rVavNCPy5OknPkxMkKHgyJDVOW0AQIj46Y3A-OCYVZCToUItJDShjD-_8UjCghtH-lMyMhvDN--RhFqdHc9gmqsDkEJwtdD--l9mvNQMpUQI4DfIZeV1Vf3fz1mph1_Bca3HthV9AxwxFgVMxrJx-lxh6JLd9WPDDIJe6bCZE3NEltZKskiOMMRiDD6d8ZwvHChUVchi7xU9grzWuqcJUgpip0_q9TKIF0zdU9ANwqPpPtBRCZUVjwXPvlKNkR1FZaAmttQu4W4ackBDSiE_A4-eA79jHfvgIVV28bEhj-arhjzOkhgBBQDazxCUt0yNyrpa1PnNF38N6QjVOi6S-SG6OP9BpSPnhvXFXqGTZmi29M19Kl61JXDF0H3pC92e04u64n6iQ5E33sbrWM2zygoz4e00_y4lyXCJBwGcdh-o-OoRXQpwBfsNXujKSFYfY-qLANhVp-W5VFt3UXXELYQ6NEdLiJIHOLwlHBkttPeyu6q1zz40V_Ppu2QYW6oe8Ns4zeupOm8Oy31kcojYGoud8Y1EZr1qpsF0dtPZi5_OQRTWHtv6_9yuFEMnBF3N-dItZM5UGojhHeZztmPR5SZxNey_QApOPI8RW4XhP3syEss-hQ6H1WBFXhF8AAHfq4aVDc_KDOVNta0rZ3o75whnuP-tT9mzhvDM-zV9Pg_5xkrfpa9OHcl72IK6v8f-CqTKV1MyKqbZNT5uNKy24qGmxYFiW2lueI4AABYKqunk4_125O1H4UKbPn4kYgkTv2HWsY6RyWwG0H24I1HNhULL65DgZYkcCxedHGOX2vzazysNLcMTp_w3z_B7vw0wzPf36-Z-Vvn_E2tukxtkP_BrFIdLOqlbv2KEhiMbMrb4YFAYUfKOu7ytmB-Ey0Q8S1gdK4r9wGDuroU61OpN5Edaf8me2bY_RsYblk-xOSH3DikxJMHywWsKXdvN-0G00">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/ROzFQnD16CRlyobUs8iUskoVRFvPGhDhvcI2aCIBb33DJ3PZPcUMsOcr5S63u45G3nQX9xrvBNXe8H_7M7BoAqYs6x9PUXkUt_Cyyxp7gI7QB6A1qZcN2T4aXdH6g3hZCe8f4Iah4CgcP24CLj8C-0K3noj0hHQIXafBfi6n2w2ZjJeBbL0Qh6hW-pMl38SpFfbBbgRW7EvLieaXCX8CtYA0G6dAT5xKh7Qye840DcDopN6SXbj7xmeDKfayJ2RpA9-OcJ76GJSersA_sRM3KWLbAKl0hHQN4JdVYBwD19iQC0eqZsO6AD-CvaeYmurWiBgvMN_yylVwn_hdxP_RJ-lll--kFgoMbtVVVlrRNbcE3prcPefgDeNLzULg-NxrzJD2kyjxO8NrfoxkmajqTDgs7F-eSjhUfT1ppQKP6Cr8V9XitaAYaq9125RNxjOntXRKie9Ga3JTC_Q7PMSzS_P9p3gI3iyJjkSVEM1X3rTnRUjlPFwHcJRGA_AQLBYg5DRjXzrokBaBFtJ6o2i5N7iNUFGi-qyG6LK6HdCPFNdy0fsW7XmSj2645amsvuwvfEnDhlQ7q099OZOcaexDUS9o76Puv6pnlTeVtilkmx87BQ0idMYU6ALpUCmaNSJYFm00">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/fPDDJnfH58RtzrUSX8qki0m3g5D279JPTj7kMXSZN63AS8VC32Mfc93M3r2qMZyQFmDguqVIQjlKZeZnlzYv0wpu2yqWJGTMJRkwoNdlUT_ddDmxfkcYgcVJCj9I4ic8gfW6BId6b9n44X0NPGqxb1YEYrbP5nIYFvLUOs1OXwWgMH8RLrI2LM0y3e5NLIKthiYA2YvVsEyFiFtYiwGKJH6iQS0CzLZYg2wIX8nX6W645JM6rQxHg8zdmoC8m8RfrXY66V4Eenc70r7qRhCOJIMwY9tBWY248-5-My4_6l64-onYMCCPy0QSP299sKMV1-cIBcDuClKIHtL8YoayC0ZJe68zgn8WEDUL1WOVmypFGi6wU6VjLwtoWdbpR9LEcjKoNLrfxCnQwylcxPwrUMbLYWZzcPptT5W5GO3dA3WLkb-hGFDkbyvzjBQkhM-RmKTJ8UHiRjUBfh5e6ZMhKcnLhzhr4ie7NG8h-8H021fdDSYZIMS0qnzG_LlFYKXWX0-1YkDmF_--EsYxNhJspcbndvuiqV9Mkrw2FAALUTDOf3--qk9yQswPNbmtlrJRzJBzzC7w_DqqQgtTArgezu9v-y4E_m4iZ_BTqpIEJUESrZSR6wTMUO6khj7LicaKx6A7fpUTxKy_-j-rTCRlMOjrCDigLEZsgOsqKZ9hzfPQ-uUjDqUcSMuxs6stw-Rj7kX9IRCJUY1zu8gC2nE2_pVaiGq9j7Hc6akDdTaEHFDkW-uUD6wscvTl6nkdpS8ScaIy1zogb4Zgxf3z13ZmS9tNwl8Ydd58Nk20vI2MpI3U2-wOaYDscGKEV1n8v9MImbe6HoLH1XVpWZnCEnIKYAI71WOHpu9Rnl6Ebmyu6EP0VFWSQ0oJM3Oj_m80">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/NLJVKnf947wVls8gFDw5K_5N4aC5aArOuInBeoyv7rPOSSCwQ-skPoefg-2C2heAUdgKg04l6ecde7M9GLZqVxbipy8J_yBLiaJ1j-dfxc--_hfxdiaAAocpqmAIGpoPOILs6ijJR42SuqaGJxA2p3Lv0jmaEoieZ4YK4VujXziTJKv9d2K1ZoWHJiBjRKqEboI9SnvH42LiwtHtTNKxxZjVJl7-4E5a6RVRMo0vlyAIeC3XTmXZjoW5EAa1zAZJvN3t8enDCesxzlRsteuUDD-4G4IbaSpwGy46nNemmp1kh_i-BDFroDlclWSHu6Hk1dTqDpDZISYyT7GZXLS43kk5i5uuCIvAUcczylS_i9AfbCiGFJVFQuLAkOpGNJM-Vcppjdbx60Q_GdqJJYkwxvS99yO-aGtm98Ye6eF5R7Kd0RaK9DPex1gYvt2MhApyGRz6QbhqDIjz3qUCtHoKjyr3USCexNqFHs0bIyCHOojDeucQ5aCqSr0zKN7R6u-ByRfTRY-6JTM8HUdUASI_8LXSC3uNgyalrMKLIaKyG6I59NxkXS3ASarJ8REa5rPCpslsTzOki2HezvW-3FchoiK16cygx47VXBFwvpLTFseKmvCGJu8FC2jZtmjiOteP5-EfD-GkQOp1jdwtryLuBJMg9seb7x40nZY9d-JzhCAB1D6C1bgSVWpJz17-2LjY69c8bL3JKWZ2QLZvZ4SKrX_wbPrvoKu87AQP0kIlQ3vEzm-ekgoN3Y6s1ebr8_NUk2Z1XrKqti9dQBYL3omlmU6onMT8uim1gDFH2yNg_WuDH-0iINDV8RfKNLopjApt8rVTlOImXcI5LNW_vec2t-2dkEi9nlyjRM9CpmvfyjAyUuhRxd4O7laXrXE19vmzmCfJNA1-VjpHrUtmkYrkbUEFz4F2uZRCoQ8mMwTcd7w2-3VGjesjRFqnO_SBNJ-oBX1DNjAzebvOWzqYv59e7CqtzN1W4DlwFOp7szCeFxeFnwkW_cMzCa1uXMS5_csZ9x7Zoe6A-_m2JtZ5MTDIbYQLhwiGrc1JnOtotyrZs4_MD9MgCLfCc6qxA48nZffbwAffkt2OCeetHdOL4YfDNbQEFq5yGxzAG_p4UamlXEbfwzoDcd8vc4wcs-Aibs-ChQn5U5GsrwabsjSQRIre8ve8ZGM4N4g_Ya5keJ4draRlP4tTuldAzRL-jGg9THghcmjbY6yOMsaqZf2l7pyCY7FaeHEFCMYCkRM6Xj7GyAqrC8W61c-jqH4qEd9d-Sn8kyG7fvHNDglZutQdEHUFCSJpUka8zhBMgj7avM-4nXCGMxF6mGIo_yZwcOZcPtMRN5VIpAVhsSfD6gBdD9sutGpZzDIIrvAw3btJeiz5PMH6LB2HUW-H5Frts_nOdd4aC3ij_0y0">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/XLLTJzjM6Bu_l-9LwSKcH2052kreLDl4MbafI6NZeaBJIN881iVsRDDscohHba022M4CrWL2HQMoCiO8sRgHXW3_fVLnaglyXUdO0HowQNV7p_lrl9--RPXODwTZCZAc94N3Eew1CO4ZwYD9YS8ubWtYaKJ8E9wMJL5LpFlITmJydHwXhauh4K7L5QA3lyCZu7HTVIIeigf3InVVtNszyx9mP48AJod4CC3lQt99mYPMeZA1xn40h-eHeZSStUZYElbU1C38D32_tzzxhGSzyNXGLBDXZCDJqGP5HraKHJx8NtOhTjy8Tl2NN4I8GJJeykQaOsNA0RkHAPaoWO7-B-16ArJMPok58xgmLJq-fjaTMdXMARsfbnFsuXxD7DRcK_RFUJktP-TAZiKrFz3zb_PVY_Lo4g6BTFcXeH5e4ODYfz033r1VA42NytHXn-iRU5Kr3LF7MbzxA806lXe4EXUlFTy1eRMLkQqi7TJBAPhRWG7y48CR7Ff20MLQbXsRIVmG-qBO853vFMbl5UdfStld5TryWUhbn7rJbvIeBonZm_15YIcmnrqLHuZ-oQTmwnOmDuptc8Vuy5rk15g27S4UKMmGV_SdpHmq4H-MiJckwZ67WyUjSVLCuW5TaiOtyeUPfyxpSKpsXVLlDLDbh5tt5wpFj7tzs2JmVcu5j8PFHhLF2h2ozmBDB5X7spIPhfVNxUIljB3Mn33us2IA8QaAAw23mgHEscKfr4uUcttjKg0fQsvu65hw1L48ddMhj5fPRUuMfsaVvyjfcZTLfzOQDYU0hgJSdAg7UNeoQnKNtCbYAGxhQiXD3MlQvGPSwGi5glExT7_TUfVq4c31w-K4pUHhCqcMLk6PlNP0Lr8qCMUlvksr0wkOhcMNw-MDwccsDf-oZhPXH8s5iGbMiMITi1cz0jW0uSlxplg8elYPB2d45y7618auxvlkNZehTq5A66G6mQxWTQ-1Mof1ZSLK1Pfuegi2DyBTlNEF-_hpeS4WgtkzdBAJCtOk2QCa16vzQRnWbNv3OqsnHhd_ZZLAGfoc0SVMj3dWQ91lktDFR7SwG8mFCq_F45aA8NijRizcQ2PTFPstDxVhvVLQzhMpmExIi3g__gbUJY4QJz3S3cl0OS4jevqySRYVMCKqJHpGkNJjnJveM2UAUPaw_x_K-O-fLz_CqaIMBgU0gvStw7BAAivOnLt6QJcDQ2RF1jsrc2_Hp2yDSJ9Xv_RG67g2aBEqRTDQMy0zF3VFwB6vTd57vHmN1XimKpX7Hxa6AWnwGFxVG0xQ7an8aGXHndGfEc6smIYFa7EidMzGnvsG2DYzefcKLVg3lbcrtvuuAGEy_s4BxDM_QUAWcZ-q2yzeF66LNbUEicSXcCghnWUSLz_fHDfjZriJfZYt0ixPaB4IzGs59adO19hPfPbyzVcnlRbTdT-zEBO8GUFOrylhT2vUETw_EFVnH2MtI5DnMdXfbPReZxjMSTVTOpOS09MDj_RIjikqil-gUfezL_3s5H4bulowq6sYHAPZyZy0">
+<meta property="og:image" content="https://www.plantuml.com/plantuml/svg/VP9TJzfW5CVldqzn4c_mPX7nPO8n2jAB9KkMRDbz0m_IM5lJbfbjMK9KX6fX90g-eK3c2veeR2wAKFNBy3njh_WAIrjCy2MxVSuvl_F__yypBIkif2GMU2JFSy8YAx4B8CVPgBZ42NCGOtaPzrMYECOcU8KH1UKZzms3rzTNbCI440s9ae0by0xr5MOaILmAYRmemS18S7HqpFUy-2dEHUO5BClWVVC4YICAAypn6BuZWA0eHR7K0qsCpFY2Rn60BQRtvlLwtmwFenzz145KUiDiP7wk9z5fPXWc60u-npAZ4-6Xu1F4J4JXld3ArnU4S9WPPfZNEbyH-h9hbcCNH27wKbYOyON6_pFmYbw5KtWCT7sVf5j4NoRD9iddkhhsxlDxeCaShTnGzPuShHhvDR9RGyYvElBt3o1MYKlY4j1CqNp8crMDRbzRMxjclHv04bx4h880k1XuoDqcKREqU4kl2iRUgZjjLcjMMklg6YsffhP2zl-Q9sl6Vj5jXWyXr6bk6R_Rv723QBTMAclihPfLZUItktgvgsUeffhLMgTvOLLRfFMJbe-fUj_LrK5GubW03osfWmW0m4-RAUEiHJUpdRiIBJHe9TFLDPBR8AdZddEzO6pLa7bpHJ8DK5Xf3YjWj4-DzWLLJysg5e39oO7P41CAZqzDEL1P4HSH0EPb31xwfzgtpR7fWets9ZqeszlqMpisDuTAXZHF4IdLpCQAiLKpaobh-PULrgnqbXORRi816ov4kLWlILYASpm6Zz5wC6eRj9Anqfhvi4DBgelhwkL1u6JNjls7mMESjJgjjK7axxIEZFOkBPtJRC7CtVGyFvxMle2wIR8DKbcZbGnoDxZA7TyC4nu9ZqrD8UUKbojqfqvBIPBFTPh9JlFSEZWabncwVkGEEa9w5zYfsvduxIzb9PEsgoSyDpoIFt6wIEgwqou-RhUpTpzL0BavE8bFOo6QME3_0G00">
+<meta property="article:published_time" content="2026-11-17T09:00:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.924Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="JVM">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://www.plantuml.com/plantuml/svg/jLPRKnD957wVNt7AF2CcuU9ILCfaCWDQ0Id8MhMA3qEcXP7GavfCS7MbAb6Kkt6Bco1gA5R9kY9cTJMIW0_xKqZF94_yXQtk3aCIsAfzSFEMxlDzvplNwKjnKp7Cn5XKY8zgEAOOoXZ4HnHLlwFXORYbHEEevaP5jvH4r9HrR0vezn2ulJMNXfx0ggWR61dWlb1puJSC_OweHtK3N2s1rjOsR-DbU4IBZ68KZuFxV1qbYfWA7euY-4K02EY6YemgqGyjVc_WeW10nLJFt6xtHK-xC573W7KLnL4CF9vQMWMFqaDlYo2Sk3ZNEUJhCX0oaN4-4bNYySxc8TyvKE8GYSR19KkoLsnl1DYv0fdDbFVtoSvJ-sF1BhoYA02H4a18LrIQnu74KFnkt4HZZ4uCWKkIP8yiix1g23dL8AxYc7N83IwP_UfjAui7rfFNWpYauL77rdEsBPb-GRRdoFpA8BwCDLDJejeznTHqp55U1pKXXDpGP6Z38sQJ3q8U8UIf-UjjZBxyxMbvSzvQ_MmjVx0MtfFvFHvzVmARsXY2e68gu3UG4cUE-eD-SCaNPRyiDaPEKxdtpSxEsTifQsE6q_GX0y8Z1bBKe-AqjPikvTzoer8-MIhi7nLd66rV65oIA0VbLiPQonjsaWSt1CS7k2c_SB_J5GZ8xS4BFh2pSsGlNNw_QIr_86jPw1FXFhsNByX1kSK7dKE-Aygu0bPccadZbq6fxQBVHmz9VXkyL6HckhBv-QWuJ_ONoSo2jVBL-hXyL9pXWA1Rzakj3i1pvgcRdqgjKhiKy86ryOviVE14LcOQxWit6sFqd1cZvxl4s2Yv9iQPxoJVUwRytlz3llkq_FykLEw_pfG6f01NUbnti9OEo6_RnuAFVP9Sil8mIzBFAbFfycOMQkKiBfJsD-ZGK4yddSIxniuLdC4Y-NnbActbClRw92aksqlPghA9VvaVyYXNslk3py_0Y68WDZlBdqhvjt3bMW_KZyv0Dml9BNjEZGwb99d7dAaRAR6ZuZhP_LhERHucKzRo1ximUPXCaPrL-zsRKlvFH-XXCcNd2lRwPEN5ciKChFT_CMVTah-lY_gJMgIsghzJ7hz-AkyNIeKjP_d-rDKWiG4agOYlCIaezT8rBGQ3thCC1nB6k3Qk6_3tgeS7_sF_jGR0n9cYoiaK-VgfAceGNusgq0nXX1C6KXdJrL0GN7BGt-ANXHEQUfBAYvTEEdjrt4HJoi2ztNMVWzD8tfJESktMpO6ORj9oF7fe_xvNMVq4FSXKuZ4bWauMPQvGN-eUFxYa2r9xZPjQH_rXiQz-44_t8EjmEdx98ZH3G-a5ErSuFAutRH6csbwVjD-z8Uall7c5NcKC-R4QlXj3XycKXiVrKQJUnSgO5W5xPwOwTFNIUiIhGQbU6oSl5RRiJ8gf8ZkhvTa7TYP59HGVa7o-l9azJAQ4ykOyIN_XVmPC9JBQeyJ2ob0KEQxEhZddjekBPESPBxkegmX49JA21l6Los6mbrvPqq_jzKc-EZY0V-35urGxtJ0XJ0ZXcayhNIOTrSN1DnBV9aBO0qqtHZHLHVWcDuQmLs2zxO1PutP0ZuPr0xf4WVrtRcapTe2rDaSMfWHMraP2bb21IZX_m-LfRVDAWPldVRm5Eg0pGbzJ7TKB7vdDMiaKVsrqDhCx7mlbc5JLx-0cDdr2sDjuB8gDRmPhPflMfBXiBJxX3ItzZ289-Xe12Gzh6F5fvXLlbuAd7aal7vAD0slfS-NvOxAM7SHT8aCCHzXk2GPRw-tBsrkLgLbcUHcRo8WPz8d781hxVpQCbRYuKjxzbK55DpI3o1V7RSrqC1EruTLzH9wy9kcjGNobzp87OGrSibTkaTjEGyZUuY3kLKnj74586p8KGqFypOIZ3agWxz0cbbSVXDpiRLQVRRd_kX3oEZRLWj8twgE7rIVQupNowBMpKOJX23GbOaxNaESlhQNF9FEuCZLVoY-Gz6xvu81-UjZY5whvuWW-bXrGtYsGz8epW0BD3hSGHKh9FTRCY2199zrw6si2JOrpWAF29OJLn5Zq7m00">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/jvm/">深入理解 JVM</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <ol class="tree-articles"><li><a href="/2020/05/07/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E7%B1%BB%E5%A6%82%E4%BD%95%E8%A2%AB%E5%8A%A0%E8%BD%BD/">深入理解JVM-Java类如何被加载</a></li><li><a href="/2020/05/11/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E8%99%9A%E6%8B%9F%E6%9C%BA%E5%86%85%E5%AD%98%E7%BB%93%E6%9E%84/">深入理解JVM-Java虚拟机内存结构</a></li><li><a href="/2020/08/05/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E4%BB%A3%E7%A0%81%E5%A6%82%E4%BD%95%E8%BF%90%E8%A1%8C/">深入理解JVM-Java代码如何运行</a></li><li><a href="/2020/08/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Java%E5%AF%B9%E8%B1%A1%E5%86%85%E5%AD%98%E5%B8%83%E5%B1%80/">深入理解JVM-Java对象内存布局</a></li><li><a href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/">深入理解JVM-Jvm垃圾回收二三事</a></li><li><a href="/2026/11/17/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-JVM%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84/" class="current" aria-current="page">深入理解JVM-JVM内部结构：从 Java 7 到 JDK 21</a></li></ol>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/jvm/">深入理解 JVM</a>
+        
+      </nav>
+      <span class="book-position">第 6 / 6 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">深入理解JVM-JVM内部结构：从 Java 7 到 JDK 21</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-17T09:00:00.000Z">2026-11-17</time>
+      <span>· 约 23 分钟</span>
+      
+        · <a href="/categories/JVM/">JVM</a>
+      
+      
+        <a class="badge" href="/tags/JVM/">JVM</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><blockquote>
+<p><strong>参考</strong>：James D. Bloom 的《JVM Internals》（2013，<a target="_blank" rel="noopener" href="https://blog.jamesdbloom.com/JVMInternals.html">https://blog.jamesdbloom.com/JVMInternals.html</a>）。原文版权归作者所有，本文<strong>不是译文</strong>。阅读原文后，我按 JVM 规范和 HotSpot 的实际行为重新组织并改写了内容：</p>
+<ul>
+<li>示例代码、<code>javap</code> 输出和线程列表都来自本机 JDK 21（21.0.9），源码可以直接下载：<a href="Greeter.java">Greeter.java</a>、<a href="Probe.java">Probe.java</a>、<a href="Threads.java">Threads.java</a>、<a href="Priv.java">Priv.java</a>；</li>
+<li>图都是我自己用 PlantUML 画的，不是照着原文配图描的；</li>
+<li>原文以 Java SE 7 为准，本文在各节标出到 JDK 21 为止的变化，末尾另有一张汇总表；</li>
+<li>英文术语以「中文（English）」的形式标出，文末附术语对照表。</li>
+</ul>
+</blockquote>
+<h2 id="0-全景"><a href="#0-全景" class="headerlink" title="0. 全景"></a>0. 全景</h2><figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/jLPRKnD957wVNt7AF2CcuU9ILCfaCWDQ0Id8MhMA3qEcXP7GavfCS7MbAb6Kkt6Bco1gA5R9kY9cTJMIW0_xKqZF94_yXQtk3aCIsAfzSFEMxlDzvplNwKjnKp7Cn5XKY8zgEAOOoXZ4HnHLlwFXORYbHEEevaP5jvH4r9HrR0vezn2ulJMNXfx0ggWR61dWlb1puJSC_OweHtK3N2s1rjOsR-DbU4IBZ68KZuFxV1qbYfWA7euY-4K02EY6YemgqGyjVc_WeW10nLJFt6xtHK-xC573W7KLnL4CF9vQMWMFqaDlYo2Sk3ZNEUJhCX0oaN4-4bNYySxc8TyvKE8GYSR19KkoLsnl1DYv0fdDbFVtoSvJ-sF1BhoYA02H4a18LrIQnu74KFnkt4HZZ4uCWKkIP8yiix1g23dL8AxYc7N83IwP_UfjAui7rfFNWpYauL77rdEsBPb-GRRdoFpA8BwCDLDJejeznTHqp55U1pKXXDpGP6Z38sQJ3q8U8UIf-UjjZBxyxMbvSzvQ_MmjVx0MtfFvFHvzVmARsXY2e68gu3UG4cUE-eD-SCaNPRyiDaPEKxdtpSxEsTifQsE6q_GX0y8Z1bBKe-AqjPikvTzoer8-MIhi7nLd66rV65oIA0VbLiPQonjsaWSt1CS7k2c_SB_J5GZ8xS4BFh2pSsGlNNw_QIr_86jPw1FXFhsNByX1kSK7dKE-Aygu0bPccadZbq6fxQBVHmz9VXkyL6HckhBv-QWuJ_ONoSo2jVBL-hXyL9pXWA1Rzakj3i1pvgcRdqgjKhiKy86ryOviVE14LcOQxWit6sFqd1cZvxl4s2Yv9iQPxoJVUwRytlz3llkq_FykLEw_pfG6f01NUbnti9OEo6_RnuAFVP9Sil8mIzBFAbFfycOMQkKiBfJsD-ZGK4yddSIxniuLdC4Y-NnbActbClRw92aksqlPghA9VvaVyYXNslk3py_0Y68WDZlBdqhvjt3bMW_KZyv0Dml9BNjEZGwb99d7dAaRAR6ZuZhP_LhERHucKzRo1ximUPXCaPrL-zsRKlvFH-XXCcNd2lRwPEN5ciKChFT_CMVTah-lY_gJMgIsghzJ7hz-AkyNIeKjP_d-rDKWiG4agOYlCIaezT8rBGQ3thCC1nB6k3Qk6_3tgeS7_sF_jGR0n9cYoiaK-VgfAceGNusgq0nXX1C6KXdJrL0GN7BGt-ANXHEQUfBAYvTEEdjrt4HJoi2ztNMVWzD8tfJESktMpO6ORj9oF7fe_xvNMVq4FSXKuZ4bWauMPQvGN-eUFxYa2r9xZPjQH_rXiQz-44_t8EjmEdx98ZH3G-a5ErSuFAutRH6csbwVjD-z8Uall7c5NcKC-R4QlXj3XycKXiVrKQJUnSgO5W5xPwOwTFNIUiIhGQbU6oSl5RRiJ8gf8ZkhvTa7TYP59HGVa7o-l9azJAQ4ykOyIN_XVmPC9JBQeyJ2ob0KEQxEhZddjekBPESPBxkegmX49JA21l6Los6mbrvPqq_jzKc-EZY0V-35urGxtJ0XJ0ZXcayhNIOTrSN1DnBV9aBO0qqtHZHLHVWcDuQmLs2zxO1PutP0ZuPr0xf4WVrtRcapTe2rDaSMfWHMraP2bb21IZX_m-LfRVDAWPldVRm5Eg0pGbzJ7TKB7vdDMiaKVsrqDhCx7mlbc5JLx-0cDdr2sDjuB8gDRmPhPflMfBXiBJxX3ItzZ289-Xe12Gzh6F5fvXLlbuAd7aal7vAD0slfS-NvOxAM7SHT8aCCHzXk2GPRw-tBsrkLgLbcUHcRo8WPz8d781hxVpQCbRYuKjxzbK55DpI3o1V7RSrqC1EruTLzH9wy9kcjGNobzp87OGrSibTkaTjEGyZUuY3kLKnj74586p8KGqFypOIZ3agWxz0cbbSVXDpiRLQVRRd_kX3oEZRLWj8twgE7rIVQupNowBMpKOJX23GbOaxNaESlhQNF9FEuCZLVoY-Gz6xvu81-UjZY5whvuWW-bXrGtYsGz8epW0BD3hSGHKh9FTRCY2199zrw6si2JOrpWAF29OJLn5Zq7m00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>运行时数据区可以按「谁能看见」分成两类：</p>
+<ul>
+<li><strong>线程私有</strong>：随线程创建、随线程销毁，不需要同步。包括 PC、Java 栈和本地方法栈。</li>
+<li><strong>线程共享</strong>：整个 JVM 只有一份，并发访问时要么由 JVM 内部加锁，要么交给程序员同步。包括堆、方法区和代码缓存。</li>
+</ul>
+<h2 id="1-线程"><a href="#1-线程" class="headerlink" title="1. 线程"></a>1. 线程</h2><h3 id="1-1-Java-线程与操作系统线程"><a href="#1-1-Java-线程与操作系统线程" class="headerlink" title="1.1 Java 线程与操作系统线程"></a>1.1 Java 线程与操作系统线程</h3><p>HotSpot 的<strong>平台线程（platform thread）</strong>和操作系统线程一一对应。调用 <code>Thread.start()</code> 时，JVM 会创建一个 OS 线程（macOS 和 Linux 上是 pthread），之后什么时候运行、在哪个核上运行，都由操作系统调度。这层对应关系可以直接看到：<code>jcmd &lt;pid&gt; Thread.print</code> 输出的每个线程都带一个 <code>nid</code>，它就是 OS 线程的 ID。下面是本机 JDK 21 的输出：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&quot;main&quot; #1 [6403] prio=5 os_prio=31 tid=0x00000001032c1810 nid=6403 waiting on condition</span><br><span class="line">&quot;VM Thread&quot; os_prio=31 tid=0x0000000b6a84d800 nid=17411 runnable</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><code>#1</code> 是 Java 层的线程编号；</li>
+<li><code>tid</code> 是 JVM 内部线程对象的地址；</li>
+<li><code>nid</code> 是 OS 线程 ID。</li>
+</ul>
+<p><code>VM Thread</code> 没有 <code>#</code> 编号，因为它是 JVM 自己的线程，没有对应的 <code>java.lang.Thread</code> 对象。</p>
+<p><code>run()</code> 结束后，不管是正常返回还是抛出了异常，对应的 OS 线程都会被回收。进程什么时候退出，取决于<strong>非守护线程（non-daemon thread）</strong>：最后一个非守护线程结束时，JVM 就开始关闭。</p>
+<blockquote>
+<p><strong>JDK 21 变化</strong>：虚拟线程（virtual thread，JEP 444）不再一对一绑定 OS 线程。大量虚拟线程轮流挂载（mount）到少量载体线程（carrier thread）上运行，阻塞时卸载，所以「一个 Java 线程 &#x3D; 一个 OS 线程」只对平台线程成立。</p>
+</blockquote>
+<h3 id="1-2-JVM-自己的后台线程"><a href="#1-2-JVM-自己的后台线程" class="headerlink" title="1.2 JVM 自己的后台线程"></a>1.2 JVM 自己的后台线程</h3><p><code>main</code> 之外，JVM 进程里还有一批自己的线程。下面这张表来自 JDK 21 + 默认的 G1 收集器，用 <code>jcmd &lt;pid&gt; Thread.print</code> 实际列出：</p>
+<table>
+<thead>
+<tr>
+<th>线程名</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>VM Thread</code></td>
+<td>执行必须在<strong>安全点（safepoint）</strong>进行的 VM 操作，例如 Stop-the-World 阶段的 GC、线程转储和去优化。安全点上所有 Java 线程都已停下，不会有人同时修改堆。</td>
+</tr>
+<tr>
+<td><code>GC Thread#N</code>、<code>G1 Conc#N</code>、<code>G1 Main Marker</code>、<code>G1 Refine#N</code>、<code>G1 Service</code></td>
+<td>G1 的工作线程，依次负责：并行回收、并发标记、标记的协调、记忆集（remembered set）维护和 G1 的周期性任务。</td>
+</tr>
+<tr>
+<td><code>C1 CompilerThread0</code>、<code>C2 CompilerThread0</code></td>
+<td>JIT 编译线程，在运行时把热点字节码编译成本地代码（见 §3.4）。</td>
+</tr>
+<tr>
+<td><code>VM Periodic Task Thread</code></td>
+<td>定时器线程，驱动采样等周期性任务。</td>
+</tr>
+<tr>
+<td><code>Signal Dispatcher</code></td>
+<td>接收发给 JVM 进程的信号并转成 JVM 内部的处理。比如 <code>kill -3</code> 会触发线程转储。</td>
+</tr>
+<tr>
+<td><code>Reference Handler</code>、<code>Finalizer</code>、<code>Common-Cleaner</code></td>
+<td>分别负责：把被回收的软 &#x2F; 弱 &#x2F; 虚引用放进引用队列；执行 <code>finalize()</code>（JDK 18 起已弃用）；执行 <code>Cleaner</code> 注册的清理动作。</td>
+</tr>
+<tr>
+<td><code>Service Thread</code>、<code>Notification Thread</code>、<code>Monitor Deflation Thread</code></td>
+<td>VM 的杂项后台工作，依次是：内部维护、JMX 等诊断通知、回收空闲的重量级锁（monitor）。</td>
+</tr>
+<tr>
+<td><code>Attach Listener</code></td>
+<td>处理 <code>jcmd</code>、<code>jstack</code> 这类 attach 请求；第一次有工具 attach 时才出现。</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>变化</strong>：2013 年的资料会说 VM Thread 负责「撤销偏向锁（biased locking revocation）」。偏向锁从 JDK 15 起默认关闭并被弃用（JEP 374），后来被移除。</p>
+</blockquote>
+<h2 id="2-线程私有的区域"><a href="#2-线程私有的区域" class="headerlink" title="2. 线程私有的区域"></a>2. 线程私有的区域</h2><h3 id="2-1-程序计数器（Program-Counter-PC）"><a href="#2-1-程序计数器（Program-Counter-PC）" class="headerlink" title="2.1 程序计数器（Program Counter, PC）"></a>2.1 程序计数器（Program Counter, PC）</h3><p>PC 记录当前线程<strong>正在执行的那条字节码在方法代码中的位置</strong>，而方法代码本身存放在方法区里。在执行本地（native）方法时，PC 的值没有定义。</p>
+<p>CPU 也有 PC，所以这个概念并不新鲜。JVM 规范为各个运行时数据区规定了可能抛出的错误，只有 PC 一条都没有。它只存一个位置，大小固定，不会出现内存不够的情况。</p>
+<h3 id="2-2-Java-栈与栈帧（Stack-Frame）"><a href="#2-2-Java-栈与栈帧（Stack-Frame）" class="headerlink" title="2.2 Java 栈与栈帧（Stack, Frame）"></a>2.2 Java 栈与栈帧（Stack, Frame）</h3><p>每个线程有一个<strong>后进先出（LIFO）</strong>的栈：</p>
+<ul>
+<li>每调用一个方法，就压入（push）一个新的<strong>栈帧</strong>，栈顶的栈帧就是当前正在执行的方法；</li>
+<li>方法正常返回，或者抛出了本方法内没有处理的异常时，弹出（pop）这个栈帧。</li>
+</ul>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/TPFVJzjM5CVV_LSSbPVs0KP8mkW4KHCIJziY8P6A5yJ39RuaLXmRNJj3srB9urVC22GJOKE1Lg1H4LLgcsfIPS25_sNplKwUyYzCr_7Q95ibovRFEVTpl-TxptsY6uWOfQ8Yw0LPNKS45K7F8qdRaDKSh255nmCP2Q-XacA8ccfav1ynXC83IQALL6bU8oec49eSICG9qJRcDKKZC1P9HAFJuT7aqxoSBQXOro4qCOJ4MGEfEGN3Jm90GYCI9W7eSIGUJim805nC40k5GZDJNmhF1WYgPWIBKRQG2oJwnQ8e9bA9KQmOVPoQJ8mW9ApZTGWFzaIGMk31oAHWo8Q2mRkvzrhxxDnoxKFNDbtx5Jktg7tbDRVfxavtgzLpBFVs9NnDC3OmcLX7HCSFCmQHrTmZSEqRzsw_v-m9mgUUCq-_Wx7Kl9WKex0ipAx6-dj04SagUCrj-1PzZu2TMxDVhCPwZaNhXvtxKxfZqSeDHvLdnyHaQdec7eFPrLXV3WpjonS2_BLRvvJknVkUKwKVZkZU0Vljclrv36NEI8R4U2eQWm10Ikh3H_-RuRe2yl8ABraPxER1PpJ0HuUucWU0T10NOKoS4UFYl7zqdnZf9V_SH57i6qBVcTsj5gsTT2krpeKFWBIMHGei8IAZLGNhFSTIU4IVY_gUp86kQ0QKvu3kxj0trxmJc8Go67bPztz2K0Q-ZDOssN6xv-pvqIaeztL_enfSidTxn5wSzPpJB3AoUUXMgkpaBM2_DWnbw8UfjSiQRxtcTkU-GKzVKDE1yP1V4u4ohCagKfGVW3gRrBPfvORM_c3DJVhwX7lY1tqN1orOo0nRm8uEt0zdxBWTp04ih6E2L0ao1ieMUewby-_SrBy34HOZudGC_ZRDZq__C3-JOMSclMpIUfNz_furxc0ANFiLDPqHMSdqoCdyqcBcpzsZEtRuaiiIMBL2wx-2X8lQH707mFUbthdWR6hRtKgDlJiV0I_6Xy61aMTj-jpqNkzH-uhtVl36toH8rW_vsse7izgjL3ljBQ_HyZQllUQsQ--xjicUNx1gnRsz55Q4Pq9w2SQNyx8aONM5oBcyCGuB6I6P_azqCJvKAsaRwZWaqmA_g-FzcXYVtw-26zMVUDQuevTNmXEiIgMYyWy0" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p><strong>栈的大小限制</strong>：</p>
+<ul>
+<li>调用层次太深、栈用尽时，抛 <code>StackOverflowError</code>；</li>
+<li>栈允许动态扩展但内存不够，或者连新线程的栈都分配不出来时，抛 <code>OutOfMemoryError</code>。常见的报错是 <code>unable to create native thread</code>。</li>
+</ul>
+<p>HotSpot 的线程栈大小固定，用 <code>-Xss</code> 设置。JVM 规范只要求栈能压入和弹出栈帧，没有要求它是连续内存。HotSpot 的做法则很直接：Java 栈帧就放在 OS 线程的原生栈上。</p>
+<h3 id="2-3-本地方法栈（Native-Method-Stack）"><a href="#2-3-本地方法栈（Native-Method-Stack）" class="headerlink" title="2.3 本地方法栈（Native Method Stack）"></a>2.3 本地方法栈（Native Method Stack）</h3><p>调用 <code>native</code> 方法（通过 JNI）需要按 C 的调用约定传参和返回，所以规范允许为本地方法单独准备一个栈。本地代码也可以通过 JNI 回调 Java 方法，这时会重新在 Java 栈上压一个栈帧。</p>
+<p><strong>HotSpot 没有把两者分开</strong>：Java 栈帧和本地栈帧交替排在同一个原生线程栈上，<code>-Xss</code> 同时限制它们。</p>
+<h3 id="2-4-局部变量表（Local-Variables-Array）"><a href="#2-4-局部变量表（Local-Variables-Array）" class="headerlink" title="2.4 局部变量表（Local Variables Array）"></a>2.4 局部变量表（Local Variables Array）</h3><p>局部变量表是一个按<strong>槽（slot）</strong>编号的数组，存放：</p>
+<ul>
+<li><code>this</code>：只有实例方法有，固定在 slot 0；</li>
+<li>方法参数：静态方法从 slot 0 开始，实例方法从 slot 1 开始；</li>
+<li>方法体里声明的局部变量。</li>
+</ul>
+<p>能放进去的类型有 <code>boolean</code>、<code>byte</code>、<code>char</code>、<code>short</code>、<code>int</code>、<code>float</code>、<code>reference</code>、<code>returnAddress</code>，各占 1 个槽；**<code>long</code> 和 <code>double</code> 各占 2 个相邻的槽**。</p>
+<p>用 <code>demo/Greeter.java</code> 里的静态方法验证一下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="type">long</span> <span class="title function_">add</span><span class="params">(<span class="type">int</span> a, <span class="type">long</span> b)</span> &#123;</span><br><span class="line">    <span class="type">long</span> <span class="variable">sum</span> <span class="operator">=</span> a + b;</span><br><span class="line">    <span class="keyword">return</span> sum;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>javap -v</code> 显示 <code>locals=5</code>：<code>a</code> 占 slot 0，<code>b</code> 占 slot 1–2，<code>sum</code> 占 slot 3–4。下一节的逐步图里能看到每个槽的值怎么变化。</p>
+<h3 id="2-5-操作数栈（Operand-Stack）"><a href="#2-5-操作数栈（Operand-Stack）" class="headerlink" title="2.5 操作数栈（Operand Stack）"></a>2.5 操作数栈（Operand Stack）</h3><p>x86、ARM 是寄存器架构，指令里要写明操作数在哪个寄存器。JVM 字节码是<strong>栈式</strong>指令集，指令默认从操作数栈顶取操作数，结果也压回栈顶，所以大多数指令只有 1 个字节，而且不受任何一种 CPU 寄存器数量的约束。代价是要频繁在局部变量表和操作数栈之间搬运数据。<code>add</code> 编译出的字节码：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">0: iload_0      // 把 slot 0 的 int（a）压栈</span><br><span class="line">1: i2l          // 栈顶 int 扩展成 long</span><br><span class="line">2: lload_1      // 把 slot 1–2 的 long（b）压栈</span><br><span class="line">3: ladd         // 弹出两个 long，相加后压回</span><br><span class="line">4: lstore_3     // 弹出结果，存进 slot 3–4（sum）</span><br><span class="line">5: lload_3      // 再把 sum 压栈</span><br><span class="line">6: lreturn      // 弹出 long 返回给调用者</span><br></pre></td></tr></table></figure>
+
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/pPPVJzjM6CRlpwTu9MvMgPGuTX9g9L49ZQ-uo-wcgZg9JV3YsCXsXhHbaji6I5W2R86n1jYIheoKQOnk6k9F8huBv3ZcAbzXias8YKP5DLNYpZxlEQ-Vt_CS-PmdcevLFPULa9OHvLciuYneCvXNvaGv3TDOqWHFXHUcSKxIEKNM4-BN0b2qfwWgEPcVL5HPK87oUGeJgghCJIgIei884mi4WlHmyVCPCPMH1Kq3wj6Dba9Ant9Q4k0R111JL5vGhnezPYRes3W2iCLSZL4KDUuFeMyz7MH5lrgCKvdqbKHdCiTniNXik2qNU1ptnOPQy88cp0BjPLAndB476H_IHLqIGDEnBgP0KkGqO9x_J9Hrm0_Tz-I32yEm3bvrrvfEZNu8pDG3C3SEpJzNpEs6MLxidBurIxjMeqnMbxkrGdVfq3HU83Gm8E5p97CS1r-WS39w_dqThBDDChzZ_dXi_hqU7aj64NblNBvgafMVBXTNh4OJvIEWIOeEFkW_KUT6rN_zHfyRLGRoA0yO8a137f8G0MOAyg3bihrMqTpQi_xvZXYjNgi4UMHMAvtsbhb-ODQBlLQnSxJKEJenwyNBnc6lLKBvy0X7SmmNZ4BttGdaqJCl03KCqB0rNnX6E6Lxpuxu0q4w7elEvhGPE5zOxKllrWg0msFEf7k1-3GU79-80jrh5KLPTvVT8FKFaxwvXLIP1NkVd2_y06Rf7Nc_RXPNtIrZ3zb6t4VkgLwhQ8ly3t9wcFpNksJiAhTpJjv3NkOcR_w31Z331hozFNgxSTb-eAUSlBkRHsIfVXqzXARkeHkX3y07Xk5tReSFkSnauJMPt_68_WJ80_5QBWiH-zF_yrSM70RzxIxRt5LeRtCjb_r4qNu4tXq23S58V99xoWNwdBlWdZRMsHhP_DavSsxFrg4dnGFtvBEC-MwjuDLrRG7cUTiMiruaHxlMczz9wvWidg1d22LyCAgAwHbzD6eV82puM10b1VFFVIX1UMf-O85YGVHBAE7tZDF0Wfy5oLb3eGGDexmo9zib1bYWMP0mpwC40wEICEqi2G0B30kIfYkgy9n6YS2W5WGM0lrsD4e41wKGi11aGL85FQVA24b2Mf1vS9GWW70o-YN-2i_sMZLDnwbCXB4l1oaiQP60uoEuF_unu9LSKXA0R3M7jWQfrC4FdQCzSxVTQvKHs7EyXbukbZl7lvZbaZkDLDOxxOgrt-ZkRrmOBn70vMd1Alq54R3ENW_k7Ml7PAdPhHKwxKgtlMzhlHcfLTqcVspqqu88s5-hx7TEbqbrpzpUkJ1UaE81gUwHvLCaoBnBZfu8Cf_BIly2" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p><code>javap</code> 里的 <code>stack=4</code> 是操作数栈的最大深度。这个方法最深的时候栈里有两个 long，每个 long 算 2 个单位，所以是 4。</p>
+<h3 id="2-6-动态链接（Dynamic-Linking）"><a href="#2-6-动态链接（Dynamic-Linking）" class="headerlink" title="2.6 动态链接（Dynamic Linking）"></a>2.6 动态链接（Dynamic Linking）</h3><p>栈帧里那个指向运行时常量池的指针有什么用，看 <code>greet()</code> 里的 <code>invokevirtual #15</code> 就清楚了。这条指令只带一个常量池下标，而 <code>#15</code> 里存的是三段字符串：类 <code>java/io/PrintStream</code>、方法名 <code>println</code>、描述符 <code>(Ljava/lang/String;)V</code>（§4.4 有它的引用关系图）。这种用名字描述的目标叫<strong>符号引用（symbolic reference）</strong>，class 文件里所有对其他类、字段、方法的引用都是这种形式，没有一个是内存地址。</p>
+<p>HotSpot 在这条指令<strong>第一次执行</strong>时才去<strong>解析（resolve）</strong>它：</p>
+<ol>
+<li>找到 <code>PrintStream</code> 类，如果还没加载就先加载；</li>
+<li>在类里查找名字和描述符都匹配的 <code>println</code>，并检查访问权限；</li>
+<li>得到可以直接使用的<strong>直接引用（direct reference）</strong>，比如这个方法在虚方法表（vtable）里的下标；</li>
+<li>把结果写进常量池缓存（ConstantPoolCache）。以后这条指令再执行，直接用缓存的结果，不再查名字。</li>
+</ol>
+<p>JVM 规范允许实现自己决定什么时候解析：类加载后立刻解析，或者像 HotSpot 这样用到时才解析，都可以。但规范要求解析出错时，<strong>表现必须像是在第一次使用时才出错</strong>。这就解释了一个常见现象：编译时存在、运行时 jar 里却被删掉的方法，类照样能加载成功，直到第一次调用它时才抛 <code>NoSuchMethodError</code>。</p>
+<h2 id="3-线程共享的区域"><a href="#3-线程共享的区域" class="headerlink" title="3. 线程共享的区域"></a>3. 线程共享的区域</h2><h3 id="3-1-堆（Heap）"><a href="#3-1-堆（Heap）" class="headerlink" title="3.1 堆（Heap）"></a>3.1 堆（Heap）</h3><p>一个对象的寿命常常比创建它的方法更长：比如 <code>make()</code> 刚 <code>new</code> 出来就把它返回了，又比如对象被放进了集合。栈帧在方法返回时就整个丢掉了，所以对象不能放在里面。按规范，<strong>对象实例和数组都放在堆上</strong>，局部变量里只存它们的引用。对象占的内存什么时候回收，看它还能不能从 GC Roots 到达，由垃圾收集器决定，Java 里没有 <code>free</code>。</p>
+<blockquote>
+<p>准确地说，这是<strong>语义上</strong>的规则。C2 的逃逸分析（escape analysis）如果证明一个对象不会逃出当前方法，可以把它拆成若干标量放进寄存器（标量替换，scalar replacement），这样它就根本不在堆上分配。</p>
+</blockquote>
+<h3 id="3-2-分代与垃圾回收（Generations-GC）"><a href="#3-2-分代与垃圾回收（Generations-GC）" class="headerlink" title="3.2 分代与垃圾回收（Generations, GC）"></a>3.2 分代与垃圾回收（Generations, GC）</h3><p>大多数对象很快就会死，活得久的对象往往会一直活下去。基于这个经验，HotSpot 的经典收集器把堆分成几代：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/VLDRInj157wVNt4mBot5cZMcNWZ19ExgIqqXlWXvsMGdSNKp8vEDGekWg4cWNYZKugsYgBHOYoccQeYQFvDPDq_-XRAJD6xJqgU5SxxpNSwU6SwQAZDp6GDbPtGogp8r0zafLQFpEab3IZMosDNHS4hD6QP2YHdJtsAGVAucepcYHIWZc87aTJL2ZD7v23Ke0qzVsEz_vUjiJapfoHc2ircGNlv1YPEcIj86XdS884oPXbcBQB0lv0iF8037JAicIT90RpzQS34GQhQ6rUHCkcLHW1L52SlXJbh5FoXxmnqK6ixYMV2vCp6Lp3Z5FYyoSCe4amBJqrCcQBfZMgS4cRffO7YeRlBL6rxCrwl7_33_UBlBBohsZoDhSSCwlAvNDq3MC07xPuaNI_RY4g-KwzLZX9wYTn4y3z74D4wQpvvtWPg5SV0eikABzBjHWKIG7-PX3AkpWPv4K037vD0Ry2W3IaY9Y2rqu2jb-wvQhnux0m2JD4VIC8e9PggJG51CWaUEA2EANyntCZZUdU4uiJwLci7u_bUxjjCehF5Ylh6wBaXay8n8IaZs_uCYbcDp-Xnbu6tRZdd14-fNV2FU_-6b9xpamY_y5REzrMRCgA513qnWacDOSyMDauVykLqhy9DTw_m8Nkk4CXYDmCFkIZEPq8ewkvTxvLwqWCQXkpi8CfB5D-Q5eVRKu-rkdF3lsrQvsbhBoJelNZdq6rKKyq90Z4Wm1DR5fbilJgpFftple3dmUBl6A-N6_Ggya51C4a9H689caHTBZUqYNxoD4sldFLylm2oZ6IhE3udJJr3Jf1cWAPX40854yBUCs0NVFEDx1zR7g_ObE7fkrwKFJaLOuVT5Nlk6CD74g-haZxRurMdAe0UKd66qPOH6-pVKAyjsuTBQAjTlpiIJMEDB-usZchLNRcpL400_-TAItxomb-_iwqjdRowB3tjbQ-EqUM3jUtjoDeo9biiOlm00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<ul>
+<li><strong>Minor GC</strong> 只回收年轻代：把 Eden 和其中一个 Survivor 里还活着的对象复制到另一个 Survivor；</li>
+<li>对象熬过的 GC 次数足够多，或者 Survivor 放不下时，<strong>晋升</strong>到老年代；</li>
+<li><strong>Major &#x2F; Full GC</strong> 会回收老年代乃至整个堆。在老式收集器上它往往要停下所有应用线程（Stop-the-World），停顿也更长。</li>
+</ul>
+<blockquote>
+<p><strong>变化</strong>：</p>
+<ul>
+<li>JDK 9 起默认收集器是 <strong>G1</strong>（JEP 248）。G1 的堆不再是几块连续的大分区，而是切成大小相等的 Region，每个 Region 临时扮演 Eden、Survivor、Old 或 Humongous（存放大对象）的角色，分代仍然保留，只是逻辑上的；</li>
+<li>JDK 21 的 ZGC 也有了分代模式（JEP 439）。</li>
+</ul>
+</blockquote>
+<h3 id="3-3-非堆内存：方法区、代码缓存"><a href="#3-3-非堆内存：方法区、代码缓存" class="headerlink" title="3.3 非堆内存：方法区、代码缓存"></a>3.3 非堆内存：方法区、代码缓存</h3><p>有些数据属于 JVM 自身的运行机制，不是 Java 对象，就不放在堆里。这里 2013 年和现在差别最大：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/ZLDTJzfG6Bu_l-ADNYvk5jIgCKQfLACX8NCN9iwB8pq20LlIrhbiCT4e-16Onis9nYKkkgz46KpTm3BtNxQU5gxu2yk1ge0nssNVjy_Jv-FjWAPZLP-RZI8j4fPZMCMpe8MmfCo7vI3CuAX6wZOIcS5pKLrKP7qy_880vwvRgigSB0cAAXCLkFQwnQ2gAlE24bLKQEtmT7PskPkNJqBXG4GccWRSmmPA4j2n78mIU8a0F8eg4TKXwkaOT7kw4G0JuymuZkjsyMYXZa5MT0UC0v6W8x7wiYYA7g-dcLRixF6sUvee9AAH6BYwwfLXESA6V3lImtgKm8YYZySK7Upz5Pg8qzCqpI_Jt6Abk3-Ads7WmThzRXf7y3kn3QD3Oz0DT7F3D3xGhLS8tVfiwPlkRm3qFPhkRm6imIWFhMAtE2WALJ-ta16s4BqTtYwOHDTmUfXWI4GBvwMV1llm0oWjBj72kMaSeQa60ZyFhTvsBo-ADG8hcpSBSORn4tLscCYCgL9SC_CRvRqjQ9kOwFNXvsp7Zg1IN4Tspg3nPMidQwKobMAIfiwijmNhR8ScBr6bk5PLr7LjU3rL-fMstbpHqrtxvAEP_qRp-VBgffKxfDl9yhizQt69dkvQcGl6tAXKO5RTOeVeM3MD8_jmoIw-fgTf9X84HI8Wu428e2cqq9nhO-nCsD0OkBXASVqsPHTtNypLpJqvLufhmnph7XwJO5YHcNJwjL3AlV-pk6JjP6rZ1TtrwoZWeNJnmudHtbzfZA3-ZIGxguFF84Infa6DlxoQl9kJZscjhvJ6b-qlb-NTS_0H7Min722ERElWX1vaQoVxhoeR3-26gNO5oRAHBcMEpNogbBbgxgsQtNyMnmptCCDqBM7crvqKl7xWUlYQrGKqmaFRP2WiIKIUafHvkGtyFFBV6GeyOhKrJNqk3ldkZWKNL-LLmy6GtjRF2gzINZypIA_pxzgVZFBUySsFybIkwdEva507O8G3H9RcPgD_0G00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<ul>
+<li><strong>方法区在哪</strong>：JVM 规范说方法区「逻辑上属于堆」，但允许实现不对它做 GC 或压缩。HotSpot：<ul>
+<li>Java 7 用堆旁边单独管理的<strong>永久代</strong>来实现，大小受 <code>-XX:MaxPermSize</code> 限制，类加载得多了容易 <code>OutOfMemoryError: PermGen space</code>；</li>
+<li>JDK 8 起改成<strong>元空间</strong>，直接用本地内存，上限用 <code>-XX:MaxMetaspaceSize</code> 设置，默认不设上限；</li>
+<li>所以 jconsole 这类工具把方法区和代码缓存都算作「非堆（non-heap）」。</li>
+</ul>
+</li>
+<li><strong>字符串常量池</strong>：JDK 7 已经从永久代搬到了堆里。<strong>类的静态字段</strong>也从 JDK 7 起存放在该类的 <code>java.lang.Class</code> 对象里，也就是在堆上。</li>
+<li><strong>代码缓存</strong>：存放 JIT 编译出的本地代码，用 <code>-XX:ReservedCodeCacheSize</code> 设置大小。JDK 9 起分成非方法代码、带 profile 的代码、不带 profile 的代码三段（JEP 197）。</li>
+</ul>
+<h3 id="3-4-即时编译（Just-In-Time-Compilation-JIT）"><a href="#3-4-即时编译（Just-In-Time-Compilation-JIT）" class="headerlink" title="3.4 即时编译（Just-In-Time Compilation, JIT）"></a>3.4 即时编译（Just-In-Time Compilation, JIT）</h3><p>解释执行字节码比直接跑本地代码慢得多，但把每个方法都先编译成本地代码，启动又会很慢。HotSpot 的折中办法是：先解释执行，同时统计每个方法的调用次数和循环回边次数，<strong>只编译真正热的代码</strong>。</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/RP9TJzfW5CVl-obEv5f7GNoB8TfAivTaDthdlAZq4HjAIqgPYSkIeWvHaR6fYE0RKQVP13NPt9IgtsNojEMgNs6fnQsINJxdVyx_Tyvvpb12OMKb6HE8H9GNuwpCnY0npNBI32z6O8eL4iYbS6YAJGeA8udAA3-BWFIxH5bAYXmjoIAIWVIwX65PbcPeIP1ay7HJWK2FlrqSc-R3KH4b4a1sFR54OOKL8mA2TmG09SaSabj6_Tt3VggF0B2RQSL8akppzHBlNGwYfBIAsN0qqchn8PbX62f4jTioWVwGbsgpu502nS7ldabcnQWT37W9XLS41CybPJGkAO0pQNmnPsW5y-oJfMLUZho2FZ1__6pMYsRj46igpfzPsX91_9kjOt0oYAkRvlASiPyQV3OPx00s0HGD7YR4-EbUL-gBrsFW2Nb3lGm3uyJWPD0yFcWkBkEj4xlEqZ82Uei4yDg4ffhNTofEWhvqR5QoX57VCsiLytpUM3_HJolwnZd-dCMtNutS6IxlchTNJf2OS25f4ZmZL6YO2Jb4cWHdkYT4yhUwvhUfZeRllbbQ5gTAUE_QgAWDhOYp1GBdi_hcfRv-sIod8IvBKxo0dh9yu1cX6JhKssBv_iVgjZdw_fM-Mdjq0VrEDU_A3iVIIWHEVp1Jw_TgggdEDzLVE9FMT_FtQWhdwkPMIL_Pmzc2KLrwIhStxcUwcHw7tgWV6FifGrl3rQBT0D0IXu1cmzFeSSoZ6wEqe6-Vukrp9zlIiesh5PpF6UNlUkwejVS9WgAXK-OZqqfdqFv4mlx8lm6QX0707ul6V9MWILVS1mDWr8-DUjMbSjACQ8iqGVlQNbtZecHVvaJN0mK6mDb8utP7NwqPfGMSMZHhj_ZmGj_8M5e6Vvd3o_lcpKtZEgqNpd4rRrpKBMtfZOXpTQSKE2J55Jx6po9BopPLrJuKzqqD8P5BneG_" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>JDK 8 起默认开启<strong>分层编译（tiered compilation）</strong>：先用 C1 尽快拿到能跑的本地代码，再由 C2 根据运行时收集的 profile 做激进优化。C2 的优化建立在一些假设上，例如「这个虚方法目前只有一个实现」。某个假设被推翻时，比如后来加载了新的子类，JVM 会<strong>去优化（deoptimize）</strong>，退回解释执行。</p>
+<h2 id="4-方法区与-class-文件"><a href="#4-方法区与-class-文件" class="headerlink" title="4. 方法区与 class 文件"></a>4. 方法区与 class 文件</h2><h3 id="4-1-方法区里存放的每个类的信息"><a href="#4-1-方法区里存放的每个类的信息" class="headerlink" title="4.1 方法区里存放的每个类的信息"></a>4.1 方法区里存放的每个类的信息</h3><p>在 HotSpot 里，一个类加载后，在元空间中对应一个 <code>Klass</code> 结构（普通类是 <code>InstanceKlass</code>）。它大致连着这些数据：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/NPDjJzDG5CVVtqzn8YyDmmqGC8J0kbN9M4A0-COGSsalewvhb_OEZ8Pa4mHKT8k02A8PCSeqWX2V2flmOUXjkrVx2gPT8ztUdNF_v_xFxzo7OPrYZUOoCjBJafB56iw0FeT5TK5IKZ2BPPq4597CufnCULMXaz8Z0k7kWAYfEKNaL4qX6eHl18GHJLCNE5LMDUZeYVRstknk5wVc926j45s7SAZ5aWWKAocPm6C445KraMY-qK3FI7Uq7m6uCFvQE1pkZ_IXnO23eb9_CnRIAH_HA-PvFXgFjjlolGFn6z4s2v7e90kHI90CAsbtiQSNKOdA14mZRnfVxPCgUrvs_lvbfLTihm9tL3gPLIdKLzVjtMMh_8STbXgrDRFw2KIIKKEtDK8eqS0qpipp5utQCuIkPhusE3F4oYk3NJD3rm3hS6VSemxp4M-YgyBaw8Ihn7lYD-4U6fmPUe3dSKZ6IYh4oLZNWNq_TKxsNIFaTmm9he3gxtUiV84TRbj7lwpDSxPNSIvswglhQ1ejjfCyNRA_dDMtVqAIKAndiK3-aoKdeICUvoCytqQMW0wkBnRXuqskKKMdM158mctkuGHF0KstxEMQu_8ytzpiN9IS_NLh-pSpZFfgqJefUmxNuNzkrpROuTj6RSqv-6XzADdL3Ul3ddkehSR9Lb_hpQdrOylQEhQhovwZzRre6b_TCUTKiL7RPOVRplCdThbmcI-W37vuNwTOI4CNkB6i2bZMNONLdZ33SFOhb_c2ix_EYd-QyQHRdSJPAJmZapOKFjRAujz4iUXS77iihFJIFZY-p1UQQ_QtpvVvWdbnLF_anuZjLPhNstnZh52q3whrrM9RfxjJhPtcgOi3NI1vWTTCKkRLD9cND9h3CdJvkQHGeirYWG1RMx5-djkRbRRdmOt5e2F6yLoypn_ZQDSyVSQEbkpTvQiliLFnkk1i5asZ17IAweBIEGJSU2191c8-5aZkJg4437RAP9QwPQCJS0lCizVsEuFLjboa17HgKchELRcn61ecYfZBoFy0" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>方法区被所有线程共享，所以类的加载、链接和初始化必须线程安全。两个线程同时首次用到同一个类时，这个类<strong>只会被加载、初始化一次</strong>，后到的线程会等它完成后才继续（规范 §5.5 用每个类的初始化锁保证这一点）。</p>
+<h3 id="4-2-class-文件结构（ClassFile-Structure）"><a href="#4-2-class-文件结构（ClassFile-Structure）" class="headerlink" title="4.2 class 文件结构（ClassFile Structure）"></a>4.2 class 文件结构（ClassFile Structure）</h3><p>class 文件的顶层结构由 JVM 规范 §4.1 定义，<code>u2</code>、<code>u4</code> 分别是 2 字节、4 字节的无符号数，按大端序存放：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">ClassFile &#123;</span><br><span class="line">    u4             magic;                 <span class="comment">// 固定为 0xCAFEBABE</span></span><br><span class="line">    u2             minor_version;</span><br><span class="line">    u2             major_version;         <span class="comment">// 51 = Java 7，65 = Java 21</span></span><br><span class="line">    u2             constant_pool_count;</span><br><span class="line">    cp_info        constant_pool[constant_pool_count<span class="number">-1</span>]; <span class="comment">// 下标从 1 开始；long/double 占两个下标</span></span><br><span class="line">    u2             access_flags;          <span class="comment">// public、final、interface、abstract 等</span></span><br><span class="line">    u2             this_class;            <span class="comment">// 常量池下标，指向 Class 项，即本类名</span></span><br><span class="line">    u2             super_class;           <span class="comment">// 常量池下标，指向父类；只有 Object 是 0</span></span><br><span class="line">    u2             interfaces_count;</span><br><span class="line">    u2             interfaces[interfaces_count];</span><br><span class="line">    u2             fields_count;</span><br><span class="line">    field_info     fields[fields_count];</span><br><span class="line">    u2             methods_count;</span><br><span class="line">    method_info    methods[methods_count];   <span class="comment">// 非 abstract、非 native 的方法带 Code 属性</span></span><br><span class="line">    u2             attributes_count;</span><br><span class="line">    attribute_info attributes[attributes_count]; <span class="comment">// SourceFile、注解、BootstrapMethods 等</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-3-用-javap-读-class-文件"><a href="#4-3-用-javap-读-class-文件" class="headerlink" title="4.3 用 javap 读 class 文件"></a>4.3 用 javap 读 class 文件</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">javac -g -d out demo/Greeter.java</span><br><span class="line">javap -v -p out/demo/Greeter.class</span><br></pre></td></tr></table></figure>
+
+<p><code>greet()</code> 这个方法的源码是 <code>System.out.println(&quot;Hi&quot;);</code>，<code>javap</code> 输出中对应的部分如下：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">public void greet();</span><br><span class="line">  descriptor: ()V</span><br><span class="line">  flags: (0x0001) ACC_PUBLIC</span><br><span class="line">  Code:</span><br><span class="line">    stack=2, locals=1, args_size=1</span><br><span class="line">       0: getstatic     #7    // Field java/lang/System.out:Ljava/io/PrintStream;</span><br><span class="line">       3: ldc           #13   // String Hi</span><br><span class="line">       5: invokevirtual #15   // Method java/io/PrintStream.println:(Ljava/lang/String;)V</span><br><span class="line">       8: return</span><br><span class="line">    LineNumberTable:</span><br><span class="line">      line 5: 0</span><br><span class="line">      line 6: 8</span><br><span class="line">    LocalVariableTable:</span><br><span class="line">      Start  Length  Slot  Name   Signature</span><br><span class="line">          0       9     0  this   Ldemo/Greeter;</span><br></pre></td></tr></table></figure>
+
+<p>几个字段的含义：</p>
+<ul>
+<li>**<code>descriptor</code>**：方法描述符，<code>()V</code> 表示无参数、返回 void。类型的写法是：<code>I</code> 表示 int，<code>J</code> 表示 long，<code>L类名;</code> 表示引用类型，<code>[</code> 表示数组。</li>
+<li>**<code>stack</code> &#x2F; <code>locals</code> &#x2F; <code>args_size</code>**：依次是操作数栈的最大深度、局部变量表的槽数、参数个数（实例方法把 <code>this</code> 也算进去）。</li>
+<li>**<code>LineNumberTable</code>**：字节码偏移量到源码行号的映射，调试器和异常堆栈都用它。这里偏移 0 对应第 5 行，偏移 8 对应第 6 行。</li>
+<li>**<code>LocalVariableTable</code>**：每个局部变量的作用范围、槽号和类型。只有用 <code>-g</code> 编译才会生成。</li>
+<li>**<code>StackMapTable</code>**（<code>parse</code> 方法里有）：记录每个分支汇合点上局部变量和操作数栈的类型。有了它，验证器只需逐个核对类型，不必再做类型推导。Java 6（class 版本 50）引入，Java 7（版本 51）起成为必需。</li>
+</ul>
+<p>字节码在执行时，就是在局部变量表、操作数栈和运行时常量池三者之间来回操作：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/jLLBSzDM5DxVNt4csf05ZkLtJF0G6oiiQCCqj1lAGh5kR3Mov97aC1Hdna0U3Wa9fGafXZ9sUPaP7gQTPXoZbly2lfAzybzehsJ7jWAhqkqzvtpt-xvxphbdD9rNzNnMGjgYAETubS-2bk45vOeefs61bpGy517m0f-NT4wHzJdnHmoiVoYeAdbPI2YgZ5LWlKE1QLLLhYGKIL612SI3mP3V7RoO4LEBCjOqO3qZa3Ybyt9Qmd0D0SGLLS1g3sWoCEsFHn009TCxOrasuWkZvI44MT5xnNngCTsZQ2Tp71TFnjsmN70owOsx80IiuHpu8iFCU7cH7WQzI1Tr2KCkFo-9ALXIH07IAiRwYN6u1dDNDHrdFKfUz-HKKTOb-SJOEN5i_1GiVomMoQlzzgqRLkNwn-BrzlixxUgMkNz06etE-exvjj9gR9FAcbLUQJMVj9ft4HguCJOr7xEQxwtQfbafTOro_qAhl69MIgJnV6fYFZO6l0RSDy1m4MwQIzWk321clBO57CV19JGr7_lmKmNQxn-GrQVclKFpZpsAW0gdWRmjTcxMoCuldVMTThK6cgJeu8K2w1bHWm8oVxxT-kkXkLUtcPHQZLkjHjEib3hLWwwnWGfJ3EVd0bme1jQB9XJGvL4Mh9j5zGjUV3OPYap7u09rVavNCPy5OknPkxMkKHgyJDVOW0AQIj46Y3A-OCYVZCToUItJDShjD-_8UjCghtH-lMyMhvDN--RhFqdHc9gmqsDkEJwtdD--l9mvNQMpUQI4DfIZeV1Vf3fz1mph1_Bca3HthV9AxwxFgVMxrJx-lxh6JLd9WPDDIJe6bCZE3NEltZKskiOMMRiDD6d8ZwvHChUVchi7xU9grzWuqcJUgpip0_q9TKIF0zdU9ANwqPpPtBRCZUVjwXPvlKNkR1FZaAmttQu4W4ackBDSiE_A4-eA79jHfvgIVV28bEhj-arhjzOkhgBBQDazxCUt0yNyrpa1PnNF38N6QjVOi6S-SG6OP9BpSPnhvXFXqGTZmi29M19Kl61JXDF0H3pC92e04u64n6iQ5E33sbrWM2zygoz4e00_y4lyXCJBwGcdh-o-OoRXQpwBfsNXujKSFYfY-qLANhVp-W5VFt3UXXELYQ6NEdLiJIHOLwlHBkttPeyu6q1zz40V_Ppu2QYW6oe8Ns4zeupOm8Oy31kcojYGoud8Y1EZr1qpsF0dtPZi5_OQRTWHtv6_9yuFEMnBF3N-dItZM5UGojhHeZztmPR5SZxNey_QApOPI8RW4XhP3syEss-hQ6H1WBFXhF8AAHfq4aVDc_KDOVNta0rZ3o75whnuP-tT9mzhvDM-zV9Pg_5xkrfpa9OHcl72IK6v8f-CqTKV1MyKqbZNT5uNKy24qGmxYFiW2lueI4AABYKqunk4_125O1H4UKbPn4kYgkTv2HWsY6RyWwG0H24I1HNhULL65DgZYkcCxedHGOX2vzazysNLcMTp_w3z_B7vw0wzPf36-Z-Vvn_E2tukxtkP_BrFIdLOqlbv2KEhiMbMrb4YFAYUfKOu7ytmB-Ey0Q8S1gdK4r9wGDuroU61OpN5Edaf8me2bY_RsYblk-xOSH3DikxJMHywWsKXdvN-0G00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>常用指令速查：</p>
+<table>
+<thead>
+<tr>
+<th>指令</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>aload_&lt;n&gt;</code>、<code>iload_&lt;n&gt;</code>、<code>lload_&lt;n&gt;</code>、<code>fload_&lt;n&gt;</code>、<code>dload_&lt;n&gt;</code></td>
+<td>把局部变量表第 n 个槽（n 只能是 0–3）里的引用 &#x2F; int &#x2F; long &#x2F; float &#x2F; double 压入操作数栈；n 大于 3 时，改用带一个操作数的 <code>aload n</code> 等形式</td>
+</tr>
+<tr>
+<td><code>astore</code>、<code>istore</code>、<code>lstore</code> 等</td>
+<td>方向相反：弹出栈顶，存入局部变量</td>
+</tr>
+<tr>
+<td><code>ldc</code> &#x2F; <code>ldc2_w</code></td>
+<td>把运行时常量池里的常量（int、float、String、Class 等；long&#x2F;double 用 <code>ldc2_w</code>）压栈</td>
+</tr>
+<tr>
+<td><code>getstatic</code> &#x2F; <code>putstatic</code>、<code>getfield</code> &#x2F; <code>putfield</code></td>
+<td>读写静态字段 &#x2F; 实例字段，具体字段由常量池中的 Fieldref 指定</td>
+</tr>
+<tr>
+<td><code>new</code></td>
+<td>分配一个尚未初始化的对象，把引用压栈</td>
+</tr>
+<tr>
+<td><code>dup</code></td>
+<td>复制栈顶的值</td>
+</tr>
+<tr>
+<td><code>invokevirtual</code></td>
+<td>按接收者的<strong>实际类型</strong>分派，调用普通实例方法。JDK 11 起，同一个类内部调用 private 方法也用它（见下文）</td>
+</tr>
+<tr>
+<td><code>invokespecial</code></td>
+<td>不做虚分派：调用构造器 <code>&lt;init&gt;</code> 和 <code>super.xxx()</code></td>
+</tr>
+<tr>
+<td><code>invokestatic</code> &#x2F; <code>invokeinterface</code></td>
+<td>调用静态方法 &#x2F; 接口方法</td>
+</tr>
+<tr>
+<td><code>invokedynamic</code></td>
+<td>第一次执行时先调用引导方法（bootstrap method）确定调用目标。lambda 和 JDK 9 起的字符串拼接都用它</td>
+</tr>
+<tr>
+<td><code>ireturn</code>、<code>lreturn</code>、<code>freturn</code>、<code>dreturn</code>、<code>areturn</code>、<code>return</code></td>
+<td>按返回值类型区分；<code>return</code> 用于 void 方法</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>用 JDK 21 编译验证：</p>
+<ul>
+<li>类内部调用自己的 private 方法 <code>f()</code>，生成的是 <code>invokevirtual</code>，这是 JDK 11 嵌套访问控制（nestmates，JEP 181）带来的变化，旧资料会写 <code>invokespecial</code>；</li>
+<li><code>s + n</code> 这样的拼接生成 <code>invokedynamic … makeConcatWithConstants</code>。</li>
+</ul>
+</blockquote>
+<h3 id="4-4-运行时常量池（Run-Time-Constant-Pool）"><a href="#4-4-运行时常量池（Run-Time-Constant-Pool）" class="headerlink" title="4.4 运行时常量池（Run-Time Constant Pool）"></a>4.4 运行时常量池（Run-Time Constant Pool）</h3><p>§4.3 的 <code>javap</code> 输出里，<code>invokevirtual #15</code> 在偏移 5，下一条指令在偏移 8，可见它一共只有 3 个字节：1 个字节的操作码，加 2 个字节的常量池下标。描述目标方法要用的类名、方法名、描述符都在常量池里。类加载时，class 文件里的常量池会转换成<strong>运行时常量池</strong>，每个类一份。§2.6 里解析的就是它。</p>
+<p>常量项之间互相引用。以 <code>#15</code> 为例：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/ROzFQnD16CRlyobUs8iUskoVRFvPGhDhvcI2aCIBb33DJ3PZPcUMsOcr5S63u45G3nQX9xrvBNXe8H_7M7BoAqYs6x9PUXkUt_Cyyxp7gI7QB6A1qZcN2T4aXdH6g3hZCe8f4Iah4CgcP24CLj8C-0K3noj0hHQIXafBfi6n2w2ZjJeBbL0Qh6hW-pMl38SpFfbBbgRW7EvLieaXCX8CtYA0G6dAT5xKh7Qye840DcDopN6SXbj7xmeDKfayJ2RpA9-OcJ76GJSersA_sRM3KWLbAKl0hHQN4JdVYBwD19iQC0eqZsO6AD-CvaeYmurWiBgvMN_yylVwn_hdxP_RJ-lll--kFgoMbtVVVlrRNbcE3prcPefgDeNLzULg-NxrzJD2kyjxO8NrfoxkmajqTDgs7F-eSjhUfT1ppQKP6Cr8V9XitaAYaq9125RNxjOntXRKie9Ga3JTC_Q7PMSzS_P9p3gI3iyJjkSVEM1X3rTnRUjlPFwHcJRGA_AQLBYg5DRjXzrokBaBFtJ6o2i5N7iNUFGi-qyG6LK6HdCPFNdy0fsW7XmSj2645amsvuwvfEnDhlQ7q099OZOcaexDUS9o76Puv6pnlTeVtilkmx87BQ0idMYU6ALpUCmaNSJYFm00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>常量池项的类型（JVM 规范 §4.4）：</p>
+<table>
+<thead>
+<tr>
+<th>类型</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>Utf8</code></td>
+<td>字符串的字节（修改版 UTF-8），其他各种项最终都指向它</td>
+</tr>
+<tr>
+<td><code>Integer</code> &#x2F; <code>Float</code></td>
+<td>4 字节常量</td>
+</tr>
+<tr>
+<td><code>Long</code> &#x2F; <code>Double</code></td>
+<td>8 字节常量，占两个常量池下标</td>
+</tr>
+<tr>
+<td><code>String</code></td>
+<td>指向一个 <code>Utf8</code>，表示字符串字面量</td>
+</tr>
+<tr>
+<td><code>Class</code></td>
+<td>指向一个 <code>Utf8</code>，内容是 JVM 内部格式的全限定名，如 <code>java/lang/Object</code></td>
+</tr>
+<tr>
+<td><code>NameAndType</code></td>
+<td>「名称:描述符」，两部分各指向一个 <code>Utf8</code></td>
+</tr>
+<tr>
+<td><code>Fieldref</code>、<code>Methodref</code>、<code>InterfaceMethodref</code></td>
+<td>「Class.NameAndType」，前一部分指向 <code>Class</code> 项，后一部分指向 <code>NameAndType</code> 项</td>
+</tr>
+<tr>
+<td><code>MethodHandle</code>、<code>MethodType</code>、<code>InvokeDynamic</code></td>
+<td>Java 7 加入，供 <code>invokedynamic</code> 和方法句柄使用</td>
+</tr>
+<tr>
+<td><code>Dynamic</code></td>
+<td>Java 11 加入，动态计算的常量</td>
+</tr>
+<tr>
+<td><code>Module</code>、<code>Package</code></td>
+<td>Java 9 加入，只出现在 <code>module-info.class</code> 中</td>
+</tr>
+</tbody></table>
+<p><strong>对象创建的例子</strong>：<code>Greeter.make()</code> 方法里写的是 <code>return new Object();</code>，它编译出的字节码是：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">0: new           #2    // class java/lang/Object</span><br><span class="line">3: dup</span><br><span class="line">4: invokespecial #1    // Method java/lang/Object.&quot;&lt;init&gt;&quot;:()V</span><br><span class="line">7: areturn</span><br></pre></td></tr></table></figure>
+
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/fPDDJnfH58RtzrUSX8qki0m3g5D279JPTj7kMXSZN63AS8VC32Mfc93M3r2qMZyQFmDguqVIQjlKZeZnlzYv0wpu2yqWJGTMJRkwoNdlUT_ddDmxfkcYgcVJCj9I4ic8gfW6BId6b9n44X0NPGqxb1YEYrbP5nIYFvLUOs1OXwWgMH8RLrI2LM0y3e5NLIKthiYA2YvVsEyFiFtYiwGKJH6iQS0CzLZYg2wIX8nX6W645JM6rQxHg8zdmoC8m8RfrXY66V4Eenc70r7qRhCOJIMwY9tBWY248-5-My4_6l64-onYMCCPy0QSP299sKMV1-cIBcDuClKIHtL8YoayC0ZJe68zgn8WEDUL1WOVmypFGi6wU6VjLwtoWdbpR9LEcjKoNLrfxCnQwylcxPwrUMbLYWZzcPptT5W5GO3dA3WLkb-hGFDkbyvzjBQkhM-RmKTJ8UHiRjUBfh5e6ZMhKcnLhzhr4ie7NG8h-8H021fdDSYZIMS0qnzG_LlFYKXWX0-1YkDmF_--EsYxNhJspcbndvuiqV9Mkrw2FAALUTDOf3--qk9yQswPNbmtlrJRzJBzzC7w_DqqQgtTArgezu9v-y4E_m4iZ_BTqpIEJUESrZSR6wTMUO6khj7LicaKx6A7fpUTxKy_-j-rTCRlMOjrCDigLEZsgOsqKZ9hzfPQ-uUjDqUcSMuxs6stw-Rj7kX9IRCJUY1zu8gC2nE2_pVaiGq9j7Hc6akDdTaEHFDkW-uUD6wscvTl6nkdpS8ScaIy1zogb4Zgxf3z13ZmS9tNwl8Ydd58Nk20vI2MpI3U2-wOaYDscGKEV1n8v9MImbe6HoLH1XVpWZnCEnIKYAI71WOHpu9Rnl6Ebmyu6EP0VFWSQ0oJM3Oj_m80" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p>需要 <code>dup</code> 是因为构造器调用会从栈上消耗掉一个引用（作为 <code>this</code>），而方法最后还要把这个引用返回出去，所以要先复制一份。左边的数字是字节码偏移量，<code>new</code> 带 2 字节操作数，所以下一条指令从 3 开始。</p>
+<h2 id="5-类加载"><a href="#5-类加载" class="headerlink" title="5. 类加载"></a>5. 类加载</h2><h3 id="5-1-加载、链接、初始化"><a href="#5-1-加载、链接、初始化" class="headerlink" title="5.1 加载、链接、初始化"></a>5.1 加载、链接、初始化</h3><p>JVM 启动时，用启动类加载器创建初始类，对它做链接和初始化，然后调用 <code>public static void main(String[])</code>。之后执行代码时遇到别的类，再按需加载、链接、初始化。</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/NLJVKnf947wVls8gFDw5K_5N4aC5aArOuInBeoyv7rPOSSCwQ-skPoefg-2C2heAUdgKg04l6ecde7M9GLZqVxbipy8J_yBLiaJ1j-dfxc--_hfxdiaAAocpqmAIGpoPOILs6ijJR42SuqaGJxA2p3Lv0jmaEoieZ4YK4VujXziTJKv9d2K1ZoWHJiBjRKqEboI9SnvH42LiwtHtTNKxxZjVJl7-4E5a6RVRMo0vlyAIeC3XTmXZjoW5EAa1zAZJvN3t8enDCesxzlRsteuUDD-4G4IbaSpwGy46nNemmp1kh_i-BDFroDlclWSHu6Hk1dTqDpDZISYyT7GZXLS43kk5i5uuCIvAUcczylS_i9AfbCiGFJVFQuLAkOpGNJM-Vcppjdbx60Q_GdqJJYkwxvS99yO-aGtm98Ye6eF5R7Kd0RaK9DPex1gYvt2MhApyGRz6QbhqDIjz3qUCtHoKjyr3USCexNqFHs0bIyCHOojDeucQ5aCqSr0zKN7R6u-ByRfTRY-6JTM8HUdUASI_8LXSC3uNgyalrMKLIaKyG6I59NxkXS3ASarJ8REa5rPCpslsTzOki2HezvW-3FchoiK16cygx47VXBFwvpLTFseKmvCGJu8FC2jZtmjiOteP5-EfD-GkQOp1jdwtryLuBJMg9seb7x40nZY9d-JzhCAB1D6C1bgSVWpJz17-2LjY69c8bL3JKWZ2QLZvZ4SKrX_wbPrvoKu87AQP0kIlQ3vEzm-ekgoN3Y6s1ebr8_NUk2Z1XrKqti9dQBYL3omlmU6onMT8uim1gDFH2yNg_WuDH-0iINDV8RfKNLopjApt8rVTlOImXcI5LNW_vec2t-2dkEi9nlyjRM9CpmvfyjAyUuhRxd4O7laXrXE19vmzmCfJNA1-VjpHrUtmkYrkbUEFz4F2uZRCoQ8mMwTcd7w2-3VGjesjRFqnO_SBNJ-oBX1DNjAzebvOWzqYv59e7CqtzN1W4DlwFOp7szCeFxeFnwkW_cMzCa1uXMS5_csZ9x7Zoe6A-_m2JtZ5MTDIbYQLhwiGrc1JnOtotyrZs4_MD9MgCLfCc6qxA48nZffbwAffkt2OCeetHdOL4YfDNbQEFq5yGxzAG_p4UamlXEbfwzoDcd8vc4wcs-Aibs-ChQn5U5GsrwabsjSQRIre8ve8ZGM4N4g_Ya5keJ4draRlP4tTuldAzRL-jGg9THghcmjbY6yOMsaqZf2l7pyCY7FaeHEFCMYCkRM6Xj7GyAqrC8W61c-jqH4qEd9d-Sn8kyG7fvHNDglZutQdEHUFCSJpUka8zhBMgj7avM-4nXCGMxF6mGIo_yZwcOZcPtMRN5VIpAVhsSfD6gBdD9sutGpZzDIIrvAw3btJeiz5PMH6LB2HUW-H5Frts_nOdd4aC3ij_0y0" alt="PlantUML diagram" loading="lazy"></figure>
+
+<ul>
+<li><strong>加载（Loading）</strong>：按全限定名找到 class 文件的字节流，校验魔数和版本号，解析成方法区里的内部结构，并生成对应的 <code>java.lang.Class</code> 对象。直接父类和直接实现的接口会先被加载。</li>
+<li><strong>验证（Verification）</strong>：class 文件可能来自网络，也可能是手工构造的，JVM 不能默认它是 javac 的正确产物。字节码验证器借助 §4.3 的 <code>StackMapTable</code>，逐条核对指令执行前后局部变量表和操作数栈里的类型。它要拦下的情况包括：把 int 当成引用来用、弹空操作数栈、跳到一条指令的中间、读取一个还没赋值的局部变量。验证通过后，解释器执行时就能放心地省掉这些检查。</li>
+<li><strong>准备（Preparation）</strong>：为静态字段分配内存并置为<strong>零值</strong>，同时建立方法表等 JVM 内部结构。<code>static int x = 5;</code> 在这一步之后 <code>x</code> 还是 0。</li>
+<li><strong>解析（Resolution）</strong>：把常量池中的符号引用换成直接引用（见 §2.6）。规范允许把这一步推迟到第一次使用时。</li>
+<li><strong>初始化（Initialization）</strong>：执行类构造器 <code>&lt;clinit&gt;</code>，也就是静态字段的赋值语句和 <code>static {}</code> 块，按源码顺序执行，这时 <code>x</code> 才变成 5。触发初始化的是类的「首次主动使用」，包括：<code>new</code> 一个实例、读写静态字段（编译期常量除外）、调用静态方法、反射调用、初始化它的子类，以及它是启动时的主类。</li>
+</ul>
+<h3 id="5-2-类加载器的层级与双亲委派"><a href="#5-2-类加载器的层级与双亲委派" class="headerlink" title="5.2 类加载器的层级与双亲委派"></a>5.2 类加载器的层级与双亲委派</h3><figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/XLLTJzjM6Bu_l-9LwSKcH2052kreLDl4MbafI6NZeaBJIN881iVsRDDscohHba022M4CrWL2HQMoCiO8sRgHXW3_fVLnaglyXUdO0HowQNV7p_lrl9--RPXODwTZCZAc94N3Eew1CO4ZwYD9YS8ubWtYaKJ8E9wMJL5LpFlITmJydHwXhauh4K7L5QA3lyCZu7HTVIIeigf3InVVtNszyx9mP48AJod4CC3lQt99mYPMeZA1xn40h-eHeZSStUZYElbU1C38D32_tzzxhGSzyNXGLBDXZCDJqGP5HraKHJx8NtOhTjy8Tl2NN4I8GJJeykQaOsNA0RkHAPaoWO7-B-16ArJMPok58xgmLJq-fjaTMdXMARsfbnFsuXxD7DRcK_RFUJktP-TAZiKrFz3zb_PVY_Lo4g6BTFcXeH5e4ODYfz033r1VA42NytHXn-iRU5Kr3LF7MbzxA806lXe4EXUlFTy1eRMLkQqi7TJBAPhRWG7y48CR7Ff20MLQbXsRIVmG-qBO853vFMbl5UdfStld5TryWUhbn7rJbvIeBonZm_15YIcmnrqLHuZ-oQTmwnOmDuptc8Vuy5rk15g27S4UKMmGV_SdpHmq4H-MiJckwZ67WyUjSVLCuW5TaiOtyeUPfyxpSKpsXVLlDLDbh5tt5wpFj7tzs2JmVcu5j8PFHhLF2h2ozmBDB5X7spIPhfVNxUIljB3Mn33us2IA8QaAAw23mgHEscKfr4uUcttjKg0fQsvu65hw1L48ddMhj5fPRUuMfsaVvyjfcZTLfzOQDYU0hgJSdAg7UNeoQnKNtCbYAGxhQiXD3MlQvGPSwGi5glExT7_TUfVq4c31w-K4pUHhCqcMLk6PlNP0Lr8qCMUlvksr0wkOhcMNw-MDwccsDf-oZhPXH8s5iGbMiMITi1cz0jW0uSlxplg8elYPB2d45y7618auxvlkNZehTq5A66G6mQxWTQ-1Mof1ZSLK1Pfuegi2DyBTlNEF-_hpeS4WgtkzdBAJCtOk2QCa16vzQRnWbNv3OqsnHhd_ZZLAGfoc0SVMj3dWQ91lktDFR7SwG8mFCq_F45aA8NijRizcQ2PTFPstDxVhvVLQzhMpmExIi3g__gbUJY4QJz3S3cl0OS4jevqySRYVMCKqJHpGkNJjnJveM2UAUPaw_x_K-O-fLz_CqaIMBgU0gvStw7BAAivOnLt6QJcDQ2RF1jsrc2_Hp2yDSJ9Xv_RG67g2aBEqRTDQMy0zF3VFwB6vTd57vHmN1XimKpX7Hxa6AWnwGFxVG0xQ7an8aGXHndGfEc6smIYFa7EidMzGnvsG2DYzefcKLVg3lbcrtvuuAGEy_s4BxDM_QUAWcZ-q2yzeF66LNbUEicSXcCghnWUSLz_fHDfjZriJfZYt0ixPaB4IzGs59adO19hPfPbyzVcnlRbTdT-zEBO8GUFOrylhT2vUETw_EFVnH2MtI5DnMdXfbPReZxjMSTVTOpOS09MDj_RIjikqil-gUfezL_3s5H4bulowq6sYHAPZyZy0" alt="PlantUML diagram" loading="lazy"></figure>
+
+<p><strong>双亲委派（parent delegation）</strong>：类加载器收到加载请求时，先交给父加载器处理，父加载器找不到，自己才去加载。这保证了 <code>java.lang.Object</code> 这类核心类只能由启动类加载器加载，应用无法用同名的类冒充。</p>
+<p>在 JDK 21 上实测（<code>demo/Probe.java</code>）：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">loader: app jdk.internal.loader.ClassLoaders$AppClassLoader</span><br><span class="line">loader: platform jdk.internal.loader.ClassLoaders$PlatformClassLoader</span><br><span class="line">String loader: null                // 启动类加载器</span><br><span class="line">java.sql.Date loader: platform</span><br></pre></td></tr></table></figure>
+
+<table>
+<thead>
+<tr>
+<th>加载器</th>
+<th>在 Java 代码里看到的</th>
+<th>JDK 21 中负责的范围</th>
+<th>Java 8 时的对应</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>启动 Bootstrap</td>
+<td><code>null</code></td>
+<td><code>java.base</code> 等核心模块（JEP 220 去掉了 <code>rt.jar</code>）</td>
+<td>加载 <code>rt.jar</code></td>
+</tr>
+<tr>
+<td>平台 Platform</td>
+<td>名为 <code>platform</code>，<code>ClassLoaders$PlatformClassLoader</code></td>
+<td><code>java.sql</code>、<code>java.xml.crypto</code> 等平台模块</td>
+<td>扩展类加载器，加载 <code>jre/lib/ext</code>（JDK 9 移除）</td>
+</tr>
+<tr>
+<td>应用 App</td>
+<td>名为 <code>app</code>，<code>ClassLoaders$AppClassLoader</code></td>
+<td>classpath 和模块路径上的应用类</td>
+<td>名称相同</td>
+</tr>
+<tr>
+<td>自定义</td>
+<td><code>ClassLoader</code> 的子类</td>
+<td>热替换、多版本隔离</td>
+<td>名称相同</td>
+</tr>
+</tbody></table>
+<p>自定义类加载器不一定遵守双亲委派。Tomcat 给每个 Web 应用一个独立的加载器，<strong>除 JDK 核心类仍先交给上层外，先在应用自己的 <code>WEB-INF</code> 里找，找不到再交给父加载器</strong>，这样不同应用可以各自带不同版本的同名 jar。</p>
+<blockquote>
+<p>JDK 9 起，内置加载器在委派之前会先看要加载的包属于哪个命名模块；如果这个模块归某个加载器管，就直接交给那个加载器，不再一层层往上问。</p>
+</blockquote>
+<h3 id="5-3-更快的类加载：类数据共享（Class-Data-Sharing-CDS）"><a href="#5-3-更快的类加载：类数据共享（Class-Data-Sharing-CDS）" class="headerlink" title="5.3 更快的类加载：类数据共享（Class Data Sharing, CDS）"></a>5.3 更快的类加载：类数据共享（Class Data Sharing, CDS）</h3><p>启动一个空的 <code>main</code> 方法也要加载几百个 JDK 类，每个类都要读文件、解析、验证。CDS 的思路是一次做完、结果落盘：把这些类加载后的内部结构写成归档文件，以后启动时用 mmap 直接映射进内存。这样既省掉了重复的解析和验证，同一台机器上的多个 JVM 进程还能共享这部分只读页。</p>
+<ul>
+<li>JDK 5 首次加入；</li>
+<li>JDK 10 起应用类也能放进归档（AppCDS，JEP 310）；</li>
+<li>JDK 12 起 JDK 自带一份默认归档（JEP 341），默认就会用上；</li>
+<li>JDK 13 起可以用 <code>-XX:ArchiveClassesAtExit</code> 在程序退出时自动生成归档（JEP 350）。</li>
+</ul>
+<p>在 JDK 21 上实测，核心类确实来自归档：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ java -Xlog:class+load=info -cp out2 Probe</span><br><span class="line">[info][class,load] java.lang.Object source: shared objects file</span><br><span class="line">[info][class,load] java.lang.String source: shared objects file</span><br><span class="line">[info][class,load] Probe source: file:/.../out2/</span><br></pre></td></tr></table></figure>
+
+<h3 id="5-4-类与类加载器互相引用"><a href="#5-4-类与类加载器互相引用" class="headerlink" title="5.4 类与类加载器互相引用"></a>5.4 类与类加载器互相引用</h3><ul>
+<li>每个类都记着定义它的类加载器（<code>Class.getClassLoader()</code>）；</li>
+<li>每个类加载器也持有它加载过的所有类的引用。</li>
+</ul>
+<p>结果是：<strong>只要类加载器还可达，它加载的类就一个都卸载不掉</strong>。如果热部署时旧的类加载器被某个地方意外引用住，比如一个 <code>ThreadLocal</code>、一个没注销的 JDBC 驱动，或者一个还在运行的线程，那么每重新部署一次，元空间就多占一批类，最后抛出 <code>OutOfMemoryError: Metaspace</code>。</p>
+<h2 id="6-异常表（Exception-Table）"><a href="#6-异常表（Exception-Table）" class="headerlink" title="6. 异常表（Exception Table）"></a>6. 异常表（Exception Table）</h2><p>方法里有 <code>try-catch</code> 或 <code>try-finally</code> 时，它的 Code 属性里会有一张异常表。表的每一行描述一个处理器：在 <code>[from, to)</code> 这段字节码范围内，如果抛出 <code>type</code> 类型的异常，就跳到 <code>target</code> 去执行。用 <code>Greeter.parse()</code> 举例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">int</span> <span class="title function_">parse</span><span class="params">(String s)</span> &#123;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> Integer.parseInt(s);</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        System.out.println(<span class="string">&quot;done&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Exception table:</span><br><span class="line">   from    to  target type</span><br><span class="line">       0     5    15   Class java/lang/NumberFormatException</span><br><span class="line">       0     5    28   any</span><br><span class="line">      15    18    28   any</span><br><span class="line">      28    30    28   any</span><br></pre></td></tr></table></figure>
+
+<p>逐行解读：</p>
+<ol>
+<li><code>try</code> 块（偏移 0–4）里抛出 <code>NumberFormatException</code> 时，跳到 15，也就是 catch 块；</li>
+<li><code>try</code> 块里抛出任何其他异常时，跳到 28。这是 finally 的「异常出口」：先执行 finally 的代码，再把异常重新抛出（<code>athrow</code>）；</li>
+<li>catch 块（15–17）自己又抛出异常时，同样跳到 28；</li>
+<li>最后一行覆盖的是 28 处的 <code>astore</code> 本身，属于 javac 生成的兜底条目。</li>
+</ol>
+<p><strong>finally 是怎么实现的</strong>：从 JDK 21 的字节码可以看到，<code>System.out.println(&quot;done&quot;)</code> 一共出现了<strong>三次</strong>，分别在 try 正常返回前（偏移 5–10）、catch 返回前（18–23）和异常出口里（30–35）。现代 javac 会把 finally 块<strong>复制到每一条出口路径上</strong>，再用 <code>any</code> 类型的处理器兜住其余情况。早年的 <code>jsr</code>&#x2F;<code>ret</code> 子程序跳转方案已经淘汰，规范规定版本号 51（Java 7）及以上的 class 文件不得再包含 <code>jsr</code> 指令。</p>
+<p>抛出异常后，JVM 按下面的流程查找处理器：</p>
+<figure class="plantuml"><img src="https://www.plantuml.com/plantuml/svg/VP9TJzfW5CVldqzn4c_mPX7nPO8n2jAB9KkMRDbz0m_IM5lJbfbjMK9KX6fX90g-eK3c2veeR2wAKFNBy3njh_WAIrjCy2MxVSuvl_F__yypBIkif2GMU2JFSy8YAx4B8CVPgBZ42NCGOtaPzrMYECOcU8KH1UKZzms3rzTNbCI440s9ae0by0xr5MOaILmAYRmemS18S7HqpFUy-2dEHUO5BClWVVC4YICAAypn6BuZWA0eHR7K0qsCpFY2Rn60BQRtvlLwtmwFenzz145KUiDiP7wk9z5fPXWc60u-npAZ4-6Xu1F4J4JXld3ArnU4S9WPPfZNEbyH-h9hbcCNH27wKbYOyON6_pFmYbw5KtWCT7sVf5j4NoRD9iddkhhsxlDxeCaShTnGzPuShHhvDR9RGyYvElBt3o1MYKlY4j1CqNp8crMDRbzRMxjclHv04bx4h880k1XuoDqcKREqU4kl2iRUgZjjLcjMMklg6YsffhP2zl-Q9sl6Vj5jXWyXr6bk6R_Rv723QBTMAclihPfLZUItktgvgsUeffhLMgTvOLLRfFMJbe-fUj_LrK5GubW03osfWmW0m4-RAUEiHJUpdRiIBJHe9TFLDPBR8AdZddEzO6pLa7bpHJ8DK5Xf3YjWj4-DzWLLJysg5e39oO7P41CAZqzDEL1P4HSH0EPb31xwfzgtpR7fWets9ZqeszlqMpisDuTAXZHF4IdLpCQAiLKpaobh-PULrgnqbXORRi816ov4kLWlILYASpm6Zz5wC6eRj9Anqfhvi4DBgelhwkL1u6JNjls7mMESjJgjjK7axxIEZFOkBPtJRC7CtVGyFvxMle2wIR8DKbcZbGnoDxZA7TyC4nu9ZqrD8UUKbojqfqvBIPBFTPh9JlFSEZWabncwVkGEEa9w5zYfsvduxIzb9PEsgoSyDpoIFt6wIEgwqou-RhUpTpzL0BavE8bFOo6QME3_0G00" alt="PlantUML diagram" loading="lazy"></figure>
+
+<h2 id="7-符号表与字符串表（Symbol-Table-String-Table）"><a href="#7-符号表与字符串表（Symbol-Table-String-Table）" class="headerlink" title="7. 符号表与字符串表（Symbol Table, String Table）"></a>7. 符号表与字符串表（Symbol Table, String Table）</h2><p>除了每个类各自的运行时常量池，HotSpot 还有两张全局哈希表：</p>
+<ul>
+<li><strong>符号表（SymbolTable）</strong>：<code>Greeter</code> 常量池里的 <code>java/lang/Object</code>，和其他成千上万个类常量池里的 <code>java/lang/Object</code>，在 HotSpot 内部指向同一个 <code>Symbol</code>。类名、方法名、描述符这些 UTF-8 串在整个 JVM 里只存一份，放在本地内存，不再被引用时清理。</li>
+<li><strong>字符串表（StringTable）</strong>：存放被<strong>驻留（intern）</strong>的 <code>String</code> 对象，用来实现 JLS §3.10.5 的规定：内容相同的字符串字面量必须是同一个对象，<code>intern()</code> 也返回这个唯一的实例。</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">String</span> <span class="variable">a</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">String</span>(<span class="string">&quot;jvm&quot;</span>);</span><br><span class="line">a == <span class="string">&quot;jvm&quot;</span>            <span class="comment">// false：new 出来的是一个新对象</span></span><br><span class="line">a.intern() == <span class="string">&quot;jvm&quot;</span>   <span class="comment">// true：intern() 返回字符串表里的唯一实例</span></span><br></pre></td></tr></table></figure>
+
+<p>上面的结果在 JDK 21 上实测过（<code>demo/Probe.java</code>）。另外，<code>&quot;j&quot; + &quot;v&quot; + &quot;m&quot;</code> 这种全部由常量组成的表达式，**在编译期就被折叠成 <code>&quot;jvm&quot;</code>**，不调 <code>intern()</code> 也会和 <code>&quot;jvm&quot;</code> 相等。</p>
+<ul>
+<li>字符串字面量<strong>不是</strong>在类加载时就进入字符串表的。HotSpot 采用懒解析，某条 <code>ldc</code> 指令第一次执行时，才会创建或查找对应的 <code>String</code>，并把它驻留到表里。</li>
+<li>JDK 7 起，被驻留的 <code>String</code> 对象放在<strong>堆</strong>上，可以被 GC 回收。表的桶数可以用 <code>-XX:StringTableSize</code> 调整。</li>
+</ul>
+<h2 id="8-从-2013-年到-JDK-21：变化一览"><a href="#8-从-2013-年到-JDK-21：变化一览" class="headerlink" title="8. 从 2013 年到 JDK 21：变化一览"></a>8. 从 2013 年到 JDK 21：变化一览</h2><table>
+<thead>
+<tr>
+<th>主题</th>
+<th>Java 7 时代（2013）</th>
+<th>JDK 21</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>方法区的实现</td>
+<td>永久代 PermGen</td>
+<td>元空间 Metaspace，本地内存（JDK 8，JEP 122）</td>
+</tr>
+<tr>
+<td>字符串常量池</td>
+<td>旧资料常写「在永久代」</td>
+<td>堆（JDK 7 已经迁移）</td>
+</tr>
+<tr>
+<td>默认 GC</td>
+<td>Parallel</td>
+<td>G1（JDK 9，JEP 248）；另有分代 ZGC（JEP 439）</td>
+</tr>
+<tr>
+<td>JIT</td>
+<td>C1 &#x2F; C2，可选分层编译</td>
+<td>分层编译默认开启（JDK 8）；代码缓存分段（JDK 9，JEP 197）</td>
+</tr>
+<tr>
+<td>线程模型</td>
+<td>Java 线程与 OS 线程 1:1</td>
+<td>平台线程仍是 1:1，另有虚拟线程 M:N（JEP 444）</td>
+</tr>
+<tr>
+<td>偏向锁</td>
+<td>默认开启</td>
+<td>默认关闭并弃用（JDK 15，JEP 374），之后被移除</td>
+</tr>
+<tr>
+<td>核心类库的存放形式</td>
+<td><code>rt.jar</code></td>
+<td>模块化运行时镜像（JDK 9，JEP 220）</td>
+</tr>
+<tr>
+<td>扩展类加载器</td>
+<td>Extension ClassLoader</td>
+<td>Platform ClassLoader</td>
+</tr>
+<tr>
+<td>CDS</td>
+<td>只覆盖 JDK 自带类，需要手动生成归档</td>
+<td>AppCDS（JEP 310）、默认归档（JEP 341）、动态归档（JEP 350）</td>
+</tr>
+<tr>
+<td>类内部调用 private 方法</td>
+<td><code>invokespecial</code></td>
+<td><code>invokevirtual</code>（nestmates，JEP 181）</td>
+</tr>
+<tr>
+<td>字符串拼接</td>
+<td>编译成 <code>StringBuilder</code> 调用链</td>
+<td><code>invokedynamic</code>（JDK 9，JEP 280）</td>
+</tr>
+<tr>
+<td>class 文件主版本号</td>
+<td>51</td>
+<td>65</td>
+</tr>
+</tbody></table>
+<h2 id="9-术语对照"><a href="#9-术语对照" class="headerlink" title="9. 术语对照"></a>9. 术语对照</h2><table>
+<thead>
+<tr>
+<th>中文</th>
+<th>English</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>程序计数器</td>
+<td>Program Counter (PC)</td>
+</tr>
+<tr>
+<td>栈帧</td>
+<td>Frame</td>
+</tr>
+<tr>
+<td>局部变量表 &#x2F; 槽</td>
+<td>Local Variables Array &#x2F; Slot</td>
+</tr>
+<tr>
+<td>操作数栈</td>
+<td>Operand Stack</td>
+</tr>
+<tr>
+<td>本地方法栈</td>
+<td>Native Method Stack</td>
+</tr>
+<tr>
+<td>动态链接</td>
+<td>Dynamic Linking</td>
+</tr>
+<tr>
+<td>符号引用 &#x2F; 直接引用</td>
+<td>Symbolic Reference &#x2F; Direct Reference</td>
+</tr>
+<tr>
+<td>解析</td>
+<td>Resolution</td>
+</tr>
+<tr>
+<td>堆 &#x2F; 年轻代 &#x2F; 老年代</td>
+<td>Heap &#x2F; Young Generation &#x2F; Old (Tenured) Generation</td>
+</tr>
+<tr>
+<td>晋升</td>
+<td>Promotion</td>
+</tr>
+<tr>
+<td>永久代 &#x2F; 元空间</td>
+<td>Permanent Generation &#x2F; Metaspace</td>
+</tr>
+<tr>
+<td>方法区</td>
+<td>Method Area</td>
+</tr>
+<tr>
+<td>代码缓存</td>
+<td>Code Cache</td>
+</tr>
+<tr>
+<td>即时编译 &#x2F; 去优化</td>
+<td>Just-In-Time Compilation &#x2F; Deoptimization</td>
+</tr>
+<tr>
+<td>运行时常量池</td>
+<td>Run-Time Constant Pool</td>
+</tr>
+<tr>
+<td>类加载器 &#x2F; 双亲委派</td>
+<td>Classloader &#x2F; Parent Delegation</td>
+</tr>
+<tr>
+<td>加载 &#x2F; 链接 &#x2F; 验证 &#x2F; 准备 &#x2F; 初始化</td>
+<td>Loading &#x2F; Linking &#x2F; Verification &#x2F; Preparation &#x2F; Initialization</td>
+</tr>
+<tr>
+<td>类数据共享</td>
+<td>Class Data Sharing (CDS)</td>
+</tr>
+<tr>
+<td>异常表</td>
+<td>Exception Table</td>
+</tr>
+<tr>
+<td>符号表 &#x2F; 字符串表 &#x2F; 驻留</td>
+<td>Symbol Table &#x2F; String Table &#x2F; Intern</td>
+</tr>
+<tr>
+<td>安全点</td>
+<td>Safepoint</td>
+</tr>
+<tr>
+<td>守护线程</td>
+<td>Daemon Thread</td>
+</tr>
+</tbody></table>
+<h2 id="10-自己动手"><a href="#10-自己动手" class="headerlink" title="10. 自己动手"></a>10. 自己动手</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 把上面四个 .java 文件下载到同一个目录，在该目录下执行</span></span><br><span class="line">javac -g -d out Greeter.java &amp;&amp; javap -v -p out/demo/Greeter.class   <span class="comment"># 常量池、字节码、异常表</span></span><br><span class="line">javac -d out2 Probe.java Threads.java</span><br><span class="line">java -<span class="built_in">cp</span> out2 Probe                                                   <span class="comment"># 类加载器层级、intern</span></span><br><span class="line">java -Xlog:class+load=info -<span class="built_in">cp</span> out2 Probe | <span class="built_in">head</span>                      <span class="comment"># 看哪些类来自 CDS 归档</span></span><br><span class="line">java -<span class="built_in">cp</span> out2 Threads | grep <span class="string">&#x27;^&quot;&#x27;</span>                                     <span class="comment"># 列出 JVM 自己的线程</span></span><br><span class="line">javac -d out3 Priv.java &amp;&amp; javap -c -p out3/Priv.class | grep invoke  <span class="comment"># private 调用、字符串拼接用的指令</span></span><br></pre></td></tr></table></figure>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2020/09/01/%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3JVM-Jvm%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%E4%BA%8C%E4%B8%89%E4%BA%8B/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">深入理解JVM-Jvm垃圾回收二三事</span>
+        </a>
+      
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E5%85%A8%E6%99%AF"><span class="toc-text">0. 全景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%BA%BF%E7%A8%8B"><span class="toc-text">1. 线程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-1-Java-%E7%BA%BF%E7%A8%8B%E4%B8%8E%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%BA%BF%E7%A8%8B"><span class="toc-text">1.1 Java 线程与操作系统线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-2-JVM-%E8%87%AA%E5%B7%B1%E7%9A%84%E5%90%8E%E5%8F%B0%E7%BA%BF%E7%A8%8B"><span class="toc-text">1.2 JVM 自己的后台线程</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-%E7%BA%BF%E7%A8%8B%E7%A7%81%E6%9C%89%E7%9A%84%E5%8C%BA%E5%9F%9F"><span class="toc-text">2. 线程私有的区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E7%A8%8B%E5%BA%8F%E8%AE%A1%E6%95%B0%E5%99%A8%EF%BC%88Program-Counter-PC%EF%BC%89"><span class="toc-text">2.1 程序计数器（Program Counter, PC）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-Java-%E6%A0%88%E4%B8%8E%E6%A0%88%E5%B8%A7%EF%BC%88Stack-Frame%EF%BC%89"><span class="toc-text">2.2 Java 栈与栈帧（Stack, Frame）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-3-%E6%9C%AC%E5%9C%B0%E6%96%B9%E6%B3%95%E6%A0%88%EF%BC%88Native-Method-Stack%EF%BC%89"><span class="toc-text">2.3 本地方法栈（Native Method Stack）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-4-%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F%E8%A1%A8%EF%BC%88Local-Variables-Array%EF%BC%89"><span class="toc-text">2.4 局部变量表（Local Variables Array）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-5-%E6%93%8D%E4%BD%9C%E6%95%B0%E6%A0%88%EF%BC%88Operand-Stack%EF%BC%89"><span class="toc-text">2.5 操作数栈（Operand Stack）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-%E5%8A%A8%E6%80%81%E9%93%BE%E6%8E%A5%EF%BC%88Dynamic-Linking%EF%BC%89"><span class="toc-text">2.6 动态链接（Dynamic Linking）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E7%BA%BF%E7%A8%8B%E5%85%B1%E4%BA%AB%E7%9A%84%E5%8C%BA%E5%9F%9F"><span class="toc-text">3. 线程共享的区域</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-%E5%A0%86%EF%BC%88Heap%EF%BC%89"><span class="toc-text">3.1 堆（Heap）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-2-%E5%88%86%E4%BB%A3%E4%B8%8E%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B6%EF%BC%88Generations-GC%EF%BC%89"><span class="toc-text">3.2 分代与垃圾回收（Generations, GC）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-3-%E9%9D%9E%E5%A0%86%E5%86%85%E5%AD%98%EF%BC%9A%E6%96%B9%E6%B3%95%E5%8C%BA%E3%80%81%E4%BB%A3%E7%A0%81%E7%BC%93%E5%AD%98"><span class="toc-text">3.3 非堆内存：方法区、代码缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-4-%E5%8D%B3%E6%97%B6%E7%BC%96%E8%AF%91%EF%BC%88Just-In-Time-Compilation-JIT%EF%BC%89"><span class="toc-text">3.4 即时编译（Just-In-Time Compilation, JIT）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E6%96%B9%E6%B3%95%E5%8C%BA%E4%B8%8E-class-%E6%96%87%E4%BB%B6"><span class="toc-text">4. 方法区与 class 文件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%96%B9%E6%B3%95%E5%8C%BA%E9%87%8C%E5%AD%98%E6%94%BE%E7%9A%84%E6%AF%8F%E4%B8%AA%E7%B1%BB%E7%9A%84%E4%BF%A1%E6%81%AF"><span class="toc-text">4.1 方法区里存放的每个类的信息</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-class-%E6%96%87%E4%BB%B6%E7%BB%93%E6%9E%84%EF%BC%88ClassFile-Structure%EF%BC%89"><span class="toc-text">4.2 class 文件结构（ClassFile Structure）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E7%94%A8-javap-%E8%AF%BB-class-%E6%96%87%E4%BB%B6"><span class="toc-text">4.3 用 javap 读 class 文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E8%BF%90%E8%A1%8C%E6%97%B6%E5%B8%B8%E9%87%8F%E6%B1%A0%EF%BC%88Run-Time-Constant-Pool%EF%BC%89"><span class="toc-text">4.4 运行时常量池（Run-Time Constant Pool）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E7%B1%BB%E5%8A%A0%E8%BD%BD"><span class="toc-text">5. 类加载</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E5%8A%A0%E8%BD%BD%E3%80%81%E9%93%BE%E6%8E%A5%E3%80%81%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">5.1 加载、链接、初始化</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E7%9A%84%E5%B1%82%E7%BA%A7%E4%B8%8E%E5%8F%8C%E4%BA%B2%E5%A7%94%E6%B4%BE"><span class="toc-text">5.2 类加载器的层级与双亲委派</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-%E6%9B%B4%E5%BF%AB%E7%9A%84%E7%B1%BB%E5%8A%A0%E8%BD%BD%EF%BC%9A%E7%B1%BB%E6%95%B0%E6%8D%AE%E5%85%B1%E4%BA%AB%EF%BC%88Class-Data-Sharing-CDS%EF%BC%89"><span class="toc-text">5.3 更快的类加载：类数据共享（Class Data Sharing, CDS）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-4-%E7%B1%BB%E4%B8%8E%E7%B1%BB%E5%8A%A0%E8%BD%BD%E5%99%A8%E4%BA%92%E7%9B%B8%E5%BC%95%E7%94%A8"><span class="toc-text">5.4 类与类加载器互相引用</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%BC%82%E5%B8%B8%E8%A1%A8%EF%BC%88Exception-Table%EF%BC%89"><span class="toc-text">6. 异常表（Exception Table）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E7%AC%A6%E5%8F%B7%E8%A1%A8%E4%B8%8E%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%A1%A8%EF%BC%88Symbol-Table-String-Table%EF%BC%89"><span class="toc-text">7. 符号表与字符串表（Symbol Table, String Table）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E4%BB%8E-2013-%E5%B9%B4%E5%88%B0-JDK-21%EF%BC%9A%E5%8F%98%E5%8C%96%E4%B8%80%E8%A7%88"><span class="toc-text">8. 从 2013 年到 JDK 21：变化一览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9-%E6%9C%AF%E8%AF%AD%E5%AF%B9%E7%85%A7"><span class="toc-text">9. 术语对照</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10-%E8%87%AA%E5%B7%B1%E5%8A%A8%E6%89%8B"><span class="toc-text">10. 自己动手</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

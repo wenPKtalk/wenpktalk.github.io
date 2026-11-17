@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>15.2. 分布式内存系统、消息传递与 MPI · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C15-Parallel&#x2F;distrmem.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  15.2. Distributed Memory Sys">
+<meta property="og:type" content="website">
+<meta property="og:title" content="15.2. 分布式内存系统、消息传递与 MPI · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/15.2-distrmem.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C15-Parallel&#x2F;distrmem.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  15.2. Distributed Memory Sys">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/SharedNothing.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/ArrayDivision.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.961Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.961Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C15-Parallel/images/SharedNothing.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html" class="current" aria-current="page">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>15. 展望：其他并行系统与并行编程模型</span>
+      </nav>
+      <span class="book-position">第 160 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">15.2. 分布式内存系统、消息传递与 MPI</h1>
+  
+  
+    <p class="article-meta"><span>约 48 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/distrmem.html">https://diveintosystems.org/book/C15-Parallel/distrmem.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>15.2. Distributed Memory Systems, Message Passing, and MPI</em></p>
+<p>第 14 章介绍了 <a href="../C14-SharedMemory/14.2-posix.html">Pthreads</a> 和 <a href="../C14-SharedMemory/14.7-openmp.html">OpenMP</a> 等机制，程序可以借助它们在<em>共享内存系统</em>上利用多个 CPU 核心。在这类系统中，所有核心共享同一套物理内存硬件，因此它们可以通过读写共享的内存地址来交换数据、同步各自的行为。虽然共享内存系统让通信变得相对容易，但其可扩展性受限于系统中 CPU 核心的数量。</p>
+<blockquote>
+<p>Chapter 14 describes mechanisms like <a href="../C14-SharedMemory/14.2-posix.html">Pthreads</a> and <a href="../C14-SharedMemory/14.7-openmp.html">OpenMP</a> that programs use to take advantage of multiple CPU cores on a <em>shared memory system</em>. In such systems, each core shares the same physical memory hardware, allowing them to communicate data and synchronize their behavior by reading from and writing to shared memory addresses. Although shared memory systems make communication relatively easy, their scalability is limited by the number of CPU cores in the system.</p>
+</blockquote>
+<p>截至 2019 年，高端商用服务器 CPU 一般最多提供 64 个核心。然而对于某些任务来说，即便有几百个 CPU 核心也远远不够。例如，设想模拟地球海洋的流体动力学，或者为整个万维网的内容建立索引以构建一个搜索应用。这类庞大的任务所需的物理内存和处理器数量，超出了任何一台计算机所能提供的范围。因此，需要大量 CPU 核心的应用会运行在放弃了共享内存的系统上：它们运行在由多台计算机组成的系统中，每台计算机都有自己的 CPU 和内存，彼此通过网络通信来协调行为。</p>
+<blockquote>
+<p>As of 2019, high-end commercial server CPUs generally provide a maximum of 64 cores. For some tasks, though, even a few hundred CPU cores isn’t close enough. For example, imagine trying to simulate the fluid dynamics of the Earth’s oceans or index the entire contents of the World Wide Web to build a search application. Such massive tasks require more physical memory and processors than any single computer can provide. Thus, applications that require a large number of CPU cores run on systems that forego shared memory. Instead, they execute on systems built from multiple computers, each with their own CPU(s) and memory, that communicate over a network to coordinate their behavior.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 核数早已不止 64</p>
+<ul>
+<li>AMD EPYC 9005（Zen 5）：2024-10-10 发布，每插槽最多 <strong>192 核</strong>。<a target="_blank" rel="noopener" href="https://www.amd.com/en/newsroom/press-releases/2024-10-10-amd-launches-5th-gen-amd-epyc-cpus-maintaining-le.html">AMD 公告</a></li>
+<li>Intel Xeon 6+（Clearwater Forest，全 E 核）：2026 年发布，每插槽最多 <strong>288 核</strong>。<a target="_blank" rel="noopener" href="https://www.techspot.com/news/112618-intel-launches-xeon-6-clearwater-forest-288-e.html">TechSpot</a></li>
+<li>AMD 第 6 代 EPYC（Venice，Zen 6）：AMD 公布的 2026 年产品，最多 <strong>256 核</strong>。<a target="_blank" rel="noopener" href="https://www.tomshardware.com/pc-components/cpus/amds-256-core-epyc-venice-cpu-in-the-labs-now-coming-in-2026">Tom’s Hardware</a></li>
+</ul>
+<p>双路服务器已有数百核，很多以前要上集群的任务单机就能完成；但原文的论点不变：2026 年 6 月世界第一的超算 LineShine 有 13,789,440 个核心，只能靠分布式内存组织。<a target="_blank" rel="noopener" href="https://top500.org/lists/top500/2026/06/highs/">TOP500 2026-06</a></p>
+</div>
+<p>一组协同工作的计算机被称为<strong>分布式内存系统</strong>（distributed memory system，通常也直接叫<strong>分布式系统</strong>）。</p>
+<blockquote>
+<p>A collection of computers working together is known as a <strong>distributed memory system</strong> (or often just <strong>distributed system</strong>).</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 关于时间顺序的说明（A Note on Chronology）</p><p>虽然本书按这样的顺序来介绍，但实际上，早在线程或 OpenMP 这类机制出现之前，系统设计者就已经在构建分布式系统了。</p>
+<blockquote>
+<p>Despite the order in which they’re presented in this book, systems designers built distributed systems long before mechanisms like threads or OpenMP existed.</p>
+</blockquote>
+</div>
+<p>有些分布式内存系统的硬件集成度比其他系统更高。例如，<strong>超级计算机</strong>是一种高性能系统，其中大量<em>计算节点</em>紧密耦合（高度集成）在一个高速互连网络上。每个计算节点都有自己的 CPU、GPU 和内存，但多个节点可能共享二级存储、电源等辅助资源。不同超级计算机之间，硬件共享的具体程度各不相同。</p>
+<blockquote>
+<p>Some distributed memory systems integrate hardware more closely than others. For example, a <strong>supercomputer</strong> is a high-performance system in which many <em>compute nodes</em> are tightly coupled (closely integrated) to a fast interconnection network. Each compute node contains its own CPU(s), GPU(s), and memory, but multiple nodes might share auxiliary resources like secondary storage and power supplies. The exact level of hardware sharing varies from one supercomputer to another.</p>
+</blockquote>
+<p>在另一个极端，分布式应用可能运行在一组松散耦合（集成度较低）、完全自治的计算机（<em>节点</em>）上，这些节点通过以太网等传统局域网（LAN）技术相连。这样的一组节点被称为<strong>商用现成</strong>（commodity off-the-shelf，COTS）集群。COTS 集群通常采用<strong>无共享架构</strong>（shared-nothing architecture），即每个节点都拥有自己的一整套计算硬件（CPU、GPU、内存和存储）。<a href="15.2-distrmem.html">图 1</a> 展示了一个由两台共享内存计算机组成的无共享分布式系统。</p>
+<blockquote>
+<p>On the other end of the spectrum, a distributed application might run on a loosely coupled (less integrated) collection of fully autonomous computers (<em>nodes</em>) connected by a traditional local area network (LAN) technology like Ethernet. Such a collection of nodes is known as a <strong>commodity off-the-shelf</strong> (COTS) cluster. COTS clusters typically employ a <strong>shared-nothing architecture</strong> in which each node contains its own set of computation hardware (CPU(s), GPU(s), memory, and storage). <a href="15.2-distrmem.html">Figure 1</a> illustrates a shared-nothing distributed system consisting of two shared-memory computers.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C15-Parallel/images/SharedNothing.png" alt="Two computer block diagrams, each with a four-core CPU connected to a private memory and I/O controller. The I/O controller connects to a network interface, which connects the two nodes via unspecified network infrastructure (e.g., Ethernet, InfiniBand, Fibre Channel)."></p>
+<p><strong>图 1.</strong> 由两个计算节点构成的无共享分布式内存体系结构的主要组成部分</p>
+<p><em>Figure 1. The major components of a shared-nothing distributed memory architecture built from two compute nodes</em></p>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>图中标签：Core＝核心，Main Memory＝主存，I&#x2F;O Controller＝I&#x2F;O 控制器，Network Interface＝网络接口（网卡），Network Infrastructure (e.g., Ethernet, InfiniBand, Fibre Channel)＝网络基础设施（如以太网、InfiniBand、光纤通道）。</p>
+<p>图中两台机器各自内部是”共享内存”（4 个核共享本机内存），彼此之间则只能通过网络传递消息——现实中的集群几乎都是这种<strong>混合结构</strong>。所以大型 HPC 程序常用”MPI + X”的写法：节点之间用 MPI，节点内部用 OpenMP 线程（第 14 章）或 CUDA（15.1 节）。图注里提到的 InfiniBand 是 HPC 常用的高速网络，支持 <strong>RDMA</strong>（远程直接内存访问：网卡直接读写远端机器的内存，绕过对方 CPU 和操作系统内核），延迟可低至微秒级，远低于普通 TCP&#x2F;IP。</p>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 互连网络</p><p>2026 年 6 月 TOP500 中，InfiniBand 占 292 台（58.4%），千兆级以太网占 165 台（33%）；美国三台 E 级超算都用 HPE Slingshot-11。<a target="_blank" rel="noopener" href="https://top500.org/lists/top500/2026/06/highs/">TOP500 2026-06</a> 超以太网联盟于 2025-06-11 发布 UEC 1.0 规范，在以太网&#x2F;IP 上提供面向 AI 和 HPC 的现代 RDMA。<a target="_blank" rel="noopener" href="https://www.linuxfoundation.org/press/uec-launches-spec-1.0">Linux 基金会公告</a></p>
+</div>
+<h3 id="15-2-1-并行与分布式处理模型"><a href="#15-2-1-并行与分布式处理模型" class="headerlink" title="15.2.1. 并行与分布式处理模型"></a>15.2.1. 并行与分布式处理模型</h3><p><em>15.2.1. Parallel and Distributed Processing Models</em></p>
+<p>应用设计者通常会采用一些久经考验的设计来组织分布式应用。采用这样的应用模型有助于开发者推理应用的行为，因为应用的行为会遵循大家熟知的规范。每种模型都有自己独特的优缺点——不存在放之四海而皆准的方案。下面我们简要介绍几种较常见的模型，但请注意，这并不是一份详尽的清单。</p>
+<blockquote>
+<p>Application designers often organize distributed applications using tried-and-true designs. Adopting application models like these helps developers reason about an application because its behavior will conform to well-understood norms. Each model has its unique benefits and drawbacks — there’s no one-size-fits-all solution. We briefly characterize a few of the more common models below, but note that we’re not presenting an exhaustive list.</p>
+</blockquote>
+<h4 id="客户端-服务器"><a href="#客户端-服务器" class="headerlink" title="客户端&#x2F;服务器"></a>客户端&#x2F;服务器</h4><p><em>Client&#x2F;Server</em></p>
+<p><strong>客户端&#x2F;服务器模型</strong>（client&#x2F;server model）是一种极其常见的应用模型，它把应用的职责划分给两类参与者：客户端进程和服务器进程。服务器进程为请求完成某项工作的客户端提供服务。服务器进程通常在一个众所周知的地址上等待，接收来自客户端的连接。建立连接后，客户端向服务器进程发送请求，服务器要么满足这些请求（例如取回所请求的文件），要么报告错误（例如文件不存在，或客户端无法通过身份验证）。</p>
+<blockquote>
+<p>The <strong>client&#x2F;server model</strong> is an extremely common application model that divides an application’s responsibilities among two actors: client processes and server processes. A server process provides a service to clients that ask for something to be done. Server processes typically wait at well-known addresses to receive incoming connections from clients. Upon making a connection, a client sends requests to the server process, which either satisfies those requests (e.g., by fetching a requested file) or reports an error (e.g., the file not existing or the client can’t be properly authenticated).</p>
+</blockquote>
+<p>你可能没有意识到，你正在阅读的这本教科书就是通过客户端&#x2F;服务器模型访问的！你的 Web 浏览器（客户端）连接到一个位于公共地址（<code>diveintosystems.org</code>）的网站（服务器），以获取本书的内容。</p>
+<blockquote>
+<p>Although you may not have considered it, you accessed the textbook you’re reading right now via the client&#x2F;server model! Your web browser (client) connected to a website (server) at a public address (<code>diveintosystems.org</code>) to retrieve the book’s contents.</p>
+</blockquote>
+<h4 id="流水线"><a href="#流水线" class="headerlink" title="流水线"></a>流水线</h4><p><em>Pipeline</em></p>
+<p><strong>流水线模型</strong>（pipeline model）把应用划分为一系列不同的步骤，数据从一个步骤流向下一个步骤。流水线中的各个组件独立且同时地处理各自的数据。这种模型很适合这样的应用：其工作流程是对大量输入数据执行线性的、重复性的任务。例如，考虑计算机动画电影的制作。电影的每一帧都必须经过一系列步骤的处理来变换画面（例如添加纹理或施加光照）。由于每个步骤都在序列中独立进行，动画师可以在一个大型计算机集群上并行处理多个帧，从而加快渲染速度。</p>
+<blockquote>
+<p>The <strong>pipeline model</strong> divides an application into a distinct sequence of steps in which data flows from one step to another. Individual components within the pipeline each process their data independently and simultaneously. This model works well for applications whose workflow involves linear, repetitive tasks over large data inputs. For example, consider the production of computer-animated films. Each frame of the film must be processed through a sequence of steps that transform the frame (e.g., adding textures or applying lighting). Because each step happens independently in a sequence, animators can speed up rendering by processing frames in parallel across a large cluster of computers.</p>
+</blockquote>
+<h4 id="主管-工人（Boss-Worker）"><a href="#主管-工人（Boss-Worker）" class="headerlink" title="主管&#x2F;工人（Boss&#x2F;Worker）"></a>主管&#x2F;工人（Boss&#x2F;Worker）</h4><p><em>Boss&#x2F;Worker</em></p>
+<p>在<strong>主管&#x2F;工人模型</strong>（boss&#x2F;worker model）中，一个进程充当中央协调者，把工作分配给其他节点上的进程。这种模型适合需要处理大量可分割输入的问题。boss 把输入分成较小的片段，给每个 worker 分配一个或多个片段。在一些应用中，boss 可能会静态地给每个 worker 恰好分配一个输入片段；而在另一些应用中，worker 可能会反复地处理完一个输入片段后，再回到 boss 那里动态地领取下一块输入。本节稍后会展示一个示例程序，其中 boss 把一个数组分给许多 worker，对数组执行标量乘法。</p>
+<blockquote>
+<p>In the <strong>boss&#x2F;worker model</strong>, one process acts as a central coordinator and distributes work among the processes at other nodes. This model works well for problems that require processing a large, divisible input. The boss divides the input into smaller pieces and assigns one or more pieces to each worker. In some applications, the boss might statically assign each worker exactly one piece of the input. In other cases, the workers might repeatedly finish a piece of the input and then return to the boss to dynamically retrieve the next input chunk. Later in this section, we’ll present an example program in which a boss divides an array among many workers to perform scalar multiplication on an array.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>静态分配 vs. 动态领取，对应第 14 章 OpenMP 中 <code>schedule(static)</code> 与 <code>schedule(dynamic)</code> 的区别：前者开销小，后者在各块工作量不均衡时能做<strong>负载均衡</strong>。分布式框架里常见的”任务队列 + 工作者拉取任务”（如 Celery、Ray、Spark 的任务调度）都是动态领取的变体。</p>
+</div>
+<p>注意，这种模型有时也被称为其他名字，比如”master&#x2F;worker”（主&#x2F;从）或其他变体，但核心思想是一样的。</p>
+<blockquote>
+<p>Note that this model is sometimes called other names, like “master&#x2F;worker” or other variants, but the main idea is the same.</p>
+</blockquote>
+<h4 id="对等（Peer-to-Peer）"><a href="#对等（Peer-to-Peer）" class="headerlink" title="对等（Peer-to-Peer）"></a>对等（Peer-to-Peer）</h4><p><em>Peer-to-Peer</em></p>
+<p>与主管&#x2F;工人模型不同，<strong>对等</strong>（peer-to-peer，P2P）应用不依赖于一个中央控制进程。相反，各个对等进程会自行把应用组织成一种结构，在其中它们各自承担大致相同的职责。例如，在 BitTorrent 文件共享协议中，每个对等节点反复与其他节点交换文件的各个部分，直到所有节点都收到了完整的文件。</p>
+<blockquote>
+<p>Unlike the boss&#x2F;worker model, a <strong>peer-to-peer</strong> application avoids relying on a centralized control process. Instead, peer processes self-organize the application into a structure in which they each take on roughly the same responsibilities. For example, in the BitTorrent file sharing protocol, each peer repeatedly exchanges parts of a file with others until they’ve all received the entire file.</p>
+</blockquote>
+<p>由于没有中心化组件，对等应用通常对节点故障具有较强的鲁棒性。另一方面，对等应用通常需要复杂的协调算法，这使得它们难以构建，也难以进行严格的测试。</p>
+<blockquote>
+<p>Lacking a centralized component, peer-to-peer applications are generally robust to node failures. On the other hand, peer-to-peer applications typically require complex coordination algorithms, making them difficult to build and rigorously test.</p>
+</blockquote>
+<h3 id="15-2-2-通信协议"><a href="#15-2-2-通信协议" class="headerlink" title="15.2.2. 通信协议"></a>15.2.2. 通信协议</h3><p><em>15.2.2. Communication Protocols</em></p>
+<p>无论是作为超级计算机的一部分，还是 COTS 集群的一部分，分布式内存系统中的进程都通过<strong>消息传递</strong>（message passing）进行通信：一个进程显式地向一个或多个其他节点上的进程发送消息，由它们接收。如何利用网络由运行在系统上的应用自己决定——有些应用需要频繁通信，以便紧密协调许多节点上进程的行为；而另一些应用通信只是为了把大量输入分给各个进程，之后基本上独立工作。</p>
+<blockquote>
+<p>Whether they are part of a supercomputer or a COTS cluster, processes in a distributed memory system communicate via <strong>message passing</strong>, whereby one process explicitly sends a message to processes on one or more other nodes, which receive it. It’s up to the applications running on the system to determine how to utilize the network — some applications require frequent communication to tightly coordinate the behavior of processes across many nodes, whereas other applications communicate to divide up a large input among processes and then mostly work independently.</p>
+</blockquote>
+<p>分布式应用通过定义一个通信<strong>协议</strong>（protocol）来正式规定它的通信方式。协议描述了一组管理应用如何使用网络的规则，包括：</p>
+<blockquote>
+<p>A distributed application formalizes its communication expectations by defining a communication <strong>protocol</strong>, which describes a set of rules that govern its use of the network, including:</p>
+</blockquote>
+<ul>
+<li>进程应该在什么时候发送消息</li>
+</ul>
+<blockquote>
+<ul>
+<li>When a process should send a message</li>
+</ul>
+</blockquote>
+<ul>
+<li>应该把消息发给哪个（些）进程</li>
+</ul>
+<blockquote>
+<ul>
+<li>To which process(es) it should send the message</li>
+</ul>
+</blockquote>
+<ul>
+<li>消息应该采用什么格式</li>
+</ul>
+<blockquote>
+<ul>
+<li>How to format the message</li>
+</ul>
+</blockquote>
+<p>没有协议，应用可能无法正确地解读消息，甚至可能发生<a href="../C14-SharedMemory/14.3.1-mutex.html">死锁</a>。例如，如果一个应用由两个进程组成，而每个进程都在等待对方先给自己发消息，那么两个进程都永远无法继续推进。协议为通信增加了结构，降低了出现这类故障的可能性。</p>
+<blockquote>
+<p>Without a protocol, an application might fail to interpret messages properly or even <a href="../C14-SharedMemory/14.3.1-mutex.html">deadlock</a>. For example, if an application consists of two processes, and each process waits for the other to send it a message, neither process will ever make progress. Protocols add structure to communication to reduce the likelihood of such failures.</p>
+</blockquote>
+<p>为了实现通信协议，应用需要一些基本功能，比如发送和接收消息、为进程命名（寻址）以及同步进程的执行。许多应用借助消息传递接口（Message Passing Interface）来获得这些功能。</p>
+<blockquote>
+<p>To implement a communication protocol, applications require basic functionality for tasks like sending and receiving messages, naming processes (addressing), and synchronizing process execution. Many applications look to the Message Passing Interface for such functionality.</p>
+</blockquote>
+<h3 id="15-2-3-消息传递接口（MPI）"><a href="#15-2-3-消息传递接口（MPI）" class="headerlink" title="15.2.3. 消息传递接口（MPI）"></a>15.2.3. 消息传递接口（MPI）</h3><p><em>15.2.3. Message Passing Interface (MPI)</em></p>
+<p><strong>消息传递接口</strong>（Message Passing Interface，MPI）定义了（但本身并不实现）一套标准化的接口，应用可以用它在分布式内存系统中进行通信。通过采用 MPI 通信标准，应用就具备了<strong>可移植性</strong>（portable），也就是说，它们可以在许多不同的系统上编译和运行。换句话说，只要系统上安装了某个 MPI 实现，一个可移植的应用就可以从一个系统迁移到另一个系统，并且可以期望它正确执行，即使这些系统的底层特性各不相同。</p>
+<blockquote>
+<p>The <strong>Message Passing Interface</strong> (MPI) defines (but does not itself implement) a standardized interface that applications can use to communicate in a distributed memory system. By adopting the MPI communication standard, applications become <strong>portable</strong>, meaning that they can be compiled and executed on many different systems. In other words, as long as an MPI implementation is installed, a portable application can move from one system to another and expect to execute properly, even if the systems have different underlying characteristics.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· MPI 标准版本</p><p>MPI-4.0（2021-06-09）→ MPI-4.1（2023-11-02）→ <strong>MPI-5.0（2025-06-05）</strong>。<a target="_blank" rel="noopener" href="https://www.mpi-forum.org/docs/">MPI Forum</a> MPI-5.0 最大的变化是加入<strong>标准 ABI</strong>，让不同厂商的 MPI 实现在二进制层面可以互换（以前用 Open MPI 编译的程序不能直接换 MPICH 运行）；任何合法的 MPI-4.1 程序仍是合法的 MPI-5.0 程序，本节示例代码不受影响。<a target="_blank" rel="noopener" href="https://www.mpi-forum.org/docs/mpi-5.0/mpi50-report/node20.htm">MPI-5.0 背景说明</a></p>
+</div>
+<p>MPI 允许程序员把一个应用划分成多个进程。它给应用中的每个进程分配一个唯一的标识符，称为 <strong>rank</strong>（秩，即进程编号）。对于一个有 <em>N</em> 个进程的应用，rank 的取值范围是 0 到 <em>N</em>-1。进程可以调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_rank.3.php"><code>MPI_Comm_rank</code></a> 函数得知自己的 rank，调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_size.3.php"><code>MPI_Comm_size</code></a> 得知应用中一共有多少个进程在执行。要发送消息，进程调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> 并指定目标接收者的 rank。类似地，进程调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 来接收消息，并指定是等待来自某个特定节点的消息，还是接收来自任意发送者的消息（使用常量 <code>MPI_ANY_SOURCE</code> 作为 rank）。</p>
+<blockquote>
+<p>MPI allows a programmer to divide an application into multiple processes. It assigns each of an application’s processes a unique identifier, known as a <strong>rank</strong>, which ranges from 0 to <em>N</em>-1 for an application with <em>N</em> processes. A process can learn its rank by calling the <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_rank.3.php"><code>MPI_Comm_rank</code></a> function, and it can learn how many processes are executing in the application by calling <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_size.3.php"><code>MPI_Comm_size</code></a>. To send a message, a process calls <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> and specifies the rank of the intended recipient. Similarly, a process calls <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> to receive a message, and it specifies whether to wait for a message from a specific node or to receive a message from any sender (using the constant <code>MPI_ANY_SOURCE</code> as the rank).</p>
+</blockquote>
+<p>除了基本的发送和接收函数之外，MPI 还定义了多种函数，使一个进程更容易把数据传给多个接收者。例如，<a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> 允许一个进程只调用一次函数，就把一条消息发送给应用中的所有其他进程。MPI 还定义了一对函数 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> 和 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a>：一个进程可以把数组拆分开，把各个片段分发给各个进程（scatter，分发），各进程处理完数据后，再把所有数据取回来汇总结果（gather，收集）。</p>
+<blockquote>
+<p>In addition to the basic send and receive functions, MPI also defines a variety of functions that make it easier for one process to communicate data to multiple recipients. For example, <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> allows one process to send a message to every other process in the application with just one function call. It also defines a pair of functions, <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> and <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a>, that allow one process to divide up an array and distribute the pieces among processes (scatter), operate on the data, and then later retrieve all the data to coalesce the results (gather).</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 集合通信（collective communication）</p><p>Bcast &#x2F; Scatter &#x2F; Gather 这类”一组进程一起参与”的操作统称<strong>集合通信</strong>。另外两个必须认识的是 **<code>MPI_Reduce</code>**（把各进程的值用加法&#x2F;求最大值等运算归约到一个进程）和 <strong><code>MPI_Allreduce</code><strong>（归约后结果发回给所有进程）。Allreduce 今天最出名的用途是</strong>分布式深度学习训练</strong>：每块 GPU 算出自己那份数据的梯度后，用 all-reduce 求和&#x2F;平均，再各自更新模型参数——这就是数据并行训练的核心一步。</p>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新 · 集合通信与 AI</p><p>NVIDIA 的 NCCL 库为多 GPU 提供 AllReduce、Broadcast、Reduce、AllGather、ReduceScatter、AlltoAll、Gather、Scatter 等集合操作，名字与 MPI 一一对应；数据并行训练每一步都要用 AllReduce 汇总各 GPU 的梯度。<a target="_blank" rel="noopener" href="https://docs.nvidia.com/deeplearning/nccl/user-guide/docs/overview.html">NCCL 文档</a></p>
+</div>
+<p>由于 MPI 只<em>规定</em>了一组函数及其应有的行为，每个系统的设计者都可以根据自己系统的能力，以合适的方式来实现 MPI 的功能。例如，如果一个系统的互连网络支持广播（同时把一条消息的一份拷贝发送给多个接收者），那么它实现 MPI 的 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> 函数的效率，可能会比不支持广播的系统更高。</p>
+<blockquote>
+<p>Because MPI <em>specifies</em> only a set of functions and how they should behave, each system designer can implement MPI’s functionality in a way that matches the capabilities of their particular system. For example, a system with an interconnect network that supports broadcasting (sending one copy of a message to multiple recipients at the same time) might be able to implement MPI’s <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> function more efficiently than a system without such support.</p>
+</blockquote>
+<h3 id="15-2-4-MPI-Hello-World"><a href="#15-2-4-MPI-Hello-World" class="headerlink" title="15.2.4. MPI Hello World"></a>15.2.4. MPI Hello World</h3><p><em>15.2.4. MPI Hello World</em></p>
+<p>作为 MPI 编程的入门，来看下面这个”hello world”程序（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/hello_world_mpi.c">hello_world_mpi.c</a>）：</p>
+<blockquote>
+<p>As an introduction to MPI programming, consider the “hello world” program (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/hello_world_mpi.c">hello_world_mpi.c</a>) presented here:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;unistd.h&gt;</span><br><span class="line">#include &quot;mpi.h&quot;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line">    int rank, process_count;</span><br><span class="line">    char hostname[1024];</span><br><span class="line"></span><br><span class="line">    /* Initialize MPI. */</span><br><span class="line">    MPI_Init(&amp;argc, &amp;argv);</span><br><span class="line"></span><br><span class="line">    /* Determine how many processes there are and which one this is. */</span><br><span class="line">    MPI_Comm_size(MPI_COMM_WORLD, &amp;process_count);</span><br><span class="line">    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);</span><br><span class="line"></span><br><span class="line">    /* Determine the name of the machine this process is running on. */</span><br><span class="line">    gethostname(hostname, 1024);</span><br><span class="line"></span><br><span class="line">    /* Print a message, identifying the process and machine it comes from. */</span><br><span class="line">    printf(&quot;Hello from %s process %d of %d\n&quot;, hostname, rank, process_count);</span><br><span class="line"></span><br><span class="line">    /* Clean up. */</span><br><span class="line">    MPI_Finalize();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>代码注释依次为：初始化 MPI；确定一共有多少个进程、本进程是哪一个；确定本进程运行在哪台机器上；打印一条消息，标明来自哪个进程、哪台机器；清理。<code>MPI_COMM_WORLD</code> 是 MPI 预定义的<strong>通信子</strong>（communicator），代表”本次启动的所有进程”；也可以用 <code>MPI_Comm_split</code> 等函数把进程划分成更小的组，rank 是相对于某个通信子而言的。</p>
+</div>
+<p>启动这个程序时，MPI 会以独立进程的形式，在一台或多台计算机上同时执行它的多个副本。每个进程都调用 MPI 来确定一共有多少个进程在执行（用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_size.3.php"><code>MPI_Comm_size</code></a>），以及自己是其中的哪一个（即进程的 rank，用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_rank.3.php"><code>MPI_Comm_rank</code></a>）。查到这些信息后，每个进程打印一条简短的消息，其中包含自己的 rank 以及所运行计算机的名字（<code>hostname</code>），然后结束。</p>
+<blockquote>
+<p>When starting this program, MPI simultaneously executes multiple copies of it as independent processes across one or more computers. Each process makes calls to MPI to determine how many total processes are executing (with <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_size.3.php"><code>MPI_Comm_size</code></a>) and which process it is among those processes (the process’s rank, with <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Comm_rank.3.php"><code>MPI_Comm_rank</code></a>). After looking up this information, each process prints a short message containing the rank and name of the computer (<code>hostname</code>) it’s running on before terminating.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 运行 MPI 代码（Running MPI Code）</p><p>要运行这些 MPI 示例，你需要在系统上安装一个 MPI 实现，比如 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/">OpenMPI</a> 或 <a target="_blank" rel="noopener" href="https://www.mpich.org/">MPICH</a>。</p>
+<blockquote>
+<p>To run these MPI examples, you’ll need an MPI implementation like <a target="_blank" rel="noopener" href="https://www.open-mpi.org/">OpenMPI</a> or <a target="_blank" rel="noopener" href="https://www.mpich.org/">MPICH</a> installed on your system.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · 在自己电脑上试一试</p><p>不需要集群，单机就能跑：macOS 上 <code>brew install open-mpi</code>，Ubuntu 上 <code>sudo apt install openmpi-bin libopenmpi-dev</code>（或 <code>mpich</code>）。然后 <code>mpirun -np 4 ./hello_world_mpi</code> 就会在本机起 4 个进程。如果进程数超过 CPU 核数，Open MPI 会拒绝运行，加 <code>--oversubscribe</code> 即可。</p>
+</div>
+<p>要编译这个示例，调用 <code>mpicc</code> 编译器程序，它会执行一个支持 MPI 的 <code>gcc</code> 版本来构建程序，并将其与 MPI 库链接：</p>
+<blockquote>
+<p>To compile this example, invoke the <code>mpicc</code> compiler program, which executes an MPI-aware version of <code>gcc</code> to build the program and link it against MPI libraries:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ mpicc -o hello_world_mpi hello_world_mpi.c</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>mpicc</code> 本身只是一个包装脚本（wrapper），它会调用系统上的 C 编译器（gcc 或 clang）并自动加上 MPI 的头文件路径和库。用 <code>mpicc --showme</code>（Open MPI）或 <code>mpicc -show</code>（MPICH）可以看到它实际执行的命令。</p>
+</div>
+<p>要执行这个程序，用 <code>mpirun</code> 工具通过 MPI 启动多个并行进程。需要告诉 <code>mpirun</code> 在哪些计算机上运行进程（<code>--hostfile</code>），以及在每台机器上运行多少个进程（<code>-np</code>）。这里，我们给它提供了一个名为 <code>hosts.txt</code> 的文件，让 <code>mpirun</code> 在两台计算机上创建四个进程，一台名为 <code>lemon</code>，另一台名为 <code>orange</code>：</p>
+<blockquote>
+<p>To execute the program, use the <code>mpirun</code> utility to start up several parallel processes with MPI. The <code>mpirun</code> command needs to be told which computers to run processes on (<code>--hostfile</code>) and how many processes to run at each machine (<code>-np</code>). Here, we provide it with a file named <code>hosts.txt</code> that tells <code>mpirun</code> to create four processes across two computers, one named <code>lemon</code>, and another named <code>orange</code>:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 原文表述不够准确</p><p>准确地说，<code>-np 8</code> 指定的是<strong>进程总数</strong>（8 个），而不是”每台机器的进程数”；每台机器放几个进程由 hostfile 里的 slots 决定。原文”create four processes across two computers”应理解为两台机器各 4 个、共 8 个（输出里 rank 0–7 正好各占 4 个）。对应的 <code>hosts.txt</code>（Open MPI 格式）大致是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">lemon slots=4</span><br><span class="line">orange slots=4</span><br></pre></td></tr></table></figure>
+<p>在超算&#x2F;集群上，通常不直接用 <code>mpirun</code>，而是通过作业调度系统（最常见的是 <strong>Slurm</strong>）提交，例如 <code>srun -N 2 -n 8 ./hello_world_mpi</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ mpirun -np 8 --hostfile hosts.txt ./hello_world_mpi</span><br><span class="line">Hello from lemon process 4 of 8</span><br><span class="line">Hello from lemon process 5 of 8</span><br><span class="line">Hello from orange process 2 of 8</span><br><span class="line">Hello from lemon process 6 of 8</span><br><span class="line">Hello from orange process 0 of 8</span><br><span class="line">Hello from lemon process 7 of 8</span><br><span class="line">Hello from orange process 3 of 8</span><br><span class="line">Hello from orange process 1 of 8</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-warning"><p class="callout-title">原书警示 · MPI 的执行顺序（MPI Execution Order）</p><p>你<em>永远</em>不应该对 MPI 进程的执行顺序做任何假设。这些进程在多台机器上启动，每台机器都有自己的操作系统和进程调度器。如果程序的正确性依赖于进程按特定顺序运行，你就必须确保这个顺序真的会发生——例如，强制某些进程暂停，直到它们收到某条消息为止。</p>
+<blockquote>
+<p>You should <em>never</em> make any assumptions about the order in which MPI processes will execute. The processes start up on multiple machines, each of which has its own OS and process scheduler. If the correctness of your program requires that processes run in a particular order, you must ensure that the proper order occurs — for example, by forcing certain processes to pause until they receive a message.</p>
+</blockquote>
+</div>
+<h3 id="15-2-5-MPI-标量乘法"><a href="#15-2-5-MPI-标量乘法" class="headerlink" title="15.2.5. MPI 标量乘法"></a>15.2.5. MPI 标量乘法</h3><p><em>15.2.5. MPI Scalar Multiplication</em></p>
+<p>来看一个更有实质内容的 MPI 示例：对一个数组执行标量乘法。这个例子采用主管&#x2F;工人模型——一个进程把数组分成较小的片段，再分发给各个 worker 进程。注意，在这个标量乘法的实现中，boss 进程在把各部分分发给其他 worker 之后，自己也充当一个 worker，负责数组中一部分元素的乘法。</p>
+<blockquote>
+<p>For a more substantive MPI example, consider performing scalar multiplication on an array. This example adopts the boss&#x2F;worker model — one process divides the array into smaller pieces and distributes them among worker processes. Note that in this implementation of scalar multiplication, the boss process also behaves as a worker and multiplies part of the array after distributing sections to the other workers.</p>
+</blockquote>
+<p>为了从并行工作中获益，每个进程只把自己本地的那一段数组乘以标量值，然后所有 worker 把结果发回给 boss 进程，以构成最终结果。在程序的好几个地方，代码会检查进程的 rank 是否为 0：</p>
+<blockquote>
+<p>To benefit from working in parallel, each process multiplies just its local piece of the array by the scalar value, and then the workers all send the results back to the boss process to form the final result. At several points in the program, the code checks to see whether the rank of the process is zero:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (rank == 0) &#123;</span><br><span class="line">    /* This code only executes at the boss. */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：这段代码只在 boss 上执行。</p>
+</div>
+<p>这个检查确保只有一个进程（rank 为 0 的那个）扮演 boss 的角色。按照惯例，MPI 应用通常选择 rank 0 来执行一次性任务，因为无论有多少个进程，总会有一个进程的 rank 是 0（即使只有一个进程在执行）。</p>
+<blockquote>
+<p>This check ensures that only one process (the one with rank 0) plays the role of the boss. By convention, MPI applications often choose rank 0 to perform one-time tasks because no matter how many processes there are, one will always be given rank 0 (even if just a single process is executing).</p>
+</blockquote>
+<h4 id="MPI-通信"><a href="#MPI-通信" class="headerlink" title="MPI 通信"></a>MPI 通信</h4><p><em>MPI Communication</em></p>
+<p>boss 进程首先确定标量值和初始的输入数组。在真实的科学计算应用中，boss 很可能会从输入文件中读取这些值。为了简化这个例子，boss 使用一个常数标量值（10），并生成一个简单的 40 元素数组（内容是 0 到 39 的序列）来做演示。</p>
+<blockquote>
+<p>The boss process begins by determining the scalar value and initial input array. In a real scientific computing application, the boss would likely read such values from an input file. To simplify this example, the boss uses a constant scalar value (10) and generates a simple 40-element array (containing the sequence 0 to 39) for illustrative purposes.</p>
+</blockquote>
+<p>这个程序需要 MPI 进程之间在以下三项重要任务上进行通信：</p>
+<blockquote>
+<p>This program requires communication between MPI processes for three important tasks:</p>
+</blockquote>
+<ol>
+<li>boss 把标量值和数组的大小发送给<em>所有</em> worker。</li>
+</ol>
+<blockquote>
+<ol>
+<li>The boss sends the scalar value and the size of the array to <em>all</em> of the workers.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>boss 把初始数组分成若干片段，给每个 worker 发送一个片段。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The boss divides the initial array into pieces and sends a piece to each worker.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>每个 worker 把自己那段数组中的值乘以标量，然后把更新后的值发回给 boss。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Each worker multiplies the values in its piece of the array by the scalar and then sends the updated values back to the boss.</li>
+</ol>
+</blockquote>
+<h4 id="广播重要的值"><a href="#广播重要的值" class="headerlink" title="广播重要的值"></a>广播重要的值</h4><p><em>Broadcasting Important Values</em></p>
+<p>为了把标量值发送给 worker，示例程序使用了 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> 函数，它让一个 MPI 进程只需调用一次函数，就能把同一个值发送给所有其他 MPI 进程：</p>
+<blockquote>
+<p>To send the scalar value to the workers, the example program uses the <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Bcast.3.php"><code>MPI_Bcast</code></a> function, which allows one MPI process to send the same value to all the other MPI processes with one function call:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/* Boss sends the scalar value to every process with a broadcast. */</span><br><span class="line">MPI_Bcast(&amp;scalar, 1, MPI_INT, 0, MPI_COMM_WORLD);</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：boss 通过广播把标量值发送给每个进程。<code>MPI_Bcast</code> 的 5 个参数依次是：缓冲区地址、元素个数、元素类型、根进程（root）的 rank、通信子。</p>
+</div>
+<p>这个调用把从 <code>scalar</code> 变量地址开始的一个整数（<code>MPI_INT</code>），从 rank 为 0 的进程发送给其他每一个进程（<code>MPI_COMM_WORLD</code>）。所有 worker 进程（即 rank 不为零的进程）都把广播的内容接收到自己本地的 <code>scalar</code> 变量副本中，所以这个调用完成后，每个进程都知道了要使用的标量值。</p>
+<blockquote>
+<p>This call sends one integer (<code>MPI_INT</code>) starting from the address of the <code>scalar</code> variable from the process with rank 0 to every other process (<code>MPI_COMM_WORLD</code>). All the worker processes (those with nonzero rank) receive the broadcast into their local copy of the <code>scalar</code> variable, so when this call completes, every process knows the scalar value to use.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · MPI_Bcast 的行为（MPI_Bcast Behavior）</p><p>每个进程都执行 <code>MPI_Bcast</code>，但它的行为取决于调用进程的 rank。如果 rank 与第四个参数一致，调用者就扮演发送者的角色。所有其他调用 <code>MPI_Bcast</code> 的进程都充当接收者。</p>
+<blockquote>
+<p>Every process executes <code>MPI_Bcast</code>, but it behaves differently depending on the rank of the calling process. If the rank matches that of the fourth argument, the caller assumes the role of the sender. All other processes that call <code>MPI_Bcast</code> act as receivers.</p>
+</blockquote>
+</div>
+<p>类似地，boss 把数组的总大小广播给其他每个进程。得知数组总大小后，每个进程用数组总大小除以 MPI 进程数，得到 <code>local_size</code> 变量的值。<code>local_size</code> 变量表示每个 worker 分到的那段数组包含多少个元素。例如，如果输入数组有 40 个元素，应用由 8 个进程组成，那么每个进程负责数组中的 5 个元素（40 &#x2F; 8 &#x3D; 5）。为了让例子保持简单，这里假设进程数能整除数组大小：</p>
+<blockquote>
+<p>Similarly, the boss broadcasts the total size of the array to every other process. After learning the total array size, each process sets a <code>local_size</code> variable by dividing the total array size by the number of MPI processes. The <code>local_size</code> variable represents how many elements each worker’s piece of the array will contain. For example, if the input array contains 40 elements and the application consists of eight processes, each process is responsible for a five-element piece of the array (40 &#x2F; 8 &#x3D; 5). To keep the example simple, it assumes that the number of processes evenly divides the size of the array:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">/* Each process determines how many processes there are. */</span><br><span class="line">MPI_Comm_size(MPI_COMM_WORLD, &amp;process_count);</span><br><span class="line"></span><br><span class="line">/* Boss sends the total array size to every process with a broadcast. */</span><br><span class="line">MPI_Bcast(&amp;array_size, 1, MPI_INT, 0, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">/* Determine how many array elements each process will get.</span><br><span class="line"> * Assumes the array is evenly divisible by the number of processes. */</span><br><span class="line">local_size = array_size / process_count;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释依次为：每个进程确定一共有多少个进程；boss 通过广播把数组总大小发送给每个进程；确定每个进程会分到多少个数组元素（假设数组大小能被进程数整除）。不能整除时，应改用 <code>MPI_Scatterv</code> &#x2F; <code>MPI_Gatherv</code>，它们允许为每个进程分别指定元素个数和偏移量。</p>
+</div>
+<h4 id="分发数组"><a href="#分发数组" class="headerlink" title="分发数组"></a>分发数组</h4><p><em>Distributing the Array</em></p>
+<p>现在每个进程都知道了标量值，以及自己负责相乘的值有多少个，接下来 boss 必须把数组分成若干片段，分发给各个 worker。注意，在这个实现中，boss（rank 0）也作为 worker 参与计算。例如，对于一个 40 元素的数组和 8 个进程（rank 0–7），boss 应该把数组元素 0–4 留给自己（rank 0），把元素 5–9 发给 rank 1，元素 10–14 发给 rank 2，依此类推。<a href="15.2-distrmem.html">图 2</a> 展示了 boss 如何把数组的各个片段分配给每个 MPI 进程。</p>
+<blockquote>
+<p>Now that each process knows the scalar value and how many values it’s responsible for multiplying, the boss must divide the array into pieces and distribute them among the workers. Note that in this implementation, the boss (rank 0) also participates as a worker. For example, with a 40-element array and eight processes (ranks 0-7), the boss should keep array elements 0-4 for itself (rank 0), send elements 5-9 to rank 1, elements 10-14 to rank 2, and so on. <a href="15.2-distrmem.html">Figure 2</a> shows how the boss assigns pieces of the array to each MPI process.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C15-Parallel/images/ArrayDivision.png" alt="Each chunk of five array elements is distributed to the next process. For example, elements 0-4 are assigned to rank 0, elements 5-9 are assigned to rank 1, elements 10-14 are assigned to rank 2, and the patter continues until elements 35-39 are assigned to rank 7."></p>
+<p><strong>图 2.</strong> 一个 40 元素的数组在 8 个 MPI 进程（rank 0–7）之间的分配</p>
+<p><em>Figure 2. The distribution of a 40-element array among eight MPI processes (ranks 0-7)</em></p>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>图中 Input Array＝输入数组，Distributed Array Pieces＝分发后的数组片段，rank 0 (boss)＝rank 0（主管进程）。这种”每个进程分到连续一段”的划分叫<strong>块划分</strong>（block distribution）；另一种常见做法是<strong>循环划分</strong>（cyclic，元素 i 分给 rank i mod P），在各元素工作量不均匀时更有利于负载均衡。</p>
+</div>
+<p>把数组片段分发给每个 worker 的一种做法是：boss 端调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a>，每个 worker 端调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a>：</p>
+<blockquote>
+<p>One option for distributing pieces of the array to each worker combines <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> calls at the boss with an <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> call at each worker:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">if (rank == 0) &#123;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    /* For each worker process, send a unique chunk of the array. */</span><br><span class="line">    for (i = 1; i &lt; process_count; i++) &#123;</span><br><span class="line">        /* Send local_size ints starting at array index (i * local_size) */</span><br><span class="line">        MPI_Send(array + (i * local_size), local_size, MPI_INT, i, 0,</span><br><span class="line">                 MPI_COMM_WORLD);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    MPI_Recv(local_array, local_size, MPI_INT, 0, 0, MPI_COMM_WORLD,</span><br><span class="line">             MPI_STATUS_IGNORE);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：对每个 worker 进程，发送数组中独有的一段；从数组下标 <code>i * local_size</code> 处开始发送 <code>local_size</code> 个 int。<code>MPI_Send</code> 的 6 个参数：缓冲区、个数、类型、目标 rank、标签（tag）、通信子；<code>MPI_Recv</code> 多一个状态参数，不关心时传 <code>MPI_STATUS_IGNORE</code>。</p>
+</div>
+<p>在这段代码中，boss 执行一个循环，每个 worker 进程执行一次，每次给一个 worker 发送数组的一个片段。它从 <code>array</code> 地址偏移 <code>(i * local_size)</code> 的位置开始发送数据，以确保每个 worker 拿到的是数组中独有的一段。也就是说，rank 1 的 worker 拿到从下标 5 开始的一段，rank 2 拿到从下标 10 开始的一段，依此类推，如<a href="15.2-distrmem.html">图 2</a> 所示。</p>
+<blockquote>
+<p>In this code, the boss executes a loop that executes once for each worker process, in which it sends the worker a piece of the array. It starts sending data from the address of <code>array</code> at an offset of <code>(i * local_size)</code> to ensure that each worker gets a unique piece of the array. That is, the worker with rank 1 gets a piece of the array starting at index 5, rank 2 gets a piece of the array starting at index 10, etc., as shown in <a href="15.2-distrmem.html">Figure 2</a>.</p>
+</blockquote>
+<p>每次调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> 都会把 <code>local_size</code>（5）个整数的数据（20 字节）发送给 rank 为 i 的进程。靠近末尾的参数 <code>0</code> 表示消息标签（tag），这是一个本程序用不到的高级特性——把它设为 <code>0</code> 就是对所有消息一视同仁。</p>
+<blockquote>
+<p>Each call to <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> sends <code>local_size</code> (5) integers worth of data (20 bytes) to the process with rank i. The <code>0</code> argument toward the end represents a message tag, which is an advanced feature that this program doesn’t need — setting it to <code>0</code> treats all messages equally.</p>
+</blockquote>
+<p>所有 worker 都调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 来获取属于自己的数组片段，并把它存放到 <code>local_array</code> 所指向的内存地址中。它们从 rank 为 0 的节点接收 <code>local_size</code>（5）个整数的数据（20 字节）。注意，<a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 是一个<strong>阻塞</strong>（blocking）调用，也就是说，调用它的进程会暂停，直到收到数据为止。由于 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 调用会阻塞，在 boss 发来属于自己的数组片段之前，任何 worker 都不会继续往下执行。</p>
+<blockquote>
+<p>The workers all call <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> to retrieve their piece of the array, which they store in memory at the address to which <code>local_array</code> refers. They receive <code>local_size</code> (5) integers worth of data (20 bytes) from the node with rank 0. Note that <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> is a <strong>blocking</strong> call, which means that a process that calls it will pause until it receives data. Because the <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> call blocks, no worker will proceed until the boss sends its piece of the array.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · <code>MPI_Send</code> 会不会阻塞？</p><p><code>MPI_Send</code>（标准模式）的语义是”返回后发送缓冲区可以安全复用”，它<strong>可能</strong>阻塞到对方开始接收，也<strong>可能</strong>先把小消息拷进内部缓冲区立即返回——这取决于实现和消息大小。所以”两个进程都先 Send 再 Recv”的代码，消息小时能跑通、消息一大就死锁，这是 MPI 初学者最经典的 bug。解决办法：调整收发顺序、用 <code>MPI_Sendrecv</code>，或改用非阻塞的 <code>MPI_Isend</code> &#x2F; <code>MPI_Irecv</code> 再配合 <code>MPI_Wait</code>（非阻塞通信还能让计算与通信重叠）。</p>
+</div>
+<h4 id="并行执行"><a href="#并行执行" class="headerlink" title="并行执行"></a>并行执行</h4><p><em>Parallel Execution</em></p>
+<p>worker 收到自己的数组片段之后，就可以开始把每个数组元素乘以标量。由于每个 worker 拿到的是数组中独有的一个子集，它们可以相互独立地并行执行，而无需通信。</p>
+<blockquote>
+<p>After a worker has received its piece of the array, it can begin multiplying each array value by the scalar. Because each worker gets a unique subset of the array, they can execute independently, in parallel, without the need to communicate.</p>
+</blockquote>
+<h4 id="汇总结果"><a href="#汇总结果" class="headerlink" title="汇总结果"></a>汇总结果</h4><p><em>Aggregating Results</em></p>
+<p>最后，worker 完成乘法后，把更新后的数组值发回给 boss，由 boss 汇总结果。如果用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> 和 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 来实现，这个过程看起来与上面分发数组的代码很像，只是发送方和接收方的角色互换了：</p>
+<blockquote>
+<p>Finally, after workers complete their multiplication, they send the updated array values back to the boss, which aggregates the results. Using <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> and <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a>, this process looks similar to the array distribution code above, except the roles of sender and receiver are reversed:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">if (rank == 0) &#123;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    for (i = 1; i &lt; process_count; i++) &#123;</span><br><span class="line">        MPI_Recv(array + (i * local_size), local_size, MPI_INT, i, 0,</span><br><span class="line">                 MPI_COMM_WORLD, MPI_STATUS_IGNORE);</span><br><span class="line">    &#125;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    MPI_Send(local_array, local_size, MPI_INT, 0, 0, MPI_COMM_WORLD);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>回想一下，<a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 会<strong>阻塞</strong>（即暂停执行），因此 <code>for</code> 循环中的每次调用都会让 boss 等待，直到收到 worker <em>i</em> 发来的那段数组。</p>
+<blockquote>
+<p>Recall that <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> <strong>blocks</strong> or pauses execution, so each call in the <code>for</code> loop causes the boss to wait until it receives a piece of the array from worker <em>i</em>.</p>
+</blockquote>
+<h4 id="分发-收集（Scatter-Gather）"><a href="#分发-收集（Scatter-Gather）" class="headerlink" title="分发&#x2F;收集（Scatter&#x2F;Gather）"></a>分发&#x2F;收集（Scatter&#x2F;Gather）</h4><p><em>Scatter&#x2F;Gather</em></p>
+<p>虽然上一个例子中的 <code>for</code> 循环用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> 和 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a> 正确地分发了数据，但它们没有简洁地表达出背后的<em>意图</em>。也就是说，在 MPI 看来，它们只是一连串的发送和接收调用，看不出”把一个数组分发到各个 MPI 进程”这个明显的目标。由于并行应用经常需要像这个示例数组一样分发和收集数据，MPI 专门为此提供了函数：<a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> 和 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a>。</p>
+<blockquote>
+<p>Although the <code>for</code> loops in the previous example correctly distribute data with <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Send.3.php"><code>MPI_Send</code></a> and <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Recv.3.php"><code>MPI_Recv</code></a>, they don’t succinctly capture the <em>intent</em> behind them. That is, they appear to MPI as a series of send and receive calls without the obvious goal of distributing an array across MPI processes. Because parallel applications frequently need to distribute and collect data like this example array, MPI provides functions for exactly this purpose: <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> and <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a>.</p>
+</blockquote>
+<p>这两个函数有两大好处：</p>
+<blockquote>
+<p>These functions provide two major benefits:</p>
+</blockquote>
+<ol>
+<li>它们让上面的每一整段代码都可以用一次 MPI 函数调用来表达，从而简化了代码。</li>
+</ol>
+<blockquote>
+<ol>
+<li>They allow the entire code blocks above to each be expressed as a single MPI function call, which simplifies the code.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>它们把操作的<em>意图</em>告诉了底层的 MPI 实现，MPI 实现也许能借此更好地优化性能。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>They express the <em>intent</em> of the operation to the underlying MPI implementation, which may be able to better optimize their performance.</li>
+</ol>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>“更好地优化”是实打实的：例如 boss 逐个 <code>MPI_Send</code> 给 P 个进程需要 P−1 步，而广播&#x2F;分发可以用<strong>树形算法</strong>，第 1 步 0→1，第 2 步 0→2、1→3，……只需约 log₂P 步。现代 MPI 库（以及 NVIDIA NCCL 这类 GPU 集合通信库）还会根据消息大小和网络拓扑，在树形、环形（ring）等多种算法之间自动选择。</p>
+</div>
+<p>要替换上面的第一个循环，每个进程可以调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a>：</p>
+<blockquote>
+<p>To replace the first loop above, each process could call <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/* Boss scatters chunks of the array evenly among all the processes. */</span><br><span class="line">MPI_Scatter(array, local_size, MPI_INT, local_array, local_size, MPI_INT,</span><br><span class="line">            0, MPI_COMM_WORLD);</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：boss 把数组按块平均分发给所有进程。</p>
+</div>
+<p>这个函数会自动把从 <code>array</code> 开始的内存内容，按每块 <code>local_size</code> 个整数分成若干块，分发到目标变量 <code>local_array</code> 中。参数 <code>0</code> 指定 rank 为 0 的进程（boss）是发送者，因此它读取源数组 <code>array</code> 并分发给其他进程（包括给自己发送一块）。其他每个进程都充当接收者，把数据接收到自己的 <code>local_array</code> 目标变量中。</p>
+<blockquote>
+<p>This function automatically distributes the contents of memory starting at <code>array</code> in pieces containing <code>local_size</code> integers to the <code>local_array</code> destination variable. The <code>0</code> argument specifies that the process with rank 0 (the boss) is the sender, so it reads and distributes the <code>array</code> source to other processes (including sending one piece to itself). Every other process acts as a receiver and receives data into its <code>local_array</code> destination.</p>
+</blockquote>
+<p>在这一次调用之后，各个 worker 就可以并行地对数组做乘法了。完成后，每个进程调用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a>，把结果汇总回 boss 的 <code>array</code> 变量中：</p>
+<blockquote>
+<p>After this single call, the workers can each multiply the array in parallel. When they finish, each process calls <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a> to aggregate the results back in the boss’s <code>array</code> variable:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">/* Boss gathers the chunks from all the processes and coalesces the</span><br><span class="line"> * results into a final array. */</span><br><span class="line">MPI_Gather(local_array, local_size, MPI_INT, array, local_size, MPI_INT,</span><br><span class="line">           0, MPI_COMM_WORLD);</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注释的意思：boss 从所有进程收集各块，把结果合并成最终的数组。</p>
+</div>
+<p>这个调用的行为与 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> 正好相反：这一次，参数 <code>0</code> 指定 rank 为 0 的进程（boss）是接收者，因此它更新 <code>array</code> 变量，而各个 worker 则各自从自己的 <code>local_array</code> 变量中发送 <code>local_size</code> 个整数。</p>
+<blockquote>
+<p>This call behaves like the opposite of <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a>: this time, the <code>0</code> argument specifies that the process with rank 0 (the boss) is the receiver, so it updates the <code>array</code> variable, and workers each send <code>local_size</code> integers from their <code>local_array</code> variables.</p>
+</blockquote>
+<h4 id="MPI-标量乘法的完整代码"><a href="#MPI-标量乘法的完整代码" class="headerlink" title="MPI 标量乘法的完整代码"></a>MPI 标量乘法的完整代码</h4><p><em>Full Code for MPI Scalar Multiply</em></p>
+<p>下面是使用 <code>MPI_Scatter</code> 和 <code>MPI_Gather</code> 的 MPI 标量乘法完整代码清单（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/scalar_multiply_mpi.c">scalar_multiply_mpi.c</a>）：</p>
+<blockquote>
+<p>Here’s a full MPI scalar multiply code listing that uses <code>MPI_Scatter</code> and <code>MPI_Gather</code> (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C15-Parallel/_attachments/scalar_multiply_mpi.c">scalar_multiply_mpi.c</a>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &quot;mpi.h&quot;</span><br><span class="line"></span><br><span class="line">#define ARRAY_SIZE (40)</span><br><span class="line">#define SCALAR (10)</span><br><span class="line"></span><br><span class="line">/* In a real application, the boss process would likely read its input from a</span><br><span class="line"> * data file.  This example program produces a simple array and informs the</span><br><span class="line"> * caller of the size of the array through the array_size pointer parameter.*/</span><br><span class="line">int *build_array(int *array_size) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    int *result = malloc(ARRAY_SIZE * sizeof(int));</span><br><span class="line"></span><br><span class="line">    if (result == NULL) &#123;</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; ARRAY_SIZE; i++) &#123;</span><br><span class="line">        result[i] = i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    *array_size = ARRAY_SIZE;</span><br><span class="line">    return result;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* Print the elements of an array, given the array and its size. */</span><br><span class="line">void print_array(int *array, int array_size) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 0; i &lt; array_size; i++) &#123;</span><br><span class="line">        printf(&quot;%3d &quot;, array[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;\n\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* Multiply each element of an array by a scalar value. */</span><br><span class="line">void scalar_multiply(int *array, int array_size, int scalar) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 0; i &lt; array_size; i++) &#123;</span><br><span class="line">        array[i] = array[i] * scalar;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line">    int rank, process_count;</span><br><span class="line">    int array_size, local_size;</span><br><span class="line">    int scalar;</span><br><span class="line">    int *array, *local_array;</span><br><span class="line"></span><br><span class="line">    /* Initialize MPI */</span><br><span class="line">    MPI_Init(&amp;argc, &amp;argv);</span><br><span class="line"></span><br><span class="line">    /* Determine how many processes there are and which one this is. */</span><br><span class="line">    MPI_Comm_size(MPI_COMM_WORLD, &amp;process_count);</span><br><span class="line">    MPI_Comm_rank(MPI_COMM_WORLD, &amp;rank);</span><br><span class="line"></span><br><span class="line">    /* Designate rank 0 to be the boss.  It sets up the problem by generating</span><br><span class="line">     * the initial input array and choosing the scalar to multiply it by. */</span><br><span class="line">    if (rank == 0) &#123;</span><br><span class="line">        array = build_array(&amp;array_size);</span><br><span class="line">        scalar = SCALAR;</span><br><span class="line"></span><br><span class="line">        printf(&quot;Initial array:\n&quot;);</span><br><span class="line">        print_array(array, array_size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* Boss sends the scalar value to every process with a broadcast.</span><br><span class="line">     * Worker processes receive the scalar value by making this MPI_Bcast</span><br><span class="line">     * call. */</span><br><span class="line">    MPI_Bcast(&amp;scalar, 1, MPI_INT, 0, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    /* Boss sends the total array size to every process with a broadcast.</span><br><span class="line">     * Worker processes receive the size value by making this MPI_Bcast</span><br><span class="line">     * call. */</span><br><span class="line">    MPI_Bcast(&amp;array_size, 1, MPI_INT, 0, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    /* Determine how many array elements each process will get.</span><br><span class="line">     * Assumes the array is evenly divisible by the number of processes. */</span><br><span class="line">    local_size = array_size / process_count;</span><br><span class="line"></span><br><span class="line">    /* Each process allocates space to store its portion of the array. */</span><br><span class="line">    local_array = malloc(local_size * sizeof(int));</span><br><span class="line">    if (local_array == NULL) &#123;</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* Boss scatters chunks of the array evenly among all the processes. */</span><br><span class="line">    MPI_Scatter(array, local_size, MPI_INT, local_array, local_size, MPI_INT,</span><br><span class="line">                0, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    /* Every process (including boss) performs scalar multiplication over its</span><br><span class="line">     * chunk of the array in parallel. */</span><br><span class="line">    scalar_multiply(local_array, local_size, scalar);</span><br><span class="line"></span><br><span class="line">    /* Boss gathers the chunks from all the processes and coalesces the</span><br><span class="line">     * results into a final array. */</span><br><span class="line">    MPI_Gather(local_array, local_size, MPI_INT, array, local_size, MPI_INT,</span><br><span class="line">               0, MPI_COMM_WORLD);</span><br><span class="line"></span><br><span class="line">    /* Boss prints the final answer. */</span><br><span class="line">    if (rank == 0) &#123;</span><br><span class="line">        printf(&quot;Final array:\n&quot;);</span><br><span class="line">        print_array(array, array_size);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* Clean up. */</span><br><span class="line">    if (rank == 0) &#123;</span><br><span class="line">        free(array);</span><br><span class="line">    &#125;</span><br><span class="line">    free(local_array);</span><br><span class="line">    MPI_Finalize();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">译注 · 代码注释要点</p>
+<ul>
+<li><code>build_array</code> 上方注释：在真实应用中，boss 进程很可能从数据文件读取输入；这个示例程序生成一个简单数组，并通过指针参数 <code>array_size</code> 告诉调用者数组大小。</li>
+<li><code>if (rank == 0)</code> 处：指定 rank 0 为 boss，由它生成初始输入数组并选定要乘的标量来设置问题。</li>
+<li>两次 <code>MPI_Bcast</code> 处：boss 通过广播把标量值 &#x2F; 数组总大小发送给每个进程；worker 进程通过执行同一个 <code>MPI_Bcast</code> 调用来接收。</li>
+<li><code>scalar_multiply(local_array, ...)</code> 处：每个进程（包括 boss）并行地对自己那块数组做标量乘法。</li>
+<li>注意非 boss 进程里的 <code>array</code> 指针从未初始化，但这是安全的：<code>MPI_Scatter</code> 的发送缓冲区和 <code>MPI_Gather</code> 的接收缓冲区<strong>只在根进程上有意义</strong>，其他进程上的这个参数会被忽略。</li>
+</ul>
+</div>
+<p>在 <code>main</code> 函数中，boss 设置问题并创建一个数组。如果是在解决一个真实问题（例如一个科学计算应用），boss 很可能会从输入文件读取初始数据。初始化数组之后，boss 需要把数组大小以及用于乘法的标量这两项信息发送给所有其他 worker 进程，因此它把这些变量广播给每个进程。</p>
+<blockquote>
+<p>In the <code>main</code> function, the boss sets up the problem and creates an array. If this were solving a real problem (for example, a scientific computing application), the boss would likely read its initial data from an input file. After initializing the array, the boss needs to send information about the size of the array and the scalar to use for multiplication to all the other worker processes, so it broadcasts those variables to every process.</p>
+</blockquote>
+<p>现在每个进程都知道了数组的大小以及一共有多少个进程，它们各自做一次除法，就能确定自己负责相乘的数组元素有多少个。为简单起见，这段代码假设数组大小能被进程数整除。</p>
+<blockquote>
+<p>Now that each process knows the size of the array and how many processes there are, they can each divide to determine how many elements of the array they’re responsible for multiplying. For simplicity, this code assumes that the array is evenly divisible by the number of processes.</p>
+</blockquote>
+<p>接着，boss 使用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> 函数给每个 worker 进程（包括它自己）发送等量的一段数组。现在 worker 拥有了所需的全部信息，于是各自并行地对自己那段数组做乘法。最后，当 worker 完成乘法后，boss 用 <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a> 收集每个 worker 的那段数组，并输出最终结果。</p>
+<blockquote>
+<p>The boss then uses the <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Scatter.3.php"><code>MPI_Scatter</code></a> function to send an equal portion of the array to each worker process (including itself). Now the workers have all the information they need, so they each perform multiplication over their portion of the array in parallel. Finally, as the workers complete their multiplication, the boss collects each worker’s piece of the array using <a target="_blank" rel="noopener" href="https://www.open-mpi.org/doc/v4.0/man3/MPI_Gather.3.php"><code>MPI_Gather</code></a> to report the final results.</p>
+</blockquote>
+<p>编译并运行这个程序的过程如下：</p>
+<blockquote>
+<p>Compiling and executing this program looks like this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ mpicc -o scalar_multiply_mpi scalar_multiply_mpi.c</span><br><span class="line"></span><br><span class="line">$ mpirun -np 8 --hostfile hosts.txt ./scalar_multiply_mpi</span><br><span class="line">Initial array:</span><br><span class="line">  0   1   2   3   4   5   6   7   8   9  10  11  12  13  14  15  16  17  18  19</span><br><span class="line"> 20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39</span><br><span class="line"></span><br><span class="line">Final array:</span><br><span class="line">  0  10  20  30  40  50  60  70  80  90 100 110 120 130 140 150 160 170 180 190</span><br><span class="line">200 210 220 230 240 250 260 270 280 290 300 310 320 330 340 350 360 370 380 390</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-2-6-分布式系统面临的挑战"><a href="#15-2-6-分布式系统面临的挑战" class="headerlink" title="15.2.6. 分布式系统面临的挑战"></a>15.2.6. 分布式系统面临的挑战</h3><p><em>15.2.6. Distributed Systems Challenges</em></p>
+<p>一般来说，协调分布式系统中多个进程的行为是出了名的困难。在共享内存系统中，如果某个硬件部件（例如 CPU 或电源）发生故障，整个系统都会无法工作。但在分布式系统中，各个自治的节点可能会独立地发生故障。例如，如果一个节点消失了而其他节点仍在运行，应用必须决定接下来该怎么办。类似地，互连网络也可能发生故障，这时在每个进程看来，就好像其他所有进程都失效了一样。</p>
+<blockquote>
+<p>In general, coordinating the behavior of multiple processes in distributed systems is notoriously difficult. If a hardware component (e.g., CPU or power supply) fails in a shared memory system, the entire system becomes inoperable. In a distributed system though, autonomous nodes can fail independently. For example, an application must decide how to proceed if one node disappears and the others are still running. Similarly, the interconnection network could fail, making it appear to each process as if all the others failed.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 延伸阅读的关键词</p><p>这一段点到的问题，就是分布式系统这门课的核心：<strong>部分失效</strong>（partial failure）、<strong>网络分区</strong>（partition，以及由此引出的 CAP 定理），以及在不可靠网络上让多个节点对某个值达成一致的<strong>共识算法</strong>（Paxos、Raft；etcd、ZooKeeper 等协调服务都建立在它们之上）。经典 MPI 程序对故障的处理很简单粗暴：任何一个进程挂了，整个作业就中止，靠定期写<strong>检查点</strong>（checkpoint）再重启来恢复。想系统学习，推荐 MIT 6.5840（原 6.824）分布式系统课程和《数据密集型应用系统设计》（DDIA）。</p>
+</div>
+<p>分布式系统还面临着因缺乏共享硬件——即时钟——而带来的挑战。由于网络传输存在不可预测的延迟，自治的节点很难确定消息发送的先后顺序。解决这些挑战（以及其他许多挑战）超出了本书的范围。幸运的是，分布式软件的设计者已经构建了若干框架，让分布式应用的开发变得更容易。我们将在下一节介绍其中的一些框架。</p>
+<blockquote>
+<p>Distributed systems also face challenges due to a lack of shared hardware, namely clocks. Due to unpredictable delays in network transmission, autonomous nodes cannot easily determine the order in which messages are sent. Solving these challenges (and many others) is beyond the scope of this book. Fortunately, distributed software designers have constructed several frameworks that ease the development of distributed applications. We characterize some of these frameworks in the next section.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>关于”没有共享时钟”：经典解法是 Lamport 在 1978 年提出的<strong>逻辑时钟</strong>（只关心事件的因果先后，不关心物理时间），以及后来的向量时钟；工程上则有 NTP&#x2F;PTP 时钟同步，Google Spanner 的 TrueTime 更进一步，用 GPS 和原子钟把时钟误差限定在一个已知区间内，再通过”等待误差区间过去”来保证全局顺序。</p>
+</div>
+<h3 id="MPI-学习资源"><a href="#MPI-学习资源" class="headerlink" title="MPI 学习资源"></a>MPI 学习资源</h3><p><em>MPI Resources</em></p>
+<p>MPI 庞大而复杂，本节只是触及了皮毛。想进一步了解 MPI，我们推荐：</p>
+<blockquote>
+<p>MPI is large and complex, and this section hardly scratches the surface. For more information about MPI, we suggest:</p>
+</blockquote>
+<ul>
+<li>劳伦斯·利弗莫尔国家实验室（LLNL）Blaise Barney 编写的 <a target="_blank" rel="noopener" href="https://hpc-tutorials.llnl.gov/mpi/">MPI 教程</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The Lawrence Livermore National Lab’s <a target="_blank" rel="noopener" href="https://hpc-tutorials.llnl.gov/mpi/">MPI tutorial</a>, by Blaise Barney.</li>
+</ul>
+</blockquote>
+<ul>
+<li>CSinParallel 的 <a target="_blank" rel="noopener" href="http://selkie.macalester.edu/csinparallel/modules/Patternlets/build/html/MessagePassing/MPI_Patternlets.html">MPI Patterns</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>CSinParallel’s <a target="_blank" rel="noopener" href="http://selkie.macalester.edu/csinparallel/modules/Patternlets/build/html/MessagePassing/MPI_Patternlets.html">MPI Patterns</a>.</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C15-Parallel/15.1-gpu.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C15-Parallel/15.3-cloud.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-1-%E5%B9%B6%E8%A1%8C%E4%B8%8E%E5%88%86%E5%B8%83%E5%BC%8F%E5%A4%84%E7%90%86%E6%A8%A1%E5%9E%8B"><span class="toc-text">15.2.1. 并行与分布式处理模型</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-2-%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><span class="toc-text">15.2.2. 通信协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-3-%E6%B6%88%E6%81%AF%E4%BC%A0%E9%80%92%E6%8E%A5%E5%8F%A3%EF%BC%88MPI%EF%BC%89"><span class="toc-text">15.2.3. 消息传递接口（MPI）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-4-MPI-Hello-World"><span class="toc-text">15.2.4. MPI Hello World</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-5-MPI-%E6%A0%87%E9%87%8F%E4%B9%98%E6%B3%95"><span class="toc-text">15.2.5. MPI 标量乘法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#15-2-6-%E5%88%86%E5%B8%83%E5%BC%8F%E7%B3%BB%E7%BB%9F%E9%9D%A2%E4%B8%B4%E7%9A%84%E6%8C%91%E6%88%98"><span class="toc-text">15.2.6. 分布式系统面临的挑战</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MPI-%E5%AD%A6%E4%B9%A0%E8%B5%84%E6%BA%90"><span class="toc-text">MPI 学习资源</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4.6. 位运算符 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;bitwise.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.6. Bitwise Operators 除了前面介绍的标准">
+<meta property="og:type" content="website">
+<meta property="og:title" content="4.6. 位运算符 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/4.6-bitwise.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;bitwise.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.6. Bitwise Operators 除了前面介绍的标准">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.971Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.971Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html" class="current" aria-current="page">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>4. 二进制与数据表示</span>
+      </nav>
+      <span class="book-position">第 52 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">4.6. 位运算符</h1>
+  
+  
+    <p class="article-meta"><span>约 16 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C4-Binary/bitwise.html">https://diveintosystems.org/book/C4-Binary/bitwise.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>4.6. Bitwise Operators</em></p>
+<p>除了前面介绍的标准算术运算之外，CPU 还支持一些在二进制之外很少见的运算。这些<strong>位运算符</strong>（bitwise operator）直接把<a href="../C5-Arch/5.3-gates.html">逻辑门</a>的行为应用到位序列上，因此可以直接、高效地用硬件实现。程序员通常用加法和减法来处理变量的数值含义，而位运算符则通常用来修改变量中的特定位。例如，程序可能把变量中的某个位编码为表示真&#x2F;假的含义，位运算让程序可以操作变量中的单个位，从而修改那个特定的位。</p>
+<blockquote>
+<p>In addition to the standard arithmetic operations described earlier, CPUs also support operations that are uncommon outside of binary. These <strong>bitwise operators</strong> directly apply the behavior of <a href="../C5-Arch/5.3-gates.html">logic gates</a> to bit sequences, making them straightforward to implement efficiently in hardware. Unlike addition and subtraction, which programmers typically use to manipulate a variable’s numerical interpretation, programmers commonly use bitwise operators to modify specific bits in a variable. For example, a program might encode a certain bit position in a variable to hold a true&#x2F;false meaning, and bitwise operations allow the program to manipulate the variable’s individual bits to change that specific bit.</p>
+</blockquote>
+<h3 id="4-6-1-按位与"><a href="#4-6-1-按位与" class="headerlink" title="4.6.1. 按位与"></a>4.6.1. 按位与</h3><p><em>4.6.1. Bitwise AND</em></p>
+<p>按位与运算符（<code>&amp;</code>）对两个输入位序列求值。对于输入的每一位，如果两个输入在该位置上<em>都</em>是 1，就在输出的对应位置输出 1，否则在该位输出 0。<a href="4.6-bitwise.html">表 1</a> 给出了两个值 <em>A</em> 和 <em>B</em> 按位与的真值表。</p>
+<blockquote>
+<p>The bitwise AND operator (<code>&amp;</code>) evaluates two input bit sequences. For each digit of the inputs, it outputs a 1 in the corresponding position of the output if <em>both</em> inputs are 1 in that position. Otherwise, it outputs a 0 for the digit. <a href="4.6-bitwise.html">Table 1</a> shows the truth table for the bitwise AND of two values, <em>A</em> and <em>B</em>.</p>
+</blockquote>
+<p><strong>表 1.</strong> 两个值按位与的结果（<em>A</em> AND <em>B</em>）</p>
+<p><em>Table 1. The Results of Bitwise ANDing Two Values (<em>A</em> AND <em>B</em>)</em></p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A &amp; B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>例如，要对 0b011010 和 0b110110 按位与，先把两个序列对齐。逐位纵向检查，如果两位<em>都</em>是 1，就把该列的结果设为 1，否则设为 0：</p>
+<blockquote>
+<p>For example, to bitwise AND 0b011010 with 0b110110, start by lining up the two sequences. Checking vertically through each digit, set the result of the column to 1 if <em>both</em> digits are 1. Otherwise, set the result of the column to 0:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">        011010</span><br><span class="line">    AND 110110  Only digits 1 and 4 are 1&#x27;s in BOTH inputs, so</span><br><span class="line">Result: 010010  those are the only digits set to 1 in the output.</span><br></pre></td></tr></table></figure>
+
+<p>要在 C 中进行按位与，就把 C 的按位与运算符（<code>&amp;</code>）放在两个操作数变量之间。下面用 C 实现同一个例子：</p>
+<blockquote>
+<p>To perform a bitwise AND in C, place C’s bitwise AND operator (<code>&amp;</code>) between two operand variables. Here’s the same example again, performed in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int x = 26;</span><br><span class="line">int y = 54;</span><br><span class="line"></span><br><span class="line">printf(&quot;Result: %d\n&quot;, x &amp; y);  // Prints 18</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 位运算与逻辑真值运算（Bitwise Operations versus Logical Truth Operations）</p><p>小心不要把位运算符和<a href="../C1-C_intro/1.3-conditionals.html">逻辑真值运算符</a>混为一谈。尽管它们的名字相似（AND、OR、NOT 等），两者<em>并不</em>相同：</p>
+<ul>
+<li><p>位运算符独立地考虑输入的每一位，产生的输出位序列取决于输入中具体哪些位被置为 1。</p>
+</li>
+<li><p>逻辑运算符只考虑操作数的<em>真值</em>解释。对 C 来说，值为零就是<em>假</em>，其他所有值都被视为<em>真</em>。逻辑运算符常用于对条件求值（例如 <code>if</code> 语句）。</p>
+</li>
+</ul>
+<p>注意，C 常常用相似（但略有不同）的运算符来区分这两者。例如，用单个 <code>&amp;</code> 和 <code>|</code> 分别表示按位与和按位或，而逻辑与和逻辑或对应的是两个字符的 <code>&amp;&amp;</code> 和 <code>||</code>。最后，按位取反用 <code>~</code>，而逻辑非用 <code>!</code> 表示。</p>
+<blockquote>
+<p>Be careful not to conflate bitwise operators with <a href="../C1-C_intro/1.3-conditionals.html">logical truth operators</a>. Despite having similar names (AND, OR, NOT, etc.), the two <em>are not</em> the same:</p>
+<ul>
+<li><p>Bitwise operators consider each bit of their inputs independently and produce an output bit sequence as a function of the specific input bits that are set.</p>
+</li>
+<li><p>Logical operators consider only the <em>truth</em> interpretation of their operands. To C, a value of zero is <em>false</em>, whereas all other values are considered <em>true</em>. Logical operators are often used when evaluating conditionals (e.g., <code>if</code> statements).</p>
+</li>
+</ul>
+<p>Note that C often uses similar (but slightly different) operators to distinguish between the two. For example, you can indicate bitwise AND and bitwise OR using a single <code>&amp;</code> and <code>|</code>, respectively. Logical AND and logical OR correspond to a double <code>&amp;&amp;</code> and <code>||</code>. Finally, bitwise NOT uses <code>~</code>, whereas logical NOT is expressed by <code>!</code>.</p>
+</blockquote>
+</div>
+<h3 id="4-6-2-按位或"><a href="#4-6-2-按位或" class="headerlink" title="4.6.2. 按位或"></a>4.6.2. 按位或</h3><p><em>4.6.2. Bitwise OR</em></p>
+<p>按位或运算符（<code>|</code>）的行为与按位与运算符类似，只是只要两个输入在对应位置上<em>任一个或都</em>是 1，它就在该位输出 1，否则输出 0。<a href="4.6-bitwise.html">表 2</a> 给出了两个值 <em>A</em> 和 <em>B</em> 按位或的真值表。</p>
+<blockquote>
+<p>The bitwise OR operator (<code>|</code>) behaves like the bitwise AND operator except that it outputs a 1 for a digit if <em>either or both</em> of the inputs is 1 in the corresponding position. Otherwise, it outputs a 0 for the digit. <a href="4.6-bitwise.html">Table 2</a> shows the truth table for the bitwise OR of two values, <em>A</em> and <em>B</em>.</p>
+</blockquote>
+<p><strong>表 2.</strong> 两个值按位或的结果（<em>A</em> OR <em>B</em>）</p>
+<p><em>Table 2. The Results of Bitwise ORing Two Values (<em>A</em> OR <em>B</em>)</em></p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A | B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody></table>
+<p>例如，要对 0b011010 和 0b110110 按位或，先把两个序列对齐。逐位纵向检查，如果<em>任一</em>位是 1，就把该列的结果设为 1：</p>
+<blockquote>
+<p>For example, to bitwise OR 0b011010 with 0b110110, start by lining up the two sequences. Checking vertically through each digit, set the result of the column to 1 if <em>either</em> digit is 1:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">        011010</span><br><span class="line">     OR 110110     Only digit 0 contains a 0 in both inputs, so it&#x27;s</span><br><span class="line">Result: 111110     the only digit not set to 1 in the result.</span><br></pre></td></tr></table></figure>
+
+<p>要在 C 中进行按位或，就把 C 的按位或运算符（<code>|</code>）放在两个操作数之间。下面用 C 实现同一个例子：</p>
+<blockquote>
+<p>To perform a bitwise OR in C, place C’s bitwise OR operator (<code>|</code>) between two operands. Here’s the same example again, performed in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int x = 26;</span><br><span class="line">int y = 54;</span><br><span class="line"></span><br><span class="line">printf(&quot;Result: %d\n&quot;, x | y);  // Prints 62</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-6-3-按位异或（XOR）"><a href="#4-6-3-按位异或（XOR）" class="headerlink" title="4.6.3. 按位异或（XOR）"></a>4.6.3. 按位异或（XOR）</h3><p><em>4.6.3. Bitwise XOR (Exclusive OR)</em></p>
+<p>按位异或运算符（<code>^</code>）的行为与按位或运算符类似，只是只有当两个输入在对应位置上<em>恰好有一个</em>（而不是两个都）为 1 时，它才在该位输出 1，否则输出 0。<a href="4.6-bitwise.html">表 3</a> 给出了两个值 <em>A</em> 和 <em>B</em> 按位异或的真值表。</p>
+<blockquote>
+<p>The bitwise XOR operator (<code>^</code>) behaves like the bitwise OR operator except that it outputs a 1 for a digit only if <em>exactly one</em> (but not both) of the inputs is 1 in the corresponding position. Otherwise, it outputs a 0 for the digit. <a href="4.6-bitwise.html">Table 3</a> shows the truth table for the bitwise XOR of two values, <em>A</em> and <em>B</em>.</p>
+</blockquote>
+<p><strong>表 3.</strong> 两个值按位异或的结果（<em>A</em> XOR <em>B</em>）</p>
+<p><em>Table 3. The Results of Bitwise XORing Two Values (<em>A</em> XOR <em>B</em>)</em></p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>B</th>
+<th>A ^ B</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>0</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>例如，要对 0b011010 和 0b110110 按位异或，先把两个序列对齐。逐位纵向检查，如果<em>只有一</em>位是 1，就把该列的结果设为 1：</p>
+<blockquote>
+<p>For example, to bitwise XOR 0b011010 with 0b110110, start by lining up the two sequences. Checking vertically through each digit, set the result of the column to 1 if <em>only one</em> digit is 1:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>下面代码注释中的「Digits 2, 3, and 6」应为「2、3 和 5」：结果 101100 中为 1 的是第 5、3、2 位（从右往左、从 0 开始数），六位数里并没有第 6 位。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">        011010</span><br><span class="line">    XOR 110110     Digits 2, 3, and 6 contain a 1 in exactly one of</span><br><span class="line">Result: 101100     the two inputs.</span><br></pre></td></tr></table></figure>
+
+<p>要在 C 中进行按位异或，就把 C 的按位异或运算符（<code>^</code>）放在两个操作数之间。下面用 C 实现同一个例子：</p>
+<blockquote>
+<p>To perform a bitwise XOR in C, place C’s bitwise XOR operator (<code>^</code>) between two operands. Here’s the same example again, performed in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int x = 26;</span><br><span class="line">int y = 54;</span><br><span class="line"></span><br><span class="line">printf(&quot;Result: %d\n&quot;, x ^ y);  // Prints 44</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-6-4-按位取反"><a href="#4-6-4-按位取反" class="headerlink" title="4.6.4. 按位取反"></a>4.6.4. 按位取反</h3><p><em>4.6.4. Bitwise NOT</em></p>
+<p>按位取反运算符（<code>~</code>）只作用于一个操作数。对于序列中的每一位，它只是把这一位翻转，0 变成 1，1 变成 0。<a href="4.6-bitwise.html">表 4</a> 给出了按位取反运算符的真值表。</p>
+<blockquote>
+<p>The bitwise NOT operator (<code>~</code>) operates on just one operand. For each bit in the sequence, it simply flips the bit such that a zero becomes a one or vice versa. <a href="4.6-bitwise.html">Table 4</a> shows the truth table for the bitwise NOT operator.</p>
+</blockquote>
+<p><strong>表 4.</strong> 对一个值（<em>A</em>）按位取反的结果</p>
+<p><em>Table 4. The Results of Bitwise NOTing a Value (<em>A</em>)</em></p>
+<table>
+<thead>
+<tr>
+<th>A</th>
+<th>~ A</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody></table>
+<p>例如，要对 0b011010 按位取反，就把每一位的值取反：</p>
+<blockquote>
+<p>For example, to bitwise NOT 0b011010, invert the value of each bit:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">    NOT 011010</span><br><span class="line">Result: 100101</span><br></pre></td></tr></table></figure>
+
+<p>要在 C 中进行按位取反，就在操作数前面加上波浪号（<code>~</code>）。下面用 C 实现同一个例子：</p>
+<blockquote>
+<p>To perform a bitwise NOT in C, place a tilde character (<code>~</code>) in front of an operand. Here’s the same example again, performed in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int x = 26;</span><br><span class="line"></span><br><span class="line">printf(&quot;Result: %d\n&quot;, ~x); // Prints -27</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 按位取反与取负（Bitwise NOT vs. Negation）</p><p>注意，所有现代系统都用补码表示整数，所以按位取反与取负并不完全一样。按位取反<em>只</em>翻转各位，<em>不</em>加一。</p>
+<blockquote>
+<p>Note that all modern systems represent integers using two’s complement, so bitwise NOT isn’t quite the same as negation. Bitwise NOT <em>only</em> flips the bits and <em>doesn’t</em> add one.</p>
+</blockquote>
+</div>
+<h3 id="4-6-5-移位"><a href="#4-6-5-移位" class="headerlink" title="4.6.5. 移位"></a>4.6.5. 移位</h3><p><em>4.6.5. Bit Shifting</em></p>
+<p>另一种重要的位运算是把操作数的各位向左（<code>&lt;&lt;</code>）或向右（<code>&gt;&gt;</code>）移动。左移和右移运算符都接收两个操作数：要移位的位序列，以及要移动的位数。</p>
+<blockquote>
+<p>Another important bitwise operation involves shifting the position of an operand’s bits either to the left (<code>&lt;&lt;</code>) or to the right (<code>&gt;&gt;</code>). Both the left and right shifting operators take two operands: the bit sequence to shift and the number of places it should be shifted.</p>
+</blockquote>
+<h4 id="左移"><a href="#左移" class="headerlink" title="左移"></a>左移</h4><p><em>Shifting Left</em></p>
+<p>把一个序列左移 <em>N</em> 位，会把它的每一位都向左移动 <em>N</em> 次，并在序列的右端补上新的零。例如，把八位序列 0b00101101 左移两位得到 0b101101<strong>00</strong>。右边的两个零被补在序列的末尾，因为结果仍然需要是一个八位序列。</p>
+<blockquote>
+<p>Shifting a sequence to the left by <em>N</em> places moves each of its bits to the left <em>N</em> times, appending new zeros to the right side of the sequence. For example, shifting the eight-bit sequence 0b00101101 to the left by two produces 0b101101<strong>00</strong>. The two zeros at the right are appended to end of the sequence, since the result still needs to be an eight-bit sequence.</p>
+</blockquote>
+<p>在没有溢出的情况下，左移会使结果的值<em>增大</em>，因为各位都移向了对数值贡献更大的 2 的幂的数位。但是，在位数固定的情况下，任何移到数的最大容量之外的位都会被截断。例如，把八位序列 0b11110101（无符号解释为 245）左移一位，得到 0b1110101<strong>0</strong>（无符号解释为 234）。在这里，被移出去的高位被截断，使结果变小了。</p>
+<blockquote>
+<p>In the absence of overflow, shifting to the left <em>increases</em> the value of the result because bits move toward digits that contribute larger powers of two to the value of the number. However, with a fixed number of bits, any bits that shift into positions beyond the maximum capacity of the number get truncated. For example, shifting the eight-bit sequence 0b11110101 (unsigned interpretation 245) to the left by one produces 0b1110101<strong>0</strong> (unsigned interpretation 234). Here, the truncation of the high-order bit that shifted out makes the result smaller.</p>
+</blockquote>
+<p>要在 C 中进行左移，就在一个值和要移动的位数之间放上两个小于号（<code>&lt;&lt;</code>）：</p>
+<blockquote>
+<p>To perform a left bit shift in C, place two less-than characters (<code>&lt;&lt;</code>) between a value and the number of places to shift that value:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int x = 13;  // 13 is 0b00001101</span><br><span class="line"></span><br><span class="line">printf(&quot;Result: %d\n&quot;, x &lt;&lt; 3);  // Prints 104 (0b01101000)</span><br></pre></td></tr></table></figure>
+
+<h4 id="右移"><a href="#右移" class="headerlink" title="右移"></a>右移</h4><p><em>Shifting Right</em></p>
+<p>右移与左移类似——任何移出变量容量之外的位（例如从右端移出去的位）都会因截断而消失。不过，右移还要额外考虑一点：在结果左侧补上的新位，可能需要全是零，也可能需要全是一，这取决于被移位变量的<em>类型</em>及其高位的值。从概念上讲，选择补零还是补一，与<a href="4.3-signed.html">符号扩展</a>类似。因此，右移有两种不同的变体：</p>
+<blockquote>
+<p>Shifting to the right is similar to left shifting — any bits that are shifted out of a variable’s capacity (e.g., off the end to the right) disappear due to truncation. However, right shifting introduces an additional consideration: the new bits prepended to the left side of the result may need to be either all zeros or all ones depending on the <em>type</em> of the variable being shifted and its high-order bit value. Conceptually, the choice to prepend zeros or ones resembles that of <a href="4.3-signed.html">sign extension</a>. Thus, there exist two distinct variants of right shifting:</p>
+</blockquote>
+<ul>
+<li><strong>逻辑右移</strong>（logical right shift）总是在结果的高位补零。逻辑移位用于移动<em>无符号</em>变量，因为无符号值最高有效位上的 1 并不表示这个值是负数。例如，用逻辑移位把 0b10110011 右移两位，得到 0b<strong>00</strong>101100。</li>
+</ul>
+<blockquote>
+<ul>
+<li>A <strong>logical right shift</strong> always prepends zeros to the high-order bits of the result. Logical shifting is used to shift <em>unsigned</em> variables, since a leading 1 in the most significant bit of an unsigned value isn’t intended to mean that the value is negative. For example, shifting 0b10110011 to the right by two using a logical shift yields 0b<strong>00</strong>101100.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>算术右移</strong>（arithmetic right shift）在每个新的位位置上都补上被移位值最高有效位的副本。算术移位适用于<em>有符号</em>变量，对它们来说，保持高位的符号很重要。例如，用算术移位把 0b10110011 右移两位，得到 0b<strong>11</strong>101100。</li>
+</ul>
+<blockquote>
+<ul>
+<li>An <strong>arithmetic right shift</strong> prepends a copy of the shifted value’s most significant bit into each of the new bit positions. Arithmetic shifting applies to <em>signed</em> variables, for which it’s important to preserve the signedness of the high-order bits. For example, shifting 0b10110011 to the right by two using an arithmetic shift yields 0b<strong>11</strong>101100.</li>
+</ul>
+</blockquote>
+<p>幸运的是，在用 C 编程时，只要正确地声明了变量，通常就不必操心这一区别。如果你的程序中有右移运算符（<code>&gt;&gt;</code>），几乎所有 C 编译器都会根据被移位变量的类型自动执行相应类型的移位。也就是说，如果被移位的变量是用 <em>unsigned</em> 限定符声明的，编译器就执行逻辑移位，否则执行算术移位。</p>
+<blockquote>
+<p>Fortunately, when programming in C, you don’t typically need to worry about the distinction if you’ve declared your variables properly. If your program includes a right shift operator (<code>&gt;&gt;</code>), virtually every C compiler will automatically perform the appropriate type of shifting according to the type of the shifting variable. That is, if the shifting variable was declared with the <em>unsigned</em> qualifier, the compiler will perform a logical shift. Otherwise, it will perform an arithmetic shift.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>严格地说，C 标准规定：对负的有符号数右移，结果由实现定义（implementation-defined）；GCC 和 Clang 都实现为算术右移，所以原书说的「几乎所有编译器」是准确的。另外，对负数<strong>左移</strong>、或移位位数大于等于类型宽度，在 C 中是未定义行为，写代码时要避免。</p>
+</div>
+<div class="callout callout-note"><p class="callout-title">原书注 · C 右移示例程序（C Right Shift Example Program）</p><p>你可以用下面这样的一个小示例程序来测试右移的行为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line">    /* Unsigned integer value: u_val. */</span><br><span class="line">    unsigned int u_val = 0xFF000000;</span><br><span class="line"></span><br><span class="line">    /* Signed integer value: s_val. */</span><br><span class="line">    int s_val = 0xFF000000;</span><br><span class="line"></span><br><span class="line">    printf(&quot;%08X\n&quot;, u_val &gt;&gt; 12);  // logical right shift</span><br><span class="line">    printf(&quot;%08X\n&quot;, s_val &gt;&gt; 12);  // arithmetic right shift</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个程序声明了两个 32 位整数：一个是无符号整数（<code>u_val</code>），另一个是有符号整数（<code>s_val</code>）。它把两个整数都初始化为同一个初始值：八个一后面跟着 24 个零（<code>0b1111111100000000000000000000000000</code>），然后把两个值都右移 12 位。执行时它会打印：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">000FF000</span><br><span class="line">FFFFF000</span><br></pre></td></tr></table></figure>
+
+<p>由于对无符号的 <code>u_val</code> 来说，开头的 1 并不表示「负数」，编译器使用的指令只在前面补零。移位结果包含 12 个零、八个一，再跟 12 个零（<code>0b00000000000011111111000000000000</code>）。另一方面，对 <code>s_val</code> 来说，开头的 1 <strong>确实</strong>表示「负数」，所以编译器在移位后的值前面补 1，得到 20 个一后面跟着 12 个零（<code>0b11111111111111111111000000000000</code>）。</p>
+<blockquote>
+<p>You can test the behavior of right shifting with a small example program like this one:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line">    /* Unsigned integer value: u_val. */</span><br><span class="line">    unsigned int u_val = 0xFF000000;</span><br><span class="line"></span><br><span class="line">    /* Signed integer value: s_val. */</span><br><span class="line">    int s_val = 0xFF000000;</span><br><span class="line"></span><br><span class="line">    printf(&quot;%08X\n&quot;, u_val &gt;&gt; 12);  // logical right shift</span><br><span class="line">    printf(&quot;%08X\n&quot;, s_val &gt;&gt; 12);  // arithmetic right shift</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>This program declares two 32-bit integers: one as an unsigned integer (<code>u_val</code>), and another as a signed integer (<code>s_val</code>). It initializes both integers to the same starting value: a sequence of eight ones followed by 24 zeros (<code>0b1111111100000000000000000000000000</code>), and then it shifts both values 12 positions to the right. When executed, it prints:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">000FF000</span><br><span class="line">FFFFF000</span><br></pre></td></tr></table></figure>
+
+<p>Because a leading 1 doesn’t indicate “negative” for the unsigned <code>u_val</code>, the compiler uses instructions to prepend it with only zeros. The shifted result contains 12 zeros, eight ones, and 12 more zeros (<code>0b00000000000011111111000000000000</code>). On the other hand, the leading 1 <strong>does</strong> indicate “negative” for <code>s_val</code>, so the compiler prepends 1’s to the front of the shifted value, yielding 20 ones followed by 12 zeros (<code>0b11111111111111111111000000000000</code>).</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>文中 <code>0b1111111100000000000000000000000000</code> 实际写了 8 个一和 26 个零（共 34 位），正确的 32 位值应是 8 个一加 24 个零：<code>0b11111111000000000000000000000000</code>。程序本身没有问题，译者在 macOS 上运行，输出同样是 <code>000FF000</code> 和 <code>FFFFF000</code>。</p>
+</div>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C4-Binary/4.5-overflow.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">4.5. 整数溢出</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C4-Binary/4.7-byte_order.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">4.7. 整数的字节序</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-1-%E6%8C%89%E4%BD%8D%E4%B8%8E"><span class="toc-text">4.6.1. 按位与</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-2-%E6%8C%89%E4%BD%8D%E6%88%96"><span class="toc-text">4.6.2. 按位或</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-3-%E6%8C%89%E4%BD%8D%E5%BC%82%E6%88%96%EF%BC%88XOR%EF%BC%89"><span class="toc-text">4.6.3. 按位异或（XOR）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-4-%E6%8C%89%E4%BD%8D%E5%8F%96%E5%8F%8D"><span class="toc-text">4.6.4. 按位取反</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-6-5-%E7%A7%BB%E4%BD%8D"><span class="toc-text">4.6.5. 移位</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

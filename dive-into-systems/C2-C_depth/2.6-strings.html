@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.6. 字符串与字符串库 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;strings.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.6. Strings and the String Lib">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2.6. 字符串与字符串库 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/2.6-strings.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;strings.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.6. Strings and the String Lib">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.964Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html" class="current" aria-current="page">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>2. 深入 C 语言编程</span>
+      </nav>
+      <span class="book-position">第 22 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">2.6. 字符串与字符串库</h1>
+  
+  
+    <p class="article-meta"><span>约 27 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/strings.html">https://diveintosystems.org/book/C2-C_depth/strings.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>2.6. Strings and the String Library</em></p>
+<p>上一章我们介绍了 <a href="../C1-C_intro/1.5-arrays_strings.html">C 中的数组和字符串</a>。本章讨论动态分配的 C 字符串，以及它们与 C 字符串库的配合使用。我们先简要回顾一下静态声明的字符串。</p>
+<blockquote>
+<p>In the previous chapter we introduced <a href="../C1-C_intro/1.5-arrays_strings.html">arrays and strings in C</a>. In this chapter we discuss dynamically allocated C strings and their use with the C string library. We first give a brief overview of statically declared strings.</p>
+</blockquote>
+<h3 id="2-6-1-C-对静态分配字符串（char-数组）的支持"><a href="#2-6-1-C-对静态分配字符串（char-数组）的支持" class="headerlink" title="2.6.1. C 对静态分配字符串（char 数组）的支持"></a>2.6.1. C 对静态分配字符串（char 数组）的支持</h3><p><em>2.6.1. C’s Support for Statically Allocated Strings (Arrays of char)</em></p>
+<p>C 不支持单独的字符串类型，但在 C 程序中可以用一个以特殊空字符值 <code>&#39;\0&#39;</code> 结尾的 <code>char</code> 数组来实现字符串。结尾的空字符标示出构成字符串的字符序列在哪里结束。并非每个字符数组都是 C 字符串，但每个 C 字符串都是一个 <code>char</code> 数组。</p>
+<blockquote>
+<p>C does not support a separate string type, but a string can be implemented in C programs using an array of <code>char</code> values that is terminated by a special null character value <code>&#39;\0&#39;</code>. The terminating null character identifies the end of the sequence of character values that make up a string. Not every character array is a C string, but every C string is an array of <code>char</code> values.</p>
+</blockquote>
+<p>由于字符串在程序中经常出现，C 提供了含有字符串操作函数的库。使用 C 字符串库的程序需要包含 <code>string.h</code>。大多数字符串库函数都要求程序员为函数所操作的字符数组分配空间。打印字符串的值时，使用 <code>%s</code> 占位符。</p>
+<blockquote>
+<p>Because strings frequently appear in programs, C provides libraries with functions for manipulating strings. Programs that use the C string library need to include <code>string.h</code>. Most string library functions require the programmer to allocate space for the array of characters that the functions manipulate. When printing out the value of a string, use the <code>%s</code> placeholder.</p>
+</blockquote>
+<p>下面是一个使用字符串和一些字符串库函数的示例程序：</p>
+<blockquote>
+<p>Here’s an example program that uses strings and some string library functions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;   // include the C string library</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    char str1[10];</span><br><span class="line">    char str2[10];</span><br><span class="line"></span><br><span class="line">    str1[0] = &#x27;h&#x27;;</span><br><span class="line">    str1[1] = &#x27;i&#x27;;</span><br><span class="line">    str1[2] = &#x27;\0&#x27;;   // explicitly add null terminating character to end</span><br><span class="line"></span><br><span class="line">    // strcpy copies the bytes from the source parameter (str1) to the</span><br><span class="line">    // destination parameter (str2) and null terminates the copy.</span><br><span class="line">    strcpy(str2, str1);</span><br><span class="line">    str2[1] = &#x27;o&#x27;;</span><br><span class="line">    printf(&quot;%s %s\n&quot;, str1, str2);  // prints: hi ho</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="2-6-2-动态分配字符串"><a href="#2-6-2-动态分配字符串" class="headerlink" title="2.6.2. 动态分配字符串"></a>2.6.2. 动态分配字符串</h3><p><em>2.6.2. Dynamically Allocating Strings</em></p>
+<p>字符数组可以动态分配（如<a href="2.2-pointers.html">指针</a>和<a href="2.5-arrays.html">数组</a>两节所述）。动态分配存放字符串的空间时，一定要记得在数组中为字符串末尾的结束符 <code>&#39;\0&#39;</code> 留出空间。</p>
+<blockquote>
+<p>Arrays of characters can be dynamically allocated (as discussed in the <a href="2.2-pointers.html">Pointers</a> and <a href="2.5-arrays.html">Arrays</a> sections). When dynamically allocating space to store a string, it’s important to remember to allocate space in the array for the terminating <code>&#39;\0&#39;</code> character at the end of the string.</p>
+</blockquote>
+<p>下面的示例程序演示了静态分配和动态分配的字符串（注意传给 <code>malloc</code> 的值）：</p>
+<blockquote>
+<p>The following example program demonstrates static and dynamically allocated strings (note the value passed to <code>malloc</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int size;</span><br><span class="line">    char str[64];         // statically allocated</span><br><span class="line">    char *new_str = NULL; // for dynamically allocated</span><br><span class="line"></span><br><span class="line">    strcpy(str, &quot;Hello&quot;);</span><br><span class="line">    size = strlen(str);   // returns 5</span><br><span class="line"></span><br><span class="line">    new_str = malloc(sizeof(char) * (size+1)); // need space for &#x27;\0&#x27;</span><br><span class="line">    if(new_str == NULL) &#123;</span><br><span class="line">        printf(&quot;Error: malloc failed!  exiting.\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    strcpy(new_str, str);</span><br><span class="line">    printf(&quot;%s %s\n&quot;, str, new_str);    // prints &quot;Hello Hello&quot;</span><br><span class="line"></span><br><span class="line">    strcat(str, &quot; There&quot;);  // concatenate &quot; There&quot; to the end of str</span><br><span class="line">    printf(&quot;%s\n&quot;, str);    // prints &quot;Hello There&quot;</span><br><span class="line"></span><br><span class="line">    free(new_str);  // free malloc&#x27;ed space when done</span><br><span class="line">    new_str = NULL;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-warning"><p class="callout-title">原书警示 · C 字符串函数与目标内存（C String Functions and Destination Memory）</p><p>许多 C 字符串函数（尤其是 <code>strcpy</code> 和 <code>strcat</code>）沿着一个<em>目标</em>（destination）字符串指针（<code>char *</code>）参数，把结果写到它所指向的位置。这类函数假定目标处有足够的内存存放结果。因此，作为程序员，你必须在调用这些函数之前确保目标处有足够的可用内存。</p>
+<p>没有分配足够的内存会产生未定义的结果，后果从程序崩溃到<a href="../C8-IA32/8.10-buffer_overflow.html">严重的安全漏洞</a>不等。例如，下面对 <code>strcpy</code> 和 <code>strcat</code> 的调用展示了 C 新手常犯的错误：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// Attempt to write a 12-byte string into a 5-character array.</span><br><span class="line">char mystr[5];</span><br><span class="line">strcpy(mystr, &quot;hello world&quot;);</span><br><span class="line"></span><br><span class="line">// Attempt to write to a string with a NULL destination.</span><br><span class="line">char *mystr = NULL;</span><br><span class="line">strcpy(mystr, &quot;try again&quot;);</span><br><span class="line"></span><br><span class="line">// Attempt to modify a read-only string literal.</span><br><span class="line">char *mystr = &quot;string literal value&quot;;</span><br><span class="line">strcat(mystr, &quot;string literals aren&#x27;t writable&quot;);</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Many C string functions (notably <code>strcpy</code> and <code>strcat</code>) store their results by following a <em>destination</em> string pointer (<code>char *</code>) parameter and writing to the location it points to. Such functions assume that the destination contains enough memory to store the result. Thus, as a programmer, you must ensure that sufficient memory is available at the destination prior to calling these functions.</p>
+<p>Failure to allocate enough memory will yield undefined results that range from program crashes to <a href="../C8-IA32/8.10-buffer_overflow.html">major security vulnerabilities</a>. For example, the following calls to <code>strcpy</code> and <code>strcat</code> demonstrate mistakes that novice C programmers often make:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// Attempt to write a 12-byte string into a 5-character array.</span><br><span class="line">char mystr[5];</span><br><span class="line">strcpy(mystr, &quot;hello world&quot;);</span><br><span class="line"></span><br><span class="line">// Attempt to write to a string with a NULL destination.</span><br><span class="line">char *mystr = NULL;</span><br><span class="line">strcpy(mystr, &quot;try again&quot;);</span><br><span class="line"></span><br><span class="line">// Attempt to modify a read-only string literal.</span><br><span class="line">char *mystr = &quot;string literal value&quot;;</span><br><span class="line">strcat(mystr, &quot;string literals aren&#x27;t writable&quot;);</span><br></pre></td></tr></table></figure>
+</blockquote>
+</div>
+<h3 id="2-6-3-操作-C-字符串和字符的库"><a href="#2-6-3-操作-C-字符串和字符的库" class="headerlink" title="2.6.3. 操作 C 字符串和字符的库"></a>2.6.3. 操作 C 字符串和字符的库</h3><p><em>2.6.3. Libraries for Manipulating C Strings and Characters</em></p>
+<p>C 提供了几个含有字符串和字符操作函数的库。在编写使用 C 字符串的程序时，字符串库（<code>string.h</code>）尤其有用。<code>stdlib.h</code> 和 <code>stdio.h</code> 库中也有字符串操作函数，而 <code>ctype.h</code> 库中有操作单个字符值的函数。</p>
+<blockquote>
+<p>C provides several libraries with functions for manipulating strings and characters. The string library (<code>string.h</code>) is particularly useful when writing programs that use C strings. The <code>stdlib.h</code> and <code>stdio.h</code> libraries also contain functions for string manipulation, and the <code>ctype.h</code> library contains functions for manipulating individual character values.</p>
+</blockquote>
+<p>使用 C 字符串库函数时要记住，大多数函数既不为它们所操作的字符串分配空间，也不检查你传入的字符串是否有效；你的程序必须为 C 字符串库要使用的字符串分配空间。此外，如果库函数会修改传入的字符串，调用者需要确保该字符串格式正确（即末尾有结束符 <code>\0</code>）。用错误的数组实参调用字符串库函数，常常会导致程序崩溃。各个库函数的文档（例如手册页）会说明该库函数是自己分配空间，还是由调用者负责把已分配好的空间传给它。</p>
+<blockquote>
+<p>When using C string library functions, it’s important to remember that most do not allocate space for the strings they manipulate, nor do they check that you pass in valid strings; your program must allocate space for the strings that the C string library will use. Furthermore, if the library function modifies the passed string, the caller needs to ensure that the string is correctly formatted (that is, it has a terminating <code>\0</code> character at the end). Calling string library functions with bad array argument values will often cause a program to crash. The documentation (for example, manual pages) for different library functions specifies whether the library function allocates space or if the caller is responsible for passing in allocated space to the library function.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 新进入标准的字符串函数</p><p>原书写作之后，C 和 POSIX 标准都补充了常用的字符串函数：C23 把原本只在 POSIX 中提供的 <code>strdup</code>（复制字符串，空间用 <code>malloc</code> 分配，用完需要 <code>free</code>）和 <code>strndup</code> 纳入了 C 标准库；POSIX.1-2024 则正式收录了 <code>strlcpy</code> 和 <code>strlcat</code>。<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/string/byte/strdup">cppreference：strdup</a> · <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/string/byte/strndup">cppreference：strndup</a> · <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/strlcpy.3.html">man7：strlcpy(3)</a></p>
+</div>
+<div class="callout callout-note"><p class="callout-title">原书注 · <code>char[]</code> 与 <code>char *</code> 形参以及 <code>char *</code> 返回类型（<code>char[]</code> and <code>char *</code> Parameters and <code>char *</code> Return Type）</p><p>静态声明的字符数组和动态分配的字符数组都可以传给 <code>char *</code> 形参，因为这两种变量的名字都求值为数组在内存中的基地址。把形参声明为 <code>char []</code> 类型，对静态分配和动态分配的实参也都适用，但指定字符串（<code>char</code> 数组）形参的类型时，更常用的是 <code>char *</code>。</p>
+<p>如果函数返回一个字符串（返回类型是 <code>char *</code>），它的返回值只能赋给同样是 <code>char *</code> 类型的变量，不能赋给静态分配的数组变量。之所以有这个限制，是因为静态声明的数组变量的名字不是合法的<a href="../C1-C_intro/1.6-structs.html">左值</a>（它在内存中的基地址不能改变），所以不能被赋予 <code>char *</code> 返回值。</p>
+<blockquote>
+<p>Both statically declared and dynamically allocated arrays of characters can be passed to a <code>char *</code> parameter because the name of either type of variable evaluates to the base address of the array in memory. Declaring the parameter as type <code>char []</code> will also work for both statically and dynamically allocated argument values, but <code>char *</code> is more commonly used for specifying the type of string (array of <code>char</code>) parameters.</p>
+<p>If a function returns a string (its return type is a <code>char *</code>), its return value can only be assigned to a variable whose type is also <code>char *</code>; it cannot be assigned to a statically allocated array variable. This restriction exists because the name of a statically declared array variable is not a valid <a href="../C1-C_intro/1.6-structs.html">lvalue</a> (its base address in memory cannot be changed), so it cannot be assigned a <code>char *</code> return value.</p>
+</blockquote>
+</div>
+<h4 id="strlen、strcpy、strncpy"><a href="#strlen、strcpy、strncpy" class="headerlink" title="strlen、strcpy、strncpy"></a>strlen、strcpy、strncpy</h4><p><em>strlen, strcpy, strncpy</em></p>
+<p>字符串库提供了复制字符串和求字符串长度的函数：</p>
+<blockquote>
+<p>The string library provides functions for copying strings and finding the length of a string:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 函数原型是简化过的</p><p>本节列出的原型为了易读做了简化。标准库中的实际声明是：<code>size_t strlen(const char *s);</code>、<code>char *strcpy(char *restrict dst, const char *restrict src);</code>、<code>char *strncpy(char *restrict dst, const char *restrict src, size_t n);</code>。也就是说 <code>strlen</code> 返回的是无符号的 <code>size_t</code> 而不是 <code>int</code>，不会被修改的源字符串参数带有 <code>const</code>。用 <code>man strlen</code> 等命令可以查看所在系统上的准确原型。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">// returns the number of characters in the string (not including the null character)</span><br><span class="line">int strlen(char *s);</span><br><span class="line"></span><br><span class="line">// copies string src to string dst up until the first &#x27;\0&#x27; character in src</span><br><span class="line">// (the caller needs to make sure src is initialized correctly and</span><br><span class="line">// dst has enough space to store a copy of the src string)</span><br><span class="line">// returns the address of the dst string</span><br><span class="line">char *strcpy(char *dst, char *src);</span><br><span class="line"></span><br><span class="line">// like strcpy but copies up to the first &#x27;\0&#x27; or size characters</span><br><span class="line">// (this provides some safety to not copy beyond the bounds of the dst</span><br><span class="line">// array if the src string is not well formed or is longer than the</span><br><span class="line">// space available in the dst array); size_t is an unsigned integer type</span><br><span class="line">char *strncpy(char *dst, char *src, size_t size);</span><br></pre></td></tr></table></figure>
+
+<p>在源字符串可能比目标字符串总容量更长的情况下，使用 <code>strcpy</code> 是不安全的。这时应当使用 <code>strncpy</code>。<code>size</code> 参数使 <code>strncpy</code> 从 <code>src</code> 字符串向 <code>dst</code> 字符串复制的字符不超过 <code>size</code> 个。当 <code>src</code> 字符串的长度大于或等于 <code>size</code> 时，<code>strncpy</code> 把 <code>src</code> 的前 <code>size</code> 个字符复制到 <code>dst</code>，<em>不会</em>在 <code>dst</code> 末尾添加空字符。因此，程序员应当在调用 <code>strncpy</code> 之后显式地在 <code>dst</code> 末尾加上空字符。</p>
+<blockquote>
+<p>The <code>strcpy</code> function is unsafe to use in situations when the source string might be longer than the total capacity of the destination string. In this case, one should use <code>strncpy</code>. The <code>size</code> parameter stops <code>strncpy</code> from copying more than <code>size</code> characters from the <code>src</code> string into the <code>dst</code> string. When the length of the <code>src</code> string is greater than or equal to <code>size</code>, <code>strncpy</code> copies the first <code>size</code> characters from <code>src</code> to <code>dst</code> and does not add a null character to the end of the <code>dst</code>. As a result, the programmer should explicitly add a null character to the end of <code>dst</code> after calling <code>strncpy</code>.</p>
+</blockquote>
+<p>下面是在程序中使用这些函数的一些例子：</p>
+<blockquote>
+<p>Here are some example uses of these functions in a program:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;string.h&gt;   // include the string library</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    // variable declarations that will be used in examples</span><br><span class="line">    int len, i, ret;</span><br><span class="line">    char str[32];</span><br><span class="line">    char *d_str, *ptr;</span><br><span class="line"></span><br><span class="line">    strcpy(str, &quot;Hello There&quot;);</span><br><span class="line">    len = strlen(str);  // len is 11</span><br><span class="line"></span><br><span class="line">    d_str = malloc(sizeof(char) * (len+1));</span><br><span class="line">    if (d_str == NULL) &#123;</span><br><span class="line">        printf(&quot;Error: malloc failed\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    strncpy(d_str, str, 5);</span><br><span class="line">    d_str[5] = &#x27;\0&#x27;;   // explicitly add null terminating character to end</span><br><span class="line"></span><br><span class="line">    printf(&quot;%d:%s\n&quot;, strlen(str), str);      // prints 11:Hello There</span><br><span class="line">    printf(&quot;%d:%s\n&quot;, strlen(d_str), d_str);  // prints 5:Hello</span><br><span class="line"></span><br><span class="line">    free(d_str);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">原书注 · <code>strlcpy</code>（<code>strlcpy</code>）</p><p><code>strlcpy</code> 函数与 <code>strncpy</code> 类似，只是它总会在目标字符串末尾加上 <code>&#39;\0&#39;</code> 字符。由于总是会终止字符串，它比 strncpy 更安全，因为不需要程序员记着显式地给字符串加上终止符。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// like strncpy but copies up to the first &#x27;\0&#x27; or size-1 characters</span><br><span class="line">// and null terminates the dest string (if size &gt; 0).</span><br><span class="line">char *strlcpy(char *dest, char *src, size_t size);</span><br></pre></td></tr></table></figure>
+
+<p>Linux 的 GNU C 库在较新的版本（2.38）中加入了 <code>strlcpy</code>。它目前只在部分系统上可用，但随着新版 C 库的普及，可用范围会越来越广。我们建议在 <code>strlcpy</code> 可用时使用它。</p>
+<p>在提供 <code>strlcpy</code> 的系统上，上例中对 <code>strncpy</code> 的如下调用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// copy up to 5 chars from str to d_str</span><br><span class="line">strncpy(d_str, str, 5);</span><br><span class="line">d_str[5] = &#x27;\0&#x27;;   // explicitly add null terminating character to end</span><br></pre></td></tr></table></figure>
+
+<p>可以替换为对 <code>strlcpy</code> 的这个调用：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// copy up to 5 chars from str to d_str</span><br><span class="line">strlcpy(d_str, str, 6);  // strlcpy always adds &#x27;\0&#x27; to the end</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>The <code>strlcpy</code> function is similar to <code>strncpy</code>, except it always adds the <code>&#39;\0&#39;</code> character to the end of the destination string. Always terminating the string makes it a safer alternative to strncpy because it doesn’t require the programmer to remember to explicitly null terminate the string.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// like strncpy but copies up to the first &#x27;\0&#x27; or size-1 characters</span><br><span class="line">// and null terminates the dest string (if size &gt; 0).</span><br><span class="line">char *strlcpy(char *dest, char *src, size_t size);</span><br></pre></td></tr></table></figure>
+
+<p>Linux’s GNU C library added <code>strlcpy</code> in a recent version (2.38). It’s currently only available on some systems, but its availability will increase as newer versions of the C library become more widespread. We recommend using <code>strlcpy</code> when it is available.</p>
+<p>On systems where <code>strlcpy</code> is available, the following call to <code>strncpy</code> from the example above:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// copy up to 5 chars from str to d_str</span><br><span class="line">strncpy(d_str, str, 5);</span><br><span class="line">d_str[5] = &#x27;\0&#x27;;   // explicitly add null terminating character to end</span><br></pre></td></tr></table></figure>
+
+<p>could be replaced with this call to <code>strlcpy</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">// copy up to 5 chars from str to d_str</span><br><span class="line">strlcpy(d_str, str, 6);  // strlcpy always adds &#x27;\0&#x27; to the end</span><br></pre></td></tr></table></figure>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · strlcpy 的返回值</p><p>原文给出的原型 <code>char *strlcpy(...)</code> 有误：<code>strlcpy</code> 实际返回 <code>size_t</code>，即它<em>试图</em>创建的字符串的总长度（也就是 <code>src</code> 的长度）。如果返回值 ≥ <code>size</code>，说明发生了截断。macOS 和 BSD 很早就提供了 <code>strlcpy</code>；glibc 从 2.38 版开始提供，它也已被纳入 POSIX.1-2024 标准。<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/strlcpy.3.html">man7：strlcpy(3)</a></p>
+</div>
+<h4 id="strcmp、strncmp"><a href="#strcmp、strncmp" class="headerlink" title="strcmp、strncmp"></a>strcmp、strncmp</h4><p><em>strcmp, strncmp</em></p>
+<p>字符串库还提供了比较两个字符串的函数。用 <code>==</code> 运算符比较字符串变量，<em>并不会</em>比较字符串中的字符——它只比较两个字符串的基地址。例如，表达式：</p>
+<blockquote>
+<p>The string library also provides a function to compare two strings. Comparing string variables using the <code>==</code> operator <em>does not</em> compare the characters in the strings — it compares only the base addresses of the two strings. For example, the expression:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">if (d_str == str) &#123; ...</span><br></pre></td></tr></table></figure>
+
+<p>比较的是 <code>d_str</code> 所指向的堆中 <code>char</code> 数组的基地址，与栈上分配的 <code>str</code> <code>char</code> 数组的基地址。</p>
+<blockquote>
+<p>compares the base address of the <code>char</code> array in the heap pointed to by <code>d_str</code> to the base address of the <code>str</code> <code>char</code> array allocated on the stack.</p>
+</blockquote>
+<p>要比较字符串的值，程序员要么自己手写代码逐个比较对应的元素值，要么使用字符串库中的 <code>strcmp</code> 或 <code>strncmp</code> 函数：</p>
+<blockquote>
+<p>To compare the values of the strings, a programmer needs to either write code by hand to compare corresponding element values, or use the <code>strcmp</code> or <code>strncmp</code> functions from the string library:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int strcmp(char *s1, char *s2);</span><br><span class="line">// returns 0 if s1 and s2 are the same strings</span><br><span class="line">// a value &lt; 0 if s1 is less than s2</span><br><span class="line">// a value &gt; 0 if s1 is greater than s2</span><br><span class="line"></span><br><span class="line">int strncmp(char *s1, char *s2, size_t n);</span><br><span class="line">// compare s1 and s2 up to at most n characters</span><br></pre></td></tr></table></figure>
+
+<p><code>strcmp</code> 函数根据字符的 <a href="../C4-Binary/4.0-index.html">ASCII 表示</a>逐个字符地比较字符串。换句话说，它通过比较两个参数数组中对应位置的 <code>char</code> 值来得出字符串比较的结果，这有时会产生违反直觉的结果。例如，<code>char</code> 值 <code>&#39;a&#39;</code> 的 ASCII 编码比 <code>char</code> 值 <code>&#39;Z&#39;</code> 的编码<em>大</em>。因此，<code>strcmp(&quot;aaa&quot;, &quot;Zoo&quot;)</code> 返回一个正值，表示 <code>&quot;aaa&quot;</code> 大于 <code>&quot;Zoo&quot;</code>；而 <code>strcmp(&quot;aaa&quot;, &quot;zoo&quot;)</code> 返回一个负值，表示 <code>&quot;aaa&quot;</code> 小于 <code>&quot;zoo&quot;</code>。</p>
+<blockquote>
+<p>The <code>strcmp</code> function compares strings character by character based on their <a href="../C4-Binary/4.0-index.html">ASCII representation</a>. In other words, it compares the <code>char</code> values in corresponding positions of the two parameter arrays to produce the result of the string comparison, which occasionally yields unintuitive results. For example, the ASCII encoding for the <code>char</code> value <code>&#39;a&#39;</code> is <em>larger</em> than the encoding for the <code>char</code> value <code>&#39;Z&#39;</code>. As a result, <code>strcmp(&quot;aaa&quot;, &quot;Zoo&quot;)</code> returns a positive value indicating that <code>&quot;aaa&quot;</code> is greater than <code>&quot;Zoo&quot;</code>, and a call to <code>strcmp(&quot;aaa&quot;, &quot;zoo&quot;)</code> returns a negative value indicating that <code>&quot;aaa&quot;</code> is less than <code>&quot;zoo&quot;</code>.</p>
+</blockquote>
+<p>下面是一些字符串比较的例子：</p>
+<blockquote>
+<p>Here are some string comparison examples:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">strcpy(str, &quot;alligator&quot;);</span><br><span class="line">strcpy(d_str, &quot;Zebra&quot;);</span><br><span class="line"></span><br><span class="line">ret =  strcmp(str,d_str);</span><br><span class="line">if (ret == 0) &#123;</span><br><span class="line">    printf(&quot;%s is equal to %s\n&quot;, str, d_str);</span><br><span class="line">&#125; else if (ret &lt; 0) &#123;</span><br><span class="line">    printf(&quot;%s is less than %s\n&quot;, str, d_str);</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    printf(&quot;%s is greater than %s\n&quot;, str, d_str);  // true for these strings</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ret = strncmp(str, &quot;all&quot;, 3);  // returns 0: they are equal up to first 3 chars</span><br></pre></td></tr></table></figure>
+
+<h4 id="strcat、strstr、strchr"><a href="#strcat、strstr、strchr" class="headerlink" title="strcat、strstr、strchr"></a>strcat、strstr、strchr</h4><p><em>strcat, strstr, strchr</em></p>
+<p>字符串库函数可以拼接字符串（注意，要由调用者确保目标字符串有足够的空间存放结果）：</p>
+<blockquote>
+<p>String library functions can concatenate strings (note that it’s up to the caller to ensure that the destination string has enough space to store the result):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">// append chars from src to end of dst</span><br><span class="line">// returns ptr to dst and adds &#x27;\0&#x27; to end</span><br><span class="line">char *strcat(char *dst, char *src)</span><br><span class="line"></span><br><span class="line">// append the first chars from src to end of dst, up to a maximum of size</span><br><span class="line">// returns ptr to dst and adds &#x27;\0&#x27; to end</span><br><span class="line">char *strncat(char *dst, char *src, size_t size);</span><br></pre></td></tr></table></figure>
+
+<p>它还提供了在字符串中查找子串或字符值的函数：</p>
+<blockquote>
+<p>It also provides functions for finding substrings or character values in strings:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// locate a substring inside a string</span><br><span class="line">// (const means that the function doesn&#x27;t modify string)</span><br><span class="line">// returns a pointer to the beginning of substr in string</span><br><span class="line">// returns NULL if substr not in string</span><br><span class="line">char *strstr(const char *string, const char *substr);</span><br><span class="line"></span><br><span class="line">// locate a character (c) in the passed string (s)</span><br><span class="line">// (const means that the function doesn&#x27;t modify s)</span><br><span class="line">// returns a pointer to the first occurrence of the char c in string</span><br><span class="line">// or NULL if c is not in the string</span><br><span class="line">char *strchr(const char *s, int c);</span><br></pre></td></tr></table></figure>
+
+<p>下面是使用这些函数的一些例子（为了便于阅读，省略了部分错误处理）：</p>
+<blockquote>
+<p>Here are some examples using these functions (we omit some error handling for the sake of readability):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">char str[32];</span><br><span class="line">char *ptr;</span><br><span class="line"></span><br><span class="line">strcpy(str, &quot;Zebra fish&quot;);</span><br><span class="line">strcat(str, &quot; stripes&quot;);  // str gets &quot;Zebra fish stripes&quot;</span><br><span class="line">printf(&quot;%s\n&quot;, str);     // prints: Zebra fish stripes</span><br><span class="line"></span><br><span class="line">strncat(str, &quot; are black.&quot;, 8);</span><br><span class="line">printf(&quot;%s\n&quot;, str);     // prints: Zebra fish stripes are bla  (spaces count)</span><br><span class="line"></span><br><span class="line">ptr = strstr(str, &quot;trip&quot;);</span><br><span class="line">if (ptr != NULL) &#123;</span><br><span class="line">    printf(&quot;%s\n&quot;, ptr);   // prints: tripes are bla</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">ptr = strchr(str, &#x27;e&#x27;);</span><br><span class="line">if (ptr != NULL) &#123;</span><br><span class="line">    printf(&quot;%s\n&quot;, ptr);   // prints: ebra fish stripes are bla</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>strchr</code> 和 <code>strstr</code> 的调用分别返回参数数组中第一个匹配的字符值或第一个匹配的子串值所在元素的地址。这个元素地址是一个以 <code>\0</code> 字符结尾的 <code>char</code> 值数组的起点。换句话说，<code>ptr</code> 指向另一个字符串内部某个子串的开头。用 <code>printf</code> 把 <code>ptr</code> 的值当作字符串打印时，会打印从 <code>ptr</code> 所指下标开始的字符值，于是得到上面列出的结果。</p>
+<blockquote>
+<p>Calls to <code>strchr</code> and <code>strstr</code> return the address of the first element in the parameter array with a matching character value or a matching substring value, respectively. This element address is the start of an array of <code>char</code> values terminated by a <code>\0</code> character. In other words, <code>ptr</code> points to the beginning of a substring inside another string. When printing the value of <code>ptr</code> as a string with <code>printf</code>, the character values starting at the index pointed to by <code>ptr</code> are printed, yielding the results listed above.</p>
+</blockquote>
+<h4 id="strtok、strtok-r"><a href="#strtok、strtok-r" class="headerlink" title="strtok、strtok_r"></a>strtok、strtok_r</h4><p><em>strtok, strtok_r</em></p>
+<p>字符串库还提供了把字符串切分成记号的函数。<strong>记号</strong>（token）指的是字符串中被任意数量的、由程序员选定的分隔符隔开的一段字符子序列。</p>
+<blockquote>
+<p>The string library also provides functions that divide a string into tokens. A <strong>token</strong> refers to a subsequence of characters in a string separated by any number of delimiter characters of the programmer’s choosing.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">char *strtok(char *str, const char *delim);</span><br><span class="line"></span><br><span class="line">// a reentrant version of strtok (reentrant is defined in later chapters):</span><br><span class="line">char *strtok_r(char *str, const char *delim, char **saveptr);</span><br></pre></td></tr></table></figure>
+
+<p><code>strtok</code>（或 <code>strtok_r</code>）函数在一个较长的字符串中找出各个记号。例如，把 <code>strtok</code> 的分隔符设为空白字符集合，就能从一个原本是英文句子的字符串中得到一个个单词。也就是说，句子中的每个单词都是字符串中的一个记号。</p>
+<blockquote>
+<p>The <code>strtok</code> (or <code>strtok_r</code>) functions find individual tokens within a larger string. For example, setting <code>strtok</code>‘s delimiters to the set of whitespace characters yields words in a string that originally contains an English sentence. That is, each word in the sentence is a token in the string.</p>
+</blockquote>
+<p>下面是一个用 <code>strtok</code> 把输入字符串中的各个单词作为记号找出来的示例程序（也可以从这里复制：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/_attachments/strtokexample.c">strtokexample.c</a>）。</p>
+<blockquote>
+<p>Below is an example program that uses <code>strtok</code> to find individual words as the tokens in an input string. (it can also be copied from here: <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/_attachments/strtokexample.c">strtokexample.c</a>).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line">/*</span><br><span class="line"> * Extract whitespace-delimited tokens from a line of input</span><br><span class="line"> * and print them one per line.</span><br><span class="line"> *</span><br><span class="line"> * to compile:</span><br><span class="line"> *   gcc -g -Wall strtokexample.c</span><br><span class="line"> *</span><br><span class="line"> * example run:</span><br><span class="line"> *   Enter a line of text:        aaaaa             bbbbbbbbb          cccccc</span><br><span class="line"> *</span><br><span class="line"> *   The input line is:</span><br><span class="line"> *         aaaaa             bbbbbbbbb          cccccc</span><br><span class="line"> *   Next token is aaaaa</span><br><span class="line"> *   Next token is bbbbbbbbb</span><br><span class="line"> *   Next token is cccccc</span><br><span class="line"> */</span><br><span class="line"></span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">     /* whitespace stores the delim string passed to strtok.  The delim</span><br><span class="line">      * string  is initialized to the set of characters that delimit tokens</span><br><span class="line">      * We initialize the delim string to the following set of chars:</span><br><span class="line">      *   &#x27; &#x27;: space  &#x27;\t&#x27;: tab  &#x27;\f&#x27;: form feed  &#x27;\r&#x27;: carriage return</span><br><span class="line">      *   &#x27;\v&#x27;: vertical tab  &#x27;\n&#x27;: new line</span><br><span class="line">      * (run &quot;man ascii&quot; to list all ASCII characters)</span><br><span class="line">      *</span><br><span class="line">      * This line shows one way to statically initialize a string variable</span><br><span class="line">      * (using this method the string contents are constant, meaning that they</span><br><span class="line">      *  cannot be modified, which is fine for the way we are using the</span><br><span class="line">      *  whitespace string in this program).</span><br><span class="line">      */</span><br><span class="line">    char *whitespace = &quot; \t\f\r\v\n&quot;;  /* Note the space char at beginning */</span><br><span class="line"></span><br><span class="line">    char *token;  /* The next token in the line. */</span><br><span class="line">    char *line;   /* The line of text read in that we will tokenize. */</span><br><span class="line"></span><br><span class="line">    /* Allocate some space for the user&#x27;s string on the heap. */</span><br><span class="line">    line = malloc(200 * sizeof(char));</span><br><span class="line">    if (line == NULL) &#123;</span><br><span class="line">        printf(&quot;Error: malloc failed\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* Read in a line entered by the user from &quot;standard in&quot;. */</span><br><span class="line">    printf(&quot;Enter a line of text:\n&quot;);</span><br><span class="line">    line = fgets(line, 200 * sizeof(char), stdin);</span><br><span class="line">    if (line == NULL) &#123;</span><br><span class="line">        printf(&quot;Error: reading input failed, exiting...\n&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;The input line is:\n%s\n&quot;, line);</span><br><span class="line"></span><br><span class="line">    /* Divide the string into tokens. */</span><br><span class="line">    token = strtok(line, whitespace);       /* get the first token */</span><br><span class="line">    while (token != NULL) &#123;</span><br><span class="line">        printf(&quot;Next token is %s\n&quot;, token);</span><br><span class="line">        token = strtok(NULL, whitespace);     /* get the next token */</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    free(line);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="sprintf"><a href="#sprintf" class="headerlink" title="sprintf"></a>sprintf</h4><p><em>sprintf</em></p>
+<p>C 的 <code>stdio</code> 库也提供了操作 C 字符串的函数。其中最有用的大概是 <code>sprintf</code> 函数，它把输出「打印」到一个字符串中，而不是打印到终端：</p>
+<blockquote>
+<p>The C <code>stdio</code> library also provides functions that manipulate C strings. Perhaps the most useful is the <code>sprintf</code> function, which “prints” into a string rather than printing output to a terminal:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>sprintf</code> 和 <code>strcpy</code> 一样不检查目标空间大小，现代代码更推荐使用带长度参数的 <code>snprintf(str, sizeof(str), ...)</code>，它最多写入指定字节数并总是以 <code>&#39;\0&#39;</code> 结尾。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">// like printf(), the format string allows for placeholders like %d, %f, etc.</span><br><span class="line">// pass parameters after the format string to fill them in</span><br><span class="line">int sprintf(char *s, const char *format, ...);</span><br></pre></td></tr></table></figure>
+
+<p><code>sprintf</code> 用各种类型的值来初始化一个字符串的内容。它的 <code>format</code> 参数与 <code>printf</code> 和 <code>scanf</code> 的类似。下面是一些例子：</p>
+<blockquote>
+<p><code>sprintf</code> initializes the contents of a string from values of various types. Its parameter <code>format</code> resembles those of <code>printf</code> and <code>scanf</code>. Here are some examples:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">char str[64];</span><br><span class="line">float ave = 76.8;</span><br><span class="line">int num = 2;</span><br><span class="line"></span><br><span class="line">// initialize str to format string, filling in each placeholder with</span><br><span class="line">// a char representation of its arguments&#x27; values</span><br><span class="line">sprintf(str, &quot;%s is %d years old and in grade %d&quot;, &quot;Henry&quot;, 12, 7);</span><br><span class="line">printf(&quot;%s\n&quot;, str);  // prints: Henry is 12 years old and in grade 7</span><br><span class="line"></span><br><span class="line">sprintf(str, &quot;The average grade on exam %d is %g&quot;, num, ave);</span><br><span class="line">printf(&quot;%s\n&quot;, str);  // prints: The average grade on exam 2 is 76.8</span><br></pre></td></tr></table></figure>
+
+<h4 id="处理单个字符值的函数"><a href="#处理单个字符值的函数" class="headerlink" title="处理单个字符值的函数"></a>处理单个字符值的函数</h4><p><em>Functions for Individual Character Values</em></p>
+<p>标准 C 库（<code>stdlib.h</code>）中有一组用于处理和检测单个 <code>char</code> 值的函数，包括：</p>
+<blockquote>
+<p>The standard C library (<code>stdlib.h</code>) contains a set of functions for manipulating and testing individual <code>char</code> values, including:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>准确地说，这组函数声明在 <code>&lt;ctype.h&gt;</code> 中（下面代码里也确实包含了它），而不是 <code>stdlib.h</code>。另外它们的参数和返回值类型都是 <code>int</code>：<code>tolower</code>&#x2F;<code>toupper</code> 返回的是 <code>int</code> 而不是 <code>char</code>，传入的参数应当是 <code>unsigned char</code> 范围内的值或 <code>EOF</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;   // include stdlib and ctypes to use these</span><br><span class="line">#include &lt;ctype.h&gt;</span><br><span class="line"></span><br><span class="line">int islower(ch);</span><br><span class="line">int isupper(ch);       // these functions return a non-zero value if the</span><br><span class="line">int isalpha(ch);       // test is TRUE, otherwise they return 0 (FALSE)</span><br><span class="line">int isdigit(ch);</span><br><span class="line">int isalnum(ch);</span><br><span class="line">int ispunct(ch);</span><br><span class="line">int isspace(ch);</span><br><span class="line">char tolower(ch);     // returns ASCII value of lower-case of argument</span><br><span class="line">char toupper(ch);</span><br></pre></td></tr></table></figure>
+
+<p>下面是它们的一些用法示例：</p>
+<blockquote>
+<p>Here are some examples of their use:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">char str[64];</span><br><span class="line">int len, i;</span><br><span class="line"></span><br><span class="line">strcpy(str, &quot;I see 20 ZEBRAS, GOATS, and COWS&quot;);</span><br><span class="line"></span><br><span class="line">if ( islower(str[2]) )&#123;</span><br><span class="line">    printf(&quot;%c is lower case\n&quot;, str[2]);   // prints: s is lower case</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">len = strlen(str);</span><br><span class="line">for (i = 0; i &lt; len; i++) &#123;</span><br><span class="line">    if ( isupper(str[i]) ) &#123;</span><br><span class="line">        str[i] = tolower(str[i]);</span><br><span class="line">    &#125; else if( isdigit(str[i]) ) &#123;</span><br><span class="line">        str[i] = &#x27;X&#x27;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line">printf(&quot;%s\n&quot;, str);  // prints: i see XX zebras, goats, and cows</span><br></pre></td></tr></table></figure>
+
+<h4 id="把字符串转换为其他类型的函数"><a href="#把字符串转换为其他类型的函数" class="headerlink" title="把字符串转换为其他类型的函数"></a>把字符串转换为其他类型的函数</h4><p><em>Functions to Convert Strings to Other Types</em></p>
+<p><code>stdlib.h</code> 中还有在字符串和其他 C 类型之间转换的函数。例如：</p>
+<blockquote>
+<p><code>stdlib.h</code> also contains functions to convert between strings and other C types. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line"></span><br><span class="line">int atoi(const char *nptr);     // convert a string to an integer</span><br><span class="line">double atof(const char *nptr);  // convert a string to a float</span><br></pre></td></tr></table></figure>
+
+<p>下面是一个例子：</p>
+<blockquote>
+<p>Here’s an example:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>atoi</code> 和 <code>atof</code> 无法报告错误：<code>atoi(&quot;abc&quot;)</code> 返回 0，与 <code>atoi(&quot;0&quot;)</code> 的结果无法区分。需要检查输入是否合法时，应使用 <code>strtol</code>、<code>strtod</code> 等函数，它们会通过结束指针参数和 <code>errno</code> 告诉你转换在哪里停下、是否溢出。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">printf(&quot;%d %g\n&quot;, atoi(&quot;1234&quot;), atof(&quot;4.56&quot;));</span><br></pre></td></tr></table></figure>
+
+<p>想进一步了解这些以及其他 C 库函数（包括它们的作用、参数格式、返回值，以及使用时需要包含哪些头文件），请查看它们的<a target="_blank" rel="noopener" href="http://www.cs.swarthmore.edu/~newhall/unixhelp/man.html">手册页</a>。例如，要查看 <code>strcpy</code> 的手册页，运行：</p>
+<blockquote>
+<p>For more information about these and other C library functions (including what they do, their parameter format, what they return, and which headers need to be included to use them), see their <a target="_blank" rel="noopener" href="http://www.cs.swarthmore.edu/~newhall/unixhelp/man.html">man pages</a>. For example, to view the <code>strcpy</code> man page, run:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ man strcpy</span><br></pre></td></tr></table></figure>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C2-C_depth/2.5-arrays.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">2.5. C 中的数组</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C2-C_depth/2.7-structs.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.7. C 结构体</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-1-C-%E5%AF%B9%E9%9D%99%E6%80%81%E5%88%86%E9%85%8D%E5%AD%97%E7%AC%A6%E4%B8%B2%EF%BC%88char-%E6%95%B0%E7%BB%84%EF%BC%89%E7%9A%84%E6%94%AF%E6%8C%81"><span class="toc-text">2.6.1. C 对静态分配字符串（char 数组）的支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-2-%E5%8A%A8%E6%80%81%E5%88%86%E9%85%8D%E5%AD%97%E7%AC%A6%E4%B8%B2"><span class="toc-text">2.6.2. 动态分配字符串</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-6-3-%E6%93%8D%E4%BD%9C-C-%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%92%8C%E5%AD%97%E7%AC%A6%E7%9A%84%E5%BA%93"><span class="toc-text">2.6.3. 操作 C 字符串和字符的库</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

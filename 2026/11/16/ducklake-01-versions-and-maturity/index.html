@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度 · Summary</title>
+  <meta name="description" content="这个专栏整理我研究 DuckDB 和 DuckLake 的笔记，由浅入深分四章：  入门与全景：版本和成熟度；DuckLake 怎么存数据。 引擎原理：多连接与线程分工、调度器、内存与并发准入、DuckLake 在线程上怎么跑。 源码：一条 SQL 在 DuckDB 和 DuckLake 源码里怎么走。 生态：DuckLake 周边项目；DuckDB 被嵌入别的系统的五种形态。  原理和源码两章按">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-01-versions-and-maturity/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="这个专栏整理我研究 DuckDB 和 DuckLake 的笔记，由浅入深分四章：  入门与全景：版本和成熟度；DuckLake 怎么存数据。 引擎原理：多连接与线程分工、调度器、内存与并发准入、DuckLake 在线程上怎么跑。 源码：一条 SQL 在 DuckDB 和 DuckLake 源码里怎么走。 生态：DuckLake 周边项目；DuckDB 被嵌入别的系统的五种形态。  原理和源码两章按">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-16T07:01:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.901Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/" class="current" aria-current="page">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>一、入门与全景</span>
+      </nav>
+      <span class="book-position">第 1 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:01:00.000Z">2026-11-16</time>
+      <span>· 约 7 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>这个专栏整理我研究 DuckDB 和 DuckLake 的笔记，由浅入深分四章：</p>
+<ol>
+<li><strong>入门与全景</strong>：版本和成熟度；DuckLake 怎么存数据。</li>
+<li><strong>引擎原理</strong>：多连接与线程分工、调度器、内存与并发准入、DuckLake 在线程上怎么跑。</li>
+<li><strong>源码</strong>：一条 SQL 在 DuckDB 和 DuckLake 源码里怎么走。</li>
+<li><strong>生态</strong>：DuckLake 周边项目；DuckDB 被嵌入别的系统的五种形态。</li>
+</ol>
+<p>原理和源码两章按 DuckDB v2.0.0、DuckLake <code>v2.0-cyanoptera</code>（<code>c506b268</code>）的源码核对过。</p>
+<p>这一篇是全景，信息截至 2026-11-11。</p>
+<p><strong>调研方法</strong></p>
+<ul>
+<li>约 35 次检索和抓取，用 <code>gh api</code> 读各仓库的 README 和活跃度，再对照本地 DuckLake 源码。</li>
+<li>核实深度分两档：<ul>
+<li><strong>直接读过：</strong> DuckLake 1.0 和 1.1 文章、ducklake.select 首页、DuckDB 2.0 公告、Quack 公告和 FAQ、MotherDuck release notes 和扩展博客、MotherDuck “15+ companies”、阿里云 RDS DuckDB 文档、PolarDB DuckDB 列存表文档、Omni 博客、Definite 博客、各 GitHub README、本地 ducklake 源码（<code>c506b268</code>）。</li>
+<li><strong>据检索摘要：</strong> Cube、dlt、Snowflake 和 Databricks 博客、Okta 演讲细节、Hugging Face。</li>
+</ul>
+</li>
+</ul>
+<h2 id="0-结论速览"><a href="#0-结论速览" class="headerlink" title="0. 结论速览"></a>0. 结论速览</h2><ol>
+<li><strong>版本基线</strong><ul>
+<li>DuckDB 2.0.0 LTS 于 2026-10-21 发布。</li>
+<li>DuckLake 规范 1.1 同日发布；1.0 于 2026-04-13 发布。</li>
+<li>Quack 仍是 <strong>beta</strong>。</li>
+</ul>
+</li>
+<li><strong>DuckLake 生态仍以 DuckDB 为中心。</strong><ul>
+<li>Spark 连接器<strong>只能写</strong>。</li>
+<li>DataFusion 客户端读写都支持，写入要用 feature flag 开启。</li>
+<li>官方首页列出 12 家生产用户，都是中小公司。PostHog 已经硬分叉出 Hoglake。</li>
+</ul>
+</li>
+<li><strong>DuckDB 被引入的形态有五种：</strong><ul>
+<li><strong>A</strong> 嵌进别的数据库内核；</li>
+<li><strong>B</strong> 旁路进程；</li>
+<li><strong>C</strong> 独立服务；</li>
+<li><strong>D</strong> 嵌在应用里；</li>
+<li><strong>E</strong> 大量短命实例。</li>
+</ul>
+</li>
+<li><strong>共性难题是并发写、多用户服务化和小文件。</strong> 各家解法可以归成四类：<ul>
+<li>写入集中（server 持有实例，或由服务端提交）；</li>
+<li>读写分离；</li>
+<li>缓冲后批量提交（inlining、batching、buffer）；</li>
+<li>预聚合 &#x2F; 缓存。</li>
+</ul>
+</li>
+<li><strong>成熟度</strong>（见 1.5 节总表）：<ul>
+<li>🟢 正式发布：DuckDB 2.0 LTS、DuckLake 1.0&#x2F;1.1、pg_duckdb 1.1.x（<strong>最新的 1.2.0 是 🟡 Experimental</strong>）、pg_lake、pg_ducklake、GizmoSQL、阿里云 RDS DuckDB 分析只读实例、dlt、Cube。</li>
+<li>🟡 Beta 或 Preview：Quack、MotherDuck 托管 DuckLake、moonlink、DuckLake 删除向量、S3 Tables 支持。</li>
+<li>🟠 其余 DuckLake 生态项目基本都是 0.x：DataFusion、Spark、Trino 客户端、Quack on Demand、boilstream 等。</li>
+</ul>
+</li>
+</ol>
+<p>各项目的架构图和细节在<a href="/2026/11/16/ducklake-08-ducklake-ecosystem/" title="DuckLake 专栏（八）：DuckLake 生态逐项目架构">第 8 篇</a>和<a href="/2026/11/16/ducklake-09-duckdb-embedding/" title="DuckLake 专栏（九）：DuckDB 被嵌入的五种形态">第 9 篇</a>。</p>
+<h2 id="1-版本基线（2026-11）"><a href="#1-版本基线（2026-11）" class="headerlink" title="1. 版本基线（2026-11）"></a>1. 版本基线（2026-11）</h2><table>
+<thead>
+<tr>
+<th>项</th>
+<th>事实</th>
+<th>来源</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DuckDB 2.0.0 LTS</td>
+<td>2026-10-21 发布，支持到至少 2027-10。<strong>2.0 之前的版本读不了 2.0 写出的数据库文件</strong>。关键业务建议等 11 月的补丁版。</td>
+<td><a target="_blank" rel="noopener" href="https://duckdb.org/2026/10/21/announcing-duckdb-200">DuckDB 2.0 公告</a></td>
+</tr>
+<tr>
+<td>DuckDB 2.0.1 补丁版</td>
+<td>发布日历上排在 2026-11-18，标注为暂定</td>
+<td>据检索摘要</td>
+</tr>
+<tr>
+<td>DuckLake 1.0</td>
+<td>2026-04-13 发布，MIT 许可</td>
+<td><a target="_blank" rel="noopener" href="https://ducklake.select/2026/04/13/ducklake-10/">DuckLake 1.0</a></td>
+</tr>
+<tr>
+<td>DuckLake 1.1</td>
+<td>2026-10-21 发布，迁移是可选的（<code>AUTOMATIC_MIGRATION true</code>）。PG catalog 上 attach 加列表（1 万张表）中位数约快 27 倍。</td>
+<td><a target="_blank" rel="noopener" href="https://ducklake.select/2026/10/21/ducklake-11/">DuckLake 1.1</a></td>
+</tr>
+<tr>
+<td>DuckLake catalog 后端</td>
+<td>本地源码里有四种：<br>① 普通 DuckDB 文件，走默认的 <code>DuckLakeMetadataManager</code>；<br>② <code>postgres</code>；<br>③ <code>sqlite</code>；<br>④ <code>quack</code>，即通过 Quack 访问的远程 DuckDB，用 <code>quack_query_by_name</code> 包装执行。</td>
+<td>本地 <code>ducklake_metadata_manager.cpp:52-55</code>、<code>quack_metadata_manager.cpp</code></td>
+</tr>
+<tr>
+<td>Quack</td>
+<td>1.5.3 引入，2.0 带的是打磨过的版本。FAQ 原话：”currently in a beta state”，”protocol is not yet stable”。</td>
+<td><a target="_blank" rel="noopener" href="https://duckdb.org/quack/faq.html">Quack FAQ</a></td>
+</tr>
+<tr>
+<td>DuckDB 扩展支持级别</td>
+<td><code>ducklake</code>、<code>iceberg</code>、<code>delta</code>、<code>postgres</code>、<code>mysql</code>、<code>quack</code> 在官方扩展列表里都是 <strong>Secondary</strong>（”supported on a best-effort basis”），没有一个是 Primary。</td>
+<td><a target="_blank" rel="noopener" href="https://duckdb.org/docs/2.0/core_extensions/overview.html">DuckDB 2.0 扩展列表</a></td>
+</tr>
+</tbody></table>
+<h2 id="1-5-成熟度总表：哪些正式发布，哪些还在-Beta"><a href="#1-5-成熟度总表：哪些正式发布，哪些还在-Beta" class="headerlink" title="1.5 成熟度总表：哪些正式发布，哪些还在 Beta"></a>1.5 成熟度总表：哪些正式发布，哪些还在 Beta</h2><p>截至 2026-11-11。判定依据按优先级是：</p>
+<ol>
+<li>官方明确的标注，包括 README、文档、公告，以及<strong>最新 release notes 正文</strong>；</li>
+<li>GitHub release 的 prerelease 标记；</li>
+<li>版本号。</li>
+</ol>
+<p>所有 🟢 项目的最新 release notes 都检查过有没有 experimental、beta 这类字样。pg_duckdb v1.2.0 就是这样查出来的：它的 prerelease 没勾，但 release notes 正文里自己标了 “Experimental”。dlt 1.32.0 正文里有一处 preview，指的是和 DuckLake 无关的 “Background agents” 功能。</p>
+<p>第 8、9 篇的每个项目卡片标题下也有同样的”成熟度”一行。</p>
+<p><strong>图例</strong></p>
+<ul>
+<li>🟢 <strong>正式发布</strong>：官方宣布 GA 或 production-ready，或者有 ≥1.0 的正式 release 且没有标 beta。</li>
+<li>🟡 <strong>Beta &#x2F; Preview &#x2F; 实验</strong>：官方<strong>明确标注</strong>了 beta、preview、alpha、experimental 或概念验证。</li>
+<li>🟠 <strong>0.x &#x2F; 未声明</strong>：版本号低于 1.0，或者没有 release，官方也没写成熟度。按惯例视为 API 还不稳定。</li>
+<li>⚫ <strong>已停止</strong>：已归档或长期没有更新。</li>
+<li>⚪ <strong>不适用 &#x2F; 没写</strong>：商用产品或公司内部方案（DuckDB 只是其中的组件），或者文档没有写阶段。</li>
+</ul>
+<h3 id="平台和规范"><a href="#平台和规范" class="headerlink" title="平台和规范"></a>平台和规范</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>版本 &#x2F; 依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DuckDB 2.0.0</td>
+<td>🟢</td>
+<td>LTS，2026-10-21。2.0.1 补丁版暂定 11-18</td>
+</tr>
+<tr>
+<td>DuckLake 规范和 <code>ducklake</code> 扩展</td>
+<td>🟢</td>
+<td>1.0 “production-ready”，1.1 于 10-21 发布；扩展是 Secondary 级</td>
+</tr>
+<tr>
+<td>└ DuckLake 删除向量</td>
+<td>🟡</td>
+<td>1.0 文章和 MotherDuck 文档都标为 experimental</td>
+</tr>
+<tr>
+<td>Quack 协议和扩展</td>
+<td>🟡</td>
+<td>FAQ 写明 beta，协议还不稳定</td>
+</tr>
+<tr>
+<td>└ Quack ADBC 驱动（Columnar）</td>
+<td>🟡</td>
+<td>public preview（2026-05-21）</td>
+</tr>
+<tr>
+<td>DuckDB <code>iceberg</code> 扩展</td>
+<td>🟢</td>
+<td>随 2.0 LTS 发布（Secondary）</td>
+</tr>
+<tr>
+<td>└ S3 Tables 支持</td>
+<td>🟡</td>
+<td>文档写”currently experimental”</td>
+</tr>
+<tr>
+<td>MotherDuck 平台</td>
+<td>🟢</td>
+<td>GA（2024-06）</td>
+</tr>
+<tr>
+<td>└ MotherDuck 托管 DuckLake</td>
+<td>🟡</td>
+<td>发布时是 public preview，之后没有 GA 公告</td>
+</tr>
+</tbody></table>
+<h3 id="DuckLake-生态"><a href="#DuckLake-生态" class="headerlink" title="DuckLake 生态"></a>DuckLake 生态</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>版本 &#x2F; 依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pg_ducklake</td>
+<td>🟢</td>
+<td>v1.0.3（2026-10-19）</td>
+</tr>
+<tr>
+<td>PostHog Hoglake</td>
+<td>🟢</td>
+<td>v1.4.9，PostHog 自己在生产使用；和 DuckLake 不兼容</td>
+</tr>
+<tr>
+<td>dlt（DuckLake 目的端）</td>
+<td>🟢</td>
+<td>dlt 1.32.0 Production&#x2F;Stable；PG catalog 是生产级，MotherDuck catalog 是 🟡 experimental</td>
+</tr>
+<tr>
+<td>dbt-duckdb</td>
+<td>🟢</td>
+<td>1.11.1</td>
+</tr>
+<tr>
+<td>datafusion-ducklake</td>
+<td>🟠</td>
+<td>0.9.0（crates.io）；多 catalog 布局 🟡</td>
+</tr>
+<tr>
+<td>ducklake-spark</td>
+<td>🟠</td>
+<td>v0.4.0，只能写</td>
+</tr>
+<tr>
+<td>Trino：brikk&#x2F;trino-ducklake</td>
+<td>🟠</td>
+<td>v0.5.4（2026-11-06）；能读写 1.0 格式，<strong>不能写 1.1</strong>，读 1.1 是实验功能</td>
+</tr>
+<tr>
+<td>Trino：awitten1&#x2F;trino-ducklake</td>
+<td>🟠</td>
+<td>没有 release</td>
+</tr>
+<tr>
+<td>pg_duckpipe</td>
+<td>🟠</td>
+<td>没有 release，组件版本 0.1.0 &#x2F; 1.0.0</td>
+</tr>
+<tr>
+<td>Quack on Demand</td>
+<td>🟠</td>
+<td>v0.12.2</td>
+</tr>
+<tr>
+<td>boilstream</td>
+<td>🟠</td>
+<td>0.10.x</td>
+</tr>
+<tr>
+<td>SwanLake</td>
+<td>🟠</td>
+<td>v0.1.0（2025-11）</td>
+</tr>
+<tr>
+<td>pandas ducklake-dataframe</td>
+<td>🟡</td>
+<td>虽然打了 v1.0 标签，README 写明是”proof of concept”，100% 由 Claude Code 生成</td>
+</tr>
+<tr>
+<td>ducklake-sdk</td>
+<td>🟡</td>
+<td>README 标为 alpha（v0.0.22）</td>
+</tr>
+<tr>
+<td>featherman</td>
+<td>🟡</td>
+<td>v0.3.0 prerelease，”early development”，CRD v1alpha1</td>
+</tr>
+<tr>
+<td>ducklake-guard</td>
+<td>🟡</td>
+<td>v0.1.0，README 标 Experimental</td>
+</tr>
+<tr>
+<td>cloudflare-ducklake</td>
+<td>🟡</td>
+<td>演示项目，没有 release</td>
+</tr>
+</tbody></table>
+<h3 id="DuckDB-引擎嵌入"><a href="#DuckDB-引擎嵌入" class="headerlink" title="DuckDB 引擎嵌入"></a>DuckDB 引擎嵌入</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>版本 &#x2F; 依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>pg_duckdb 1.1.x</td>
+<td>🟢</td>
+<td>v1.1.1（2025-12-18，DuckDB 1.4.3）；1.0 起官方称 production-ready</td>
+</tr>
+<tr>
+<td>└ pg_duckdb v1.2.0</td>
+<td>🟡</td>
+<td>2026-11-03，DuckDB 2.0.0；release notes 自己标了 “Experimental, not ready for production”</td>
+</tr>
+<tr>
+<td>pg_lake</td>
+<td>🟢</td>
+<td>v3.6.0（2026-11-04）</td>
+</tr>
+<tr>
+<td>GizmoSQL</td>
+<td>🟢</td>
+<td>v1.42.3（基于 DuckDB 1.5.6）；DuckDB 2.0 的 edge 渠道是 🟡</td>
+</tr>
+<tr>
+<td>阿里云 RDS MySQL DuckDB 分析只读实例</td>
+<td>🟢</td>
+<td>2025-08-06 “正式上线”，收费</td>
+</tr>
+<tr>
+<td>阿里云 RDS DuckDB 分析主实例</td>
+<td>⚪</td>
+<td>公告没写阶段，可以试用</td>
+</tr>
+<tr>
+<td>阿里云 PolarDB DuckDB 列存表</td>
+<td>⚪</td>
+<td>文档没写阶段</td>
+</tr>
+<tr>
+<td>Cube</td>
+<td>🟢</td>
+<td>v1.8.21；DuckDB 数据源没标阶段</td>
+</tr>
+<tr>
+<td>Metabase DuckDB 驱动</td>
+<td>🟢</td>
+<td>1.5.6.0；第三方插件，由 MotherDuck 维护</td>
+</tr>
+<tr>
+<td>Cloudflare R2 Data Catalog</td>
+<td>🟢</td>
+<td>GA（已改名 Basin Catalog）</td>
+</tr>
+<tr>
+<td>Rill</td>
+<td>🟠</td>
+<td>v0.91.1（0.x 版本号，Rill Cloud 是商用服务）</td>
+</tr>
+<tr>
+<td>Mosaic</td>
+<td>🟠</td>
+<td>v0.35.0（研究项目）</td>
+</tr>
+<tr>
+<td>duckdb_engine（Superset）</td>
+<td>🟠</td>
+<td>v0.17.0（2025-03）</td>
+</tr>
+<tr>
+<td>MyDuck Server</td>
+<td>🟠</td>
+<td>没有 release，Docker 标签是 <code>v0.3.1-dev</code></td>
+</tr>
+<tr>
+<td>DuckDB-paimon（PolarDB 开源）</td>
+<td>🟠</td>
+<td>v0.1.3</td>
+</tr>
+<tr>
+<td>Evidence</td>
+<td>🟠</td>
+<td>旧版（基于 DuckDB）最后发布在 2026-02；重写版 0.0.1 还没发布</td>
+</tr>
+<tr>
+<td>airport 扩展</td>
+<td>🟠</td>
+<td>社区扩展，仓库里没有 tag 或 release</td>
+</tr>
+<tr>
+<td>smallpond</td>
+<td>🟠 → ⚫</td>
+<td>0.15.0，2025-03 之后没有更新</td>
+</tr>
+<tr>
+<td>moonlink</td>
+<td>🟡</td>
+<td>README：”in preview. Expect changes.”</td>
+</tr>
+<tr>
+<td>pg_mooncake</td>
+<td>⚫</td>
+<td>v0.1.2，默认分支 2025-10 后没有提交</td>
+</tr>
+<tr>
+<td>ParadeDB pg_analytics &#x2F; BemiDB &#x2F; Hydra columnar</td>
+<td>⚫</td>
+<td>已归档 &#x2F; 已转型 &#x2F; 低活跃</td>
+</tr>
+<tr>
+<td>Omni、Hex、Mode、Count、Observable、Watershed、Definite、Okta</td>
+<td>⚪</td>
+<td>商用产品或内部方案</td>
+</tr>
+</tbody></table>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      <span></span>
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-02-how-ducklake-stores-data/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（二）：DuckLake 怎么存数据</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E7%BB%93%E8%AE%BA%E9%80%9F%E8%A7%88"><span class="toc-text">0. 结论速览</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-%E7%89%88%E6%9C%AC%E5%9F%BA%E7%BA%BF%EF%BC%882026-11%EF%BC%89"><span class="toc-text">1. 版本基线（2026-11）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-5-%E6%88%90%E7%86%9F%E5%BA%A6%E6%80%BB%E8%A1%A8%EF%BC%9A%E5%93%AA%E4%BA%9B%E6%AD%A3%E5%BC%8F%E5%8F%91%E5%B8%83%EF%BC%8C%E5%93%AA%E4%BA%9B%E8%BF%98%E5%9C%A8-Beta"><span class="toc-text">1.5 成熟度总表：哪些正式发布，哪些还在 Beta</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%B9%B3%E5%8F%B0%E5%92%8C%E8%A7%84%E8%8C%83"><span class="toc-text">平台和规范</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DuckLake-%E7%94%9F%E6%80%81"><span class="toc-text">DuckLake 生态</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DuckDB-%E5%BC%95%E6%93%8E%E5%B5%8C%E5%85%A5"><span class="toc-text">DuckDB 引擎嵌入</span></a></li></ol></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.3. 远程访问 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;ssh_scp.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.3. Remote Access 用户常常想远程登录到 U">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.3. 远程访问 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.3-ssh_scp.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;ssh_scp.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.3. Remote Access 用户常常想远程登录到 U">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html" class="current" aria-current="page">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 174 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.3. 远程访问</h1>
+  
+  
+    <p class="article-meta"><span>约 11 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/ssh_scp.html">https://diveintosystems.org/book/Appendix2/ssh_scp.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.3. Remote Access</em></p>
+<p>用户常常想远程登录到 Unix 机器，或者把文件从一台机器复制到另一台机器。安全外壳（Secure Shell，SSH）可以用来从另一台运行 Unix、或运行 Windows 和 MacOS 等其他操作系统的机器远程登录到一台 Unix 机器。安全复制（Secure Copy，SCP）可以用来把文件从一个系统复制到另一个系统。</p>
+<blockquote>
+<p>Often times users want to remotely log into to Unix machines or copy files from one machine to another. Secure Shell (SSH) is useful for remotely logging into a Unix machine from another machine that running Unix or running another operating systems like Windows and MacOS. And Secure Copy (SCP) is useful for copying files from one system to another.</p>
+</blockquote>
+<h3 id="17-3-1-远程登录"><a href="#17-3-1-远程登录" class="headerlink" title="17.3.1. 远程登录"></a>17.3.1. 远程登录</h3><p><em>17.3.1. Remote Login</em></p>
+<p>可以用 <code>ssh</code> 命令登录到远程 Unix 机器。<code>ssh</code> 在你运行 <code>ssh</code> 的主机与你连接到的远程机器之间提供加密的通信。</p>
+<blockquote>
+<p>You can log into a remote Unix machine using the <code>ssh</code> command. <code>ssh</code> provides encrypted communication between the host machine that you run <code>ssh</code> from and the remote machine that you connected to.</p>
+</blockquote>
+<p>要通过 SSH 登录到远程机器，写出远程机器上的用户名，后跟这台机器的互联网主机名。例如，如果 Sarita 想从她的笔记本电脑远程登录到 <code>cs.college.edu</code> 网络上的机器 <code>cs87</code> 中她的 <code>sarita</code> 账户，她会输入下面的命令（为了明确每条命令在哪台机器上执行，<code>laptop$</code> 提示符是 Sarita 笔记本电脑上的 shell 提示符，<code>cs87$</code> 提示符是远程机器上的 shell 提示符）。</p>
+<blockquote>
+<p>To SSH into a remote machine, list the username on the remote machine followed by the machine’s Internet hostname. For example, if Sarita wanted to remotely log into her <code>sarita</code> account on the machine <code>cs87</code> on <code>cs.college.edu</code> network from her laptop, she would enter the following command (to clarify which machine is executing each of these commands, the <code>laptop$</code> prompt is the shell prompt on Sarita’s laptop, and the <code>cs87$</code> prompt is the shell prompt on the remote machine).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">laptop$ ssh sarita@cs87.cs.college.edu</span><br></pre></td></tr></table></figure>
+
+<p>如果连接成功，远程机器上运行的 ssh 服务器会要求用户输入其在那台机器上的密码。一旦成功远程登录，<code>ssh</code> 就会在远程机器上启动一个 Unix shell，用户可以通过它访问远程系统上的文件并运行应用程序。</p>
+<blockquote>
+<p>If successfully connected, the ssh server running on the remote machine will ask the user to enter their password on that machine. Once successfully remotely logged in, <code>ssh</code> starts a unix shell on the remote machine through which the user can access files and run applications on the remote system.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">laptop$ ssh sarita@cs87.cs.college.edu</span><br><span class="line">sarita@cs.college.edu&#x27;s password:</span><br><span class="line">cs87$</span><br></pre></td></tr></table></figure>
+
+<h4 id="从非-Unix-操作系统用-SSH-远程连接"><a href="#从非-Unix-操作系统用-SSH-远程连接" class="headerlink" title="从非 Unix 操作系统用 SSH 远程连接"></a>从非 Unix 操作系统用 SSH 远程连接</h4><p><em>Remotely connecting with SSH from non-Unix OSs</em></p>
+<p>要从非 Unix 系统 <code>ssh</code> 到 Unix 系统，你可能需要先在自己的机器上安装一个 SSH 客户端，不过它很可能已经装好了。然后你需要一个终端窗口来运行 <code>ssh</code>。在 MacOS 上，打开并使用终端（Terminal）应用程序。在 Windows 机器上，可以使用 PowerShell，或者安装并使用 <a target="_blank" rel="noopener" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html">Putty</a>。</p>
+<blockquote>
+<p>To <code>ssh</code> into a Unix system from a non-Unix system you may need to first install an SSH client on your machine, however it is likely already installed. You then need a terminal window to run <code>ssh</code> On MacOS, open and use the terminal application. On Windows machines, you can either use PowerShell or install and use <a target="_blank" rel="noopener" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html">Putty</a>.</p>
+</blockquote>
+<h3 id="17-3-2-远程文件复制"><a href="#17-3-2-远程文件复制" class="headerlink" title="17.3.2. 远程文件复制"></a>17.3.2. 远程文件复制</h3><p><em>17.3.2. Remote File Copy</em></p>
+<p>如果你想在远程系统的机器之间传输文件，可以使用 <code>scp</code>（secure copy，安全复制）。<code>scp</code> 命令看起来与 <code>cp</code> 命令很像，只是源或目标之一被指定为远程机器上的路径名。与 <code>ssh</code> 一样，<code>scp</code> 要求用户输入远程机器上该用户的密码，以便访问远程系统上被复制或要复制到的文件。如果 <code>scp</code> 成功，它会显示关于所复制文件的一些统计信息，包括文件的字节数、平均传输速率和总传输时间。</p>
+<blockquote>
+<p>If you want to transfer files to or from a machine on a remote system you can use <code>scp</code> (secure copy). The <code>scp</code> command looks much like the <code>cp</code> command except that one of either the source or the destination is specified as a pathname on a remote machine. Like, <code>ssh</code>, <code>scp</code> requires the user to type the password of the user on the remote machine to allow access to the files being copied or from on the remote system. If <code>scp</code> is successful, it displays some statistics about the file being copied including the size of the file in bytes, the average transfer rate, and the total transfer time.</p>
+</blockquote>
+<p>例如，要把名为 <code>prog.c</code> 的文件从你家里的机器复制到 <code>cs87.cs.college.edu</code> 机器上的 <code>sam</code> 用户那里，你会输入：</p>
+<blockquote>
+<p>For example, to copy the file named <code>prog.c</code> from your home machine to the <code>sam</code> user on the <code>cs87.cs.college.edu</code> machine, you would type:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># scp prog.c into home directory on cs87.cs.college.edu</span><br><span class="line">laptop$ scp prog.c sam@cs87.cs.college.edu:.</span><br><span class="line">sam@cs.college.edu&#x27;s password:</span><br><span class="line">prog.c                  100%  282    56.4KB/s   00:00</span><br><span class="line"></span><br><span class="line"># scp prog.c into CS31 subdirectory on cs87.cs.college.edu</span><br><span class="line">laptop$ scp prog.c you@cslab.cs.college.edu:./CS31/.</span><br><span class="line">sam@cs.college.edu&#x27;s password:</span><br><span class="line">prog.c                  100%  282    56.4KB/s   00:00</span><br></pre></td></tr></table></figure>
+
+<p>你也可以把远程路径名作为 <code>scp</code> 的源命令行参数，把文件从远程机器复制到本地机器。例如，要把远程系统上 <code>sarita</code> 用户文件中的远程文件 <code>unix_notes/basics</code> 复制到你家里机器上的当前目录，这样做：</p>
+<blockquote>
+<p>You can also copy files from a remote machine to a local machine using the remote path name as the source command line argument to <code>scp</code>. For example, to copy a remote file <code>unix_notes/basics</code> from the <code>sarita</code> user’s files on the remote system to the current directory on your home machine, do:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">laptop$ scp sarita@cs87.cs.college.edu:./unix_notes/basics ./</span><br><span class="line">sarita@cs.college.edu&#x27;s password:</span><br><span class="line">basics                  100%   78   86.3KB/s   00:00</span><br></pre></td></tr></table></figure>
+
+<p>如果你想传输许多文件，先把它们打包成单个归档文件会很有用。然后复制这个归档文件，再解包得到那些文件。此外，在传输之前压缩文件会减少总的传输时间。<code>tar</code> 工具是打包和解包文件的一种方式，<code>gzip</code> 和 <code>bzip2</code> 是文件压缩工具的两个例子。关于使用 <code>tar</code> 和文件压缩的更多信息，见<a href="17.3-ssh_scp.html">归档与压缩一节</a>。</p>
+<blockquote>
+<p>If you want to transfer many files, it is useful to package them up into a single archive file first. Then copy over the archive file, and unpack it to get the set of files. In addition, compressing the file before transfer will decrease the total transfer time. The <code>tar</code> utility is one way to pack and unpack files, and <code>gzip</code> and <code>bzip2</code> are two examples of file compression utilities. See <a href="17.3-ssh_scp.html">[targzbz]</a> for more information on using <code>tar</code> and file compression.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注 · 生成 SSH 密钥（Generating SSH Keys）</p><p>远程连接 Linux 机器时，你不需要生成 ssh 密钥；默认情况下，ssh 用你在所连接的远程系统上的用户名和密码进行身份认证。然而，对于某些网站（例如 GitHub），你可能需要把你的 ssh 公钥上传到它的 Web 服务器上，才能访问它的某些资源。<code>ssh</code> 使用公钥-私钥加密来加密要通过网络连接安全发送的数据。ssh 使用的这类加密称为非对称加密：你主机（客户端）上的私钥用来加密通过网络发送给服务器的外发数据，服务器用你的公钥来解密你的消息。服务器在把响应通过网络发回给你之前，用你的公钥加密它，ssh 客户端收到消息后用你的私钥解密。为了让这一切能够工作，你首先需要创建一对 ssh 公钥-私钥，然后把公钥上传到服务器（并把私钥私密地保存在你的客户端机器上）。</p>
+<p>要生成 ssh 密钥，运行 <code>ssh-keygen -t rsa</code>。它会提示你输入密钥的存放位置（默认在你的 <code>~/.ssh</code> 目录中），并要求你为正在生成的 ssh 密钥输入一个口令（passphrase）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ssh-keygen -t rsa</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>如果成功，它会在你的 <code>~/.ssh</code> 目录中创建两个新文件：</p>
+<ul>
+<li><p><code>id_rsa</code>：你的私钥（不要分享这个）</p>
+</li>
+<li><p><code>id_rsa.pub</code>：你的公钥（可以上传到 Web 服务器的那个）</p>
+</li>
+</ul>
+<p>然后你可以把 <code>id_rsa.pub</code> 文件的内容复制粘贴到需要它的 Web 服务器上。</p>
+<p>你也可以用这种方法把公钥上传到远程主机上，以便用密钥口令而不是密码来连接。</p>
+<blockquote>
+<p>For remotely connecting to a Linux machine, you don’t need to generate ssh keys; by default ssh uses your username and password on the remote system you are connecting to for authentication. However, for some websites, like GitHub, you may need to upload your public ssh key to its web server to access some of its resources. <code>ssh</code> uses public-private key encryption to encrypting data to be sent securely over a network connection. The type of encryption ssh uses is known as asymmetric encryption, where your private key on your host machine (the client) is used to encrypt outgoing data that is sent over the network to a server, and the server uses your public key to decrypt your message. The server encrypts its response using your public key before sending it back to you on the network, and when the ssh client receives the message it is decrypted using your private key. In order to get this to work, you first need to create an ssh public-private key pair, and then upload your public key to the server (and keep your private key private on your client machine).</p>
+<p>To generate an ssh key, run <code>ssh-keygen -t rsa</code>. It will prompt you for a key-location, which by default is in your <code>~/.ssh</code> directory, and ask you to enter your passphrase for the ssh key you are generating:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ssh-keygen -t rsa</span><br><span class="line">Generating public/private rsa key pair.</span><br><span class="line">...</span><br></pre></td></tr></table></figure>
+
+<p>If successful, this creates two new files in your <code>~/.ssh</code> directory:</p>
+<ul>
+<li><p><code>id_rsa</code>: your private key (don’t share this one)</p>
+</li>
+<li><p><code>id_rsa.pub</code>: your public key (the one you can upload to web servers)</p>
+</li>
+</ul>
+<p>You can then copy and paste the contents of your <code>id_rsa.pub</code> file to the web server that requires it.</p>
+<p>You can also use this method to upload your public key to remote hosts to connect using your key passphrase rather than your password.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · SSH 实际上怎样加密数据</p><p>上面对加密过程的描述并不准确。按 SSH 传输层协议规范 <a target="_blank" rel="noopener" href="https://www.rfc-editor.org/rfc/rfc4253">RFC 4253</a>，连接建立时双方通过密钥交换（例如 Diffie-Hellman）生成一次性的<strong>会话密钥</strong>，之后的数据用协商好的<strong>对称加密</strong>算法加密，并用由共享密钥算出的 MAC 保护完整性。你的公钥-私钥对是在这条加密通道建立之后，用于<strong>身份认证</strong>的（让服务器确认你持有与已登记公钥相配的私钥），并不是用来加密通信内容的，服务器也不会用你的公钥加密响应。</p>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· SSH 密钥的新默认值</p>
+<ul>
+<li><strong>Ed25519 成为默认</strong>：OpenSSH 9.5 起，<code>ssh-keygen</code> 默认生成 <strong>Ed25519</strong> 密钥（不再需要也不必写 <code>-t rsa</code>）。发布说明指出，Ed25519 公钥体积小、用起来很方便，OpenSSH 自 6.5 版（2014 年 1 月）起就已支持。生成的文件相应地叫 <code>id_ed25519</code> 和 <code>id_ed25519.pub</code>。<a target="_blank" rel="noopener" href="https://www.openssh.com/txt/release-9.5">OpenSSH 9.5 发布说明</a></li>
+<li><strong>RSA&#x2F;SHA-1 签名默认停用</strong>：OpenSSH 8.8 起默认禁用使用 SHA-1 哈希的 RSA 签名，因为 SHA-1 已被攻破。不过发布说明也指出，对大多数用户这一变化是无感的，不需要替换现有的 ssh-rsa 密钥，它们会自动改用 RSA&#x2F;SHA-256&#x2F;512 签名。<a target="_blank" rel="noopener" href="https://www.openssh.com/txt/release-8.8">OpenSSH 8.8 发布说明</a></li>
+</ul>
+</div>
+<h3 id="17-3-3-参考资料"><a href="#17-3-3-参考资料" class="headerlink" title="17.3.3. 参考资料"></a>17.3.3. 参考资料</h3><p><em>17.3.3. References</em></p>
+<p>更多信息参见：</p>
+<blockquote>
+<p>For more information see:</p>
+</blockquote>
+<ul>
+<li>手册页（例如 <code>man ssh</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>The man pages (e.g., <code>man ssh</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>linuxhandbook.com 上的 <a target="_blank" rel="noopener" href="https://linuxhandbook.com/ssh-basics/">ssh 基础</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://linuxhandbook.com/ssh-basics/">ssh basics</a> from linuxhandbook.com</li>
+</ul>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html">Putty</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html">Putty</a></li>
+</ul>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.realvnc.com/en/connect/download/viewer/">VNC Viewer</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.realvnc.com/en/connect/download/viewer/">VNC Viewer</a></li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.2-man.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17.2. man 与 Unix 手册</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.4-editors.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.4. Unix 编辑器</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-3-1-%E8%BF%9C%E7%A8%8B%E7%99%BB%E5%BD%95"><span class="toc-text">17.3.1. 远程登录</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-3-2-%E8%BF%9C%E7%A8%8B%E6%96%87%E4%BB%B6%E5%A4%8D%E5%88%B6"><span class="toc-text">17.3.2. 远程文件复制</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-3-3-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.3.3. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（五）：内存模型与并发准入 · Summary</title>
+  <meta name="description" content="调度器保证每个查询「轮得到」，但不限制并发、也不管内存。这一篇讲大查询为什么吃内存，以及为什么并发控制只能放在应用层。 4. 内存模型：为什么”大查询”吃内存一个常见误区：”既然扫描拆成 row group、还按 2048 行 vector 处理，那每条查询内存应该都很小？”——不对。  拆 row group 只管”输入流量”：纯”扫→过滤→吐结果”的流式查询，内存确实很小、跟表多大无关。这是小">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（五）：内存模型与并发准入 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-05-memory-and-admission/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="调度器保证每个查询「轮得到」，但不限制并发、也不管内存。这一篇讲大查询为什么吃内存，以及为什么并发控制只能放在应用层。 4. 内存模型：为什么”大查询”吃内存一个常见误区：”既然扫描拆成 row group、还按 2048 行 vector 处理，那每条查询内存应该都很小？”——不对。  拆 row group 只管”输入流量”：纯”扫→过滤→吐结果”的流式查询，内存确实很小、跟表多大无关。这是小">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-05-memory-and-admission/duckdb-admission-control.png">
+<meta property="article:published_time" content="2026-11-16T07:05:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.914Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-05-memory-and-admission/duckdb-admission-control.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/" class="current" aria-current="page">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>二、引擎原理</span>
+      </nav>
+      <span class="book-position">第 5 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（五）：内存模型与并发准入</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:05:00.000Z">2026-11-16</time>
+      <span>· 约 4 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>调度器保证每个查询「轮得到」，但不限制并发、也不管内存。这一篇讲大查询为什么吃内存，以及为什么并发控制只能放在应用层。</p>
+<h2 id="4-内存模型：为什么”大查询”吃内存"><a href="#4-内存模型：为什么”大查询”吃内存" class="headerlink" title="4. 内存模型：为什么”大查询”吃内存"></a>4. 内存模型：为什么”大查询”吃内存</h2><p>一个常见误区：”既然扫描拆成 row group、还按 2048 行 vector 处理，那每条查询内存应该都很小？”——<strong>不对</strong>。</p>
+<ul>
+<li><strong>拆 row group 只管”输入流量”<strong>：纯”扫→过滤→吐结果”的流式查询，内存确实很小、跟表多大无关。这是</strong>小查询</strong>。</li>
+<li>**吃内存的是”算子攒的中间状态”**，跟 row group 无关：<table>
+<thead>
+<tr>
+<th>算子</th>
+<th>攒什么</th>
+<th>内存 ∝</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GROUP BY &#x2F; 聚合</td>
+<td>哈希表（每分组一行）</td>
+<td><strong>分组数</strong>（高基数&#x3D;巨大）</td>
+</tr>
+<tr>
+<td>JOIN（hash join）</td>
+<td>build 侧整表进哈希表</td>
+<td><strong>build 表大小</strong></td>
+</tr>
+<tr>
+<td>ORDER BY &#x2F; 排序</td>
+<td>待排数据先收集</td>
+<td><strong>待排行数</strong></td>
+</tr>
+<tr>
+<td>DISTINCT &#x2F; 窗口 &#x2F; PIVOT</td>
+<td>去重 &#x2F; 窗口缓冲</td>
+<td>数据量</td>
+</tr>
+</tbody></table>
+这些是 <strong>pipeline breaker（屏障算子）</strong>：得吃完所有 morsel 才能出结果，吃的过程中那块状态一直长大。<strong>同一张大表，一个查询几乎不占内存、一个占几个 GB，差别全在”攒不攒状态、攒多大”。</strong></li>
+<li><strong>并行会放大峰值</strong>：每个 worker 各攒一份 thread-local 状态，再 Combine → 线程越多、聚合&#x2F;排序类查询内存峰值越高（这正是官方 OOM 文档建议”降 <code>threads</code> 防 OOM”的原因）。</li>
+<li><strong>spill 兜底</strong>：状态超过可用内存时，DuckDB 把哈希表&#x2F;排序缓冲<strong>落盘继续算</strong>（out-of-core），慢但不崩。</li>
+<li><strong>两个默认值要记住</strong>：<code>threads</code> 默认 &#x3D; <strong>逻辑核数</strong>（<code>std::thread::hardware_concurrency()</code>，含超线程）；<code>memory_limit</code> 默认 &#x3D; <strong>80% 可用内存</strong>（<code>config.cpp:646</code>），但<strong>只对 buffer manager 生效</strong>——有些算子绕过 buffer manager，能占超过 limit 的内存，所以高并发下仍可能真 OOM（官方甚至建议把 limit 调到 80% 以下防 OOM）。</li>
+</ul>
+<h2 id="6-并发与容量：引擎不做准入，靠应用层"><a href="#6-并发与容量：引擎不做准入，靠应用层" class="headerlink" title="6. 并发与容量：引擎不做准入，靠应用层"></a>6. 并发与容量：引擎不做准入，靠应用层</h2><p>DuckDB <strong>没有内置的”最大并发查询数 &#x2F; 准入控制”<strong>——<code>threads</code> 只管</strong>单查询并行度</strong>、不管<strong>查询准入</strong>。不控并发会怎样，对比如下：</p>
+<p><img src="/2026/11/16/ducklake-05-memory-and-admission/duckdb-admission-control.png" alt="并发准入：不控 vs Semaphore 准入闸"></p>
+<ul>
+<li><strong>不控（左）失败链</strong>：全 admit → ① worker 排队（尾延迟 p99 ↑）→ ② 内存叠加超 <code>memory_limit</code>（spill）→ ③ 绕过 buffer manager（OOM）→ ④ 并发连接数压到 Postgres（默认 <code>force</code> 模式下池不拦，最终由 PG 服务端的 <code>max_connections</code> 拒绝——推断，未实测）。<strong>admit 更多 ≠ 更快，只是更容易崩。</strong></li>
+<li><strong>有准入闸（右）</strong>：<code>Semaphore permits=K</code> 卡在<strong>发起执行前</strong>（应用层）→ ≤K 进入、其余等许可 → worker&#x2F;内存&#x2F;PG 都可控 + 每查询超时。</li>
+</ul>
+<p><strong>permits 怎么定</strong>：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">K = min( 核数 ÷ 单查询平均并行度,   memory_limit ÷ 单查询峰值内存,   PG 侧可给本进程的连接数 )</span><br></pre></td></tr></table></figure>
+<p>并给慢查询配<strong>超时</strong>兜底。</p>
+<p><strong>一个调参例子（并发上限 4→6，8GB 内存、threads&#x3D;8 的机器）</strong>：</p>
+<ul>
+<li>BI 负载 &#x3D; 大量小查询 + 少量大查询。permits&#x3D;4 会<strong>队头阻塞</strong>——1–2 条大查询占住槽位，一屏 dashboard 十几条小查询全堵在 <code>getConnection()</code>。放到 6 让小查询从大查询旁边溜过去。</li>
+<li>内存账：<code>6 × ~1.3GB 均摊 ≈ 8GB</code>，仍在 limit 内（8÷6≈1.3）；小查询远用不满、有富余；真有大查询超过它那份，靠 <strong>spill 兜底</strong>（落盘续命，不 OOM）。所以”6 并发 + 8GB”这套在内存上是稳的。</li>
+<li>为什么不撤掉这个 Semaphore：引擎<strong>没有 per-query 优先级、没有抢占</strong>，v2.0 的 lane 轮转只保证”轮得到”，不限制并发和内存，所以它仍是唯一的准入&#x2F;内存杠杆——<strong>只能调宽，不能撤</strong>。<code>并发 6 ≤ threads 8</code>，不超编（并发超过 threads 没有 CPU 收益）。</li>
+</ul>
+<h3 id="6-1-Postgres-元数据连接池"><a href="#6-1-Postgres-元数据连接池" class="headerlink" title="6.1 Postgres 元数据连接池"></a>6.1 Postgres 元数据连接池</h3><p>DuckLake 用 Postgres 当 catalog 时，走 DuckDB <code>postgres</code> 扩展；连接池实现已抽到子模块 <code>database-connector</code>（<code>dbconnector::pool::ConnectionPool</code>），扩展里只剩配置映射（<code>duckdb-postgres/src/storage/postgres_connection_pool.cpp:49</code> <code>CreateConfig</code>）。</p>
+<ul>
+<li><strong>池归属 per-ATTACH</strong>（每个 attached PG 库一个池）；一个进程内所有 DuckLake 元数据流量共用这一个池。</li>
+<li><strong>默认值</strong>（<code>database-connector@c305670</code> 的 <code>connection_pool_config.hpp</code>）：<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>默认</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>pg_pool_acquire_mode</code></td>
+<td><strong><code>force</code></strong></td>
+<td>池满也<strong>直接新建连接、无视上限</strong>；<code>wait</code> &#x3D; 阻塞等待到超时；<code>try</code> &#x3D; 立即失败</td>
+</tr>
+<tr>
+<td><code>pg_pool_max_connections</code></td>
+<td><code>clamp(核数 × 1.5, 4, 32)</code></td>
+<td><strong>池里缓存的连接数上限</strong>，不是硬并发上限（选项说明原文：”并行扫描时可以暂时超出”）；设 0 &#x3D; 不池化</td>
+</tr>
+<tr>
+<td><code>pg_pool_wait_timeout_millis</code></td>
+<td>30000</td>
+<td>仅 <code>wait</code> 模式：等满 30s 抛 “Connection pool timeout”</td>
+</tr>
+<tr>
+<td><code>pg_pool_idle_timeout_millis</code></td>
+<td>60000</td>
+<td>空闲连接回收</td>
+</tr>
+<tr>
+<td><code>pg_pool_enable_reaper_thread</code></td>
+<td>true</td>
+<td>起<strong>后台 reaper 线程</strong>清理空闲连接（不属于 DuckDB 的线程池）</td>
+</tr>
+<tr>
+<td><code>pg_pool_health_check_query</code></td>
+<td><code>SELECT 1</code></td>
+<td>归还&#x2F;复用时的健康检查</td>
+</tr>
+</tbody></table>
+</li>
+<li><strong>旧选项已弃用</strong>：<code>pg_connection_limit</code> → 改用 <code>pg_pool_max_connections</code>；<code>pg_connection_cache</code> → 改用 <code>pg_pool_max_connections=0</code> 关闭池化（<code>duckdb-postgres/src/postgres_extension.cpp:176</code>、<code>:194</code>）。</li>
+<li><strong>超限行为</strong>：默认 <code>force</code> 模式下，池这一层<strong>不报错也不排队</strong>，并发多少就开多少连接。要让池真正限流，得显式 <code>SET pg_pool_acquire_mode=&#39;wait&#39;</code>。</li>
+<li><strong>容量换算</strong>：默认 <code>force</code> 下，PG 端实际要扛 <code>峰值并发 PG 事务数 × 进程数</code> 条连接，而不是 <code>max_connections × 进程数</code>。多进程部署要按峰值算 PG 的 <code>max_connections</code>，或前置 PgBouncer；<strong>应用层 Semaphore 的许可数实际上就是这道上限</strong>。</li>
+</ul>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-04-scheduler/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-06-ducklake-thread-model/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E5%86%85%E5%AD%98%E6%A8%A1%E5%9E%8B%EF%BC%9A%E4%B8%BA%E4%BB%80%E4%B9%88%E2%80%9D%E5%A4%A7%E6%9F%A5%E8%AF%A2%E2%80%9D%E5%90%83%E5%86%85%E5%AD%98"><span class="toc-text">4. 内存模型：为什么”大查询”吃内存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E5%B9%B6%E5%8F%91%E4%B8%8E%E5%AE%B9%E9%87%8F%EF%BC%9A%E5%BC%95%E6%93%8E%E4%B8%8D%E5%81%9A%E5%87%86%E5%85%A5%EF%BC%8C%E9%9D%A0%E5%BA%94%E7%94%A8%E5%B1%82"><span class="toc-text">6. 并发与容量：引擎不做准入，靠应用层</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-Postgres-%E5%85%83%E6%95%B0%E6%8D%AE%E8%BF%9E%E6%8E%A5%E6%B1%A0"><span class="toc-text">6.1 Postgres 元数据连接池</span></a></li></ol></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.5. 缓存一致性与伪共享 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;cache_coherence.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.5. Cache Coher">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.5. 缓存一致性与伪共享 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;cache_coherence.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.5. Cache Coher">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/multicore-cache.PNG">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/mc-cache-example.PNG">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/images/multicore-cache.PNG">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html" class="current" aria-current="page">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 153 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.5. 缓存一致性与伪共享</h1>
+  
+  
+    <p class="article-meta"><span>约 20 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/cache_coherence.html">https://diveintosystems.org/book/C14-SharedMemory/cache_coherence.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.5. Cache Coherence and False Sharing</em></p>
+<p>多核缓存可能对多线程程序的性能产生深远的影响。不过，我们先快速回顾一下<a href="../C11-MemHierarchy/11.4-caching.html">与缓存设计有关的一些基本概念</a>：</p>
+<blockquote>
+<p>Multicore caches can have profound implications on a multithreaded program’s performance. First, however, let’s quickly review some of the <a href="../C11-MemHierarchy/11.4-caching.html">basic concepts related to cache design</a>:</p>
+</blockquote>
+<ul>
+<li>数据&#x2F;指令不是<em>单个</em>地传送到缓存中的，而是以<em>块</em>为单位传送，并且在存储器层次结构中越往下，块往往越大。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Data&#x2F;instructions are not transported <em>individually</em> to the cache. Instead, data is transferred in <em>blocks</em>, and block sizes tend to get larger at lower levels of the memory hierarchy.</li>
+</ul>
+</blockquote>
+<ul>
+<li>每个缓存被组织成一系列组，每个组有若干行。每一行存放一个数据块。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Each cache is organized into a series of sets, with each set having a number of lines. Each line holds a single block of data.</li>
+</ul>
+</blockquote>
+<ul>
+<li>内存地址的各个位用来确定一个数据块要写入缓存的哪个组、标记是什么以及块内偏移是多少。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The individual bits of a memory address are used to determine which set, tag, and block offset of the cache to which to write a block of data.</li>
+</ul>
+</blockquote>
+<ul>
+<li>当所需的数据块存在于缓存中时，发生<strong>缓存命中</strong>（cache hit）。否则，发生<strong>缓存未命中</strong>（cache miss），并在存储器层次结构的下一层（可能是缓存，也可能是主存）进行查找。</li>
+</ul>
+<blockquote>
+<ul>
+<li>A <strong>cache hit</strong> occurs when the desired data block exists in the cache. Otherwise, a <strong>cache miss</strong> occurs, and a lookup is performed on the next lower level of the memory hierarchy (which can be cache or main memory).</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>有效位</strong>（valid bit）表示缓存中某一行的块是否可以安全使用。如果有效位为 0，该行的数据块就不能使用（例如，这个块可能包含来自一个已退出进程的数据）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>valid bit</strong> indicates if a block at a particular line in the cache is safe to use. If the valid bit is set to 0, the data block at that line cannot be used (e.g., the block could contain data from an exited process).</li>
+</ul>
+</blockquote>
+<ul>
+<li>信息写入缓存&#x2F;内存主要有两种策略。在<strong>写直达</strong>（write-through）策略中，数据同时写入缓存和主存。在<strong>写回</strong>（write-back）策略中，数据只写入缓存，在块被驱逐出缓存之后才写到层次结构的较低层。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Information is written to cache&#x2F;memory based on two main strategies. In the <strong>write-through</strong> strategy, the data is written to cache and main memory simultaneously. In the <strong>write-back</strong> strategy, data is written only to cache and gets written to lower levels in the hierarchy after the block is evicted from the cache.</li>
+</ul>
+</blockquote>
+<h3 id="14-5-1-多核系统上的缓存"><a href="#14-5-1-多核系统上的缓存" class="headerlink" title="14.5.1. 多核系统上的缓存"></a>14.5.1. 多核系统上的缓存</h3><p><em>14.5.1. Caches on Multicore Systems</em></p>
+<p><a href="../C11-MemHierarchy/11.6-coherency.html">回想一下</a>，在共享内存体系结构中，每个核心可以有自己的缓存，多个核心也可以共享一个公共的缓存。<a href="14.5-cache_coherence.html">图 1</a> 描绘了一个双核 CPU 的例子。尽管每个核心都有自己的本地 L1 缓存，但两个核心共享一个公共的 L2 缓存。</p>
+<blockquote>
+<p><a href="../C11-MemHierarchy/11.6-coherency.html">Recall</a> that, in shared memory architectures, each core can have its own cache and that multiple cores can share a common cache. <a href="14.5-cache_coherence.html">Figure 1</a> depicts an example dual-core CPU. Even though each core has its own local L1 cache, the cores share a common L2 cache.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/multicore-cache.PNG" alt="dual core processor with separate L1 caches and shared L2 cache"></p>
+<p><strong>图 1.</strong> 一个有独立 L1 缓存和共享 L2 缓存的双核 CPU 示例</p>
+<p><em>Figure 1. An example dual-core CPU with separate L1 caches and a shared L2 cache</em></p>
+<p>单个可执行文件中的多个线程可能执行不同的函数。如果没有<a href="../C11-MemHierarchy/11.6-coherency.html"><strong>缓存一致性</strong>策略</a>来确保每个缓存都维持一致的共享内存视图，共享变量就可能被不一致地更新。举个例子，考虑<a href="14.5-cache_coherence.html">图 1</a> 中的双核处理器，其中每个核心都在忙于并发地执行不同的线程。分配给核心 0 的线程有一个局部变量 <code>x</code>，在核心 1 上执行的线程有一个局部变量 <code>y</code>，两个线程都可以访问共享的全局变量 <code>g</code>。<a href="14.5-cache_coherence.html">表 1</a> 展示了一条可能的执行路径。</p>
+<blockquote>
+<p>Multiple threads in a single executable may execute separate functions. Without a <a href="../C11-MemHierarchy/11.6-coherency.html"><strong>cache coherence</strong> strategy</a> to ensure that each cache maintains a consistent view of shared memory, it is possible for shared variables to be updated inconsistently. As an example, consider the dual-core processor in <a href="14.5-cache_coherence.html">Figure 1</a>, where each core is busy executing separate threads concurrently. The thread assigned to Core 0 has a local variable <code>x</code>, whereas the thread executing on Core 1 has a local variable <code>y</code>, and both threads have shared access to a global variable <code>g</code>. <a href="14.5-cache_coherence.html">Table 1</a> shows one possible path of execution.</p>
+</blockquote>
+<p><strong>表 1.</strong> 缓存导致的有问题的数据共享</p>
+<p><em>Table 1. Problematic Data Sharing Due to Caching</em></p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>核心 0</th>
+<th>核心 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>g &#x3D; 5</td>
+<td>（其他工作）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>（其他工作）</td>
+<td>y &#x3D; g*4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>x +&#x3D; g</td>
+<td>y +&#x3D; g*2</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Core 0</th>
+<th>Core 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>g &#x3D; 5</td>
+<td>(other work)</td>
+</tr>
+<tr>
+<td>1</td>
+<td>(other work)</td>
+<td>y &#x3D; g*4</td>
+</tr>
+<tr>
+<td>2</td>
+<td>x +&#x3D; g</td>
+<td>y +&#x3D; g*2</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>假设 <code>g</code> 的初值是 10，<code>x</code> 和 <code>y</code> 的初值都是 0。在这一串操作结束时，<code>y</code> 的最终值是多少？如果没有缓存一致性，这个问题就很难回答，因为 <code>g</code> 至少有三个存储着的值：一个在核心 0 的 L1 缓存中，一个在核心 1 的 L1 缓存中，还有一个单独的 <code>g</code> 副本存放在共享的 L2 缓存中。</p>
+<blockquote>
+<p>Suppose that the initial value of <code>g</code> is 10, and the initial values of <code>x</code> and <code>y</code> are both 0. What is the final value of <code>y</code> at the end of this sequence of operations? Without cache coherence, this is a very difficult question to answer, given that there are at least three stored values of <code>g</code>: one in Core 0’s L1 cache, one in Core 1’s L1 cache, and a separate copy of <code>g</code> stored in the shared L2 cache.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C14-SharedMemory/images/mc-cache-example.PNG" alt="A problematic update to the caches"></p>
+<p><strong>图 2.</strong> 对不采用缓存一致性的缓存进行的一次有问题的更新</p>
+<p><em>Figure 2. A problematic update to caches that do not employ cache coherency</em></p>
+<p><a href="14.5-cache_coherence.html">图 2</a> 展示了<a href="14.5-cache_coherence.html">表 1</a> 中的操作序列完成后一种可能的错误结果。假设 L1 缓存实现的是写回策略。当在核心 0 上执行的线程把值 5 写入 <code>g</code> 时，它只更新了核心 0 的 L1 缓存中 <code>g</code> 的值。核心 1 的 L1 缓存中 <code>g</code> 的值仍然是 10，共享 L2 缓存中的副本也是如此。即使实现的是写直达策略，也不能保证存放在核心 1 的 L1 缓存中的 <code>g</code> 副本会被更新！在这种情况下，<code>y</code> 的最终值将是 <code>60</code>。</p>
+<blockquote>
+<p><a href="14.5-cache_coherence.html">Figure 2</a> shows one possible erroneous result after the sequence of operations in <a href="14.5-cache_coherence.html">Table 1</a> completes. Suppose that the L1 caches implement a write-back policy. When the thread executing on Core 0 writes the value 5 to <code>g</code>, it updates only the value of <code>g</code> in Core 0’s L1 cache. The value of <code>g</code> in Core 1’s L1 cache still remains 10, as does the copy in the shared L2 cache. Even if a write-through policy is implemented, there is no guarantee that the copy of <code>g</code> stored in Core 1’s L1 cache gets updated! In this case, <code>y</code> will have the final value of <code>60</code>.</p>
+</blockquote>
+<p>缓存一致性策略在一个缓存中对共享数据值进行写操作时，使其他缓存中该共享值的缓存副本失效或得到更新。<a href="../C11-MemHierarchy/11.6-coherency.html">已修改-共享-无效（MSI）</a>协议（在<a href="../C11-MemHierarchy/11.6-coherency.html">第 11.6 节</a>中有详细讨论）是失效型缓存一致性协议的一个例子。</p>
+<blockquote>
+<p>A cache coherence strategy invalidates or updates cached copies of shared values in other caches when a write to the shared data value is made in one cache. The <a href="../C11-MemHierarchy/11.6-coherency.html">Modified Shared Invalid (MSI)</a> protocol (discussed in detail in <a href="../C11-MemHierarchy/11.6-coherency.html">Chapter 11.6</a>) is one example of an invalidating cache coherency protocol.</p>
+</blockquote>
+<p>实现 MSI 的一种常见技术是监听。这样的<strong>监听式缓存</strong>（snoopy cache）在内存总线上「监听」可能的写信号。如果监听式缓存检测到对一个共享缓存块的写操作，它就使包含该缓存块的那一行失效。最终结果是，该块唯一有效的版本在被写入的那个缓存中，而其他缓存中该块的<em>所有其他</em>副本都被标记为无效。</p>
+<blockquote>
+<p>A common technnique for implementing MSI is snooping. Such a <strong>snoopy cache</strong> “snoops” on the memory bus for possible write signals. If the snoopy cache detects a write to a shared cache block, it invalidates its line containing that cache block. The end result is that the only valid version of the block is in the cache that is written to, whereas <em>all other</em> copies of the block in other caches are marked as invalid.</p>
+</blockquote>
+<p>在前面的例子中，采用带监听的 MSI 协议，会让变量 <code>y</code> 得到正确的最终值 <code>30</code>。</p>
+<blockquote>
+<p>Employing the MSI protocol with snoooping would yield the correct final assignment of <code>30</code> to variable <code>y</code> in the previous example.</p>
+</blockquote>
+<h3 id="14-5-2-伪共享"><a href="#14-5-2-伪共享" class="headerlink" title="14.5.2. 伪共享"></a>14.5.2. 伪共享</h3><p><em>14.5.2. False Sharing</em></p>
+<p>缓存一致性保证了正确性，但它可能会损害性能。回想一下，当线程在核心 0 上更新 <code>g</code> 时，监听式缓存使之失效的不仅是 <code>g</code>，而是 <code>g</code> 所在的<em>整个缓存行</em>。</p>
+<blockquote>
+<p>Cache coherence guarantees correctness, but it can potentially harm performance. Recall that when the thread updates <code>g</code> on Core 0, the snoopy cache invalidates not only <code>g</code>, but the <em>entire cache line</em> that <code>g</code> is a part of.</p>
+</blockquote>
+<p>考虑我们并行化计数排序算法中 <code>countElems</code> 函数的<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p.c">初次尝试</a>。为方便起见，这里再把函数列出来：</p>
+<blockquote>
+<p>Consider our <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p.c">initial attempt</a> at parallelizing the <code>countElems</code> function of the CountSort algorithm. For convenience, the function is reproduced here:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">/*parallel version of step 1 (first cut) of CountSort algorithm:</span><br><span class="line"> * extracts arguments from args value</span><br><span class="line"> * calculates portion of the array this thread is responsible for counting</span><br><span class="line"> * computes the frequency of all the elements in assigned component and stores</span><br><span class="line"> * the associated counts of each element in counts array</span><br><span class="line">*/</span><br><span class="line">void *countElems(void *args)&#123;</span><br><span class="line">    //extract arguments</span><br><span class="line">    //ommitted for brevity</span><br><span class="line">    int *array = myargs-&gt;ap;</span><br><span class="line">    long *counts = myargs-&gt;countp;</span><br><span class="line"></span><br><span class="line">    //assign work to the thread</span><br><span class="line">    //compute chunk, start, and end</span><br><span class="line">    //ommited for brevity</span><br><span class="line"></span><br><span class="line">    long i;</span><br><span class="line">    //heart of the program</span><br><span class="line">    for (i = start; i &lt; end; i++)&#123;</span><br><span class="line">        val = array[i];</span><br><span class="line">        counts[val] = counts[val] + 1;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<a href="14.3-synchronization.html">之前</a>对这个函数的讨论中，我们指出了数据竞争会导致 <code>counts</code> 数组填入的计数不正确。我们来看看，如果对这个函数<em>计时</em>会发生什么。我们按照与 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a> 中完全相同的方式，用 <code>getimeofday</code> 在 <code>main</code> 中加入计时代码。在 1 亿个元素上对刚才列出的 <code>countElems</code> 初始版本进行基准测试，得到下面的时间：</p>
+<blockquote>
+<p>In our <a href="14.3-synchronization.html">previous discussion</a> of this function, we pointed out how data races can cause the <code>counts</code> array to not populate with the correct set of counts. Let’s see what happens if we attempt to <em>time</em> this function. We add timing code to <code>main</code> using <code>getimeofday</code> in the exact manner as shown in <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a>. Benchmarking the initial version of <code>countElems</code> as just shown on 100 million elements yields the following times:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">$ ./countElems_p 100000000 0 1</span><br><span class="line">Time for Step 1 is 0.336239 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p 100000000 0 2</span><br><span class="line">Time for Step 1 is 0.799464 s</span><br><span class="line"></span><br><span class="line">$ ./countElems_p 100000000 0 4</span><br><span class="line">Time for Step 1 is 0.767003 s</span><br></pre></td></tr></table></figure>
+
+<p>即使没有任何同步结构，这个版本的程序<em>仍然</em>随着线程数的增加而<em>变慢</em>！</p>
+<blockquote>
+<p>Even without any synchronization constructs, this version of the program <em>still gets slower</em> as the number of threads increases!</p>
+</blockquote>
+<p>为了弄清发生了什么，我们再来看 <code>counts</code> 数组。<code>counts</code> 数组存放输入数组中每个数出现的频次。最大值由变量 <code>MAX</code> 决定。在我们的示例程序中，<code>MAX</code> 被设为 10。换句话说，<code>counts</code> 数组占用 40 字节的空间。</p>
+<blockquote>
+<p>To understand what is going on, let’s revisit the <code>counts</code> array. The <code>counts</code> array holds the frequency of occurrence of each number in our input array. The maximum value is determined by the variable <code>MAX</code>. In our example program, <code>MAX</code> is set to 10. In other words, the <code>counts</code> array takes up 40 bytes of space.</p>
+</blockquote>
+<p>回想一下，Linux 系统上的<a href="../C11-MemHierarchy/11.6-coherency.html">缓存细节</a>位于 <code>/sys/devices/system/cpu/</code> 目录中。每个逻辑核心都有自己的 cpu 子目录，名为 <code>cpuk</code>，其中 <code>k</code> 表示第 <em>k</em> 个逻辑核心。每个 <code>cpu</code> 子目录中又有若干个单独的 <code>index</code> 目录，表示该核心可用的缓存。</p>
+<blockquote>
+<p>Recall that the <a href="../C11-MemHierarchy/11.6-coherency.html">cache details</a> on a Linux system are located in the <code>/sys/devices/system/cpu/</code> directory. Each logical core has its own cpu subdirectory called <code>cpuk</code> where <code>k</code> indicates the <em>kth</em> logical core. Each <code>cpu</code> subdirectory in turn has separate <code>index</code> directories that indicate the caches available to that core.</p>
+</blockquote>
+<p><code>index</code> 目录中的文件包含关于每个逻辑核心的缓存的大量细节。下面展示了一个 <code>index0</code> 目录示例的内容（<code>index0</code> 通常对应于 Linux 系统的 L1 缓存）：</p>
+<blockquote>
+<p>The <code>index</code> directories contain files with numerous details about each logical core’s caches. The contents of a sample <code>index0</code> directory are shown here (<code>index0</code> typically corresponds to a Linux system’s L1 cache):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ls /sys/devices/system/cpu/cpu0/cache/index0</span><br><span class="line">coherency_line_size      power            type</span><br><span class="line">level                    shared_cpu_list  uevent</span><br><span class="line">number_of_sets           shared_cpu_map   ways_of_associativity</span><br><span class="line">physical_line_partition  size</span><br></pre></td></tr></table></figure>
+
+<p>要查出 L1 缓存的缓存行大小，使用这条命令：</p>
+<blockquote>
+<p>To discover the cache line size of the L1 cache, use this command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size</span><br><span class="line">64</span><br></pre></td></tr></table></figure>
+
+<p>输出表明，这台机器的 L1 缓存行大小是 64 字节。换句话说，40 字节的 <code>counts</code> 数组<em>可以放在一个缓存行之内</em>。</p>
+<blockquote>
+<p>The output reveals that L1 cache line size for the machine is 64 bytes. In other words, the 40-byte <code>counts</code> array fits <em>within one cache line</em>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>缓存行大小因机器而异。在 Apple Silicon Mac 上没有 <code>/sys</code> 目录，可以用 <code>sysctl hw.cachelinesize</code> 查询；译者在 M1 Pro 上得到的是 128 字节（见第 11 章的译注），伪共享的范围相应更大。</p>
+</div>
+<p>回想一下，使用 MSI 这样的失效型缓存一致性协议时，程序每次更新一个共享变量，<em>其他缓存中存放该变量的整个缓存行都会失效</em>。我们来考虑两个线程执行前面这个函数时会发生什么。<a href="14.5-cache_coherence.html">表 2</a> 展示了一条可能的执行路径（假设每个线程被分配到不同的核心上，并且变量 <code>x</code> 是每个线程局部的）。</p>
+<blockquote>
+<p>Recall that with invalidating cache coherence protocols like MSI, every time a program updates a shared variable, the <em>entire cache line in other caches storing the variable is invalidated</em>. Let’s consider what happens when two threads execute the preceding function. One possible path of execution is shown in <a href="14.5-cache_coherence.html">Table 2</a> (assuming that each thread is assigned to a separate core, and the variable <code>x</code> is local to each thread).</p>
+</blockquote>
+<p><strong>表 2.</strong> 两个线程运行 <code>countElems</code> 的一种可能的执行序列</p>
+<p><em>Table 2. A Possible Execution Sequence of Two Threads Running <code>countElems</code></em></p>
+<table>
+<thead>
+<tr>
+<th>时间</th>
+<th>线程 0</th>
+<th>线程 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>读取 array[x]（1）</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>增加 counts[1]（<strong>使缓存行失效</strong>）</td>
+<td>读取 array[x]（4）</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>读取 array[x]（6）</td>
+<td>增加 counts[4]（<strong>使缓存行失效</strong>）</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>增加 counts[6]（<strong>使缓存行失效</strong>）</td>
+<td>读取 array[x]（2）</td>
+</tr>
+<tr>
+<td><em>i+4</em></td>
+<td>读取 array[x]（3）</td>
+<td>增加 counts[2]（<strong>使缓存行失效</strong>）</td>
+</tr>
+<tr>
+<td><em>i+5</em></td>
+<td>增加 counts[3]（<strong>使缓存行失效</strong>）</td>
+<td>…​</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Thread 0</th>
+<th>Thread 1</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>i</em></td>
+<td>Reads array[x] (1)</td>
+<td>…​</td>
+</tr>
+<tr>
+<td><em>i+1</em></td>
+<td>Increments counts[1] (<strong>invalidates cache line</strong>)</td>
+<td>Reads array[x] (4)</td>
+</tr>
+<tr>
+<td><em>i+2</em></td>
+<td>Reads array[x] (6)</td>
+<td>Increments counts[4] (<strong>invalidates cache line</strong>)</td>
+</tr>
+<tr>
+<td><em>i+3</em></td>
+<td>Increments counts[6] (<strong>invalidates cache line</strong>)</td>
+<td>Reads array[x] (2)</td>
+</tr>
+<tr>
+<td><em>i+4</em></td>
+<td>Reads array[x] (3)</td>
+<td>Increments counts[2] (<strong>invalidates cache line</strong>)</td>
+</tr>
+<tr>
+<td><em>i+5</em></td>
+<td>Increments counts[3] (<strong>invalidates cache line</strong>)</td>
+<td>…​</td>
+</tr>
+</tbody></table>
+</blockquote>
+<ul>
+<li>在时间步 <em>i</em>，线程 0 读取它那部分数组中 <code>array[x]</code> 的值，在这个例子中是 1。</li>
+</ul>
+<blockquote>
+<ul>
+<li>During time step <em>i</em>, Thread 0 reads the value at <code>array[x]</code> in its part of the array, which is a 1 in this example.</li>
+</ul>
+</blockquote>
+<ul>
+<li>在时间步 <em>i + 1</em> 到 <em>i + 5</em>，每个线程都从 <code>array[x]</code> 读取一个值。注意，每个线程查看的是数组的不同部分。不仅如此，在我们的示例执行中，每次读取 <code>array</code> 得到的值都各不相同（所以在这个示例执行序列中没有竞态条件！）。从 <code>array[x]</code> 读到值之后，每个线程把 <code>counts</code> 中相应的值加一。</li>
+</ul>
+<blockquote>
+<ul>
+<li>During time steps <em>i + 1</em> to <em>i + 5</em>, each thread reads a value from <code>array[x]</code>. Note that each thread is looking at different components of the array. Not only that, each read of <code>array</code> in our sample execution yields unique values (so no race conditions in this sample execution sequence!). After reading the value from <code>array[x]</code>, each thread increments the associated value in <code>counts</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>回想一下，<code>counts</code> 数组<em>可以放在我们 L1 缓存中的一个缓存行上</em>。因此，每次写 <code>counts</code> 都会使<em>其他每个 L1 缓存</em>中的<em>整行</em>失效。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Recall that the <code>counts</code> array <em>fits on a single cache line</em> in our L1 cache. As a result, every write to <code>counts</code> invalidates the <em>entire line</em> in <em>every other L1 cache</em>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>最终结果是，尽管更新的是 <code>counts</code> 中<em>不同的</em>内存位置，但每次更新 <code>counts</code>，任何包含 <code>counts</code> 的缓存行都会<em>失效</em>！</li>
+</ul>
+<blockquote>
+<ul>
+<li>The end result is that, despite updating <em>different</em> memory locations in <code>counts</code>, any cache line containing <code>counts</code> is <em>invalidated</em> with <em>every update</em> to <code>counts</code>!</li>
+</ul>
+</blockquote>
+<p>失效迫使所有 L1 缓存从 L2 中取得该行的「有效」版本来更新。L1 缓存中的行被反复失效和覆盖，这是<strong>抖动</strong>（thrashing）的一个例子，即缓存中反复发生冲突，导致一连串的未命中。</p>
+<blockquote>
+<p>The invalidation forces all L1 caches to update the line with a “valid” version from L2. The repeated invalidation and overwriting of lines from the L1 cache is an example of <strong>thrashing</strong>, where repeated conflicts in the cache cause a series of misses.</p>
+</blockquote>
+<p>加入更多的核心会让问题更加严重，因为现在有更多的 L1 缓存在使该行失效。因此，尽管每个线程访问的是 <code>counts</code> 数组中不同的元素，增加线程反而拖慢了运行时间！这就是<strong>伪共享</strong>（false sharing）的一个例子，即一种多个核心在共享各个元素的假象。在前面的例子中，看起来所有核心都在访问 <code>counts</code> 中相同的元素，尽管事实并非如此。</p>
+<blockquote>
+<p>The addition of more cores makes the problem worse, given that now more L1 caches are invalidating the line. As a result, adding additional threads slows down the runtime, despite the fact that each thread is accessing different elements of the <code>counts</code> array! This is an example of <strong>false sharing</strong>, or the illusion that individual elements are being shared by multiple cores. In the previous example, it appears that all the cores are accessing the same elements of <code>counts</code>, even though this is not the case.</p>
+</blockquote>
+<h3 id="14-5-3-修正伪共享"><a href="#14-5-3-修正伪共享" class="headerlink" title="14.5.3. 修正伪共享"></a>14.5.3. 修正伪共享</h3><p><em>14.5.3. Fixing False Sharing</em></p>
+<p>修正伪共享的一种方法，是给数组（在我们的例子中是 <code>counts</code>）填充额外的元素，使它不能放在单个缓存行中。然而，填充会浪费内存，而且可能无法在所有体系结构上都消除这个问题（考虑两台不同的机器 L1 缓存大小不同的情形）。在大多数情况下，为了支持不同的缓存大小而编写代码，通常不值得为此付出性能上的收益。</p>
+<blockquote>
+<p>One way to fix an instance of false sharing is to pad the array (in our case <code>counts</code>) with additional elements so that it doesn’t fit in a single cache line. However, padding can waste memory, and may not eliminate the problem from all architectures (consider the scenario in which two different machines have different L1 cache sizes). In most cases, writing code to support different cache sizes is generally not worth the gain in performance.</p>
+</blockquote>
+<p>更好的解决办法是尽可能让线程写<em>局部存储</em>。这里的局部存储指的是对一个线程来说是<em>局部的</em>内存。下面的解决方案通过选择对局部声明的 <code>counts</code> 版本 <code>local_counts</code> 进行更新，减少了伪共享。</p>
+<blockquote>
+<p>A better solution is to have threads write to <em>local storage</em> whenever possible. Local storage in this context refers to memory that is <em>local</em> to a thread. The following solution reduces false sharing by choosing to perform updates to a locally declared version of <code>counts</code> called <code>local_counts</code>.</p>
+</blockquote>
+<p>我们再来看 <code>countElems</code> 函数的最终版本（转引自 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a>）：</p>
+<blockquote>
+<p>Let’s revisit the final version of our <code>countElems</code> function (reproduced from <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/countElems_p_v3.c">countElems_p_v3.c</a>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">/*parallel version of CountSort algorithm step 1 (final attempt with mutexes):</span><br><span class="line"> * extracts arguments from args value</span><br><span class="line"> * calculates the portion of the array this thread is responsible for counting</span><br><span class="line"> * computes the frequency of all the elements in assigned component and stores</span><br><span class="line"> * the associated counts of each element in counts array</span><br><span class="line">*/</span><br><span class="line">void *countElems( void *args )&#123;</span><br><span class="line">    //extract arguments</span><br><span class="line">    //omitted for brevity</span><br><span class="line">    int *array = myargs-&gt;ap;</span><br><span class="line">    long *counts = myargs-&gt;countp;</span><br><span class="line"></span><br><span class="line">    long local_counts[MAX] = &#123;0&#125;; //local declaration of counts array</span><br><span class="line"></span><br><span class="line">    //assign work to the thread</span><br><span class="line">    //compute chunk, start, and end values (omitted for brevity)</span><br><span class="line"></span><br><span class="line">    long i;</span><br><span class="line"></span><br><span class="line">    //heart of the program</span><br><span class="line">    for (i = start; i &lt; end; i++)&#123;</span><br><span class="line">        val = array[i];</span><br><span class="line">        local_counts[val] = local_counts[val] + 1; //update local counts array</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //update to global counts array</span><br><span class="line">    pthread_mutex_lock(&amp;mutex); //acquire the mutex lock</span><br><span class="line">    for (i = 0; i &lt; MAX; i++)&#123;</span><br><span class="line">        counts[i] += local_counts[i];</span><br><span class="line">    &#125;</span><br><span class="line">    pthread_mutex_unlock(&amp;mutex); //release the mutex lock</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在这个例子中，使用 <code>local_counts</code> 代替 <code>counts</code> 来累计频次，是减少伪共享的主要原因：</p>
+<blockquote>
+<p>The use of <code>local_counts</code> to accumulate frequencies in lieu of <code>counts</code> is the major source of reduction of false sharing in this example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for (i = start; i &lt; end; i++)&#123;</span><br><span class="line">    val = array[i];</span><br><span class="line">    local_counts[val] = local_counts[val] + 1; //updates local counts array</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于缓存一致性的目的是维持共享内存的一致视图，所以只有对内存中<em>共享值</em>的<em>写</em>操作才会触发失效。由于 <code>local_counts</code> 不在不同线程之间共享，写它不会使它所在的缓存行失效。</p>
+<blockquote>
+<p>Since cache coherence is meant to maintain a consistent view of shared memory, the invalidations trigger only on <em>writes</em> to <em>shared values</em> in memory. Since <code>local_counts</code> is not shared among the different threads, a write to it will not invalidate its associated cache line.</p>
+</blockquote>
+<p>在代码的最后一部分，互斥锁确保一次只有一个线程更新共享的 <code>counts</code> 数组，从而保证了正确性：</p>
+<blockquote>
+<p>In the last component of the code, the mutex enforces correctness by ensuring that only one thread updates the shared <code>counts</code> array at a time:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">//update to global counts array</span><br><span class="line">pthread_mutex_lock(&amp;mutex); //acquire the mutex lock</span><br><span class="line">for (i = 0; i &lt; MAX; i++)&#123;</span><br><span class="line">    counts[i] += local_counts[i];</span><br><span class="line">&#125;</span><br><span class="line">pthread_mutex_unlock(&amp;mutex); //release the mutex lock</span><br></pre></td></tr></table></figure>
+
+<p>由于 <code>counts</code> 位于单个缓存行上，每次写它时它仍然会失效。不同之处在于，这里的代价最多是 <code>MAX</code> × <em>t</em> 次写操作，而不是 <em>n</em> 次写操作，其中 <em>n</em> 是输入数组的长度，<em>t</em> 是使用的线程数。</p>
+<blockquote>
+<p>Since <code>counts</code> is located on a single cache line, it will still get invalidated with every write. The difference is that the penalty here is at most <code>MAX</code> × <em>t</em> writes vs. <em>n</em> writes, where <em>n</em> is the length of our input array, and <em>t</em> is the number of threads employed.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.4.2. 进阶话题</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.6. 线程安全</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-5-1-%E5%A4%9A%E6%A0%B8%E7%B3%BB%E7%BB%9F%E4%B8%8A%E7%9A%84%E7%BC%93%E5%AD%98"><span class="toc-text">14.5.1. 多核系统上的缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-5-2-%E4%BC%AA%E5%85%B1%E4%BA%AB"><span class="toc-text">14.5.2. 伪共享</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-5-3-%E4%BF%AE%E6%AD%A3%E4%BC%AA%E5%85%B1%E4%BA%AB"><span class="toc-text">14.5.3. 修正伪共享</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

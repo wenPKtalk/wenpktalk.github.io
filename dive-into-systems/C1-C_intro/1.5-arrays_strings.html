@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>1.5. 数组与字符串 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C1-C_intro&#x2F;arrays_strings.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  1.5. Arrays and Strings">
+<meta property="og:type" content="website">
+<meta property="og:title" content="1.5. 数组与字符串 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C1-C_intro&#x2F;arrays_strings.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  1.5. Arrays and Strings">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C1-C_intro/images/arraystack.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.932Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.932Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C1-C_intro/images/arraystack.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html" class="current" aria-current="page">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>1. 在 C 边，在 C 边，在美丽的 C 边</span>
+      </nav>
+      <span class="book-position">第 12 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">1.5. 数组与字符串</h1>
+  
+  
+    <p class="article-meta"><span>约 25 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C1-C_intro/arrays_strings.html">https://diveintosystems.org/book/C1-C_intro/arrays_strings.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>1.5. Arrays and Strings</em></p>
+<p><strong>数组</strong>（array）是 C 的一种构造，它创建一个由相同类型的数据元素组成的有序集合，并把这个集合与一个程序变量关联起来。<strong>有序</strong>的意思是每个元素在值的集合中都处于特定的位置（即有位置 0 的元素、位置 1 的元素，依此类推），而不是说这些值一定已经排好序。数组是 C 把多个数据值组织在一起、并用单个名字引用它们的主要机制之一。数组有好几种形式，最基本的是<em>一维数组</em>，它可以用来在 C 中实现类似列表的数据结构和字符串。</p>
+<blockquote>
+<p>An <strong>array</strong> is a C construct that creates an ordered collection of data elements of the same type and associates this collection with a single program variable. <strong>Ordered</strong> means that each element is in a specific position in the collection of values (that is, there is an element in position 0, position 1, and so on), not that the values are necessarily sorted. Arrays are one of C’s primary mechanisms for grouping multiple data values and referring to them by a single name. Arrays come in several flavors, but the basic form is a <em>one-dimensional array</em>, which is useful for implementing list-like data structures and strings in C.</p>
+</blockquote>
+<h3 id="1-5-1-数组简介"><a href="#1-5-1-数组简介" class="headerlink" title="1.5.1. 数组简介"></a>1.5.1. 数组简介</h3><p><em>1.5.1. Introduction to Arrays</em></p>
+<p>C 数组可以存储多个<em>相同</em>类型的数据值。本章讨论<strong>静态声明</strong>（statically declared）的数组，即数组的总容量（数组最多能存储的元素个数）是固定的，在声明数组变量时就确定了。下一章我们会讨论<a href="../C2-C_depth/2.5-arrays.html">动态分配的数组</a>和<a href="../C2-C_depth/2.5-arrays.html">多维数组</a>。</p>
+<blockquote>
+<p>C arrays can store multiple data values of the <em>same</em> type. In this chapter, we discuss <strong>statically declared</strong> arrays, meaning that the total capacity (the maximum number of elements that can be stored in an array) is fixed and is defined when the array variable is declared. In the next chapter, we discuss <a href="../C2-C_depth/2.5-arrays.html">dynamically allocated arrays</a> and <a href="../C2-C_depth/2.5-arrays.html">multi-dimensional arrays</a>.</p>
+</blockquote>
+<p><a href="1.5-arrays_strings.html">表 1</a> 给出了一个程序的 Python 版本和 C 版本，该程序初始化一组整数值并把它们打印出来。Python 版本用内置的列表类型存储这组值，而 C 版本用一个 <code>int</code> 类型的数组来存储。</p>
+<blockquote>
+<p><a href="1.5-arrays_strings.html">Table 1</a> shows Python and C versions of a program that initializes and then prints a collection of integer values. The Python version uses its built-in list type to store the list of values, whereas the C version uses an array of <code>int</code> types to store the collection of values.</p>
+</blockquote>
+<p>总的来说，Python 为程序员提供了一个高级的列表接口，隐藏了大部分底层实现细节。而 C 则把底层的数组实现暴露给程序员，由程序员自己去实现更高级的功能。换句话说，数组提供的是底层的数据存储，没有 <code>len</code>、<code>append</code>、<code>insert</code> 等更高级的列表功能。</p>
+<blockquote>
+<p>In general, Python provides a high-level list interface to the programmer that hides much of the low-level implementation details. C, on the other hand, exposes a low-level array implementation to the programmer and leaves it up to the programmer to implement higher-level functionality. In other words, arrays enable low-level data storage without higher-level list functionality, such as <code>len</code>, <code>append</code>, <code>insert</code>, and so on.</p>
+</blockquote>
+<p><strong>表 1.</strong> Python 列表与 C 数组的语法对比</p>
+<p><em>Table 1. Syntax Comparison of Lists in Python and Arrays in C</em></p>
+<p><strong>Python 版本</strong></p>
+<blockquote>
+<p><strong>Python version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"># An example Python program using a list.</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">def main():</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    # create an empty list</span><br><span class="line">    my_lst = []</span><br><span class="line"></span><br><span class="line">    # add 10 integers to the list</span><br><span class="line">    for i in range(10):</span><br><span class="line">        my_lst.append(i)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    # set value at position 3 to 100</span><br><span class="line">    my_lst[3] = 100</span><br><span class="line"></span><br><span class="line">    # print the number of list items</span><br><span class="line">    print(&quot;list %d items:&quot; % len(my_lst))</span><br><span class="line"></span><br><span class="line">    # print each element of the list</span><br><span class="line">    for i in range(10):</span><br><span class="line">        print(&quot;%d&quot; % my_lst[i])</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># call the main function:</span><br><span class="line">main()</span><br></pre></td></tr></table></figure>
+
+<p><strong>C 版本</strong></p>
+<blockquote>
+<p><strong>C version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">/* An example C program using an array. */</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int i, size = 0;</span><br><span class="line"></span><br><span class="line">    // declare array of 10 ints</span><br><span class="line">    int my_arr[10];</span><br><span class="line"></span><br><span class="line">    // set the value of each array element</span><br><span class="line">    for (i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">        my_arr[i] = i;</span><br><span class="line">        size++;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    // set value at position 3 to 100</span><br><span class="line">    my_arr[3] = 100;</span><br><span class="line"></span><br><span class="line">    // print the number of array elements</span><br><span class="line">    printf(&quot;array of %d items:\n&quot;, size);</span><br><span class="line"></span><br><span class="line">    // print each element of the array</span><br><span class="line">    for (i = 0; i &lt; 10; i++) &#123;</span><br><span class="line">        printf(&quot;%d\n&quot;, my_arr[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个程序的 C 版本和 Python 版本有几处相似之处，最明显的是都可以通过<strong>下标</strong>（indexing）访问单个元素，并且下标值都从 <code>0</code> 开始。也就是说，两种语言都把集合中的第一个元素称为位置 <code>0</code> 上的元素。</p>
+<blockquote>
+<p>The C and Python versions of this program have several similarities, most notably that individual elements can be accessed via <strong>indexing</strong>, and that index values start at <code>0</code>. That is, both languages refer to the very first element in a collection as the element at position <code>0</code>.</p>
+</blockquote>
+<p>这个程序的 C 版本和 Python 版本的主要区别，在于列表或数组的容量，以及如何确定它们的大小（元素个数）。</p>
+<blockquote>
+<p>The main differences in the C and Python versions of this program relate to the capacity of the list or array and how their sizes (number of elements) are determined.</p>
+</blockquote>
+<p><em>对于 Python 列表：</em></p>
+<blockquote>
+<p><em>For a Python list:</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_lst[3] = 100   # Python syntax to set the element in position 3 to 100.</span><br><span class="line"></span><br><span class="line">my_lst[0] = 5     # Python syntax to set the first element to 5.</span><br></pre></td></tr></table></figure>
+
+<p><em>对于 C 数组：</em></p>
+<blockquote>
+<p><em>For a C array:</em></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">my_arr[3] = 100;  // C syntax to set the element in position 3 to 100.</span><br><span class="line"></span><br><span class="line">my_arr[0] = 5;    // C syntax to set the first element to 5.</span><br></pre></td></tr></table></figure>
+
+<p>在 Python 版本中，程序员不需要事先指定列表的容量：Python 会根据程序的需要自动增加列表的容量。例如，Python 的 <code>append</code> 函数会自动增大 Python 列表的大小，并把传入的值添加到末尾。</p>
+<blockquote>
+<p>In the Python version, the programmer doesn’t need to specify the capacity of a list in advance: Python automatically increases a list’s capacity as needed by the program. For example, the Python <code>append</code> function automatically increases the size of the Python list and adds the passed value to the end.</p>
+</blockquote>
+<p>相比之下，在 C 中声明数组变量时，程序员必须指定它的类型（数组中每个值的类型）和总容量（存储位置的最大个数）。例如：</p>
+<blockquote>
+<p>In contrast, when declaring an array variable in C, the programmer must specify its type (the type of each value stored in the array) and its total capacity (the maximum number of storage locations). For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int  arr[10];  // declare an array of 10 ints</span><br><span class="line"></span><br><span class="line">char str[20];  // declare an array of 20 chars</span><br></pre></td></tr></table></figure>
+
+<p>上面的声明创建了一个名为 <code>arr</code> 的变量，它是总容量为 10 的 <code>int</code> 数组；还创建了另一个名为 <code>str</code> 的变量，它是总容量为 20 的 <code>char</code> 数组。</p>
+<blockquote>
+<p>The preceding declarations create one variable named <code>arr</code>, an array of <code>int</code> values with a total capacity of 10, and another variable named <code>str</code>, an array of <code>char</code> values with a total capacity of 20.</p>
+</blockquote>
+<p>为了计算列表的大小（即列表中值的总个数），Python 提供了 <code>len</code> 函数，它返回传给它的任何列表的大小。在 C 中，程序员必须显式地记录数组中元素的个数（例如<a href="1.5-arrays_strings.html">表 1</a> 中的 <code>size</code> 变量）。</p>
+<blockquote>
+<p>To compute the size of a list (size meaning the total number of values in the list), Python provides a <code>len</code> function that returns the size of any list passed to it. In C, the programmer has to explicitly keep track of the number of elements in the array (for example, the <code>size</code> variable in <a href="1.5-arrays_strings.html">Table 1</a>).</p>
+</blockquote>
+<p>从这个程序的 Python 版本和 C 版本中可能看不出来的另一个区别，是 Python 列表和 C 数组在内存中的存储方式。C 规定了数组在程序内存中的布局，而 Python 对程序员隐藏了列表的实现方式。在 C 中，各个数组元素被分配在程序内存中的连续位置上。例如，数组的第三个位置在内存中紧跟在第二个位置之后、紧挨在第四个位置之前。</p>
+<blockquote>
+<p>Another difference that might not be apparent from looking at the Python and C versions of this program is how the Python list and the C array are stored in memory. C dictates the array layout in program memory, whereas Python hides how lists are implemented from the programmer. In C, individual array elements are allocated in consecutive locations in the program’s memory. For example, the third array position is located in memory immediately following the second array position and immediately before the fourth array position.</p>
+</blockquote>
+<h3 id="1-5-2-访问数组的方法"><a href="#1-5-2-访问数组的方法" class="headerlink" title="1.5.2. 访问数组的方法"></a>1.5.2. 访问数组的方法</h3><p><em>1.5.2. Array Access Methods</em></p>
+<p>Python 提供了多种访问列表元素的方式。而 C 只支持前面介绍的下标访问。有效的下标值范围是从 0 到数组容量减 1。下面是一些例子：</p>
+<blockquote>
+<p>Python provides multiple ways to access elements in its lists. C, however, supports only indexing, as described earlier. Valid index values range from 0 to the capacity of the array minus 1. Here are some examples:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int i, num;</span><br><span class="line">int arr[10];  // declare an array of ints, with a capacity of 10</span><br><span class="line"></span><br><span class="line">num = 6;      // keep track of how many elements of arr are used</span><br><span class="line"></span><br><span class="line">// initialize first 5 elements of arr (at indices 0-4)</span><br><span class="line">for (i=0; i &lt; 5; i++) &#123;</span><br><span class="line">    arr[i] = i * 2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">arr[5] = 100; // assign the element at index 5 the value 100</span><br></pre></td></tr></table></figure>
+
+<p>这个例子声明了一个容量为 10 的数组（它有 10 个元素），但只用了前六个（我们当前的值集合大小是 6，而不是 10）。使用静态声明的数组时，数组的部分容量常常闲置不用。因此，我们需要另一个程序变量来记录数组的实际大小（元素个数）（本例中的 <code>num</code>）。</p>
+<blockquote>
+<p>This example declares the array with a capacity of 10 (it has 10 elements), but it only uses the first six (our current collection of values is size 6, not 10). It’s often the case when using statically declared arrays that some of an array’s capacity will remain unused. As a result, we need another program variable to keep track of the actual size (number of elements) in the array (<code>num</code> in this example).</p>
+</blockquote>
+<p>当程序试图访问无效下标时，Python 和 C 的错误处理方式不同。如果用无效的下标值访问列表元素（例如下标超出了列表的元素个数），Python 会抛出 <code>IndexError</code> 异常。在 C 中，则由程序员负责确保代码只用有效的下标值访问数组。因此，对于下面这种访问超出已分配数组边界的元素的代码，程序的运行时行为是未定义的：</p>
+<blockquote>
+<p>Python and C differ in their error-handling approaches when a program attempts to access an invalid index. Python throws an <code>IndexError</code> exception if an invalid index value is used to access elements in a list (for example, indexing beyond the number of elements in a list). In C, it’s up to the programmer to ensure that their code uses only valid index values when indexing into arrays. As a result, for code like the following that accesses an array element beyond the bounds of the allocated array, the program’s runtime behavior is undefined:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int array[10];   // an array of size 10 has valid indices 0 through 9</span><br><span class="line"></span><br><span class="line">array[10] = 100;  // 10 is not a valid index into the array</span><br></pre></td></tr></table></figure>
+
+<p>C 编译器会毫无怨言地编译访问数组边界之外位置的代码：编译器不做边界检查，运行时也不做。因此，运行这段代码可能导致意想不到的程序行为（而且每次运行的表现可能都不一样）。它可能让程序崩溃，可能改掉另一个变量的值，也可能对程序行为毫无影响。换句话说，这种情况会造成一个程序缺陷，它可能表现为程序的异常行为，也可能不会。所以，作为 C 程序员，你要自己确保数组访问指向的是有效位置！</p>
+<blockquote>
+<p>The C compiler is happy to compile code that accesses array positions beyond the bounds of the array; there is no bounds checking by the compiler or at runtime. As a result, running this code can lead to unexpected program behavior (and the behavior might differ from run to run). It can lead to your program crashing, it can change another variable’s value, or it might have no effect on your program’s behavior. In other words, this situation leads to a program bug that might or might not show up as unexpected program behavior. Thus, as a C programmer, it’s up to you to ensure that your array accesses refer to valid positions!</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 用工具抓越界访问</p><p>编译器默认不检查，但现代工具可以帮忙：用 GCC 或 Clang 编译时加上 <code>-fsanitize=address</code>（AddressSanitizer），运行时一旦发生数组越界读写，程序会立刻报错并指出出错的代码行；第 3 章介绍的 Valgrind 也能发现一部分此类错误（Valgrind 更擅长发现堆上的越界，对栈上数组的越界检测能力有限）。</p>
+</div>
+<h3 id="1-5-3-数组与函数"><a href="#1-5-3-数组与函数" class="headerlink" title="1.5.3. 数组与函数"></a>1.5.3. 数组与函数</h3><p><em>1.5.3. Arrays and Functions</em></p>
+<p>在 C 中把数组传给函数的语义，与在 Python 中把列表传给函数类似：函数可以修改传入的数组或列表中的元素。下面是一个接收两个参数的函数示例：一个 <code>int</code> 数组参数（<code>arr</code>）和一个 <code>int</code> 参数（<code>size</code>）：</p>
+<blockquote>
+<p>The semantics of passing arrays to functions in C is similar to that of passing lists to functions in Python: the function can alter the elements in the passed array or list. Here’s an example function that takes two parameters, an <code>int</code> array parameter (<code>arr</code>), and an <code>int</code> parameter (<code>size</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">void print_array(int arr[], int size) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 0; i &lt; size; i++) &#123;</span><br><span class="line">        printf(&quot;%d\n&quot;, arr[i]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>参数名后面的 <code>[]</code> 告诉编译器，参数 <code>arr</code> 的类型是 <strong>int 数组</strong>，而不是像参数 <code>size</code> 那样的 <code>int</code>。下一章我们会介绍另一种指定数组参数的语法。数组参数 <code>arr</code> 的容量没有指定：<code>arr[]</code> 表示可以用任意容量的数组实参来调用这个函数。由于仅凭数组变量本身无法得知数组的大小或容量，接收数组的函数几乎总是还有第二个参数来指定数组的大小（上例中的 <code>size</code> 参数）。</p>
+<blockquote>
+<p>The <code>[]</code> after the parameter name tells the compiler that the type of the parameter <code>arr</code> is <strong>array of int</strong>, not <code>int</code> like the parameter <code>size</code>. In the next chapter, we show an alternate syntax for specifying array parameters. The capacity of the array parameter <code>arr</code> isn’t specified: <code>arr[]</code> means that this function can be called with an array argument of any capacity. Because there is no way to get an array’s size or capacity just from the array variable, functions that are passed arrays almost always also have a second parameter that specifies the array’s size (the <code>size</code> parameter in the preceding example).</p>
+</blockquote>
+<p>要调用带数组参数的函数，就把<strong>数组名</strong>作为实参传入。下面这段 C 代码展示了调用 <code>print_array</code> 函数的例子：</p>
+<blockquote>
+<p>To call a function that has an array parameter, pass <strong>the name of the array</strong> as the argument. Here is a C code snippet with example calls to the <code>print_array</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">int some[5], more[10], i;</span><br><span class="line"></span><br><span class="line">for (i = 0; i &lt; 5; i++) &#123;  // initialize the first 5 elements of both arrays</span><br><span class="line">    some[i] = i * i;</span><br><span class="line">    more[i] = some[i];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">for (i = 5; i &lt; 10; i++) &#123; // initialize the last 5 elements of &quot;more&quot; array</span><br><span class="line">    more[i] = more[i-1] + more[i-2];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">print_array(some, 5);    // prints all 5 values of &quot;some&quot;</span><br><span class="line">print_array(more, 10);   // prints all 10 values of &quot;more&quot;</span><br><span class="line">print_array(more, 8);    // prints just the first 8 values of &quot;more&quot;</span><br></pre></td></tr></table></figure>
+
+<p>在 C 中，数组变量的名字等价于数组的<strong>基地址</strong>（base address，即第 0 个元素所在的内存位置）。由于 C 的函数调用采用<em>按值传递</em>的语义，把数组传给函数时，数组的各个元素<em>并不会</em>被逐个传给函数。换句话说，函数并没有得到每个数组元素的副本，而是由数组参数得到<em>数组基地址的值</em>。这一行为意味着，当函数修改作为参数传入的数组的元素时，这些修改在函数返回后<em>会</em>保留下来。例如，看看下面这段 C 程序：</p>
+<blockquote>
+<p>In C, the name of the array variable is equivalent to the <strong>base address</strong> of the array (that is, the memory location of its 0th element). Due to C’s <em>pass by value</em> function call semantics, when you pass an array to a function, each element of the array is <em>not</em> individually passed to the function. In other words, the function isn’t receiving a copy of each array element. Instead, an array parameter gets the <em>value of the array’s base address</em>. This behavior implies that when a function modifies the elements of an array that was passed as a parameter, the changes <em>will</em> persist when the function returns. For example, consider this C program snippet:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">void test(int a[], int size) &#123;</span><br><span class="line">    if (size &gt; 3) &#123;</span><br><span class="line">        a[3] = 8;</span><br><span class="line">    &#125;</span><br><span class="line">    size = 2; // changing parameter does NOT change argument</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int arr[5], n = 5, i;</span><br><span class="line"></span><br><span class="line">    for (i = 0; i &lt; n; i++) &#123;</span><br><span class="line">        arr[i] = i;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    printf(&quot;%d %d&quot;, arr[3], n);  // prints: 3 5</span><br><span class="line"></span><br><span class="line">    test(arr, n);</span><br><span class="line">    printf(&quot;%d %d&quot;, arr[3], n);  // prints: 8 5</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>main</code> 中对 <code>test</code> 函数的调用传入了实参 <code>arr</code>，它的值是 <code>arr</code> 数组在内存中的基地址。test 函数中的参数 <code>a</code> 得到这个基地址值的一份副本。换句话说，参数 <code>a</code> <em>与实参 <code>arr</code> 指向同一组数组存储位置</em>。因此，当 test 函数修改 <code>a</code> 数组中存储的某个值（<code>a[3] = 8</code>）时，会影响实参数组中的对应位置（<code>arr[3]</code> 现在是 8）。原因在于 <code>a</code> 的值是 <code>arr</code> 的基地址，而 <code>arr</code> 的值也是 <code>arr</code> 的基地址，所以 <code>a</code> 和 <code>arr</code> 指的是同一个数组（内存中同一组存储位置）！<a href="1.5-arrays_strings.html">图 1</a> 展示了执行到 test 函数即将返回时的栈内容。</p>
+<blockquote>
+<p>The call in <code>main</code> to the <code>test</code> function is passed the argument <code>arr</code>, whose value is the base address of the <code>arr</code> array in memory. The parameter <code>a</code> in the test function gets a copy of this base address value. In other words, parameter <code>a</code> <em>refers to the same array storage locations as its argument</em>, <code>arr</code>. As a result, when the test function changes a value stored in the <code>a</code> array (<code>a[3] = 8</code>), it affects the corresponding position in the argument array (<code>arr[3]</code> is now 8). The reason is that the value of <code>a</code> is the base address of <code>arr</code>, and the value of <code>arr</code> is the base address of <code>arr</code>, so both <code>a</code> and <code>arr</code> refer to the same array (the same storage locations in memory)! <a href="1.5-arrays_strings.html">Figure 1</a> shows the stack contents at the point in the execution just before the test function returns.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C1-C_intro/images/arraystack.png" alt="A stack with two frames: main at the bottom and test on the top. main has two variables, an integer n (5) and an array storing values 0, 1, 2, 8, and 4. Test also has two values, an integer size (2) and an array parameter arr that stores the base memory address of the array in main’s stack frame."></p>
+<p><strong>图 1.</strong> 带数组参数的函数的栈内容</p>
+<p><em>Figure 1. The stack contents for a function with an array parameter</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>栈中有两个帧：<code>main</code> 在下，<code>test</code> 在上。<code>main</code> 有两个变量：整数 n（5）和一个存放 0、1、2、8、4 的数组。<code>test</code> 也有两个变量：整数 size（2）和数组参数（图的 alt 文字写作 arr，对应代码中的参数 <code>a</code>），它存放的是 <code>main</code> 栈帧中那个数组的基地址。</p>
+</div>
+<p>参数 <code>a</code> 得到的是数组实参 <code>arr</code> 的基地址值，这意味着两者指向内存中同一组数组存储位置。我们用从 <code>a</code> 指向 <code>arr</code> 的箭头来表示这一点。被 <code>test</code> 函数修改过的值以高亮显示。修改参数 <code>size</code> 的值<em>不会</em>改变其对应实参 <code>n</code> 的值，但修改 <code>a</code> 所指向的某个元素的值（例如 <code>a[3] = 8</code>）确实会影响 <code>arr</code> 中对应位置的值。</p>
+<blockquote>
+<p>Parameter <code>a</code> is passed the value of the base address of the array argument <code>arr</code>, which means they both refer to the same set of array storage locations in memory. We indicate this with the arrow from <code>a</code> to <code>arr</code>. Values that get modified by the function <code>test</code> are highlighted. Changing the value of the parameter <code>size</code> does <em>not</em> change the value of its corresponding argument <code>n</code>, but changing the value of one of the elements referred to by <code>a</code> (for example, <code>a[3] = 8</code>) does affect the value of the corresponding position in <code>arr</code>.</p>
+</blockquote>
+<h3 id="1-5-4-字符串与-C-字符串库简介"><a href="#1-5-4-字符串与-C-字符串库简介" class="headerlink" title="1.5.4. 字符串与 C 字符串库简介"></a>1.5.4. 字符串与 C 字符串库简介</h3><p><em>1.5.4. Introduction to Strings and the C String Library</em></p>
+<p>Python 实现了字符串类型，并提供了丰富的字符串操作接口，但 C 中没有对应的字符串类型。C 的字符串是用 <code>char</code> 值的数组实现的。并非每个字符数组都被用作 C 字符串，但每个 C 字符串都是一个字符数组。</p>
+<blockquote>
+<p>Python implements a string type and provides a rich interface for using strings, but there is no corresponding string type in C. Instead, strings are implemented as arrays of <code>char</code> values. Not every character array is used as a C string, but every C string is a character array.</p>
+</blockquote>
+<p>回想一下，C 中定义的数组可能比程序最终用到的更大。例如，我们在前面<a href="1.5-arrays_strings.html">「访问数组的方法」</a>一节中看到，可以声明一个大小为 10 的数组，却只用前六个位置。这一点对字符串有重要影响：我们不能假定字符串的长度等于存放它的数组的长度。因此，C 中的字符串必须以一个特殊的字符值——<strong>空字符</strong>（null character，<code>&#39;\0&#39;</code>）——结尾，来标示字符串的结束。</p>
+<blockquote>
+<p>Recall that arrays in C might be defined with a larger size than a program ultimately uses. For example, we saw earlier in the section <a href="1.5-arrays_strings.html">“Array Access Methods”</a> that we might declare an array of size 10 but only use the first six positions. This behavior has important implications for strings: we can’t assume that a string’s length is equal to that of the array that stores it. For this reason, strings in C must end with a special character value, the <strong>null character</strong> (<code>&#39;\0&#39;</code>), to indicate the end of the string.</p>
+</blockquote>
+<p>以空字符结尾的字符串称为<strong>以空字符结尾的</strong>（null-terminated）字符串。虽然 C 中的所有字符串都<em>应当</em>以空字符结尾，但没有正确处理空字符是 C 新手常见的错误来源。使用字符串时要记住，字符数组声明的容量必须足以存放字符串中的每个字符，再加上空字符（<code>&#39;\0&#39;</code>）。例如，要存放字符串 <code>&quot;hi&quot;</code>，至少需要一个含三个 char 的数组（一个存 <code>&#39;h&#39;</code>，一个存 <code>&#39;i&#39;</code>，一个存 <code>&#39;\0&#39;</code>）。</p>
+<blockquote>
+<p>Strings that end with a null character are said to be <strong>null-terminated</strong>. Although all strings in C <em>should</em> be null-terminated, failing to properly account for null characters is a common source of errors for novice C programmers. When using strings, it’s important to keep in mind that your character arrays must be declared with enough capacity to store each character value in the string plus the null character (<code>&#39;\0&#39;</code>). For example, to store the string <code>&quot;hi&quot;</code>, you need an array of at least three chars (one to store <code>&#39;h&#39;</code>, one to store <code>&#39;i&#39;</code>, and one to store <code>&#39;\0&#39;</code>).</p>
+</blockquote>
+<p>由于字符串很常用，C 提供了一个字符串库，其中包含操作字符串的函数。使用这些字符串库函数的程序需要包含 <code>string.h</code> 头文件。</p>
+<blockquote>
+<p>Because strings are commonly used, C provides a string library that contains functions for manipulating strings. Programs that use these string library functions need to include the <code>string.h</code> header.</p>
+</blockquote>
+<p>用 <code>printf</code> 打印字符串的值时，在格式字符串中使用 <code>%s</code> 占位符。<code>printf</code> 函数会打印数组实参中的所有字符，直到遇到 <code>&#39;\0&#39;</code> 字符为止。类似地，字符串库函数通常要么通过查找 <code>&#39;\0&#39;</code> 字符来定位字符串的末尾，要么在它们修改的字符串末尾加上一个 <code>&#39;\0&#39;</code> 字符。</p>
+<blockquote>
+<p>When printing the value of a string with <code>printf</code>, use the <code>%s</code> placeholder in the format string. The <code>printf</code> function will print all the characters in the array argument until it encounters the <code>&#39;\0&#39;</code> character. Similarly, string library functions often either locate the end of a string by searching for the <code>&#39;\0&#39;</code> character or add a <code>&#39;\0&#39;</code> character to the end of any string that they modify.</p>
+</blockquote>
+<p>下面是一个使用字符串和字符串库函数的示例程序：</p>
+<blockquote>
+<p>Here’s an example program that uses strings and string library functions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;string.h&gt;   // include the C string library</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    char str1[10];</span><br><span class="line">    char str2[10];</span><br><span class="line">    int len;</span><br><span class="line"></span><br><span class="line">    str1[0] = &#x27;h&#x27;;</span><br><span class="line">    str1[1] = &#x27;i&#x27;;</span><br><span class="line">    str1[2] = &#x27;\0&#x27;;</span><br><span class="line"></span><br><span class="line">    len = strlen(str1);</span><br><span class="line"></span><br><span class="line">    printf(&quot;%s %d\n&quot;, str1, len);  // prints: hi 2</span><br><span class="line"></span><br><span class="line">    strcpy(str2, str1);     // copies the contents of str1 to str2</span><br><span class="line">    printf(&quot;%s\n&quot;, str2);   // prints:  hi</span><br><span class="line"></span><br><span class="line">    strcpy(str2, &quot;hello&quot;);  // copy the string &quot;hello&quot; to str2</span><br><span class="line">    len = strlen(str2);</span><br><span class="line">    printf(&quot;%s has %d chars\n&quot;, str2, len);   // prints: hello has 5 chars</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C 字符串库中的 <code>strlen</code> 函数返回其字符串参数中的字符个数。字符串结尾的空字符不计入字符串长度，所以 <code>strlen(str1)</code> 的调用返回 2（字符串 <code>&quot;hi&quot;</code> 的长度）。<code>strcpy</code> 函数从源字符串（第二个参数）向目标字符串（第一个参数）一次复制一个字符，直到遇到源字符串中的空字符为止。</p>
+<blockquote>
+<p>The <code>strlen</code> function in the C string library returns the number of characters in its string argument. A string’s terminating null character doesn’t count as part of the string’s length, so the call to <code>strlen(str1)</code> returns 2 (the length of the string <code>&quot;hi&quot;</code>). The <code>strcpy</code> function copies one character at a time from a source string (the second parameter) to a destination string (the first parameter) until it reaches a null character in the source.</p>
+</blockquote>
+<p>注意，大多数 C 字符串库函数都要求调用者传入容量足够的字符数组，以便函数完成工作。例如，你不应该用一个装不下源字符串的目标字符串去调用 <code>strcpy</code>，那样做会导致程序出现未定义行为！</p>
+<blockquote>
+<p>Note that most C string library functions expect the call to pass in a character array that has enough capacity for the function to perform its job. For example, you wouldn’t want to call <code>strcpy</code> with a destination string that isn’t large enough to contain the source; doing so will lead to undefined behavior in your program!</p>
+</blockquote>
+<p>C 字符串库函数还要求传给它们的字符串值格式正确，即以 <code>&#39;\0&#39;</code> 字符结尾。作为 C 程序员，你有责任确保传给 C 库函数处理的是有效的字符串。因此，在上例对 <code>strcpy</code> 的调用中，如果源字符串（<code>str1</code>）没有被初始化为以 <code>&#39;\0&#39;</code> 字符结尾，<code>strcpy</code> 就会越过 <code>str1</code> 数组的边界继续复制，导致可能引起崩溃的未定义行为。</p>
+<blockquote>
+<p>C string library functions also require that string values passed to them are correctly formed, with a terminating <code>&#39;\0&#39;</code> character. It’s up to you as the C programmer to ensure that you pass in valid strings for C library functions to manipulate. Thus, in the call to <code>strcpy</code> in the preceding example, if the source string (<code>str1</code>) was not initialized to have a terminating <code>&#39;\0&#39;</code> character, <code>strcpy</code> would continue beyond the end of the <code>str1</code> array’s bounds, leading to undefined behavior that could cause it to crash.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示</p><p>上面的例子安全地使用了 <code>strcpy</code> 函数。但一般来说，<code>strcpy</code> 存在安全风险，因为它假定目标空间大到足以存放整个字符串，而实际情况未必如此（例如字符串来自用户输入时）。</p>
+<p>我们现在先介绍 <code>strcpy</code>，是为了让字符串的入门更简单，在 <a href="../C2-C_depth/2.6-strings.html">2.6 节</a>中我们会介绍更安全的替代方法。</p>
+<blockquote>
+<p>The previous example uses the <code>strcpy</code> function safely. In general, though, <code>strcpy</code> poses a security risk because it assumes that its destination is large enough to store the entire string, which may not always be the case (for example, if the string comes from user input).</p>
+<p>We chose to show <code>strcpy</code> now to simplify the introduction to strings, but we illustrate safer alternatives in <a href="../C2-C_depth/2.6-strings.html">Section 2.6</a>.</p>
+</blockquote>
+</div>
+<p>下一章我们会更详细地讨论 <a href="../C2-C_depth/2.6-strings.html">C 字符串和 C 字符串库</a>。</p>
+<blockquote>
+<p>In the next chapter, we discuss <a href="../C2-C_depth/2.6-strings.html">C strings and the C string library</a> in more detail.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C1-C_intro/1.4-functions.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">1.4. 函数</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C1-C_intro/1.6-structs.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">1.6. 结构体</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-1-%E6%95%B0%E7%BB%84%E7%AE%80%E4%BB%8B"><span class="toc-text">1.5.1. 数组简介</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-2-%E8%AE%BF%E9%97%AE%E6%95%B0%E7%BB%84%E7%9A%84%E6%96%B9%E6%B3%95"><span class="toc-text">1.5.2. 访问数组的方法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-3-%E6%95%B0%E7%BB%84%E4%B8%8E%E5%87%BD%E6%95%B0"><span class="toc-text">1.5.3. 数组与函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#1-5-4-%E5%AD%97%E7%AC%A6%E4%B8%B2%E4%B8%8E-C-%E5%AD%97%E7%AC%A6%E4%B8%B2%E5%BA%93%E7%AE%80%E4%BB%8B"><span class="toc-text">1.5.4. 字符串与 C 字符串库简介</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

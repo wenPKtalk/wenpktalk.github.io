@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>2.9.5. C 库：使用、编译与链接 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;advanced_libraries.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.9.5. C Libraries:">
+<meta property="og:type" content="website">
+<meta property="og:title" content="2.9.5. C 库：使用、编译与链接 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C2-C_depth&#x2F;advanced_libraries.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  2.9.5. C Libraries:">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.965Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.965Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html" class="current" aria-current="page">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>2. 深入 C 语言编程</span>
+      </nav>
+      <span class="book-position">第 30 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">2.9.5. C 库：使用、编译与链接</h1>
+  
+  
+    <p class="article-meta"><span>约 26 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C2-C_depth/advanced_libraries.html">https://diveintosystems.org/book/C2-C_depth/advanced_libraries.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>2.9.5. C Libraries: Using, Compiling, and Linking</em></p>
+<p><strong>库</strong>（library）实现了一组可供其他程序使用的函数和定义。C 库由两部分组成：</p>
+<blockquote>
+<p>A <strong>library</strong> implements a collection of functions and definitions that can be used by other programs. A C library consists of two parts:</p>
+</blockquote>
+<ol>
+<li>库的<em>应用程序编程接口</em>（API），定义在一个或多个头文件（<code>.h</code> 文件）中，打算使用该库的 C 源文件必须包含这些头文件。头文件定义了库向其用户导出的内容。这些定义通常包括库函数的原型，也可能包括类型、常量或全局变量的声明。</li>
+</ol>
+<blockquote>
+<ol>
+<li>The <em>application programming interface</em> (API) to the library, which gets defined in one or more header files (<code>.h</code> files) that must be included in C source code files that plan to use the library. The headers define what the library exports to its users. These definitions usually include library function prototypes, and they may also include type, constant, or global variable declarations.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>库功能的<em>实现</em>，通常以预编译的二进制形式提供给程序，由 <code>gcc</code> <strong>链接</strong>（加入）到它生成的二进制可执行文件中。预编译的库代码可能是一个归档文件（<code>libsomelib.a</code>），其中包含若干 <code>.o</code> 文件，可以在编译时静态链接到可执行文件中；也可能是一个共享目标文件（<code>libsomelib.so</code>），可以在运行时动态链接到正在运行的程序中。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The <em>implementation</em> of the library’s functionality, often made available to programs in a precompiled binary format that gets <strong>linked</strong> (added) into the binary executable created by <code>gcc</code>. Precompiled library code might be in an archive file (<code>libsomelib.a</code>) containing several <code>.o</code> files that can be statically linked into the executable file at compile time. Alternatively, it may consist of a shared object file (<code>libsomelib.so</code>) that can be dynamically linked at runtime into a running program.</li>
+</ol>
+</blockquote>
+<p>例如，C 字符串库实现了一组操作 C 字符串的函数。<code>string.h</code> 头文件定义了它的接口，所以任何想使用字符串库函数的程序都必须 <code>#include &lt;string.h&gt;</code>。C 字符串库的实现是更大的标准 C 库（<code>libc</code>）的一部分，<code>gcc</code> 编译器会自动把 <code>libc</code> 链接到它生成的每个可执行文件中。</p>
+<blockquote>
+<p>For example, the C string library implements a set of functions to manipulate C strings. The <code>string.h</code> header file defines its interface, so any program that wants to use string library functions must <code>#include &lt;string.h&gt;</code>. The implementation of the C string library is part of the larger standard C library (<code>libc</code>) that the <code>gcc</code> compiler automatically links into every executable file it creates.</p>
+</blockquote>
+<p>库的实现由一个或多个模块（<code>.c</code> 文件）组成，还可能包含库实现内部使用的头文件；内部头文件不属于库的 API，但它们是设计良好的模块化库代码的一部分。库的 C 源代码实现通常不会提供给库的用户，而是以预编译的二进制形式提供。这些二进制格式不是可执行程序（不能单独运行），但它们提供了可执行代码，可以在编译时由 <code>gcc</code> <strong>链接</strong>（加入）到可执行文件中。</p>
+<blockquote>
+<p>A library’s implementation consists of one or more modules (<code>.c</code> files), and may additionally include header files that are internal to the library implementation; internal header files are not part of the library’s API but are part of well-designed, modular library code. Often the C source code implementation of a library is not exported to the user of the library. Instead, the library is made available in a precompiled binary form. These binary formats are not executable programs (they cannot be run on their own), but they provide executable code that can be <strong>linked</strong> into (added into) an executable file by <code>gcc</code> at compilation time.</p>
+</blockquote>
+<p>C 程序员可以使用的库非常多。例如，POSIX 线程库（在<a href="../C14-SharedMemory/14.0-index.html">第 10 章</a>中讨论）使 C 程序可以多线程运行。C 程序员也可以实现和使用自己的库（在<a href="2.9.6-advanced_writing_libraries.html">下一节</a>中讨论）。大型 C 程序往往会用到许多 C 库，其中一些由 <code>gcc</code> 隐式链接，另一些则需要用 <code>gcc</code> 的 <code>-l</code> 命令行选项显式链接。</p>
+<blockquote>
+<p>There are numerous libraries available for C programmers to use. For example, the POSIX thread library (discussed in <a href="../C14-SharedMemory/14.0-index.html">Chapter 10</a>) enables multithreaded C programs. C programmers can also implement and use their own libraries (discussed in the <a href="2.9.6-advanced_writing_libraries.html">next section</a>). Large C programs tend to use many C libraries, some of which <code>gcc</code> links implicitly, whereas others require explicit linking with the <code>-l</code> command line option to <code>gcc</code>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>原文的「第 10 章」应为第 14 章（共享内存并行），链接本身指向的也是第 14 章。</p>
+</div>
+<p>标准 C 库通常不需要用 <code>-l</code> 选项显式链接，但其他库需要。库函数的文档通常会说明编译时是否需要显式链接该库。例如，POSIX 线程库（<code>pthread</code>）和 <code>readline</code> 库需要在 <code>gcc</code> 命令行中显式链接：</p>
+<blockquote>
+<p>Standard C libraries normally do not need to be explicitly linked in with the <code>-l</code> option, but other libraries do. The documentation for a library function often specifies whether the library needs to be explicitly linked in when compiling. For example, the POSIX threads library (<code>pthread</code>) and the <code>readline</code> library require explicit linking on the <code>gcc</code> command line:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o myprog myprog.c -pthread -lreadline</span><br></pre></td></tr></table></figure>
+
+<p>注意，链接 POSIX 线程库是个特例，不使用 <code>-l</code> 前缀。不过，大多数库都是在 <code>gcc</code> 命令行中用 <code>-l</code> 语法显式链接到可执行文件中的。还要注意，<code>-l</code> 参数中不应写出库文件的完整文件名：库文件的名字类似 <code>libreadline.so</code> 或 <code>libreadline.a</code>，但文件名中的 <code>lib</code> 前缀和 <code>.so</code> 或 <code>.a</code> 后缀都不写。实际的库文件名可能还包含版本号（例如 <code>libreadline.so.8.0</code>），这些版本号也不写在 <code>-l</code> 命令行选项中（<code>-lreadline</code>）。由于不强制用户指定（甚至不需要知道）要链接的库文件的确切名称和位置，<code>gcc</code> 可以自由地在用户的库路径中查找库的最新版本。这也让编译器在一个库同时有共享目标（<code>.so</code>）版本和归档（<code>.a</code>）版本时，可以选择动态链接。如果用户想静态链接库，可以在 <code>gcc</code> 命令行中显式指定静态链接。<code>--static</code> 选项是请求静态链接的一种方法：</p>
+<blockquote>
+<p>Note that linking the POSIX thread library is a special case that does not include the <code>-l</code> prefix. However, most libraries are explicitly linked into the executable using the <code>-l</code> syntax on the <code>gcc</code> command line. Also note that the full name of the library file should not be included in the <code>-l</code> argument to <code>gcc</code>; the library files are named something like <code>libreadline.so</code> or <code>libreadline.a</code>, but the <code>lib</code> prefix and <code>.so</code> or <code>.a</code> suffix of the filenames are not included. The actual library filename may also contain version numbers (e.g. <code>libreadline.so.8.0</code>), which are also not included in the <code>-l</code> command line option (<code>-lreadline</code>). By not forcing the user to specify (or even know) the exact name and location of the library files to link in, <code>gcc</code> is free to find the most recent version of a library in a user’s library path. It also allows the compiler to choose to dynamically link when both a shared object (<code>.so</code>) and an archive (<code>.a</code>) version of a library are available. If users want to statically link libraries, then they can explicitly specify static linking in the <code>gcc</code> command line. The <code>--static</code> option provides one method for requesting static linking:</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 不再需要 -lpthread</p><p>glibc 2.34（2021 年 8 月）把原先位于 libpthread、libdl、libutil、libanl 中的全部功能并入了 libc，新程序不必再链接 <code>-lpthread</code>、<code>-ldl</code> 等；为了兼容，这些库保留了空的静态归档文件，旧的链接选项照样可用。编译多线程程序时写 <code>-pthread</code> 仍然是好习惯（它同时会设置必要的预处理宏）。<a target="_blank" rel="noopener" href="https://lists.gnu.org/archive/html/info-gnu/2021-08/msg00001.html">GNU C Library 2.34 发布公告</a></p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o myprog myprog.c --static -pthread -lreadline</span><br></pre></td></tr></table></figure>
+
+<h4 id="编译步骤"><a href="#编译步骤" class="headerlink" title="编译步骤"></a>编译步骤</h4><p><em>Compilation Steps</em></p>
+<p>刻画 C 程序的编译步骤，有助于说明库代码是如何被链接到可执行二进制文件中的。我们先介绍编译步骤，再（结合例子）讨论编译使用库的程序时可能出现的各类错误。</p>
+<blockquote>
+<p>Characterizing C’s program compilation steps will help to illustrate how library code gets linked into an executable binary file. We first present the compilation steps and then discuss (with examples) different types of errors that can occur when compiling programs that use libraries.</p>
+</blockquote>
+<p>C 编译器通过四个不同的步骤（外加一个在运行时进行的第五步），把 C 源文件（例如 <code>myprog.c</code>）翻译成可执行二进制文件（例如 <code>a.out</code>）。</p>
+<blockquote>
+<p>The C compiler translates a C source file (e.g., <code>myprog.c</code>) into an executable binary file (e.g., <code>a.out</code>) in four distinct steps (plus a fifth step that occurs at runtime).</p>
+</blockquote>
+<ol>
+<li><p>首先运行<strong>预编译步骤</strong>（precompiler step），展开<strong>预处理指令</strong>：即 C 程序中出现的 <code>#</code> 指令，例如 <code>#define</code> 和 <code>#include</code>。这一步的编译错误包括预处理指令中的语法错误，或者 <code>gcc</code> 找不到与 <code>#include</code> 指令对应的头文件。要查看预编译步骤的中间结果，可以给 <code>gcc</code> 传入 <code>-E</code> 标志（输出可以重定向到一个文件，用文本编辑器查看）：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -E  myprog.c</span><br><span class="line">$ gcc -E  myprog.c  &gt; out</span><br><span class="line">$ vim out</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol>
+<li><p>The <strong>precompiler step</strong> runs first and expands <strong>preprocessor directives</strong>: the <code>#</code> directives that appear in the C program, such as <code>#define</code> and <code>#include</code>. Compilation errors at this step include syntax errors in preprocessor directives or <code>gcc</code> not finding header files associated with <code>#include</code> directives. To view the intermediate results of the precompiler step, pass the <code>-E</code> flag to <code>gcc</code> (the output can be redirected to a file that can be viewed by a text editor):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -E  myprog.c</span><br><span class="line">$ gcc -E  myprog.c  &gt; out</span><br><span class="line">$ vim out</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="2">
+<li><p>接下来运行<strong>编译步骤</strong>（compile step），它完成编译任务的主体部分：把 C 程序源代码（<code>myprog.c</code>）翻译成特定于机器的汇编代码（<code>myprog.s</code>）。汇编代码是计算机可以执行的二进制机器码指令的人类可读形式。这一步的编译错误包括 C 语言语法错误、未定义符号警告，以及缺少定义和函数原型导致的错误。要查看编译步骤的中间结果，可以给 <code>gcc</code> 传入 <code>-S</code> 标志（这个选项会生成一个名为 <code>myprog.s</code> 的文本文件，内容是 <code>myprog.c</code> 翻译成的汇编代码，可以用文本编辑器查看）：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -S  myprog.c</span><br><span class="line">$ vim myprog.s</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><p>The <strong>compile step</strong> runs next and does the bulk of the compilation task. It translates the C program source code (<code>myprog.c</code>) to machine-specific assembly code (<code>myprog.s</code>). Assembly code is a human-readable form of the binary machine code instructions that a computer can execute. Compilation errors at this step include C language syntax errors, undefined symbol warnings, and errors from missing definitions and function prototypes. To view the intermediate results of the compile step, pass the <code>-S</code> flag to <code>gcc</code> (this option creates a text file named <code>myprog.s</code> with the assembly translation of <code>myprog.c</code>, which can be viewed in a text editor):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -S  myprog.c</span><br><span class="line">$ vim myprog.s</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="3">
+<li><p><strong>汇编步骤</strong>（assembly step）把汇编代码转换为可重定位的二进制目标代码（<code>myprog.o</code>）。生成的目标文件包含机器码指令，但它不是一个可以单独运行的完整可执行程序。Unix 和 Linux 系统上的 <code>gcc</code> 编译器生成一种名为 <a target="_blank" rel="noopener" href="https://wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a>（Executable and Linkable Format，可执行与可链接格式）的特定格式的二进制文件。要在这一步之后停止编译，可以给 <code>gcc</code> 传入 <code>-c</code> 标志（这会生成一个名为 <code>myprog.o</code> 的文件）。二进制文件（例如 <code>a.out</code> 和 <code>.o</code> 文件）可以用 <code>objdump</code> 或类似的二进制文件查看工具来查看：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -c  myprog.c</span><br><span class="line"></span><br><span class="line"># disassemble functions in myprog.o with objdump:</span><br><span class="line">$ objdump -d myprog.o</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="3">
+<li><p>The <strong>assembly step</strong> converts the assembly code into relocatable binary object code (<code>myprog.o</code>). The resulting object file contains machine code instructions, but it is not a complete executable program that can run on its own. The <code>gcc</code> compiler on Unix and Linux systems produces binary files in a specific format called <a target="_blank" rel="noopener" href="https://wikipedia.org/wiki/Executable_and_Linkable_Format">ELF</a> (Executable and Linkable Format). To stop compilation after this step, pass the <code>-c</code> flag to <code>gcc</code> (this produces a file named <code>myprog.o</code>). Binary files (e.g. <code>a.out</code> and <code>.o</code> files) can be viewed using <code>objdump</code> or similar tools for displaying binary files:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -c  myprog.c</span><br><span class="line"></span><br><span class="line"># disassemble functions in myprog.o with objdump:</span><br><span class="line">$ objdump -d myprog.o</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<ol start="4">
+<li><p>最后运行<strong>链接编辑步骤</strong>（link editing step），它用可重定位二进制文件（<code>.o</code>）和库（<code>.a</code> 或 <code>.so</code>）生成单个可执行文件（<code>a.out</code>）。在这一步中，链接器会核实 <code>.o</code> 文件中对名字（符号）的所有引用，都能在其他 <code>.o</code>、<code>.a</code> 或 <code>.so</code> 文件中找到。例如，链接器会在标准 C 库（<code>libc.so</code>）中找到 <code>printf</code> 函数。如果链接器找不到某个符号的定义，这一步就会失败，并报错说某个符号未定义。不带部分编译标志运行 <code>gcc</code>，会执行全部四个步骤，把 C 源代码文件（<code>myprog.c</code>）编译成可以运行的可执行二进制文件（<code>a.out</code>）：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gcc myprog.c</span><br><span class="line">$ ./a.out</span><br><span class="line"></span><br><span class="line"># disassemble functions in a.out with objdump:</span><br><span class="line">$ objdump -d a.out</span><br></pre></td></tr></table></figure>
+
+<p> 如果二进制可执行文件（<code>a.out</code>）静态链接了库代码（来自 <code>.a</code> 库文件），那么 <code>gcc</code> 会把 <code>.a</code> 文件中库函数的副本嵌入到生成的 <code>a.out</code> 文件中。应用程序对库函数的所有调用，都被<strong>绑定</strong>（bound）到 <code>a.out</code> 文件中库函数副本所在的位置。绑定是把一个名字与程序内存中的一个位置关联起来。例如，绑定对名为 <code>gofish</code> 的库函数的调用，就是把对这个函数名的使用替换为该函数在内存中的地址（后面的章节会更详细地讨论<a href="../C13-OS/13.3-vm.html">内存地址</a>）。</p>
+<p> 但如果 <code>a.out</code> 是通过动态链接库（来自共享目标库 <code>.so</code> 文件）生成的，那么 <code>a.out</code> 中就不包含这些库的库函数代码副本，而是包含一些信息，说明运行 <code>a.out</code> 需要哪些动态链接库。这样的可执行文件在运行时还需要一个额外的链接步骤。</p>
+</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li><p>The <strong>link editing step</strong> runs last and creates a single executable file (<code>a.out</code>) from relocatable binaries (<code>.o</code>) and libraries (<code>.a</code> or <code>.so</code>). In this step, the linker verifies that any references to names (symbols) in a <code>.o</code> file are present in other <code>.o</code>, <code>.a</code>, or <code>.so</code> files. For example, the linker will find the <code>printf</code> function in the standard C library (<code>libc.so</code>). If the linker cannot find the definition of a symbol, this step fails with an error stating that a symbol is undefined. Running <code>gcc</code> without flags for partial compilation performs all four steps of compiling a C source code file (<code>myprog.c</code>) to an executable binary file (<code>a.out</code>) that can be run:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gcc myprog.c</span><br><span class="line">$ ./a.out</span><br><span class="line"></span><br><span class="line"># disassemble functions in a.out with objdump:</span><br><span class="line">$ objdump -d a.out</span><br></pre></td></tr></table></figure>
+
+<p>If the binary executable file (<code>a.out</code>) statically links in library code (from <code>.a</code> library files), then <code>gcc</code> embeds copies of library functions from the <code>.a</code> file in the resulting <code>a.out</code> file. All calls to library functions by the application are <strong>bound</strong> to the locations in the <code>a.out</code> file to which the library function is copied. Binding associates a name with a location in the program memory. For example, binding a call to a library function named <code>gofish</code> means replacing the use of the function name with the address in memory of the function (in later chapters we discuss <a href="../C13-OS/13.3-vm.html">memory addresses</a> in more detail.)</p>
+<p>If, however, the <code>a.out</code> was created by dynamically linking a library (from library shared object, <code>.so</code>, files), then <code>a.out</code> does not contain a copy of the library function code from these libraries. Instead, it contains information about which dynamically linked libraries are needed by the <code>a.out</code> file to run it. Such executables require an additional linking step at runtime.</p>
+</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li><p>如果 <code>a.out</code> 在链接编辑（第 4 步）时与共享目标文件链接，就需要<strong>运行时链接步骤</strong>（runtime linking step）。这种情况下，动态库代码（在 <code>.so</code> 文件中）必须在运行时加载并与正在运行的程序链接。这种在运行时加载和链接共享目标库的过程称为<strong>动态链接</strong>（dynamic linking）。当用户运行一个依赖共享目标的 <code>a.out</code> 可执行文件时，系统会在程序开始执行 <code>main</code> 函数之前完成动态链接。</p>
+<p> 编译器在链接编辑这一编译步骤（第 4 步）中，把共享目标依赖信息加入 <code>a.out</code> 文件。程序开始执行时，动态链接器检查共享目标依赖列表，找到这些共享目标文件并把它们加载到正在运行的程序中。然后，它更新 <code>a.out</code> 文件中的重定位表项，把程序对共享目标中符号的使用（例如对库函数的调用）绑定到运行时加载的 <code>.so</code> 文件中这些符号的位置。如果动态链接器找不到可执行文件所需的某个共享目标（<code>.so</code>）文件，运行时链接就会报错。</p>
+<p> <code>ldd</code> 工具可以列出可执行文件所依赖的共享目标：</p>
+ <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ldd a.out</span><br></pre></td></tr></table></figure>
+
+<p> <strong>GNU 调试器（GDB）</strong>可以检查正在运行的程序，显示在运行时加载和链接了哪些共享目标代码。我们会在<a href="../C3-C_debug/3.0-index.html">第 3 章</a>中介绍 GDB。不过，用于在运行时链接对动态链接库函数调用的过程查找表（Procedure Lookup Table，PLT），其检查细节超出了本教材的范围。</p>
+</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li><p>The <strong>runtime linking step</strong> is needed if <code>a.out</code> was linked with shared object files during link editing (step 4). In such cases, the dynamic library code (in <code>.so</code> files) must be loaded at runtime and linked with the running program. This runtime loading and linking of shared object libraries is called <strong>dynamic linking</strong>. When a user runs an <code>a.out</code> executable with shared object dependencies, the system performs dynamic linking before the program begins executing its <code>main</code> function.</p>
+<p>The compiler adds information about shared object dependencies into the <code>a.out</code> file during the link editing compilation step (step 4). When the program starts executing, the dynamic linker examines the list of shared object dependencies and finds and loads the shared object files into the running program. It then updates relocation table entries in the <code>a.out</code> file, binding the program’s use of symbols in shared objects (such as calls to library functions) to their locations in the <code>.so</code> file loaded at runtime. Runtime linking reports errors if the dynamic linker cannot find a shared object (<code>.so</code>) file needed by the executable.</p>
+<p>The <code>ldd</code> utility lists an executable file’s shared object dependencies:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ldd a.out</span><br></pre></td></tr></table></figure>
+
+<p>The <strong>GNU debugger (GDB)</strong> can examine a running program and show which shared object code is loaded and linked at runtime. We cover GDB in <a href="../C3-C_debug/3.0-index.html">Chapter 3</a>. However, the details of examining the Procedure Lookup Table (PLT), which is used for runtime linking of calls to dynamically linked library functions, is beyond the scope of this textbook.</p>
+</li>
+</ol>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p>
+<ul>
+<li>PLT 的正式名称是「过程链接表」（Procedure <em>Linkage</em> Table），原文写成了 Procedure <em>Lookup</em> Table。ELF 文件中的 <code>.plt</code> 节存放的就是它。<a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man5/elf.5.html">man7：elf(5)</a></li>
+<li><strong>在 Mac 上</strong>：macOS 的可执行文件格式是 Mach-O 而不是 ELF，动态库后缀是 <code>.dylib</code>，没有 <code>ldd</code> 命令，对应的是 <code>otool -L a.out</code>；运行时库搜索路径的环境变量是 <code>DYLD_LIBRARY_PATH</code>（下文的 <code>LD_LIBRARY_PATH</code> 在 macOS 上不起作用）。</li>
+</ul>
+</div>
+<p>关于编译各阶段以及查看不同阶段的工具的更多细节，请参见：<a target="_blank" rel="noopener" href="http://www.cs.swarthmore.edu/~newhall/unixhelp/compilecycle.html">编译阶段</a>。</p>
+<blockquote>
+<p>For more details about the phases of compilation and about tools for examining different phases, see: <a target="_blank" rel="noopener" href="http://www.cs.swarthmore.edu/~newhall/unixhelp/compilecycle.html">Compilation Phases</a>.</p>
+</blockquote>
+<h4 id="与编译和链接库相关的常见编译错误"><a href="#与编译和链接库相关的常见编译错误" class="headerlink" title="与编译和链接库相关的常见编译错误"></a>与编译和链接库相关的常见编译错误</h4><p><em>Common Compilation Errors Related to Compiling and Linking Libraries</em></p>
+<p>程序员忘记包含库的头文件或忘记显式链接库代码时，可能会出现几种编译和链接错误。认清与每种错误对应的 <code>gcc</code> 编译器错误或警告，有助于调试与使用 C 库相关的错误。</p>
+<blockquote>
+<p>Several compilation and linking errors can occur due to the programmer forgetting to include library header files or forgetting to explicitly link in library code. Identifying the <code>gcc</code> compiler error or warning associated with each of these errors will help in debugging errors related to using C libraries.</p>
+</blockquote>
+<p>来看下面这个 C 程序，它调用了 <code>examplelib</code> 库中的函数 <code>libraryfunc</code>，该库以共享目标文件 <code>libexamplelib.so</code> 的形式提供：</p>
+<blockquote>
+<p>Consider the following C program that makes a call to a function <code>libraryfunc</code> from the <code>examplelib</code> library, which is available as a shared object file, <code>libexamplelib.so</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;examplelib.h&gt;</span><br><span class="line"></span><br><span class="line">int main(int argc, char *argv[]) &#123;</span><br><span class="line">    int result;</span><br><span class="line">    result = libraryfunc(6, MAX);</span><br><span class="line">    printf(&quot;result is %d\n&quot;, result);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设头文件 <code>examplelib.h</code> 包含下面示例中的定义：</p>
+<blockquote>
+<p>Assume that the header file, <code>examplelib.h</code>, contains the definitions in the following example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#define MAX 10   // a constant exported by the library</span><br><span class="line"></span><br><span class="line">// a function exported by the library</span><br><span class="line">extern int libraryfunc(int x, int y);</span><br></pre></td></tr></table></figure>
+
+<p>函数原型前的 <code>extern</code> 前缀表示函数的定义来自另一个文件——它不在 <code>examplelib.h</code> 文件中，而是由库实现中的某个 <code>.c</code> 文件提供。</p>
+<blockquote>
+<p>The <code>extern</code> prefix to the function prototype means that the function’s definition comes from another file — it’s not in the <code>examplelib.h</code> file, but instead it’s provided by one of the <code>.c</code> files in the library’s implementation.</p>
+</blockquote>
+<h5 id="忘记包含头文件"><a href="#忘记包含头文件" class="headerlink" title="忘记包含头文件"></a>忘记包含头文件</h5><p><em>Forgetting to include a header file</em></p>
+<p>如果程序员忘了在程序中包含 <code>examplelib.h</code>，编译器就会针对程序中使用的、它不认识的库函数和常量给出警告和错误。例如，如果用户在没有 <code>#include &lt;examplelib.h&gt;</code> 的情况下编译程序，<code>gcc</code> 会产生如下输出：</p>
+<blockquote>
+<p>If the programmer forgets to include <code>examplelib.h</code> in their program, then the compiler produces warnings and errors about the program’s use of library functions and constants that it does not know about. For example, if the user compiles their program without <code>#include &lt;examplelib.h&gt;</code>, <code>gcc</code> will produce the following output:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"># &#x27;-g&#x27;: add debug information, &#x27;-c&#x27;: compile to .o</span><br><span class="line">gcc -g -c myprog.c</span><br><span class="line"></span><br><span class="line">myprog.c: In function main:</span><br><span class="line">myprog.c:8:12: warning: implicit declaration of function libraryfunc</span><br><span class="line">   result = libraryfunc(6, MAX);</span><br><span class="line">            ^~~~~~~~~~~</span><br><span class="line"></span><br><span class="line">myprog.c:8:27: error: MAX undeclared (first use in this function)</span><br><span class="line">   result = libraryfunc(6, MAX);</span><br><span class="line">                           ^~~</span><br></pre></td></tr></table></figure>
+
+<p>第一条编译器警告（<code>implicit declaration of function libraryfunc</code>）告诉程序员，编译器找不到 <code>libraryfunc</code> 函数的函数原型。这只是一条编译器警告，因为 <code>gcc</code> 会猜测该函数的返回类型是整数，并继续编译程序。然而，程序员<em>不应</em>忽视这类警告！它们表明程序在 <code>myprog.c</code> 文件中使用某个函数之前没有包含它的函数原型，这往往是因为没有包含含有该函数原型的头文件。</p>
+<blockquote>
+<p>The first compiler warning (<code>implicit declaration of function libraryfunc</code>) tells the programmer that the compiler cannot find a function prototype for the <code>libraryfunc</code> function. This is just a compiler warning because <code>gcc</code> will guess that the function’s return type is an integer and will continue compiling the program. However, programmers should <em>not</em> ignore warnings such as these! They indicate that the program isn’t including a function prototype before its use in the <code>myprog.c</code> file, which is often due to not including a header file that contains the function prototype.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 隐式函数声明现在是错误</p><p>原书说调用未声明的函数「只是一条警告」，这在新编译器上已不成立：C99 标准就已删除了隐式函数声明，GCC 14 起默认把它当作错误（<code>-Werror=implicit-function-declaration</code>），Clang 也是如此。译者在 macOS 上用 Apple Clang 编译书中的这种代码，得到的是 <code>error: call to undeclared function &#39;libraryfunc&#39;; ISO C99 and later do not support implicit function declarations</code>。<a target="_blank" rel="noopener" href="https://gcc.gnu.org/gcc-14/porting_to.html#implicit-function-declaration">GCC 14 移植说明</a></p>
+</div>
+<p>第二条编译器错误（<code>MAX undeclared (first use in this function)</code>）源于缺少常量定义。编译器无法猜测缺失常量的值，因此这一缺失的定义会导致错误。这类「undeclared」（未声明）消息通常表明，定义某个常量或全局变量的头文件缺失或没有被正确包含。</p>
+<blockquote>
+<p>The second compiler error (<code>MAX undeclared (first use in this function)</code>) follows from a missing constant definition. The compiler cannot guess at the value of the missing constant, so this missing definition fails with an error. This type of “undeclared” message often indicates that a header file defining a constant or global variable is missing or hasn’t been properly included.</p>
+</blockquote>
+<h5 id="忘记链接库"><a href="#忘记链接库" class="headerlink" title="忘记链接库"></a>忘记链接库</h5><p><em>Forgetting to link a library</em></p>
+<p>如果程序员包含了库的头文件（如前面的清单所示），却忘了在编译的链接编辑步骤（第 4 步）中显式链接该库，<code>gcc</code> 会用一条 <code>undefined reference</code>（未定义的引用）错误来指出这一点：</p>
+<blockquote>
+<p>If the programmer includes the library header file (as shown in the previous listing), but forgets to explicitly link in the library during the link editing step (step 4) of compilation, then <code>gcc</code> indicates this with an <code>undefined reference</code> error:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g myprog.c</span><br><span class="line"></span><br><span class="line">In function main:</span><br><span class="line">myprog.c:9: undefined reference to libraryfunc</span><br><span class="line">collect2: error: ld returned 1 exit status</span><br></pre></td></tr></table></figure>
+
+<p>这个错误来自编译器的链接器组件 <code>ld</code>。它表明链接器找不到 <code>myprog.c</code> 第 9 行调用的库函数 <code>libraryfunc</code> 的实现。<code>undefined reference</code> 错误表明需要把某个库显式链接到可执行文件中。在这个例子中，在 <code>gcc</code> 命令行中指定 <code>-lexamplelib</code> 就能修复这个错误：</p>
+<blockquote>
+<p>This error originates from <code>ld</code>, the linker component of the compiler. It indicates that the linker cannot find the implementation of the library function <code>libraryfunc</code> that gets called at line 9 in <code>myprog.c</code>. An <code>undefined reference</code> error indicates that a library needs to be explicitly linked into the executable. In this example, specifying <code>-lexamplelib</code> on the <code>gcc</code> command line will fix the error:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g myprog.c  -lexamplelib</span><br></pre></td></tr></table></figure>
+
+<h5 id="gcc-找不到头文件或库文件"><a href="#gcc-找不到头文件或库文件" class="headerlink" title="gcc 找不到头文件或库文件"></a>gcc 找不到头文件或库文件</h5><p><em>gcc can’t find header or library files</em></p>
+<p>如果库的头文件或实现文件不在 <code>gcc</code> 默认搜索的目录中，编译也会出错失败。例如，如果 <code>gcc</code> 找不到 <code>examplelib.h</code> 文件，它会给出这样的错误消息：</p>
+<blockquote>
+<p>Compilation will also fail with errors if a library’s header or implementation files are not present in the directories that <code>gcc</code> searches by default. For example, if <code>gcc</code> cannot find the <code>examplelib.h</code> file, it will produce an error message like this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -c myprog.c -lexamplelib</span><br><span class="line">myprog.c:1:10: fatal error: examplelib.h: No such file or directory</span><br><span class="line"> #include &lt;examplelib.h&gt;</span><br><span class="line">          ^~~~~~~</span><br><span class="line">compilation terminated.</span><br></pre></td></tr></table></figure>
+
+<p>如果链接器在编译的链接编辑步骤中找不到要链接的库的 <code>.a</code> 或 <code>.so</code> 版本，<code>gcc</code> 会以如下错误退出：</p>
+<blockquote>
+<p>If the linker cannot find a <code>.a</code> or <code>.so</code> version of the library to link in during the link editing step of compilation, <code>gcc</code> will exit with an error like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -c myprog.c -lexamplelib</span><br><span class="line">/usr/bin/ld: cannot find -lexamplelib</span><br><span class="line">collect2: error: ld returned 1 exit status</span><br></pre></td></tr></table></figure>
+
+<p>类似地，如果动态链接的可执行文件找不到某个共享目标文件（例如 <code>libexamplelib.so</code>），它在运行时会执行失败，并给出如下错误：</p>
+<blockquote>
+<p>Similarly, if a dynamically linked executable cannot locate a shared object file (e.g., <code>libexamplelib.so</code>), it will fail to execute at runtime with an error like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./a.out</span><br><span class="line">./a.out: error while loading shared libraries:</span><br><span class="line">        libexamplelib.so: cannot open shared object file: No such file or directory</span><br></pre></td></tr></table></figure>
+
+<p>要解决这类错误，程序员必须给 <code>gcc</code> 指定额外的选项，说明在哪里能找到库的文件。还可能需要修改 <code>LD_LIBRARY_PATH</code> 环境变量，让运行时链接器能找到库的 <code>.so</code> 文件。</p>
+<blockquote>
+<p>To resolve these types of errors, programmers must specify additional options to <code>gcc</code> to indicate where the library’s files can be found. They may also need to modify the <code>LD_LIBRARY_PATH</code> environment variable for the runtime linker to find a library’s <code>.so</code> file.</p>
+</blockquote>
+<h4 id="库路径与头文件包含路径"><a href="#库路径与头文件包含路径" class="headerlink" title="库路径与头文件包含路径"></a>库路径与头文件包含路径</h4><p><em>Library and Include Paths</em></p>
+<p>编译器会自动在标准目录位置中搜索头文件和库文件。例如，系统通常把标准头文件存放在 <code>/usr/include</code>，把库文件存放在 <code>/usr/lib</code>，<code>gcc</code> 会自动在这些目录中查找头文件和库；<code>gcc</code> 还会自动在当前工作目录中搜索头文件。</p>
+<blockquote>
+<p>The compiler automatically searches in standard directory locations for header and library files. For example, systems commonly store standard header files in <code>/usr/include</code>, and library files in <code>/usr/lib</code>, and <code>gcc</code> automatically looks for headers and libraries in these directories; <code>gcc</code> also automatically searches for header files in the current working directory.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>更准确地说，<code>#include &quot;xxx.h&quot;</code>（双引号形式）会先在当前源文件所在的目录中查找；<code>#include &lt;xxx.h&gt;</code>（尖括号形式）只在 <code>-I</code> 指定的目录和系统目录中查找，并不搜索当前目录。</p>
+</div>
+<p>如果 <code>gcc</code> 找不到某个头文件或库文件，用户就必须在命令行中用 <code>-I</code> 和 <code>-L</code> 显式提供路径。例如，假设名为 <code>libexamplelib.so</code> 的库位于 <code>/home/me/lib</code>，它的头文件 <code>examplelib.h</code> 位于 <code>/home/me/include</code>。由于 <code>gcc</code> 默认对这些路径一无所知，要成功编译使用这个库的程序，必须明确告诉它去这些位置包含文件：</p>
+<blockquote>
+<p>If <code>gcc</code> cannot find a header or a library file, then the user must explicitly provide paths on the command line using <code>-I</code> and <code>-L</code>. For example, suppose that a library named <code>libexamplelib.so</code> exists in <code>/home/me/lib</code>, and its header file <code>examplelib.h</code> is in <code>/home/me/include</code>. Because <code>gcc</code> knows nothing of those paths by default, it must be explicitly told to include files there to successfully compile a program that uses this library:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc  -I/home/me/include -o myprog myprog.c -L/home/me/lib -lexamplelib</span><br></pre></td></tr></table></figure>
+
+<p>要在启动动态链接的可执行文件时指定动态库（例如 <code>libexamplelib.so</code>）的位置，可以设置 <code>LD_LIBRARY_PATH</code> 环境变量，使其包含库所在的路径。下面是一条示例 bash 命令，可以在 shell 提示符下运行，也可以加到 <code>.bashrc</code> 文件中：</p>
+<blockquote>
+<p>To specify the location of a dynamic library (e.g., <code>libexamplelib.so</code>) when launching a dynamically linked executable, set the <code>LD_LIBRARY_PATH</code> environment variable to include the path to the library. Here’s an example bash command that can be run at a shell prompt or added to a <code>.bashrc</code> file:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">export LD_LIBRARY_PATH=/home/me/lib:$LD_LIBRARY_PATH</span><br></pre></td></tr></table></figure>
+
+<p>当 <code>gcc</code> 命令行变得很长，或者一个可执行文件需要很多源文件和头文件时，用 <code>make</code> 和 <code>Makefile</code> 来简化编译会很有帮助。这里有关于 <a href="../Appendix2/17.5-makefiles.html">make 与 Makefile</a> 的更多信息。</p>
+<blockquote>
+<p>When the <code>gcc</code> command lines get long, or when an executable requires many source and header files, it helps to simplify compilation by using <code>make</code> and a <code>Makefile</code>. Here’s some more information about <a href="../Appendix2/17.5-makefiles.html">make and Makefiles</a>.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">2.9.4. 指针运算</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">2.9.6. 编写和使用自己的 C 库</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>14.2. 你好，线程！编写你的第一个多线程程序 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;posix.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.2. Hello Threading! Writ">
+<meta property="og:type" content="website">
+<meta property="og:title" content="14.2. 你好，线程！编写你的第一个多线程程序 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C14-SharedMemory/14.2-posix.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C14-SharedMemory&#x2F;posix.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  14.2. Hello Threading! Writ">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.958Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html" class="current" aria-current="page">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>14. 多核时代的共享内存利用</span>
+      </nav>
+      <span class="book-position">第 145 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">14.2. 你好，线程！编写你的第一个多线程程序</h1>
+  
+  
+    <p class="article-meta"><span>约 24 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/posix.html">https://diveintosystems.org/book/C14-SharedMemory/posix.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>14.2. Hello Threading! Writing Your First Multithreaded Program</em></p>
+<p>在本节中，我们考察无处不在的 POSIX 线程库 <strong>Pthreads</strong>。POSIX 是 Portable Operating System Interface（可移植操作系统接口）的缩写。它是一项 IEEE 标准，规定了 UNIX 系统的外观、行为和使用感受。POSIX 线程 API 在几乎所有类 UNIX 操作系统上都可以使用，这些系统要么完全符合该标准，要么在很大程度上符合。所以，如果你在一台 Linux 机器上用 POSIX 线程编写并行代码，它肯定能在其他 Linux 机器上运行，并且很可能也能在运行 macOS 或其他 UNIX 变体的机器上运行。</p>
+<blockquote>
+<p>In this section, we examine the ubiquitous POSIX thread library <strong>Pthreads</strong>. POSIX is an acronym for Portable Operating System Interface. It is an IEEE standard that specifies how UNIX systems look, act, and feel. The POSIX threads API is available on almost all UNIX-like operating systems, each of which meets the standard in its entirety or to some great degree. So, if you write parallel code using POSIX threads on a Linux machine, it will certainly work on other Linux machines, and it will likely work on machines running macOS or other UNIX variants.</p>
+</blockquote>
+<p>我们先来分析一个「Hello World」Pthreads 示例程序（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>）。为简洁起见，清单中省略了错误处理，不过<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">可下载的版本</a>中包含错误处理的示例。</p>
+<blockquote>
+<p>Let’s begin by analyzing an example “Hello World” Pthreads program (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>). For brevity, we have excluded error handling in the listing, though the <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">downloadable version</a> contains sample error handling.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &lt;pthread.h&gt;</span><br><span class="line"></span><br><span class="line">/* The &quot;thread function&quot; passed to pthread_create.  Each thread executes this</span><br><span class="line"> * function and terminates when it returns from this function. */</span><br><span class="line">void *HelloWorld(void *id) &#123;</span><br><span class="line"></span><br><span class="line">    /* We know the argument is a pointer to a long, so we cast it from a</span><br><span class="line">     * generic (void *) to a (long *). */</span><br><span class="line">    long *myid = (long *) id;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Hello world! I am thread %ld\n&quot;, *myid);</span><br><span class="line"></span><br><span class="line">    return NULL; // We don&#x27;t need our threads to return anything.</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(int argc, char **argv) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    int nthreads; //number of threads</span><br><span class="line">    pthread_t *thread_array; //pointer to future thread array</span><br><span class="line">    long *thread_ids;</span><br><span class="line"></span><br><span class="line">    // Read the number of threads to create from the command line.</span><br><span class="line">    if (argc !=2) &#123;</span><br><span class="line">        fprintf(stderr, &quot;usage: %s &lt;n&gt;\n&quot;, argv[0]);</span><br><span class="line">        fprintf(stderr, &quot;where &lt;n&gt; is the number of threads\n&quot;);</span><br><span class="line">        return 1;</span><br><span class="line">    &#125;</span><br><span class="line">    nthreads = strtol(argv[1], NULL, 10);</span><br><span class="line"></span><br><span class="line">    // Allocate space for thread structs and identifiers.</span><br><span class="line">    thread_array = malloc(nthreads * sizeof(pthread_t));</span><br><span class="line">    thread_ids = malloc(nthreads * sizeof(long));</span><br><span class="line"></span><br><span class="line">    // Assign each thread an ID and create all the threads.</span><br><span class="line">    for (i = 0; i &lt; nthreads; i++) &#123;</span><br><span class="line">        thread_ids[i] = i;</span><br><span class="line">        pthread_create(&amp;thread_array[i], NULL, HelloWorld, &amp;thread_ids[i]);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /* Join all the threads. Main will pause in this loop until all threads</span><br><span class="line">     * have returned from the thread function. */</span><br><span class="line">    for (i = 0; i &lt; nthreads; i++) &#123;</span><br><span class="line">        pthread_join(thread_array[i], NULL);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    free(thread_array);</span><br><span class="line">    free(thread_ids);</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们把这个程序拆成小块来考察。</p>
+<blockquote>
+<p>Let’s examine this program in smaller components.</p>
+</blockquote>
+<ul>
+<li>注意其中包含了 <code>pthread.h</code> 头文件，它声明了 <code>pthread</code> 的类型和函数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Notice the inclusion of the <code>pthread.h</code> header file, which declares <code>pthread</code> types and functions.</li>
+</ul>
+</blockquote>
+<ul>
+<li>接下来，<code>HelloWorld</code> 函数定义了<strong>线程函数</strong>（thread function），我们稍后会把它传给 <code>pthread_create</code>。线程函数相当于工作线程（被创建的线程）的 <code>main</code> 函数：线程从线程函数的开头开始执行，到达线程函数的末尾时终止。每个线程都使用自己私有的执行状态（即它自己的栈内存和寄存器值）来执行线程函数。还要注意，线程函数的类型是 <code>void*</code>。在这里使用<a href="../C2-C_depth/2.9.3-advanced_voidstar.html"><strong>匿名指针</strong></a>，让程序员能编写处理不同类型参数和返回值的线程函数。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Next, the <code>HelloWorld</code> function defines the <strong>thread function</strong> that we later pass to <code>pthread_create</code>. A thread function is analogous to a <code>main</code> function for a worker (created) thread — a thread begins execution at the start of its thread function and terminates when it reaches the end. Each thread executes the thread function using its private execution state (i.e., its own stack memory and register values). Note also that the thread function is of type <code>void*</code>. Specifying an <a href="../C2-C_depth/2.9.3-advanced_voidstar.html"><strong>anonymous pointer</strong></a> in this context allows programmers to write thread functions that deal with arguments and return values of different types.</li>
+</ul>
+</blockquote>
+<ul>
+<li>最后，在 <code>main</code> 函数中，主线程先初始化程序状态，然后创建并合并（join）工作线程。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Lastly, in the <code>main</code> function, the main thread initializes the program state before creating and joining the worker threads.</li>
+</ul>
+</blockquote>
+<h3 id="14-2-1-创建与合并线程"><a href="#14-2-1-创建与合并线程" class="headerlink" title="14.2.1. 创建与合并线程"></a>14.2.1. 创建与合并线程</h3><p><em>14.2.1. Creating and Joining Threads</em></p>
+<p>程序一开始是一个单线程进程。执行 <code>main</code> 函数时，它读取要创建的线程数，并为两个数组分配内存：<code>thread_array</code> 和 <code>thread_ids</code>。<code>thread_array</code> 数组存放所创建的每个线程的地址集合。<code>thread_ids</code> 数组存放传给每个线程的参数集合。在这个例子中，传给每个线程的是它的序号（rank，即 ID，用 <code>thread_ids[i]</code> 表示）的地址。</p>
+<blockquote>
+<p>The program first starts as a single-threaded process. As it executes the <code>main</code> function, it reads the number of threads to create, and it allocates memory for two arrays: <code>thread_array</code> and <code>thread_ids</code>. The <code>thread_array</code> array contains the set of addresses for each thread created. The <code>thread_ids</code> array stores the set of arguments that each thread is passed. In this example, each thread is passed the address of its rank (or ID, represented by <code>thread_ids[i]</code>).</p>
+</blockquote>
+<p>所有预备变量都分配并初始化之后，<code>main</code> 线程执行多线程的两个主要步骤：</p>
+<blockquote>
+<p>After all the preliminary variables are allocated and initialized, the <code>main</code> thread executes the two major steps of multithreading:</p>
+</blockquote>
+<ul>
+<li><strong>创建</strong>（creation）步骤：主线程派生出一个或多个工作线程。派生之后，每个工作线程在自己的执行上下文中运行，与其他线程以及系统上的其他进程并发执行。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>creation</strong> step, in which the main thread spawns one or more worker threads. After being spawned, each worker thread runs within its own execution context concurrently with the other threads and processes on the system.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>合并</strong>（join）步骤：主线程等待所有工作线程完成，然后再作为单线程进程继续执行。合并一个已终止的线程会释放该线程的执行上下文和资源。试图合并一个<em>尚未</em>终止的线程会使调用者阻塞，直到该线程终止，这与<a href="../C13-OS/13.2-processes.html">进程的 wait 函数</a>的语义类似。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>join</strong> step, in which the main thread waits for all the workers to complete before proceeding as a single-thread process. Joining a thread that has terminated frees the thread’s execution context and resources. Attempting to join a thread that <em>hasn’t</em> terminated blocks the caller until the thread terminates, similar to the semantics of the <a href="../C13-OS/13.2-processes.html">wait function for processes</a>.</li>
+</ul>
+</blockquote>
+<p>Pthreads 库提供了用于创建线程的 <code>pthread_create</code> 函数和用于合并线程的 <code>pthread_join</code> 函数。<code>pthread_create</code> 函数的签名如下：</p>
+<blockquote>
+<p>The Pthreads library offers a <code>pthread_create</code> function for creating threads and a <code>pthread_join</code> function for joining them. The <code>pthread_create</code> function has the following signature:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pthread_create(pthread_t *thread, const pthread_attr_t *attr,</span><br><span class="line">               void *(*thread_function)(void *), void *thread_args)</span><br></pre></td></tr></table></figure>
+
+<p>这个函数接收一个指向线程结构（类型为 <code>pthread_t</code>）的指针、一个指向属性结构的指针（通常设为 <code>NULL</code>）、线程应当执行的函数的名字，以及线程函数开始时要传给它的参数数组。</p>
+<blockquote>
+<p>The function takes a pointer to a thread struct (of type <code>pthread_t</code>), a pointer to an attribute struct (normally set to <code>NULL</code>), the name of the function the thread should execute, and the array of arguments to pass to the thread function when it starts.</p>
+</blockquote>
+<p>Hello World 程序在 <code>main</code> 函数中这样调用 <code>pthread_create</code>：</p>
+<blockquote>
+<p>The Hello World program calls <code>pthread_create</code> in the <code>main</code> function using:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_create(&amp;thread_array[i], NULL, HelloWorld, &amp;thread_ids[i]);</span><br></pre></td></tr></table></figure>
+
+<p>其中：</p>
+<blockquote>
+<p>Here:</p>
+</blockquote>
+<ul>
+<li><code>&amp;thread_array[i]</code> 包含线程 <em>i</em> 的地址。<code>pthread_create</code> 函数分配一个 <code>pthread_t</code> 线程对象，并把它的地址存放在这个位置，让程序员以后能引用这个线程（例如在合并它时）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>&amp;thread_array[i]</code> contains the address of thread <em>i</em>. The <code>pthread_create</code> function allocates a <code>pthread_t</code> thread object and stores its address at this location, enabling the programmer to reference the thread later (e.g., when joining it).</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>更准确地说，<code>pthread_t</code> 的存储空间是调用者提供的（就是数组元素 <code>thread_array[i]</code>），<code>pthread_create</code> 并不另外「分配对象再存地址」。按 <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/pthread_create.3.html">pthread_create(3)</a> 手册，调用成功时，它把新线程的 <strong>ID</strong> 存到 <code>thread</code> 参数所指向的缓冲区中，之后其他 pthreads 函数就用这个标识符来引用该线程。同理，上文说 <code>thread_array</code> 存放的是各线程的「地址」，实为各线程的 ID；第四个参数也是单个 <code>void *</code> 指针，而不是「参数数组」。</p>
+</div>
+<ul>
+<li><code>NULL</code> 表示线程应当以默认属性创建。在大多数程序中，把第二个参数保留为 <code>NULL</code> 是安全的。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>NULL</code> specifies that the thread should be created with default attributes. In most programs, it is safe to leave this second parameter as <code>NULL</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>HelloWorld</code> 指定被创建的线程应当执行的线程函数。这个函数的行为就像线程的「main」函数。对于任意一个线程函数（例如 <code>function</code>），它的原型必须符合 <code>void * function(void *)</code> 的形式。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>HelloWorld</code> names the thread function that the created thread should execute. This function behaves like the “main” function for the thread. For an arbitrary thread function (e.g., <code>function</code>), its prototype must match the form <code>void * function(void *)</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&amp;thread_ids[i]</code> 指定要传给线程 <em>i</em> 的参数的地址。在这里，<code>thread_ids[i]</code> 包含一个表示线程 ID 的 <code>long</code>。由于 <code>pthread_create</code> 的最后一个参数必须是指针，我们传入的是线程 ID 的<em>地址</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>&amp;thread_ids[i]</code> specifies the address of the arguments to be passed to thread <em>i</em>. In this case, <code>thread_ids[i]</code> contains a single <code>long</code> representing the thread’s ID. Since the last argument to <code>pthread_create</code> must be a pointer, we pass the <em>address</em> of the thread’s ID.</li>
+</ul>
+</blockquote>
+<p>为了生成多个执行 <code>HelloWorld</code> 线程函数的线程，程序给每个线程分配一个唯一的 ID，并在一个 <code>for</code> 循环中创建各个线程：</p>
+<blockquote>
+<p>To generate several threads that execute the <code>HelloWorld</code> thread function, the program assigns each thread a unique ID and creates each thread within a <code>for</code> loop:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for (i = 0; i &lt; nthreads; i++) &#123;</span><br><span class="line">    thread_ids[i] = i;</span><br><span class="line">    pthread_create(&amp;thread_array[i], NULL, HelloWorld, &amp;thread_ids[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>操作系统负责调度每个被创建线程的执行；用户不能对线程的执行顺序做任何假设。</p>
+<blockquote>
+<p>The OS schedules the execution of each created thread; the user cannot make any assumption on the order in which the threads will execute.</p>
+</blockquote>
+<p><code>pthread_join</code> 函数挂起其调用者的执行，直到它所引用的线程终止。它的签名是：</p>
+<blockquote>
+<p>The <code>pthread_join</code> function suspends the execution of its caller until the thread it references terminates. Its signature is:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_join(pthread_t thread, void **return_val)</span><br></pre></td></tr></table></figure>
+
+<p><code>pthread_join</code> 接收一个 <code>pthread_t</code> 结构作为输入，指明要等待哪个线程，还有一个可选的指针参数，指定线程的返回值应当存放在哪里。</p>
+<blockquote>
+<p>The <code>pthread_join</code> takes as input a <code>pthread_t</code> struct, indicating which thread to wait on, and an optional pointer argument that specifies where the thread’s return value should be stored.</p>
+</blockquote>
+<p>Hello World 程序在 <code>main</code> 中这样调用 <code>pthread_join</code>：</p>
+<blockquote>
+<p>The Hello World program calls <code>pthread_join</code> in <code>main</code> using:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pthread_join(thread_array[t], NULL);</span><br></pre></td></tr></table></figure>
+
+<p>这一行表示主线程必须等待线程 <code>t</code> 终止。把 <code>NULL</code> 作为第二个参数传入，表示程序不使用线程的返回值。</p>
+<blockquote>
+<p>This line indicates that the main thread must wait on the termination of thread <code>t</code>. Passing <code>NULL</code> as the second argument indicates that the program does not use the thread’s return value.</p>
+</blockquote>
+<p>在前面的程序中，<code>main</code> 在一个循环中调用 <code>pthread_join</code>，因为在 <code>main</code> 函数继续清理内存并终止进程之前，<em>所有</em>工作线程都需要终止：</p>
+<blockquote>
+<p>In the previous program, <code>main</code> calls <code>pthread_join</code> in a loop because <em>all</em> of the worker threads need to terminate before the <code>main</code> function proceeds to clean up memory and terminate the process:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (i = 0; i &lt; nthreads; i++) &#123;</span><br><span class="line">    pthread_join(thread_array[i], NULL);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="14-2-2-线程函数"><a href="#14-2-2-线程函数" class="headerlink" title="14.2.2. 线程函数"></a>14.2.2. 线程函数</h3><p><em>14.2.2. The Thread Function</em></p>
+<p>在前面的程序中，每个派生出的线程都打印出 <code>Hello world! I am thread n</code>，其中 <code>n</code> 是线程的唯一 id。线程打印出消息后就终止了。我们来仔细看看 <code>HelloWorld</code> 函数：</p>
+<blockquote>
+<p>In the previous program, each spawned thread prints out <code>Hello world! I am thread n</code>, where <code>n</code> is the thread’s unique id. After the thread prints out its message, it terminates. Let’s take a closer look at the <code>HelloWorld</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">void *HelloWorld(void *id) &#123;</span><br><span class="line">    long *myid = (long*)id;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Hello world! I am thread %ld\n&quot;, *myid);</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>回想一下，<code>pthread_create</code> 通过 <code>thread_args</code> 参数把参数传给线程函数。在 <code>main</code> 中的 <code>pthread_create</code> 函数里，Hello World 程序指定这个参数实际上就是线程的 ID。注意，<code>HelloWorld</code> 的参数必须声明为通用指针，即<a href="../C2-C_depth/2.9.3-advanced_voidstar.html">匿名指针（<code>void *</code>）</a>。Pthreads 库使用 <code>void *</code>，不规定参数类型，从而让 <code>pthread_create</code> 更加通用。对程序员来说，<code>void *</code> 有点不方便，因为使用前必须进行类型转换。在这里，我们<em>知道</em>参数的类型是 <code>long *</code>，因为我们在 <code>main</code> 中传给 <code>pthread_create</code> 的就是这个类型。因此，我们可以安全地把这个值转换为 <code>long *</code>，并对指针解引用来访问 <code>long</code> 值。许多并行程序都遵循这样的结构。</p>
+<blockquote>
+<p>Recall that <code>pthread_create</code> passes the arguments to the thread function using the <code>thread_args</code> parameter. In the <code>pthread_create</code> function in <code>main</code>, the Hello World program specified that this parameter is in fact the thread’s ID. Note that the parameter to <code>HelloWorld</code> must be declared as a generic or <a href="../C2-C_depth/2.9.3-advanced_voidstar.html">anonymous pointer (<code>void *</code>)</a>. The Pthreads library uses <code>void *</code> to make <code>pthread_create</code> more general purpose by not prescribing a parameter type. As a programmer, the <code>void *</code> is mildly inconvenient given that it must be recast before use. Here, we <em>know</em> the parameter is of type <code>long *</code> because that’s what we passed to <code>pthread_create</code> in <code>main</code>. Thus, we can safely cast the value as a <code>long *</code> and dereference the pointer to access the <code>long</code> value. Many parallel programs follow this structure.</p>
+</blockquote>
+<p>与线程函数的参数类似，Pthreads 库也通过规定另一个 <code>void *</code> 来避免规定线程函数的返回类型：程序员可以从线程函数返回任何指针。如果程序需要访问线程的返回值，可以通过 <code>pthread_join</code> 的第二个参数取得。在我们的例子中，线程不需要返回值，所以它只是返回一个 <code>NULL</code> 指针。</p>
+<blockquote>
+<p>Similar to the thread function’s parameter, the Pthreads library avoids prescribing the thread function’s return type by specifying another <code>void *</code> — the programmer is free to return any pointer from the thread function. If the program needs to access the thread’s return value, it can retrieve it via the second argument to <code>pthread_join</code>. In our example, the thread has no need to return a value, so it simply returns a <code>NULL</code> pointer.</p>
+</blockquote>
+<h3 id="14-2-3-运行代码"><a href="#14-2-3-运行代码" class="headerlink" title="14.2.3. 运行代码"></a>14.2.3. 运行代码</h3><p><em>14.2.3. Running the Code</em></p>
+<p>下面的命令展示了如何用 GCC 编译 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>。构建 Pthreads 应用程序时，需要给 GCC 传入 <code>-pthread</code> 链接选项，以确保能使用 Pthreads 的函数和类型：</p>
+<blockquote>
+<p>The command that follows shows how to use GCC to compile <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C14-SharedMemory/_attachments/hellothreads.c">hellothreads.c</a>. Building a Pthreads application requires that the <code>-pthread</code> linker flag be passed to GCC to ensure that the Pthreads functions and types are accessible:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o hellothreads hellothreads.c -pthread</span><br></pre></td></tr></table></figure>
+
+<p>不带命令行参数运行程序，会得到一条用法提示：</p>
+<blockquote>
+<p>Running the program without a command line argument results in a usage message:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ ./hellothreads</span><br><span class="line">usage: ./hellothreads &lt;n&gt;</span><br><span class="line">where &lt;n&gt; is the number of threads</span><br></pre></td></tr></table></figure>
+
+<p>用四个线程运行程序，得到下面的输出：</p>
+<blockquote>
+<p>Running the program with four threads yields the following output:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./hellothreads 4</span><br><span class="line">Hello world! I am thread 1</span><br><span class="line">Hello world! I am thread 2</span><br><span class="line">Hello world! I am thread 3</span><br><span class="line">Hello world! I am thread 0</span><br></pre></td></tr></table></figure>
+
+<p>注意，每个线程都打印出它唯一的 ID 号。在这次运行中，线程 1 的输出最先显示，接着是线程 2、3 和 0。如果再次运行程序，输出的显示顺序可能会不同：</p>
+<blockquote>
+<p>Notice that each thread prints its unique ID number. In this run, thread 1’s output displays first, followed by threads 2, 3, and 0. If we run the program again, we may see the output displayed in a different order:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./hellothreads 4</span><br><span class="line">Hello world! I am thread 0</span><br><span class="line">Hello world! I am thread 1</span><br><span class="line">Hello world! I am thread 2</span><br><span class="line">Hello world! I am thread 3</span><br></pre></td></tr></table></figure>
+
+<p>回想一下，线程的执行顺序由操作系统的调度器决定。从用户的角度看，这个顺序<em>实际上是随机的</em>，因为它受到许多用户无法控制的、不断变化的因素影响（例如可用的系统资源、系统收到的输入或操作系统的调度）。由于所有线程彼此并发运行，并且每个线程都执行一次对 <code>printf</code> 的调用（打印到 <code>stdout</code>），所以最先打印到 <code>stdout</code> 的线程，它的输出就最先出现。后续的执行可能（也可能不）产生不同的输出。</p>
+<blockquote>
+<p>Recall that the operating system’s scheduler determines the thread execution order. From a user’s perspective, the order is <em>effectively random</em> due to being influenced by many factors that vary outside the user’s control (e.g., available system resources, the system receiving input, or OS scheduling). Since all threads are running concurrently with one another and each thread executes a call to <code>printf</code> (which prints to <code>stdout</code>), the first thread that prints to <code>stdout</code> will have its output show up first. Subsequent executions may (or may not) result in different output.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 线程的执行顺序（Thread Execution Order）</p><p>你<em>绝不</em>应该对线程的执行顺序做任何假设。如果程序的正确性要求线程按特定的顺序运行，就必须在程序中加入<a href="14.3-synchronization.html"><strong>同步</strong></a>，防止线程在不该运行的时候运行。</p>
+<blockquote>
+<p>You should <em>never</em> make any assumptions about the order in which threads will execute. If the correctness of your program requires that threads run in a particular order, you must add <a href="14.3-synchronization.html"><strong>synchronization</strong></a> to your program to prevent threads from running when they shouldn’t.</p>
+</blockquote>
+</div>
+<h3 id="14-2-4-再看标量乘法"><a href="#14-2-4-再看标量乘法" class="headerlink" title="14.2.4. 再看标量乘法"></a>14.2.4. 再看标量乘法</h3><p><em>14.2.4. Revisiting Scalar Multiplication</em></p>
+<p>我们来探讨如何为上一节的<a href="14.1-multicore.html">标量乘法</a>程序编写一个多线程实现。回想一下，并行化 <code>scalar_multiply</code> 的一般策略是：</p>
+<blockquote>
+<p>Let’s explore how to create a multithreaded implementation of the <a href="14.1-multicore.html">scalar multiplication</a> program from the previous section. Recall that our general strategy for parallelizing <code>scalar_multiply</code> is to:</p>
+</blockquote>
+<ol>
+<li>创建多个线程，</li>
+</ol>
+<blockquote>
+<ol>
+<li>Create multiple threads,</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>给每个线程分配输入数组的一个子集，</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Assign each thread a subset of the input array,</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>让每个线程把它所分到的数组子集中的元素乘以 <code>s</code>。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Instruct each thread to multiply the elements in its array subset by <code>s</code>.</li>
+</ol>
+</blockquote>
+<p>下面是完成这项任务的线程函数。注意，我们把 <code>array</code>、<code>length</code> 和 <code>s</code> 移到了程序的全局作用域中。</p>
+<blockquote>
+<p>The following is a thread function that accomplishes this task. Notice that we have moved <code>array</code>, <code>length</code>, and <code>s</code> to the global scope of the program.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">long *array; //allocated in main</span><br><span class="line">long length; //set in main (1 billion)</span><br><span class="line">long nthreads; //number of threads</span><br><span class="line">long s; //scalar</span><br><span class="line"></span><br><span class="line">void *scalar_multiply(void *id) &#123;</span><br><span class="line">    long *myid = (long *) id;</span><br><span class="line">    int i;</span><br><span class="line"></span><br><span class="line">    //assign each thread its own chunk of elements to process</span><br><span class="line">    long chunk = length / nthreads;</span><br><span class="line">    long start = *myid * chunk;</span><br><span class="line">    long end  = start + chunk;</span><br><span class="line">    if (*myid == nthreads - 1) &#123;</span><br><span class="line">        end = length;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    //perform scalar multiplication on assigned chunk</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        array[i] *= s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们把它分成几部分来看。回想一下，第一步是给每个线程分配数组的一部分。下面几行完成这项任务：</p>
+<blockquote>
+<p>Let’s break this down into parts. Recall that the first step is to assign each thread a component of the array. The following lines accomplish this task:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">long chunk = length / nthreads;</span><br><span class="line">long start = *myid * chunk;</span><br><span class="line">long end  = start + chunk;</span><br></pre></td></tr></table></figure>
+
+<p>变量 <code>chunk</code> 存放分配给每个线程的元素个数。为了确保每个线程分到的工作量大致相同，我们先把块大小设为元素个数除以线程数，即 <code>length / nthreads</code>。</p>
+<blockquote>
+<p>The variable <code>chunk</code> stores the number of elements that each thread is assigned. To ensure that each thread gets roughly the same amount of work, we first set the chunk size to the number of elements divided by the number of threads, or <code>length / nthreads</code>.</p>
+</blockquote>
+<p>接下来，我们给每个线程分配一个不同的元素范围来处理。每个线程利用 <code>chunk</code> 大小和它唯一的线程 ID，算出自己范围的 <code>start</code> 和 <code>end</code> 下标。</p>
+<blockquote>
+<p>Next, we assign each thread a distinct range of elements to process. Each thread computes its range’s <code>start</code> and <code>end</code> index using the <code>chunk</code> size and its unique thread ID.</p>
+</blockquote>
+<p>例如，在四个线程（ID 为 0–3）处理一个有 1 亿个元素的数组时，每个线程负责处理一个 2500 万个元素的 <code>chunk</code>。把线程 ID 纳入计算，就能给每个线程分配输入中一个唯一的子集。</p>
+<blockquote>
+<p>For example, with four threads (with IDs 0-3) operating over an array with 100 million elements, each thread is responsible for processing a 25 million element <code>chunk</code>. Incorporating the thread ID assigns each thread a unique subset of the input.</p>
+</blockquote>
+<p>接下来的两行处理 <code>length</code> 不能被线程数整除的情况：</p>
+<blockquote>
+<p>The next two lines account for the case in which <code>length</code> is not evenly divisible by the number of threads:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if (*myid == nthreads - 1) &#123;</span><br><span class="line">    end = length;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>假设我们指定的是三个而不是四个线程。名义上的块大小将是 33,333,333 个元素，剩下一个元素没有分配出去。前面例子中的代码会把剩下的元素分配给最后一个线程。</p>
+<blockquote>
+<p>Suppose that we specified three rather than four threads. The nominal chunk size would be 33,333,333 elements, leaving one element unaccounted for. The code in the previous example would assign the remaining element to the last thread.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 构造均衡的输入（Creating balanced input）</p><p>刚才展示的分块代码并不完美。在线程数不能整除输入规模的情况下，余数被分配给最后一个线程。考虑一次示例运行，其中数组有 100 个元素，指定了 12 个线程。名义上的块大小是 8，余数是 4。用这个示例代码，前 11 个线程各分到 8 个元素，而最后一个线程分到 12 个元素。因此，最后一个线程要比其他线程多做 50% 的工作。对这个例子来说，一种可能更好的分块方式是让前 4 个线程各处理 9 个元素，而后 8 个线程各处理 8 个元素。这样就能让输入在各线程之间实现更好的<strong>负载均衡</strong>（load balancing）。</p>
+<blockquote>
+<p>The chunking code just shown is imperfect. In the case where the number of threads does not evenly divide the input, the remainder is assigned to the last thread. Consider a sample run in which the array has 100 elements, and 12 threads are specified. The nominal chunk size would be 8, and the remainder would be 4. With the example code, the first 11 threads will each have 8 assigned elements, whereas the last thread will be assigned 12 elements. Consequently, the last thread performs 50% more work than the other threads. A potentially better way to chunk this example is to have the first 4 threads process 9 elements each, while the last 8 threads process 8 elements each. This will result in better <strong>load balancing</strong> of the input across the threads.</p>
+</blockquote>
+</div>
+<p>算出了合适的局部 <code>start</code> 和 <code>end</code> 下标之后，每个线程就可以对自己负责的那部分数组执行标量乘法了。<code>scalar_multiply</code> 函数的最后一部分完成这项工作：</p>
+<blockquote>
+<p>With an appropriate local <code>start</code> and <code>end</code> index computed, each thread is now ready to perform scalar multiplication on its component of the array. The last portion of the <code>scalar_multiply</code> function accomplishes this:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">    array[i] *= s;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="14-2-5-改进标量乘法：多个参数"><a href="#14-2-5-改进标量乘法：多个参数" class="headerlink" title="14.2.5. 改进标量乘法：多个参数"></a>14.2.5. 改进标量乘法：多个参数</h3><p><em>14.2.5. Improving Scalar Multiplication: Multiple Arguments</em></p>
+<p>前面那个实现的一个关键弱点是大量使用了全局变量。我们最初对<a href="../C2-C_depth/2.1-scope_memory.html">全局变量</a>的讨论表明，全局变量虽然有用，但在 C 中一般应当避免使用。为了减少程序中的全局变量，一种解决办法是像下面这样在全局作用域中声明一个 <code>t_arg</code> 结构体：</p>
+<blockquote>
+<p>A key weakness of the previous implementation is the wide use of global variables. Our original discussion of <a href="../C2-C_depth/2.1-scope_memory.html">global variables</a> showed that although useful, global variables should generally be avoided in C. To reduce the number of global variables in the program, one solution is to declare a <code>t_arg</code> struct as follows in the global scope:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">struct t_arg &#123;</span><br><span class="line">    int *array; // pointer to shared array</span><br><span class="line">    long length; // num elements in array</span><br><span class="line">    long s; //scaling factor</span><br><span class="line">    long numthreads; // total number of threads</span><br><span class="line">    long id; //  logical thread id</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>我们的 <code>main</code> 函数除了分配 <code>array</code> 并设置局部变量 <code>length</code>、<code>nthreads</code> 和 <code>s</code>（缩放因子）之外，还要分配一个 <code>t_arg</code> 记录数组：</p>
+<blockquote>
+<p>Our main function would, in addition to allocating <code>array</code> and setting local variables <code>length</code>, <code>nthreads</code>, and <code>s</code> (our scaling factor), allocate an array of <code>t_arg</code> records:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">long nthreads = strtol(argv[1], NULL, 10); //get number of threads</span><br><span class="line">long length = strtol(argv[2], NULL, 10); //get length of array</span><br><span class="line">long s = strtol( argv[3], NULL, 10 ); //get scaling factor</span><br><span class="line"></span><br><span class="line">int *array = malloc(length*sizeof(int));</span><br><span class="line"></span><br><span class="line">//allocate space for thread structs and identifiers</span><br><span class="line">pthread_t *thread_array = malloc(nthreads * sizeof(pthread_t));</span><br><span class="line">struct t_arg *thread_args = malloc(nthreads * sizeof(struct t_arg));</span><br><span class="line"></span><br><span class="line">//Populate thread arguments for all the threads</span><br><span class="line">for (i = 0; i &lt; nthreads; i++)&#123;</span><br><span class="line">    thread_args[i].array = array;</span><br><span class="line">    thread_args[i].length = length;</span><br><span class="line">    thread_args[i].s = s;</span><br><span class="line">    thread_args[i].numthreads = nthreads;</span><br><span class="line">    thread_args[i].id = i;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>之后在 <code>main</code> 中调用 <code>pthread_create</code> 时，把线程相应的 <code>t_args</code> 结构体作为参数传入：</p>
+<blockquote>
+<p>Later in <code>main</code>, when <code>pthread_create</code> is called, the thread’s associated <code>t_args</code> struct is passed as an argument:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for (i = 0; i &lt; nthreads; i++)&#123;</span><br><span class="line">    pthread_create(&amp;thread_array[i], NULL, scalar_multiply, &amp;thread_args[i]);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>最后，我们的 <code>scalar_multiply</code> 函数将如下所示：</p>
+<blockquote>
+<p>Lastly, our <code>scalar_multiply</code> function would look like the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">void * scalar_multiply(void* args) &#123;</span><br><span class="line">    //cast to a struct t_arg from void*</span><br><span class="line">    struct t_arg * myargs = (struct t_arg *) args;</span><br><span class="line"></span><br><span class="line">    //extract all variables from struct</span><br><span class="line">    long myid =  myargs-&gt;id;</span><br><span class="line">    long length = myargs-&gt;length;</span><br><span class="line">    long s = myargs-&gt;s;</span><br><span class="line">    long nthreads = myargs-&gt;numthreads;</span><br><span class="line">    int * ap = myargs-&gt;array; //pointer to array in main</span><br><span class="line"></span><br><span class="line">    //code as before</span><br><span class="line">    long chunk = length/nthreads;</span><br><span class="line">    long start = myid * chunk;</span><br><span class="line">    long end  = start + chunk;</span><br><span class="line">    if (myid == nthreads-1) &#123;</span><br><span class="line">        end = length;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    int i;</span><br><span class="line">    for (i = start; i &lt; end; i++) &#123;</span><br><span class="line">        ap[i] *= s;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return NULL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>完整实现这个程序留给读者作为练习。请注意，为简洁起见，这里省略了错误处理。</p>
+<blockquote>
+<p>Implementing this program fully is an exercise we leave to the reader. Please note that error handling has been omitted for the sake of brevity.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">14.1. 多核系统编程</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">14.3. 线程同步</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-1-%E5%88%9B%E5%BB%BA%E4%B8%8E%E5%90%88%E5%B9%B6%E7%BA%BF%E7%A8%8B"><span class="toc-text">14.2.1. 创建与合并线程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-2-%E7%BA%BF%E7%A8%8B%E5%87%BD%E6%95%B0"><span class="toc-text">14.2.2. 线程函数</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-3-%E8%BF%90%E8%A1%8C%E4%BB%A3%E7%A0%81"><span class="toc-text">14.2.3. 运行代码</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-4-%E5%86%8D%E7%9C%8B%E6%A0%87%E9%87%8F%E4%B9%98%E6%B3%95"><span class="toc-text">14.2.4. 再看标量乘法</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#14-2-5-%E6%94%B9%E8%BF%9B%E6%A0%87%E9%87%8F%E4%B9%98%E6%B3%95%EF%BC%9A%E5%A4%9A%E4%B8%AA%E5%8F%82%E6%95%B0"><span class="toc-text">14.2.5. 改进标量乘法：多个参数</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

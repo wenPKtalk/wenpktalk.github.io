@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>11.6. 展望：多核处理器上的缓存 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;coherency.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.6. Looking Ahead: Ca">
+<meta property="og:type" content="website">
+<meta property="og:title" content="11.6. 展望：多核处理器上的缓存 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;coherency.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.6. Looking Ahead: Ca">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MulticoreCache.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MSIstart.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MSIwrite.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MSIread.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/MulticoreCache.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html" class="current" aria-current="page">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>11. 存储与存储器层次结构</span>
+      </nav>
+      <span class="book-position">第 125 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">11.6. 展望：多核处理器上的缓存</h1>
+  
+  
+    <p class="article-meta"><span>约 27 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C11-MemHierarchy/coherency.html">https://diveintosystems.org/book/C11-MemHierarchy/coherency.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>11.6. Looking Ahead: Caching on Multicore Processors</em></p>
+<p>到目前为止，我们对缓存的讨论集中在单核处理器上的单级缓存。然而，现代处理器是多核的，并且有多级缓存。通常，在存储器层次结构较高的一级（或几级），每个核心都维护自己私有的缓存，而在较低的级别，所有核心共享一个缓存。<a href="11.6-coherency.html">图 1</a> 展示了一个四核处理器上存储器层次结构的例子，其中每个核心都有私有的一级（L1）缓存，而二级（L2）缓存由四个核心共享。</p>
+<blockquote>
+<p>So far our discussion of caching has focused on a single level of cache memory on a single-core processor. Modern processors, however, are multicore with several levels of cache memory. Typically, each core maintains its own private cache memory at the highest level(s) of the memory hierarchy and shares a single cache with all cores at lower levels. <a href="11.6-coherency.html">Figure 1</a> shows an example of the memory hierarchy on a four-core processor in which each core contains a private level 1 (L1) cache, and the level 2 (L2) cache is shared by all four cores.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/MulticoreCache.png" alt="An example four-core processor system where each core has its own L1 cache, and all cores share a single L2 cache, with shared RAM underneath."></p>
+<p><strong>图 1.</strong> 多核处理器上的存储器层次结构示例。四个核心各有私有的 L1 缓存，它们通过一条共享总线访问一个共享的 L2 缓存。多核处理器通过内存总线连接到 RAM。</p>
+<p><em>Figure 1. An example memory hierarchy on a multicore processor. Each of the four cores has its own private L1 cache, and all four cores share a single L2 cache that they access through a shared bus. The multicore processor connects to RAM via the memory bus.</em></p>
+<p>回想一下，存储器层次结构中较高的级别比较低的级别访问更快、容量更小。因此，L1 缓存比 L2 缓存更小、更快，而 L2 缓存又比 RAM 更小、更快。还要回想一下，缓存存储的是存储器层次结构中较低一级的值的副本；存放在 L1 缓存中的值，是存放在 L2 缓存中同一个值的副本，而后者又是存放在 RAM 中同一个值的副本。因此，存储器层次结构中较高的级别充当较低级别的缓存。于是，对于<a href="11.6-coherency.html">图 1</a> 中的例子，L2 缓存是 RAM 内容的缓存，而每个核心的 L1 缓存是 L2 缓存内容的缓存。</p>
+<blockquote>
+<p>Recall that higher levels of the memory hierarchy are faster to access and smaller in capacity than lower levels of the memory hierarchy. Thus, an L1 cache is smaller and faster than an L2 cache, which in turn is smaller and faster than RAM. Also recall that cache memory stores a copy of a value from a lower level in the memory hierarchy; a value stored in a L1 cache is a copy of the same value stored in the L2 cache, which is a copy of the same value stored in RAM. Thus, higher levels of the memory hierarchy serve as caches for lower levels. As a result, for the example in <a href="11.6-coherency.html">Figure 1</a>, the L2 cache is a cache of RAM contents, and each core’s L1 cache is a cache of the L2 cache contents.</p>
+</blockquote>
+<p>多核处理器中的每个核心同时执行一个独立的指令流，这些指令流常常来自不同的程序。给每个核心配一个私有的 L1 缓存，让核心能在它最快的缓存中只存放它正在执行的指令流的数据和指令的副本。换句话说，每个核心的 L1 缓存只存放来自它自己执行流的那些内存块的副本，而不必在所有核心共享的单个 L1 缓存中争夺空间。与所有核心共享一个 L1 缓存的设计相比，这种设计让每个核心私有的 L1 缓存（即它最快的缓存）获得更高的命中率。</p>
+<blockquote>
+<p>Each core in a multicore processor simultaneously executes an independent stream of instructions, often from separate programs. Providing each core a private L1 cache allows the core to store copies of the data and instructions exclusively from the instruction stream it’s executing in its fastest cache memory. In other words, each core’s L1 cache stores a copy of only those blocks of memory that are from its execution stream as opposed to competing for space in a single L1 cache shared by all cores. This design yields a higher hit rate in each core’s private L1 cache (in its fastest cache memory) than one in which all cores share a single L1 cache.</p>
+</blockquote>
+<p>如今的处理器常常有不止两级缓存。台式机系统中常见的是三级缓存，其中最高一级（L1）通常分成两个独立的 L1 缓存，一个用于程序指令，另一个用于程序数据。较低级别的缓存通常是<strong>统一缓存</strong>（unified cache），即同时存放程序数据和指令。每个核心通常维护一个私有的 L1 缓存，并与所有核心共享一个 L3 缓存。位于每个核心私有的 L1 缓存与共享的 L3 缓存之间的 L2 缓存层，在现代 CPU 设计中差异很大。L2 可能是私有的，可能由所有核心共享，也可能是一种混合组织：有多个 L2 缓存，每个由一部分核心共享。</p>
+<blockquote>
+<p>Today’s processors often include more than two levels of cache. Three levels are common in desktop systems, with the highest level (L1) typically split into two separate L1 caches, one for program instructions and the other for program data. Lower-level caches are usually <strong>unified caches</strong>, meaning that they store both program data and instructions. Each core usually maintains a private L1 cache and shares a single L3 cache with all cores. The L2 cache layer, which sits between each core’s private L1 cache and the shared L3 cache, varies substantially in modern CPU designs. The L2 may be a private L2 cache, may be shared by all cores, or may be a hybrid organization with multiple L2 caches, each shared by a subset of cores.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注 · Linux 系统上的处理器与缓存信息（Processor and Cache Information on Linux systems）</p><p>如果你好奇自己 CPU 的设计，有几种方法可以获取系统上处理器及其缓存组织的信息。例如，<code>lscpu</code> 命令显示处理器的信息，包括它的核心数以及各级缓存的级别和大小：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ lscpu</span><br><span class="line">...</span><br><span class="line">CPU(s):                          12</span><br><span class="line">Thread(s) per core:              2</span><br><span class="line">Core(s) per socket:              6</span><br><span class="line">Socket(s):                       1</span><br><span class="line">...</span><br><span class="line">L1d cache:                       192 KiB</span><br><span class="line">L1i cache:                       384 KiB</span><br><span class="line">L2 cache:                        3 MiB</span><br><span class="line">L3 cache:                        16 MiB</span><br></pre></td></tr></table></figure>
+
+<p>这个输出显示共有六个核心（<code>Socket(s)</code> 的数目乘以 <code>Core(s) per socket</code>），每个核心都是双路超线程的（<code>Thread(s) per core</code>），使六个物理核心在操作系统看来是 12 个 CPU（关于硬件多线程的更多信息，见<a href="../C5-Arch/5.9-modern.html">第 5.9.2 节</a>）。此外，输出还显示有三级缓存（<code>L1</code>、<code>L2</code> 和 <code>L3</code>），并且有两个独立的 L1 缓存，一个缓存数据（<code>L1d</code>），另一个缓存指令（<code>L1i</code>）。</p>
+<p>除了 <code>lscpu</code>，<code>/proc</code> 和 <code>/sys</code> 文件系统中的文件也包含关于处理器的信息。例如，命令 <code>cat /proc/cpuinfo</code> 输出关于处理器的信息，而下面的命令列出某个特定处理器核心的缓存信息（注意，这些文件是按核心的超线程 CPU 命名的，在这个例子中，<code>cpu0</code> 和 <code>cpu6</code> 是核心 0 上的两个超线程 CPU）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls /sys/devices/system/cpu/cpu0/cache</span><br><span class="line">index0/  index1/  index2/  index3/</span><br></pre></td></tr></table></figure>
+
+<p>这个输出表明核心 0 有四个缓存（<code>index0</code> 到 <code>index3</code>）。要查看每个缓存的详细信息，查看 index 目录下的 <code>type</code>、<code>level</code> 和 <code>shared_cpu_list</code> 文件：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/type</span><br><span class="line">Data</span><br><span class="line">Instruction</span><br><span class="line">Unified</span><br><span class="line">Unified</span><br><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/level</span><br><span class="line">1</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/shared_cpu_list</span><br><span class="line">0,6</span><br><span class="line">0,6</span><br><span class="line">0,6</span><br><span class="line">0-11</span><br></pre></td></tr></table></figure>
+
+<p><code>type</code> 的输出表明核心 0 有独立的数据缓存和指令缓存，以及另外两个统一缓存。把 <code>level</code> 的输出与 <code>type</code> 的输出对照起来可以看出，数据缓存和指令缓存都是 L1 缓存，而两个统一缓存分别是 L2 和 L3 缓存。<code>shared_cpu_list</code> 进一步表明，L1 和 L2 缓存是核心 0 私有的（只由核心 0 上的两个超线程 CPU <code>0</code> 和 <code>6</code> 共享），而 L3 缓存由所有六个核心共享（由所有 12 个超线程 CPU <code>0-11</code> 共享）。</p>
+<blockquote>
+<p>If you’re curious about your CPU’s design, there are several ways to obtain information about a processor and its cache organization on your system. For example, the <code>lscpu</code> command displays information about the processor, including its number of cores and the levels and sizes of its caches:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">$ lscpu</span><br><span class="line">...</span><br><span class="line">CPU(s):                          12</span><br><span class="line">Thread(s) per core:              2</span><br><span class="line">Core(s) per socket:              6</span><br><span class="line">Socket(s):                       1</span><br><span class="line">...</span><br><span class="line">L1d cache:                       192 KiB</span><br><span class="line">L1i cache:                       384 KiB</span><br><span class="line">L2 cache:                        3 MiB</span><br><span class="line">L3 cache:                        16 MiB</span><br></pre></td></tr></table></figure>
+
+<p>This output shows that there are six total cores (the number of <code>Socket(s)</code> multiplied by the <code>Core(s) per socket</code>), and that each core is two-way hyperthreaded (<code>Thread(s) per core</code>) to make the six physical cores appear as 12 CPUs to the operating system (see <a href="../C5-Arch/5.9-modern.html">Chapter 5.9.2</a> for more information on hardware multithreading). Additionally, the output shows that there are three levels of cache (<code>L1</code>, <code>L2</code>, and <code>L3</code>), and that there are two separate L1 caches, one for caching data (<code>L1d</code>) and another for caching instructions (<code>L1i</code>).</p>
+<p>In addition to <code>lscpu</code>, files in the <code>/proc</code> and <code>/sys</code> filesystems contain information about the processor. For example, the command <code>cat /proc/cpuinfo</code> outputs information about the processor, and the following command lists information about the caches for a specific processor core (note that these files are named in terms of a core’s hyperthreaded CPUs, and in this example <code>cpu0</code> and <code>cpu6</code> are the two hyperthreaded CPUs on core 0):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ ls /sys/devices/system/cpu/cpu0/cache</span><br><span class="line">index0/  index1/  index2/  index3/</span><br></pre></td></tr></table></figure>
+
+<p>This output indicates that core 0 has four caches (<code>index0</code> to <code>index3</code>). To see the details of each cache, examine the index directory’s <code>type</code>, <code>level</code>, and <code>shared_cpu_list</code> files:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/type</span><br><span class="line">Data</span><br><span class="line">Instruction</span><br><span class="line">Unified</span><br><span class="line">Unified</span><br><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/level</span><br><span class="line">1</span><br><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">$ cat /sys/devices/system/cpu/cpu0/cache/index*/shared_cpu_list</span><br><span class="line">0,6</span><br><span class="line">0,6</span><br><span class="line">0,6</span><br><span class="line">0-11</span><br></pre></td></tr></table></figure>
+
+<p>The <code>type</code> output indicates that core 0 has separate data and instruction caches as well as two other unified caches. Correlating the <code>level</code> output with the <code>type</code> output reveals that the data and instruction caches are both L1 caches, whereas the unified caches are L2 and L3 caches, respectively. The <code>shared_cpu_list</code> further shows that the L1 and L2 caches are private to core 0 (shared only by CPU <code>0</code> and <code>6</code>, the two hyperthread CPUs on core 0), and that the L3 cache is shared by all six cores (by all 12 hyperthreaded CPUs, <code>0-11</code>).</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · 在 Apple Silicon Mac 上</p><p>macOS 没有 <code>lscpu</code>、<code>/proc</code> 和 <code>/sys</code>，相应的信息可以用 <code>sysctl</code> 查询（见 11.2 节的译注）。例如在 Apple M1 Pro 上，<code>sysctl hw.physicalcpu hw.logicalcpu</code> 都是 8（没有超线程），<code>hw.perflevel0.physicalcpu</code> 为 6、<code>hw.perflevel1.physicalcpu</code> 为 2，即 6 个性能核加 2 个能效核；两类核心簇各有自己的 L2（12 MB 和 4 MB）。可见 L2「由一部分核心共享」的混合组织确实存在。</p>
+</div>
+<h3 id="11-6-1-缓存一致性"><a href="#11-6-1-缓存一致性" class="headerlink" title="11.6.1. 缓存一致性"></a>11.6.1. 缓存一致性</h3><p><em>11.6.1. Cache Coherency</em></p>
+<p>由于程序通常表现出很高的访问局部性，让每个核心拥有自己的 L1 缓存，来存放它所执行的指令流中的数据和指令副本，是很有好处的。然而，多个 L1 缓存可能导致<strong>缓存一致性</strong>（cache coherency）问题。当存放在一个核心 L1 缓存中的某个内存块副本的值，与存放在另一个核心 L1 缓存中同一个块的副本的值不同时，就会出现缓存一致性问题。当一个核心写入它 L1 缓存中缓存的某个块，而这个块也缓存在其他核心的 L1 缓存中时，就会发生这种情况。由于缓存块包含的是内存内容的副本，系统需要在该缓存块的所有副本之间维持内存内容一致的单一值。</p>
+<blockquote>
+<p>Because programs typically exhibit a high degree of locality of reference, it is advantageous for each core to have its own L1 cache to store copies of the data and instructions from the instruction stream it executes. However, multiple L1 caches can result in <strong>cache coherency</strong> problems. Problems with cache coherency arise when the value of a copy of a block of memory stored in one core’s L1 cache is different than the value of a copy of the same block stored in another core’s L1 cache. This situation occurs when one core writes to a block cached in its L1 cache that is also cached in other core’s L1 caches. Because a cache block contains a copy of memory contents, the system needs to maintain a coherent single value of the memory contents across all copies of the cached block.</p>
+</blockquote>
+<p>多核处理器实现了一种<strong>缓存一致性协议</strong>（cache-coherence protocol），来确保可以被多个核心缓存和访问的内存具有一致的视图。缓存一致性协议确保任何访问某个内存位置的核心，看到的都是该内存位置最近被修改的值，而不是它的 L1 缓存中可能存放的一个较旧（过时）的副本。</p>
+<blockquote>
+<p>Multicore processors implement a <strong>cache-coherence protocol</strong> to ensure a coherent view of memory that can be cached and accessed by multiple cores. A cache coherency protocol ensures that any core accessing a memory location sees the most recently modified value of that memory location rather than seeing an older (stale) copy of the value that may be stored in its L1 cache.</p>
+</blockquote>
+<h3 id="11-6-2-MSI-协议"><a href="#11-6-2-MSI-协议" class="headerlink" title="11.6.2. MSI 协议"></a>11.6.2. MSI 协议</h3><p><em>11.6.2. The MSI Protocol</em></p>
+<p>缓存一致性协议有很多种。这里我们讨论其中一个例子 MSI 协议的细节。<strong>MSI 协议</strong>（Modified、Shared、Invalid，即已修改、共享、无效）给每个缓存行添加三个标志（或位）。标志的值要么是清除（0），要么是置位（1）。这三个标志的值编码了缓存行数据块相对于该块其他缓存副本的一致性状态，它们的值会在对缓存行中的数据块进行读或写访问时触发缓存一致性动作。MSI 协议使用的三个标志是：</p>
+<blockquote>
+<p>There are many different cache coherency protocols. Here, we discuss the details of one example, the MSI protocol. The <strong>MSI protocol</strong> (Modified, Shared, Invalid) adds three flags (or bits) to each cache line. A flag’s value is either clear (0) or set (1). The values of the three flags encode the state of its data block with respect to cache coherency with other cached copies of the block, and their values trigger cache coherency actions on read or write accesses to the data block in the cache line. The three flags used by the MSI protocol are:</p>
+</blockquote>
+<ul>
+<li><strong>M</strong> 标志：置位时表示该块已被修改，即这个核心写过它缓存的值副本。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>M</strong> flag that, if set, indicates the block has been modified, meaning that this core has written to its copy of the cached value.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>S</strong> 标志：置位时表示该块未被修改，可以安全地共享，即多个 L1 缓存可以安全地存放该块的副本并从各自的副本中读取。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>S</strong> flag that, if set, indicates that the block is unmodified and can be safely shared, meaning that multiple L1 caches may safely store a copy of the block and read from their copy.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>I</strong> 标志：置位时表示缓存的块无效或包含过时的数据（是数据的一个较旧的副本，不反映该内存块的当前值）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <strong>I</strong> flag that, if set, indicates if the cached block is invalid or contains stale data (is an older copy of the data that does not reflect the current value of the block of memory).</li>
+</ul>
+</blockquote>
+<p>对缓存项的读访问和写访问都会触发 MSI 协议。</p>
+<blockquote>
+<p>The MSI protocol is triggered on read and write accesses to cache entries.</p>
+</blockquote>
+<p>读访问时：</p>
+<blockquote>
+<p>On a read access:</p>
+</blockquote>
+<ul>
+<li>如果缓存块处于 M 或 S 状态，就用缓存的值来满足读请求（它的副本的值就是该内存块的最新值）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If the cache block is in the M or S state, the cached value is used to satisfy the read (its copy’s value is the most current value of the block of memory).</li>
+</ul>
+</blockquote>
+<ul>
+<li><p>如果缓存块处于 I 状态，说明缓存的副本相对于该块的较新版本已经过时，必须先把该块的新值加载到缓存行中，才能满足读请求。</p>
+<p>如果另一个核心的 L1 缓存中存有新值（它存放该值时 M 标志置位，表示它存的是一个修改过的副本），那么那个核心必须先把它的值写回较低的级别（例如写到 L2 缓存）。完成写回之后，它清除该缓存行的 M 标志（它的副本和较低级别中的副本现在一致了），并置位 S 位，表示这个缓存行中的块处于可以被其他核心安全缓存的状态（这个 L1 块与它在 L2 缓存中的副本一致，并且核心是从这个 L1 副本中读到该块的当前值的）。</p>
+<p>然后，在 I 标志置位的行上发起读访问的那个核心，就可以把该块的新值加载到它的缓存行中。它清除 I 标志，表示该块现在有效，并存入该块的新值；置位 S 标志，表示该块可以安全地共享（它存的是最新的值，并且与其他缓存副本一致）；清除 M 标志，表示这个 L1 块的值与存放在 L2 缓存中的副本相同（读操作不会修改 L1 中缓存的内存副本）。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>If the cache block is in the I state, the cached copy is out of date with a newer version of the block, and the block’s new value needs to be loaded into the cache line before the read can be satisfied.</p>
+<p>If another core’s L1 cache stores the new value (it stores the value with the M flag set indicating that it stores a modified copy of the value), that other core must first write its value back to the lower level (for example, to the L2 cache). After performing the write-back, it clears the M flag with the cache line (its copy and the copy in the lower-level are now consistent) and sets the S bit to indicate that the block in this cache line is in a state that can be safely cached by other cores (the L1 block is consistent with its copy in the L2 cache and the core read the current value of the block from this L1 copy).</p>
+<p>The core that initiated the read access on an line with the I flag set can then load the new value of the block into its cache line. It clears the I flag indicating that the block is now valid and stores the new value of the block, sets the S flag indicating that the block can be safely shared (it stores the latest value and is consistent with other cached copies), and clears the M flag indicating that the L1 block’s value matches that of the copy stored in the L2 cache (a read does not modify the L1 cached copy of the memory).</p>
+</li>
+</ul>
+</blockquote>
+<p>写访问时：</p>
+<blockquote>
+<p>On a write access:</p>
+</blockquote>
+<ul>
+<li>如果该块处于 M 状态，就写入该块的缓存副本。标志无需改变（该块仍处于 M 状态）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If the block is in the M state, write to the cached copy of the block. No changes to the flags are needed (the block remains in the M state).</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果该块处于 I 或 S 状态，就通知其他核心该块正在被写入（修改）。其他以 S 状态存放该块的 L1 缓存需要清除它们的块的 S 位并置位 I 位（它们的副本相对于另一个核心正在写入的副本已经过时了）。如果另一个 L1 缓存以 M 状态存放该块，它会把它的块写回较低的级别，并把它的副本设为 I。然后，执行写操作的核心把该块的新值加载到它的 L1 缓存中，置位 M 标志（它的副本将被这次写操作修改），清除 I 标志（它的副本现在有效），并写入缓存的块。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If the block is in the I or the S state, notify other cores that the block is being written to (modified). Other L1 caches that have the block stored in the S state, need to clear the S bit and set the I bit on their block (their copies of the block are now out of date with the copy that is being written to by the other core). If another L1 cache has the block in the M state, it will write its block back to the lower level, and set its copy to I. The core writing will then load the new value of the block into its L1 cache, set the M flag (its copy will be modified by the write), and clear the I flags (its copy is now valid), and write to the cached block.</li>
+</ul>
+</blockquote>
+<p><a href="11.6-coherency.html">图 2</a> 到<a href="11.6-coherency.html">图 4</a> 逐步演示了一个例子：一个内存块缓存在两个核心各自私有的 L1 缓存中，MSI 协议如何确保对它的读写访问保持一致。在<a href="11.6-coherency.html">图 2</a> 中，例子一开始，共享的数据块被复制到两个核心的 L1 缓存中，并且 S 标志都已置位，这意味着 L1 中缓存的副本与 L2 缓存中该块的值相同（所有副本都存放着该块的当前值 6）。此时，核心 0 和核心 1 都可以安全地读取各自 L1 缓存中的副本，而不会触发一致性动作（S 标志表明它们的共享副本是最新的）。</p>
+<blockquote>
+<p><a href="11.6-coherency.html">Figure 2</a> through <a href="11.6-coherency.html">Figure 4</a> step through an example of the MSI protocol applied to ensure coherency of read and write accesses to a block of memory that is cached in two core’s private L1 caches. In <a href="11.6-coherency.html">Figure 2</a> our example starts with the shared data block copied into both core’s L1 cache with the S flag set, meaning that the L1 cached copies are the same as the value of the block in the L2 cache (all copies store the current value of the block, 6). At this point, both core 0 and core 1 can safely read from the copy stored in their L1 caches without triggering coherency actions (the S flag indicates that their shared copy is up to date).</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/MSIstart.png" alt="An example illustrating a block of memory copied into two core’s L1 caches, both in the S state."></p>
+<p><strong>图 2.</strong> 开始时，两个核心的私有 L1 缓存中都有该块的副本，并且 S 标志置位（处于共享状态）</p>
+<p><em>Figure 2. At the start, both cores have a copy of the block in their private L1 caches with the S flag set (in Shared mode)</em></p>
+<p>如果核心 0 接下来写入它 L1 缓存中存放的该块副本，它的 L1 缓存控制器会通知其他 L1 缓存使它们的该块副本失效。于是核心 1 的 L1 缓存控制器清除它的副本的 S 标志并置位 I 标志，表示它的块副本已经过时。核心 0 写入它 L1 缓存中的块副本（在我们的例子中把值改为 7），并在该缓存行上置位 M 标志、清除 S 标志，表示它的副本已被修改，存放的是该块的当前值。此时，L2 缓存中和核心 1 的 L1 缓存中的副本都已过时。得到的缓存状态如<a href="11.6-coherency.html">图 3</a> 所示。</p>
+<blockquote>
+<p>If core 0 next writes to the copy of the block stored in its L1 cache, its L1 cache controller notifies the other L1 caches to invalidate their copy of the block. Core 1’s L1 cache controller then clears the S flag and sets the I flag on its copy, indicating that its copy of the block is stale. Core 0 writes to its copy of the block in its L1 cache (changing its value to 7 in our example), and sets the M flag and clears the S flag on the cache line to indicate that its copy has been modified and stores the current value of the block. At this point, the copy in the L2 cache and in core 1’s L1 cache are stale. The resulting cache state is shown in <a href="11.6-coherency.html">Figure 3</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/MSIwrite.png" alt="An example illustrating the steps taken by the MSI protocol on a write to a block of memory that is shared by more than one L1 cache."></p>
+<p><strong>图 3.</strong> 核心 0 写入它的块副本之后各缓存的状态</p>
+<p><em>Figure 3. The resulting state of the caches after Core 0 writes to its copy of the block</em></p>
+<p>此时，核心 0 可以安全地读取它缓存的块副本，因为它的副本处于 M 状态，即存放着该块最近写入的值。</p>
+<blockquote>
+<p>At this point, core 0 can safely read from its copy of the cached block because its copy is in the M state, meaning that it stores the most recently written value of the block.</p>
+</blockquote>
+<p>如果核心 1 接下来读取这个内存块，它 L1 中缓存副本上的 I 标志表明它的 L1 块副本已经过时，不能用来满足读请求。核心 1 的 L1 缓存控制器必须先把该块的新值加载到 L1 缓存中，才能满足读请求。为此，核心 0 的 L1 缓存控制器必须先把它修改过的块值写回 L2 缓存，以便核心 1 的 L1 缓存能把该块的新值读入它的 L1 缓存。这些动作的结果（如<a href="11.6-coherency.html">图 4</a> 所示）是，核心 0 和核心 1 的 L1 中缓存的块副本现在都处于 S 状态，表明每个核心的 L1 副本都是最新的，可以安全地用来满足之后对该块的读请求。</p>
+<blockquote>
+<p>If core 1 next reads from the memory block, the I flag on its L1 cached copy indicates that its L1 copy of the block is stale and cannot be used to satisfy the read. Core 1’s L1 cache controller must first load the new value of the block into the L1 cache before the read can be satisfied. To achieve this, core 0’s L1 cache controller must first write its modified value of the block back to the L2 cache, so that core 1’s L1 cache can read the new value of the block into its L1 cache. The result of these actions, (shown in <a href="11.6-coherency.html">Figure 4</a>), is that core 0 and core 1’s L1 cached copies of the block are now both stored in the S state, indicating that each core’s L1 copy is up to data and can be safely used to satisfy subsequent reads to the block.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/MSIread.png" alt="An example illustrating the steps taken by the MSI protocol on a read to a block of memory that is cached in the I state."></p>
+<p><strong>图 4.</strong> 核心 1 接下来读取该块之后各缓存的状态</p>
+<p><em>Figure 4. The resulting state of the caches after Core 1 next reads the block</em></p>
+<h3 id="11-6-3-缓存一致性协议的实现"><a href="#11-6-3-缓存一致性协议的实现" class="headerlink" title="11.6.3. 缓存一致性协议的实现"></a>11.6.3. 缓存一致性协议的实现</h3><p><em>11.6.3. Implementing Cache Coherency Protocols</em></p>
+<p>为了实现缓存一致性协议，处理器需要某种机制来识别：对一个核心的 L1 缓存内容的访问，何时需要改变涉及其他核心 L1 缓存内容的一致性状态。实现这种机制的一种方法，是在所有 L1 缓存共享的一条总线上进行<strong>监听</strong>（snooping）。监听式缓存控制器在总线上监听（或窥探）对它所缓存的块的读或写。由于每个读写请求都是以内存地址的形式发出的，监听式 L1 缓存控制器能识别出另一个 L1 缓存对它所存块的任何读写，然后根据一致性协议作出相应的响应。例如，当它监听到另一个 L1 缓存对同一地址的写操作时，可以在对应的缓存行上置位 I 标志。这个例子就是用监听实现<strong>写失效协议</strong>（write-invalidate protocol）的方式。</p>
+<blockquote>
+<p>To implement a cache coherency protocol, a processor needs some mechanism to identify when accesses to one core’s L1 cache contents require coherency state changes involving the other cores’ L1 cache contents. One way this mechanism is implemented is through <strong>snooping</strong> on a bus that is shared by all L1 caches. A snooping cache controller listens (or snoops) on the bus for reads or writes to blocks that it caches. Because every read and write request is in terms of a memory address, a snooping L1 cache controller can identify any read or write from another L1 cache for a block it stores, and can then respond appropriately based on the coherency protocol. For example, it can set the I flag on a cache line when it snoops a write to the same address by another L1 cache. This example is how a <strong>write-invalidate protocol</strong> would be implemented with snooping.</p>
+</blockquote>
+<p>MSI 以及 MESI、MOESI 等其他类似的协议都是写失效协议，即在写操作时使缓存项的其他副本失效的协议。监听也可以用于写更新（write-update）的缓存一致性协议：从总线上监听到数据的新值，并用它更新其他 L1 缓存中存放的所有副本。</p>
+<blockquote>
+<p>MSI and other similar protocols such as MESI and MOESI are write-invalidate protocols; that is, protocols that invalidate copies of cached entries on writes. Snooping can also be used by write-update cache coherency protocols, where the new value of a data is snooped from the bus and applied to update all copies stored in other L1 caches.</p>
+</blockquote>
+<p>除了监听之外，还可以用基于目录（directory-based）的缓存一致性机制来触发缓存一致性协议。由于多个核心共享一条总线会带来性能限制，这种方法比监听的可扩展性更好。不过，基于目录的机制需要更多的状态来检测内存块何时被共享，而且比监听慢。</p>
+<blockquote>
+<p>Instead of snooping, a directory-based cache coherence mechanism can be used to trigger cache coherency protocols. This method scales better than snooping due to performance limitations of multiple cores sharing a single bus. However, directory-based mechanisms require more state to detect when memory blocks are shared, and are slower than snooping.</p>
+</blockquote>
+<h3 id="11-6-4-关于多核缓存的更多内容"><a href="#11-6-4-关于多核缓存的更多内容" class="headerlink" title="11.6.4. 关于多核缓存的更多内容"></a>11.6.4. 关于多核缓存的更多内容</h3><p><em>11.6.4. More about Multicore Caching</em></p>
+<p>多核处理器的每个核心在存储器层次结构的最高几级拥有各自独立的缓存，只用来存放它所执行的程序数据和指令的副本，由此带来的性能收益，值得处理器为实现缓存一致性协议而付出额外的复杂度。</p>
+<blockquote>
+<p>The benefits to performance of each core of a multicore processor having its own separate cache(s) at the highest levels of the memory hierarchy, which are used to store copies of only the program data and instructions that it executes, is worth the added extra complexity of the processor needing to implement a cache coherency protocol.</p>
+</blockquote>
+<p>尽管缓存一致性解决了有独立 L1 缓存的多核处理器上的内存一致性问题，但多核处理器上的缓存一致性协议还会引发另一个问题。这个问题称为<strong>伪共享</strong>（false sharing），当一个多线程并行程序的多个线程同时运行在多个核心上，并且访问的内存位置与其他线程访问的位置相邻时，就可能发生伪共享。在<a href="../C14-SharedMemory/14.5-cache_coherence.html">第 14.5 节</a>中，我们会讨论伪共享问题以及一些解决办法。</p>
+<blockquote>
+<p>Although cache coherency solves the memory coherency problem on multicore processors with separate L1 caches, there is another problem that can occur as a result of cache coherency protocols on multicore processors. This problem, called <strong>false sharing</strong>, may occur when multiple threads of a single multithreaded parallel program are running simultaneously across the multiple cores and are accessing memory locations that are near to those accessed by other threads. In section <a href="../C14-SharedMemory/14.5-cache_coherence.html">Chapter 14.5</a>, we discuss the false sharing problem and some solutions to it.</p>
+</blockquote>
+<p>关于多核处理器上硬件缓存的更多信息和细节，包括不同的协议及其实现方式，请参阅计算机体系结构教科书<sup>1</sup>。</p>
+<blockquote>
+<p>For more information and details about hardware caching on multicore processors, including different protocols and how they are implemented, refer to a computer architecture textbook<sup>1</sup>.</p>
+</blockquote>
+<h3 id="脚注"><a href="#脚注" class="headerlink" title="脚注"></a>脚注</h3><p><em>Footnotes</em></p>
+<ol>
+<li>推荐一本：David A. Patterson 和 John L. Hennessy 合著的《Computer Organization and Design: The Hardware and Software Interface》（中译本《计算机组成与设计：硬件&#x2F;软件接口》）。</li>
+</ol>
+<blockquote>
+<ol>
+<li>One suggestion is “Computer Organization and Design: The Hardware and Software Interface”, by David A. Patterson and John L. Hennessy.</li>
+</ol>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">11.5. 缓存分析与 Valgrind</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">11.7. 小结</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-1-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7"><span class="toc-text">11.6.1. 缓存一致性</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-2-MSI-%E5%8D%8F%E8%AE%AE"><span class="toc-text">11.6.2. MSI 协议</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-3-%E7%BC%93%E5%AD%98%E4%B8%80%E8%87%B4%E6%80%A7%E5%8D%8F%E8%AE%AE%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">11.6.3. 缓存一致性协议的实现</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-6-4-%E5%85%B3%E4%BA%8E%E5%A4%9A%E6%A0%B8%E7%BC%93%E5%AD%98%E7%9A%84%E6%9B%B4%E5%A4%9A%E5%86%85%E5%AE%B9"><span class="toc-text">11.6.4. 关于多核缓存的更多内容</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%84%9A%E6%B3%A8"><span class="toc-text">脚注</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

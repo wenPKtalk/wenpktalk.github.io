@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.7. 查看与修改文件权限 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;chmod.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.7. Viewing and Changing File Pe">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.7. 查看与修改文件权限 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.7-chmod.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;chmod.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.7. Viewing and Changing File Pe">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html" class="current" aria-current="page">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 178 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.7. 查看与修改文件权限</h1>
+  
+  
+    <p class="article-meta"><span>约 13 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/chmod.html">https://diveintosystems.org/book/Appendix2/chmod.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.7. Viewing and Changing File Permissions</em></p>
+<p>每个 Unix 文件（和目录）都受一组权限（permission）的约束，权限定义了对它的访问权利。与文件相关的权限有：</p>
+<blockquote>
+<p>Every Unix file (and directory) is governed by a set of permissions, which defines its access rights. The permissions associated with a file are:</p>
+</blockquote>
+<ul>
+<li><code>r</code>：对文件或目录的读权限</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>r</code>: read access to the file or directory</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>w</code>：对文件或目录的写权限</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>w</code>: write access to the file or directory</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>x</code>：对文件或目录的执行权限（对于目录，这意味着你可以 <code>cd</code> 进入它；对于文件，这意味着你可以在命令行上执行它（例如 <code>./filename</code>））。编译器会自动为生成的可执行文件设置所有者的 <code>x</code> 权限。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>x</code>: execute access to the file or directory (for a directory, this means you can <code>cd</code> into it, for a file it means you can execute it at the command line (e.g., <code>./filename</code>). The compiler automatically sets the target executable file with <code>x</code> permission for the owner.</li>
+</ul>
+</blockquote>
+<p>每个文件的权限还指定了三组用户：文件的用户&#x2F;所有者（<code>u</code>）；与文件所属组同组的用户（<code>g</code>）；以及其他人（<code>o</code>），即其他所有人。通过修改文件的权限，你可以针对这几组不同的用户，以不同的方式保护或共享文件。例如，可以把文件权限设置为：所有者拥有读写权限，文件所属组中的用户拥有读权限，而其他所有人既不能读也不能写。</p>
+<blockquote>
+<p>Each file’s permissions also specifies three sets of users: the file user&#x2F;owner (<code>u</code>); users in the same group as the file’s group (<code>g</code>); and other (<code>o</code>) or everybody else. By changing the file permissions with a file, you can protect or share files in different ways these different sets of users. For example, file permission can be set to give the owner read and write access, users in the file’s group read access, and everybody else no read or write access.</p>
+</blockquote>
+<p>要列出文件和目录的权限，使用 <code>ls</code> 的 <code>-l</code> 命令行选项：</p>
+<blockquote>
+<p>To list file permissions with files and directories use the <code>-l</code> command line option of <code>ls</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ls -l</span><br><span class="line">drwx------ 3 sam users 4096 Mar 26 12:49 classes/</span><br><span class="line">drwx------ 2 sam users 4096 Mar 26 12:54 letters/</span><br><span class="line">-rw-r----- 1 sam pals    78 Mar 26 12:51 notes</span><br><span class="line">drwx------ 2 sam users 4096 Mar 26 12:48 projects/</span><br></pre></td></tr></table></figure>
+
+<p><code>ls -l</code> 的输出采用下面的格式（以 <code>notes</code> 的列表为例）：</p>
+<blockquote>
+<p>The output from <code>ls -l</code> is in the following format (showing the listing of <code>notes</code> as an example):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">type   permissions  links  owner  group  size  modification date   name</span><br><span class="line">       u   g   o</span><br><span class="line"> -    rw- r-- ---    1     sam    pals   78    Mar 26 12:51       notes</span><br><span class="line"> d    rwx --- ---    3     sam    users 4096   Mar 26 12:49       classes/</span><br></pre></td></tr></table></figure>
+
+<p><code>type</code> 对于目录是 <code>d</code>，对于普通文件是 <code>-</code>。文件权限列表分为三组 <code>rwx</code>，分别指定文件的用户或所有者（<code>u</code>）、组（<code>g</code>）和其他人（<code>o</code>）的权限。例如，与 <code>notes</code> 文件相关的 <code>-rw-r-----</code> 表示：文件所有者 <code>sam</code> 对文件有读写权限（<code>rw-</code>），文件所属组 <code>pals</code> 只有读权限（<code>r--</code>），其他人没有访问该文件的任何权限（<code>---</code>）。列表中的其他字段显示了文件所有者的用户名（<code>sam</code>）、文件所属组的名字（<code>pals</code>）、文件的字节数（<code>78</code>）、文件最后修改的时间（<code>Mar 26 12:51</code>）以及文件名（<code>notes</code>）。列出的还有该文件的硬链接数（<code>1</code>），即目录结构中引用同一个文件的名字的数目。</p>
+<blockquote>
+<p>The <code>type</code> is <code>d</code> for directories and <code>-</code> for regular files. The file permission listings are in three groups of <code>rwx</code> specifying permissions for the file user or owner (<code>u</code>), group (<code>g</code>), and others (<code>o</code>). For example, the <code>-rw-r-----</code> associated with the <code>notes</code> file means that the file owner <code>sam</code> has read and write access to the file (<code>rw-</code>), that the file’s group, <code>pals</code> has read permission only (<code>r--</code>), and others have no permissions to access the file (<code>---</code>). The other fields in the listing show the username of the file owner (<code>sam</code>), the name of the file’s group (<code>pals</code>), the size of the file in bytes (<code>78</code>), the last time the file was modified (<code>Mar 26 12:51</code>) and the name of the file (<code>notes</code>). Also listed are the number of hard links to the file (<code>1</code>), which is the number of names in the directory structure that refer to this same file.</p>
+</blockquote>
+<p><code>classes</code> 的列表是 <code>drwx------</code>，这表示 <code>classes</code> 是一个目录，文件所有者 <code>sam</code> 有读、写和执行权限（<code>rwx</code>），而目录所属组（<code>users</code>）和其他人没有任何访问权限（<code>---</code>）。换句话说，这是用户 <code>sam</code> 的私有目录；其他任何人都不能访问这个目录。我们注意到，目录必须设置了执行（<code>x</code>）权限才能 <code>cd</code> 进入。目录的链接数大于 <code>1</code>，因为目录名（例如 <code>classes</code>）和目录中的名字 <code>./</code>（以及它的任何子目录中的名字 <code>../</code>）都引用同一个目录。由于 <code>classes</code> 有一个子目录 <code>CS31</code>，它的链接数是 <code>3</code>。</p>
+<blockquote>
+<p>The listing for <code>classes</code> is <code>drwx------</code>, which means that <code>classes</code> is a directory, the file owner <code>sam</code> has read, write, and execute permissions (<code>rwx</code>), and that the directory’s group (<code>users</code>) and others have no access permissions (<code>---</code>). In other words this is a private directory to the user <code>sam</code>; no one else can access this directory. We note that a directory must have execute (<code>x</code>) permission set in order to <code>cd</code> into it. Directories have link sizes greater than <code>1</code> because both the directory name (e.g., <code>classes</code>) and the name <code>./</code> in the directory (and the name <code>../</code> in any of its subdirectories) refer to the same directory. Because <code>classes</code> has one subdirectory, <code>CS31</code>, its link value is <code>3</code>.</p>
+</blockquote>
+<h3 id="17-7-1-chmod"><a href="#17-7-1-chmod" class="headerlink" title="17.7.1. chmod"></a>17.7.1. chmod</h3><p><em>17.7.1. chmod</em></p>
+<p><code>chmod</code> 命令修改文件或目录的权限。它接收的命令行参数指定如何修改与每个文件相关的三组用户（用户&#x2F;所有者、组和其他人）的权限。</p>
+<blockquote>
+<p>The <code>chmod</code> command changes the permissions on a file or directory. It takes command line arguments that specify how to change the permissions for the three sets of users associated with every file: user&#x2F;owner, group, and other.</p>
+</blockquote>
+<p>运行 <code>chmod</code> 的一种方式，是给出一个三位数字作为命令行参数，它编码了如何设置权限。第一位数字指定文件用户&#x2F;所有者的权限，第二位指定文件所属组的权限，第三位指定其他所有用户的权限。例如，<code>chmod 700 letters</code> 把 <code>letters</code> 变成一个私有目录；<code>7</code> 把用户的权限设为 <code>rwx</code>，<code>0</code> 把组和其他人的权限设为 <code>---</code>。</p>
+<blockquote>
+<p>One way to run <code>chmod</code> is to give a three digit number as a command line argument that encodes how to set the permissions. The first digit specifies the permissions for the file user&#x2F;owner, the second digit specifies the permissions for the file group, and the third for all other users. For example, <code>chmod 700 letters</code> makes <code>letters</code> a private directory; <code>7</code> sets the user’s permissions to <code>rwx</code>, and <code>0</code> set permissions to <code>---</code> for group and others.</p>
+</blockquote>
+<p>要理解这些数字的含义，把每一位数字看作一个三位二进制数，对于 <code>rwx</code> 这三项，<code>1</code> 表示授予该权限，<code>0</code> 表示不授予。<a href="17.7-chmod.html">表 1</a> 给出了一些例子。</p>
+<blockquote>
+<p>To understand what the digits mean, consider each digit represented as a three bit binary number where a <code>1</code> means grant the permission and <code>0</code> means don’t grant it for the set <code>rwx</code>. <a href="17.7-chmod.html">Table 1</a> shows some examples.</p>
+</blockquote>
+<p><strong>表 1.</strong> chmod 权限编码示例</p>
+<p><em>Table 1. chmod Permission Encoding Examples</em></p>
+<table>
+<thead>
+<tr>
+<th>数字</th>
+<th>二进制</th>
+<th>权限</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>7</code></td>
+<td><code>111</code></td>
+<td>设置 rwx 权限</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td><code>101</code></td>
+<td>只设置 r 和 x 权限</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td><code>100</code></td>
+<td>只设置 r 权限</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td><code>110</code></td>
+<td>只设置 rw 权限</td>
+</tr>
+<tr>
+<td><code>0</code></td>
+<td><code>000</code></td>
+<td>清除所有权限…​无法访问</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Digit</th>
+<th>Binary</th>
+<th>Permission</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>7</code></td>
+<td><code>111</code></td>
+<td>set rwx permissions</td>
+</tr>
+<tr>
+<td><code>5</code></td>
+<td><code>101</code></td>
+<td>set r x permissions only</td>
+</tr>
+<tr>
+<td><code>4</code></td>
+<td><code>100</code></td>
+<td>set r permission only</td>
+</tr>
+<tr>
+<td><code>6</code></td>
+<td><code>110</code></td>
+<td>set rw permissions only</td>
+</tr>
+<tr>
+<td><code>0</code></td>
+<td><code>000</code></td>
+<td>clear all permissions…​no access</td>
+</tr>
+</tbody></table>
+</blockquote>
+<p>例如，如果 <code>sam</code> 想让其他所有用户都能读 <code>notes</code> 文件，并给自己读写权限，他会运行下面的命令：</p>
+<blockquote>
+<p>For example, if <code>sam</code> wants to give read access to the <code>notes</code> file with all other users and give himself read and write access, he would run the following command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ chmod 644 notes</span><br><span class="line">$ ls -l</span><br><span class="line">drwx------ 3 sam users  4096 Mar 26 12:49 classes/</span><br><span class="line">drwx------ 2 sam users  4096 Mar 26 12:54 letters/</span><br><span class="line">-rw-r--r-- 1 sam pals     78 Mar 26 12:51 notes</span><br><span class="line">drwx------ 2 sam users  4096 Mar 26 12:48 projects/</span><br></pre></td></tr></table></figure>
+
+<p><code>644</code> 把 <code>notes</code> 的权限设为 <code>-rw-r--r--</code>：<code>6</code> 给文件所有者 <code>rw-</code> 权限；<code>4</code> 给文件所属组 <code>r--</code> 权限；<code>4</code> 给其他人 <code>r--</code> 权限。</p>
+<blockquote>
+<p>The <code>644</code> sets the permissions on <code>notes</code> to <code>-rw-r—​r--</code>: <code>6</code> gives the file’s owner <code>rw-</code> access; <code>4</code> gives the file’s group <code>r--</code> access; and <code>4</code> gives other <code>r--</code> access.</p>
+</blockquote>
+<p><code>chmod</code> 命令也可以使用 <code>[u,g,o][+,-][permissions]</code> 这种设置格式。例如，如果 <code>sam</code> 想给 <code>users</code> 组对 <code>projects</code> 目录的写权限，他可以用 <code>g+w</code>（给组加上写权限）来指定这个权限；如果他想去掉其他人对 <code>notes</code> 的读权限，可以指定 <code>o-r</code>（从其他人那里去掉读权限）：</p>
+<blockquote>
+<p>The <code>chmod</code> command can also use the <code>[u,g,o][+,-][permissions]</code> setting format too. For example, if <code>sam</code> wants to give the <code>users</code> group write access to the <code>projects</code> directory, he can specify this permission using <code>g+w</code> (add write permission to group), and if he wants to remove read access from <code>notes</code> to others, he can specify <code>o-r</code> (remove read permission from all):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ chmod g+w projects</span><br><span class="line">$ chmod o-r notes</span><br><span class="line">$ ls -l</span><br><span class="line">drwx------ 3 sam users 4096 Mar 26 12:49 classes/</span><br><span class="line">drwx------ 2 sam users 4096 Mar 26 12:54 letters/</span><br><span class="line">-rw-r----- 1 sam pals    78 Mar 26 12:51 notes</span><br><span class="line">drwx-w---- 2 sam users  4096 Mar 26 12:48 projects/</span><br></pre></td></tr></table></figure>
+
+<p>当他意识到给 <code>users</code> 组对 <code>projects</code> 目录的写权限是个糟糕的主意时，可以用 <code>g-w</code> 去掉它：</p>
+<blockquote>
+<p>And when he realizes that giving the <code>users</code> group write access to his <code>projects</code> directory was a terrible idea, he can remove it using <code>g-w</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ chmod g-w projects</span><br><span class="line">$ ls -l projects</span><br><span class="line">drwx------ 2 sam users  4096 Mar 26 12:48 projects/</span><br></pre></td></tr></table></figure>
+
+<p><code>chmod</code> 命令还有其他命令行选项，包括一个递归选项，可以递归地修改整个子目录内容的权限。更多细节参见手册页。</p>
+<blockquote>
+<p>The <code>chmod</code> command has other command line options, including a recursive flag to recursively change permissions on a full subdirectory’s contents. See the man page for more details.</p>
+</blockquote>
+<p>Linux 还支持<strong>访问控制列表</strong>（access control list，ACL），它允许把丰富得多的权限集合与文件和目录关联起来。<code>getfacl</code> 和 <code>setfacl</code> 的手册页包含关于 ACL 的信息，不过细节超出了我们的介绍范围。</p>
+<blockquote>
+<p>Linux also supports <strong>access control lists</strong> (ACLs), which allow a much richer set of permissions to be associated with files and directories. The man page for <code>getfacl</code> and <code>setfacl</code> contain information about ACLs, but the details are beyond the scope of our coverage.</p>
+</blockquote>
+<h3 id="17-7-2-chgrp"><a href="#17-7-2-chgrp" class="headerlink" title="17.7.2. chgrp"></a>17.7.2. chgrp</h3><p><em>17.7.2. chgrp</em></p>
+<p><code>chgrp</code> 命令可以用来修改与文件或目录关联的组。Unix 组通常需要由拥有系统 root 权限的系统管理员来创建（root 用户是 Unix 的超级用户账户，它拥有普通用户所没有的文件系统访问权利）。</p>
+<blockquote>
+<p>The <code>chgrp</code> command can be used to change the group associated with a file or directory. Unix groups typically need to be created by a system administrator who has root access on the system (the root user is the Unix superuser account that has access rights to the filesystem that a regular user does not have).</p>
+</blockquote>
+<p>如果用户 <code>sam</code> 和另外两个用户同属于一个名为 <code>proj3</code> 的组，<code>sam</code> 就可以修改他的 <code>projects</code> 目录所属的组并设置权限，只给这个组对该目录更高的权利。例如：</p>
+<blockquote>
+<p>If the user <code>sam</code> is part of a group named <code>proj3</code> with two other users, <code>sam</code> can change the group and set permissions on their <code>projects</code> directory to give just this group elevated rights to the directory. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ chgrp proj3 projects  # change the projects directory&#x27;s group to proj3</span><br><span class="line">$ ls -l</span><br><span class="line">drwx------ 3 sam users  4096 Mar 26 12:49 classes/</span><br><span class="line">drwx------ 2 sam users  4096 Mar 26 12:54 letters/</span><br><span class="line">-rw-r----- 1 sam pals     78 Mar 26 12:51 notes</span><br><span class="line">drwx------ 2 sam proj3 4096 Mar 26 12:48 projects/</span><br><span class="line"></span><br><span class="line">$ chmod 750 projects    # give proj3 group members r and x access to directory</span><br><span class="line">$ ls -l</span><br><span class="line">drwx------ 3 sam users  4096 Mar 26 12:49 classes/</span><br><span class="line">drwx------ 2 sam users  4096 Mar 26 12:54 letters/</span><br><span class="line">-rw-r----- 1 sam pals     78 Mar 26 12:51 notes</span><br><span class="line">drwxr-x--- 2 sam proj3 4096 Mar 26 12:48 projects/</span><br></pre></td></tr></table></figure>
+
+<p>类似地，<code>chown</code> 命令修改文件的所有者，但你需要有 root 权限才能运行它。</p>
+<blockquote>
+<p>Similarly, the <code>chown</code> command changes the owner of a file, but you need to have root privileges to run it.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 文件所属组的设置与默认权限（File group setting and default permissions）</p><p>每个用户都有默认的权限和默认的组，它们会自动与该用户创建的所有新文件和目录关联起来。两者都可以在 shell 的配置文件（例如 <code>.bashrc</code>）中修改。关于点文件的更多信息，参见<a href="17.14-dotfiles.html">第 17.14 节</a>。</p>
+<p>你的默认组由名为 <code>GROUP</code> 的 shell 环境变量指定。可以用 <code>echo $GROUP</code> 列出它的值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo $GROUP</span><br><span class="line">GROUP=users</span><br></pre></td></tr></table></figure>
+
+<p>你的默认文件权限由 <code>.bashrc</code> 文件中的 <code>umask</code> 设置配置。可以用 <code>umask</code> 列出它的值：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ umask</span><br><span class="line">77</span><br></pre></td></tr></table></figure>
+
+<p><code>umask</code> 为 <code>77</code>（即 <code>077</code>）会让我所有的文件和目录都成为私有的（它把组和其他人的权限设为 00，即 <code>------</code>）。可以把 umask 编码看作 chmod 编码的某种反向（例如，在 <code>umask</code> 中 <code>7</code> 去掉所有权限（<code>rwx</code>），而在 chmod 中 <code>7</code> 授予所有权限）。</p>
+<blockquote>
+<p>Each user has default permissions and a default group that will automatically be associated with all new files and directories the user creates. Both of these can be modified in your shell’s config file (e.g., <code>.bashrc</code>). See <a href="17.14-dotfiles.html">Section 17.14</a> for more information about dot files.</p>
+<p>Your default group is specified in the shell environment variable named <code>GROUP</code>. You can list its value using <code>echo $GROUP</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo $GROUP</span><br><span class="line">GROUP=users</span><br></pre></td></tr></table></figure>
+
+<p>Your default file permission are configured from the <code>umask</code> setting in your <code>.bashrc</code> file. You can list its value using <code>umask</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ umask</span><br><span class="line">77</span><br></pre></td></tr></table></figure>
+
+<p>A <code>umask</code> of <code>77</code> (or <code>077</code>) makes all my files and directories private (it sets the group and other permissions to 00 or <code>------</code>). You can think of the umask encoding as being sort of like the inverse of the chmod encoding (e.g., <code>7</code> removes all permissions (<code>rwx</code>) in <code>umask</code> but grants all in chmod).</p>
+</blockquote>
+</div>
+<h3 id="17-7-3-参考资料"><a href="#17-7-3-参考资料" class="headerlink" title="17.7.3. 参考资料"></a>17.7.3. 参考资料</h3><p><em>17.7.3. References</em></p>
+<p>更多信息参见：</p>
+<blockquote>
+<p>For more information see:</p>
+</blockquote>
+<ul>
+<li>这些命令的手册页（例如 <code>man chmod</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>The man pages for these commands (e.g., <code>man chmod</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>cheat-sheets.org 上的<a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">最常用的 Unix 命令</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">most used Unix commands</a> from cheat-sheets.org</li>
+</ul>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash 参考手册</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash Reference Manual</a> from gnu.org.</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.6-grep.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17.6. 搜索：grep 与 find</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.8-tar.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.8. 归档与压缩文件</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-7-1-chmod"><span class="toc-text">17.7.1. chmod</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-7-2-chgrp"><span class="toc-text">17.7.2. chgrp</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-7-3-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.7.3. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3.1. 用 GDB 调试 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C3-C_debug&#x2F;gdb.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  3.1. Debugging with GDB GDB 可以帮助程序员">
+<meta property="og:type" content="website">
+<meta property="og:title" content="3.1. 用 GDB 调试 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C3-C_debug/3.1-gdb.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C3-C_debug&#x2F;gdb.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  3.1. Debugging with GDB GDB 可以帮助程序员">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html" class="current" aria-current="page">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>3. C 调试工具</span>
+      </nav>
+      <span class="book-position">第 36 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">3.1. 用 GDB 调试</h1>
+  
+  
+    <p class="article-meta"><span>约 29 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/gdb.html">https://diveintosystems.org/book/C3-C_debug/gdb.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>3.1. Debugging with GDB</em></p>
+<p><a target="_blank" rel="noopener" href="https://www.gnu.org/software/gdb/">GDB</a> 可以帮助程序员找出并修复程序中的缺陷。GDB 适用于用多种语言编译的程序，但这里我们只关注 C。调试器是一个控制另一个程序（被调试的程序）执行的程序——它让程序员在程序运行时看到程序在做什么。使用调试器可以帮助程序员发现缺陷，并确定所发现缺陷的原因。下面是 GDB 能执行的一些有用操作：</p>
+<blockquote>
+<p><a target="_blank" rel="noopener" href="https://www.gnu.org/software/gdb/">GDB</a> can help programmers find and fix bugs in their programs. GDB works with programs compiled in a variety of languages, but we focus on C here. A debugger is a program that controls the execution of another program (the program being debugged) — it allows programmers to see what their programs are doing as they run. Using a debugger can help programmers discover bugs and determine the causes of the bugs they find. Here are some useful actions that GDB can perform:</p>
+</blockquote>
+<ul>
+<li>启动程序并逐行单步执行</li>
+</ul>
+<blockquote>
+<ul>
+<li>Start a program and step through it line by line</li>
+</ul>
+</blockquote>
+<ul>
+<li>在程序执行到代码中的某些位置时暂停它</li>
+</ul>
+<blockquote>
+<ul>
+<li>Pause the execution of a program when it reaches certain points in its code</li>
+</ul>
+</blockquote>
+<ul>
+<li>在满足用户指定的条件时暂停程序的执行</li>
+</ul>
+<blockquote>
+<ul>
+<li>Pause the execution of a program on user-specified conditions</li>
+</ul>
+</blockquote>
+<ul>
+<li>在程序暂停的执行点显示变量的值</li>
+</ul>
+<blockquote>
+<ul>
+<li>Show the values of variables at the point in execution that a program is paused</li>
+</ul>
+</blockquote>
+<ul>
+<li>暂停后继续执行程序</li>
+</ul>
+<blockquote>
+<ul>
+<li>Continue a program’s execution after a pause</li>
+</ul>
+</blockquote>
+<ul>
+<li>在程序崩溃时检查它的执行状态</li>
+</ul>
+<blockquote>
+<ul>
+<li>Examine the program’s execution state at the point when it crashes</li>
+</ul>
+</blockquote>
+<ul>
+<li>检查调用栈中任意一个栈帧的内容</li>
+</ul>
+<blockquote>
+<ul>
+<li>Examine the contents of any stack frame on the call stack</li>
+</ul>
+</blockquote>
+<p>GDB 用户通常会在程序中设置<strong>断点</strong>（breakpoint）。断点指定程序中的一个位置，GDB 会在那里暂停程序的执行。当正在执行的程序遇到断点时，GDB 会暂停它的执行，让用户输入 GDB 命令来检查程序变量和栈的内容、一次一行地单步执行程序、添加新的断点，以及继续执行程序直到遇到下一个断点。</p>
+<blockquote>
+<p>GDB users typically set <strong>breakpoints</strong> in their programs. A breakpoint specifies a point in the program where GDB will pause the program’s execution. When the executing program hits a breakpoint, GDB pauses its execution and allows the user to enter GDB commands to examine program variables and stack contents, step through the execution of the program one line at a time, add new breakpoints, and continue the program’s execution until it hits the next breakpoint.</p>
+</blockquote>
+<p>许多 Unix 系统还提供 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/ddd/">Data Display Debugger（DDD）</a>，它是对命令行调试程序（例如 GDB）的一层易用的图形界面封装。DDD 程序接受与 GDB 相同的参数和命令，但它既提供带有调试菜单选项的图形界面，也提供 GDB 的命令行界面。</p>
+<blockquote>
+<p>Many Unix systems also provide the <a target="_blank" rel="noopener" href="https://www.gnu.org/software/ddd/">Data Display Debugger (DDD)</a>, an easy-to-use GUI wrapper around a command-line debugger program (GDB, for example). The DDD program accepts the same parameters and commands as GDB, but it provides a GUI interface with debugging menu options as well as the command line interface to GDB.</p>
+</blockquote>
+<p>在讨论了<a href="3.1-gdb.html">GDB 入门</a>的一些准备知识之后，我们给出两个 GDB 调试会话示例，在查找不同类型缺陷的情境中介绍常用的 GDB 命令。第一个会话（<a href="3.1-gdb.html">用 GDB 调试 badprog.c</a>）演示如何用 GDB 命令找出 C 程序中的逻辑缺陷。第二个会话（<a href="3.1-gdb.html">用 GDB 调试 segfaulter.c</a>）演示如何在程序崩溃时用 GDB 命令检查程序的执行状态，从而找出崩溃的原因。</p>
+<blockquote>
+<p>After discussing a few preliminaries about how to <a href="3.1-gdb.html">get started with GDB</a>, we present two example GDB debugging sessions that introduce commonly used GDB commands in the context of finding different types of bugs. The first session (<a href="3.1-gdb.html">GDB on badprog.c</a>), shows how to use GDB commands to find logic bugs in a C program. The second session (<a href="3.1-gdb.html">GDB on segfaulter.c</a>) shows an example of using GDB commands to examine the program execution state at the point when a program crashes in order to discover the cause of the crash.</p>
+</blockquote>
+<p>在<a href="3.2-gdb_commands.html">常用 GDB 命令</a>一节中，我们会更详细地介绍常用的 GDB 命令，并给出其中一些命令的更多示例。后面几节会讨论 GDB 的一些高级特性。</p>
+<blockquote>
+<p>In the <a href="3.2-gdb_commands.html">common GDB commands</a> section, we describe commonly used GDB commands in more detail, showing more examples of some commands. In later sections, we discuss some advanced GDB features.</p>
+</blockquote>
+<h3 id="3-1-1-GDB-入门"><a href="#3-1-1-GDB-入门" class="headerlink" title="3.1.1. GDB 入门"></a>3.1.1. GDB 入门</h3><p><em>3.1.1. Getting Started with GDB</em></p>
+<p>调试程序时，用 <code>-g</code> 选项编译会有帮助，它会在二进制可执行文件中加入额外的调试信息。这些额外信息帮助调试器在二进制可执行文件中找到程序变量和函数，并使它能把机器码指令映射到 C 源代码行（也就是 C 程序员能看懂的程序形式）。此外，为调试而编译时，要避免编译器优化（例如，不要用 <code>-O2</code> 构建）。经过编译器优化的代码往往很难调试，因为优化后的机器码序列常常无法清晰地对应回 C 源代码。尽管接下来各节使用的是 <code>-g</code> 标志，有些用户使用 <code>-g3</code> 标志可能会得到更好的效果，它能提供更多的调试信息。</p>
+<blockquote>
+<p>When debugging a program, it helps to compile it with the <code>-g</code> option, which adds extra debugging information to the binary executable file. This extra information helps the debugger find program variables and functions in the binary executable and enables it to map machine code instructions to lines of C source code (the form of the program that the C programmer understands). Also, when compiling for debugging, avoid compiler optimizations (for example, do not build with <code>-O2</code>). Compiler-optimized code is often very difficult to debug because sequences of optimized machine code often do not clearly map back to C source code. Although we cover the use of the <code>-g</code> flag in the following sections, some users may get better results with the <code>-g3</code> flag, which can reveal extra debugging information.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p><code>-g3</code> 比 <code>-g</code>（等同于 <code>-g2</code>）多出的主要是宏定义信息，有了它就能在 GDB 里用 <code>print MAX</code> 之类的命令查看 <code>#define</code> 宏的值。另外 GCC 还提供 <code>-Og</code>：只做不影响调试体验的优化，适合「既要调试、又不想完全不优化」的场合。</p>
+</div>
+<p>下面是一条构建适合用 GDB 调试的可执行文件的 <code>gcc</code> 命令示例：</p>
+<blockquote>
+<p>Here is an example <code>gcc</code> command that will build a suitable executable for debugging with GDB:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g myprog.c</span><br></pre></td></tr></table></figure>
+
+<p>要启动 GDB，就以可执行文件为参数调用它。例如：</p>
+<blockquote>
+<p>To start GDB, invoke it on the executable file. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gdb a.out</span><br><span class="line">(gdb)          # the gdb command prompt</span><br></pre></td></tr></table></figure>
+
+<p>GDB 启动后会打印 <code>(gdb)</code> 提示符，让用户在它开始运行 <code>a.out</code> 程序之前输入 GDB 命令（比如设置断点）。</p>
+<blockquote>
+<p>When GDB starts, it prints the <code>(gdb)</code> prompt, which allows the user to enter GDB commands (such as setting breakpoints) before it starts running the <code>a.out</code> program.</p>
+</blockquote>
+<p>类似地，以可执行文件为参数调用 DDD：</p>
+<blockquote>
+<p>Similarly, to invoke DDD on the executable file:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ddd a.out</span><br></pre></td></tr></table></figure>
+
+<p>有时程序因出错而终止时，操作系统会转储（dump）一个 core 文件，其中包含程序崩溃时的状态信息。用 core 文件和生成它的可执行文件来运行 GDB，就可以在 GDB 中检查这个 core 文件的内容：</p>
+<blockquote>
+<p>Sometimes, when a program terminates with an error, the operating system dumps a core file containing information about the state of the program when it crashed. The contents of this core file can be examined in GDB by running GDB with the core file and the executable that generated it:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 参数顺序</p><p>按 GDB 手册，正确的写法是可执行文件在前、core 文件在后：<code>gdb a.out core</code>（下面代码中写成了 <code>gdb core a.out</code>）。<a target="_blank" rel="noopener" href="https://sourceware.org/gdb/current/onlinedocs/gdb.html/Invoking-GDB.html">GDB 手册：Invoking GDB</a></p>
+<p>另外，许多 Linux 系统默认不生成 core 文件，需要先在 shell 中执行 <code>ulimit -c unlimited</code>；使用 systemd 的发行版通常由 <code>systemd-coredump</code> 统一收集 core 文件，可以用 <code>coredumpctl gdb</code> 直接打开最近一次的崩溃。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gdb core a.out</span><br><span class="line">(gdb) where       # the where command shows point of crash</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-1-2-GDB-会话示例"><a href="#3-1-2-GDB-会话示例" class="headerlink" title="3.1.2. GDB 会话示例"></a>3.1.2. GDB 会话示例</h3><p><em>3.1.2. Example GDB Sessions</em></p>
+<p>我们通过两个用 GDB 调试程序的会话示例来演示 GDB 的常用功能。第一个例子用 GDB 找出并修复程序中的两个缺陷，第二个例子用 GDB 调试一个会崩溃的程序。这两个示例会话中演示的 GDB 命令包括：</p>
+<blockquote>
+<p>We demonstrate common features of GDB through two example sessions of using GDB to debug programs. The first is an example of using GDB to find and fix two bugs in a program, and the second is an example of using GDB to debug a program that crashes. The set of GDB commands that we demonstrate in these two example sessions includes:</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>break</code></td>
+<td>设置断点</td>
+</tr>
+<tr>
+<td><code>run</code></td>
+<td>从头开始运行程序</td>
+</tr>
+<tr>
+<td><code>cont</code></td>
+<td>继续执行程序，直到遇到断点</td>
+</tr>
+<tr>
+<td><code>quit</code></td>
+<td>退出 GDB 会话</td>
+</tr>
+<tr>
+<td><code>next</code></td>
+<td>让程序执行下一行 C 代码，然后暂停</td>
+</tr>
+<tr>
+<td><code>step</code></td>
+<td>让程序执行下一行 C 代码；如果下一行含有函数调用，就进入该函数并暂停</td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td>列出暂停点或指定位置附近的 C 源代码</td>
+</tr>
+<tr>
+<td><code>print</code></td>
+<td>打印程序变量（或表达式）的值</td>
+</tr>
+<tr>
+<td><code>where</code></td>
+<td>打印调用栈</td>
+</tr>
+<tr>
+<td><code>frame</code></td>
+<td>进入某个特定栈帧的上下文</td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>break</code></td>
+<td>Set a breakpoint</td>
+</tr>
+<tr>
+<td><code>run</code></td>
+<td>Start program running from the beginning</td>
+</tr>
+<tr>
+<td><code>cont</code></td>
+<td>Continue execution of the program until it hits a breakpoint</td>
+</tr>
+<tr>
+<td><code>quit</code></td>
+<td>Quit the GDB session</td>
+</tr>
+<tr>
+<td><code>next</code></td>
+<td>Allow program to execute the next line of C code and then pause it</td>
+</tr>
+<tr>
+<td><code>step</code></td>
+<td>Allow program to execute the next line of C code; if the next line contains a function call, step into the function and pause</td>
+</tr>
+<tr>
+<td><code>list</code></td>
+<td>List C source code around pause point or specified point</td>
+</tr>
+<tr>
+<td><code>print</code></td>
+<td>Print out the value of a program variable (or expression)</td>
+</tr>
+<tr>
+<td><code>where</code></td>
+<td>Print the call stack</td>
+</tr>
+<tr>
+<td><code>frame</code></td>
+<td>Move into the context of a specific stack frame</td>
+</tr>
+</tbody></table>
+</blockquote>
+<h4 id="用-GDB-调试程序的示例（badprog-c）"><a href="#用-GDB-调试程序的示例（badprog-c）" class="headerlink" title="用 GDB 调试程序的示例（badprog.c）"></a>用 GDB 调试程序的示例（badprog.c）</h4><p><em>Example Using GDB to Debug a Program (badprog.c)</em></p>
+<p>第一个 GDB 会话示例调试 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/badprog.c">badprog.c</a> 程序。这个程序本应找出一个 <code>int</code> 数组中的最大值。然而运行时，它错误地认为数组中的最大值是 17，而正确的最大值是 60。这个例子展示 GDB 如何检查程序的运行时状态，以确定程序为什么没有算出预期的结果。具体来说，这个调试会话揭示了两个缺陷：</p>
+<blockquote>
+<p>The first example GDB session debugs the <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/badprog.c">badprog.c</a> program. This program is supposed to find the largest value in an array of <code>int</code> values. However, when run, it incorrectly finds that 17 is the largest value in the array instead of the correct largest value, which is 60. This example shows how GDB can examine the program’s runtime state to determine why the program is not computing the expected result. In particular, this example debugging session reveals two bugs:</p>
+</blockquote>
+<ol>
+<li>循环边界错误，导致程序访问了数组边界之外的元素。</li>
+</ol>
+<blockquote>
+<ol>
+<li>An error with loop bounds resulting in the program accessing elements beyond the bounds of the array.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>某个函数没有把正确的值返回给调用者。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>An error in a function not returning the correct value to its caller.</li>
+</ol>
+</blockquote>
+<p>要用 GDB 检查程序，首先用 <code>-g</code> 编译程序，为可执行文件加入调试信息：</p>
+<blockquote>
+<p>To examine a program with GDB, first compile the program with <code>-g</code> to add debugging information to the executable:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g badprog.c</span><br></pre></td></tr></table></figure>
+
+<p>接着，对二进制可执行程序（<code>a.out</code>）运行 GDB。GDB 完成初始化后打印出 <code>(gdb)</code> 提示符，用户可以在这里输入 GDB 命令：</p>
+<blockquote>
+<p>Next, run GDB on the binary executable program (<code>a.out</code>). GDB initializes and prints the <code>(gdb)</code> prompt, where the user can enter GDB commands:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./a.out</span><br><span class="line"></span><br><span class="line">GNU gdb (Ubuntu 8.1-0ubuntu3) 8.1.0.20180409-git</span><br><span class="line">Copyright (C) 2018 Free Software Foundation, Inc.</span><br><span class="line">  ...</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>此时 GDB 还没有开始运行程序。常见的第一步调试操作是在 <code>main()</code> 函数中设置一个断点，让程序在执行 <code>main()</code> 的第一条指令之前暂停。<code>break</code> 命令在指定位置（这里是 <code>main()</code> 函数的开头）设置一个「断点」（暂停程序）：</p>
+<blockquote>
+<p>At this point GDB has not yet started running the program. A common first debugging step is to set a breakpoint in the <code>main()</code> function to pause the program’s execution right before it executes the first instruction in <code>main()</code>. The <code>break</code> command sets a “breakpoint” (pauses the program) at a specified location (in this case at the start of the <code>main()</code> function):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break main</span><br><span class="line"></span><br><span class="line">Breakpoint 1 at 0x8048436: file badprog.c, line 36.</span><br></pre></td></tr></table></figure>
+
+<p><code>run</code> 命令让 GDB 启动程序：</p>
+<blockquote>
+<p>The <code>run</code> command tells GDB to start the program:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) run</span><br><span class="line">Starting program: ./a.out</span><br></pre></td></tr></table></figure>
+
+<p>如果程序需要命令行参数，就把它们写在 <code>run</code> 命令之后（例如，<code>run 100 200</code> 会以命令行参数 <code>100</code> 和 <code>200</code> 运行 <code>a.out</code>）。</p>
+<blockquote>
+<p>If the program takes command line arguments, provide them after the <code>run</code> command (for example, <code>run 100 200</code> would run <code>a.out</code> with the command line arguments <code>100</code> and <code>200</code>).</p>
+</blockquote>
+<p>输入 <code>run</code> 之后，GDB 从头开始执行程序，一直运行到遇到断点为止。到达断点时，GDB 在执行断点处那行代码之前暂停程序，并打印出断点编号和与断点对应的源代码行。在这个例子中，GDB 在执行程序第 36 行之前暂停了程序。然后它打印出 <code>(gdb)</code> 提示符，等待进一步的指令：</p>
+<blockquote>
+<p>After entering <code>run</code>, GDB starts the program’s execution at its beginning, and it runs until it hits a breakpoint. Upon reaching a breakpoint, GDB pauses the program before executing the line of code at the breakpoint, and prints out the breakpoint number and source code line associated with the breakpoint. In this example, GDB pauses the program just before executing line 36 of the program. It then prints out the <code>(gdb)</code> prompt and waits for further instructions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Breakpoint 1, main (argc=1, argv=0x7fffffffe398) at badprog.c:36</span><br><span class="line">36     int main(int argc, char *argv[]) &#123;</span><br><span class="line"></span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>程序在断点处暂停时，用户往往想看看断点附近的 C 源代码。GDB 的 <code>list</code> 命令会显示断点周围的代码：</p>
+<blockquote>
+<p>Often when a program pauses at a breakpoint, the user wants to see the C source code around the breakpoint. The GDB <code>list</code> command displays the code surrounding the breakpoint:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list</span><br><span class="line">29	    &#125;</span><br><span class="line">30	    return 0;</span><br><span class="line">31	&#125;</span><br><span class="line">32</span><br><span class="line">33	/***************************************/</span><br><span class="line">34	int main(int argc, char *argv[]) &#123;</span><br><span class="line">35</span><br><span class="line">36	    int arr[5] = &#123; 17, 21, 44, 2, 60 &#125;;</span><br><span class="line">37</span><br><span class="line">38	    int max = arr[0];</span><br></pre></td></tr></table></figure>
+
+<p>之后再调用 <code>list</code>，会显示接下来的若干行源代码。<code>list</code> 也可以带上具体的行号（例如 <code>list 11</code>）或函数名，列出程序中指定部分的源代码。例如：</p>
+<blockquote>
+<p>Subsequent calls to <code>list</code> display the next lines of source code following these. <code>list</code> can also be used with a specific line number (for example, <code>list 11</code>) or with a function name to list the source code at a specified part of the program. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) list findAndReturnMax</span><br><span class="line">12	 * 	array: array of integer values</span><br><span class="line">13	 * 	len: size of the array</span><br><span class="line">14	 * 	max: set to the largest value in the array</span><br><span class="line">15	 *  	returns: 0 on success and non-zero on an error</span><br><span class="line">16	 */</span><br><span class="line">17	int findAndReturnMax(int *array1, int len, int max) &#123;</span><br><span class="line">18</span><br><span class="line">19	    int i;</span><br><span class="line">20</span><br><span class="line">21	    if (!array1 || (len &lt;=0) ) &#123;</span><br></pre></td></tr></table></figure>
+
+<p>遇到断点之后，用户可能想一次执行一行代码，并在每行执行后检查程序状态。GDB 的 <code>next</code> 命令只执行紧接着的下一行 C 代码。程序执行完这行代码后，GDB 会再次暂停程序。<code>print</code> 命令打印程序变量的值。下面是几次调用 <code>next</code> 和 <code>print</code>，展示它们对接下来两行执行的效果。注意，<code>next</code> 之后列出的那一行源代码还<em>没有</em>执行——它显示的是程序暂停的那一行，也就是下一步将要执行的那一行：</p>
+<blockquote>
+<p>The user may want to execute one line of code at a time after hitting a breakpoint, examining program state after each line is executed. The GDB <code>next</code> command executes just the very next line of C code. After the program executes this line of code, GDB pauses the program again. The <code>print</code> command prints the values of program variables. Here are a few calls to <code>next</code> and <code>print</code> to show their effects on the next two lines of execution. Note that the source code line listed after a <code>next</code> has not yet been executed — it shows the line where the program is paused, which represents the line that will be executed next:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">(gdb) next</span><br><span class="line">36	  int arr[5] = &#123; 17, 21, 44, 2, 60 &#125;;</span><br><span class="line">(gdb) next</span><br><span class="line">38	  int max = arr[0];</span><br><span class="line">(gdb) print max</span><br><span class="line">$3 = 0</span><br><span class="line">(gdb) print arr[3]</span><br><span class="line">$4 = 2</span><br><span class="line">(gdb) next</span><br><span class="line">40	  if ( findAndReturnMax(arr, 5, max) != 0 ) &#123;</span><br><span class="line">(gdb) print max</span><br><span class="line">$5 = 17</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>执行到这里，main 函数已经初始化了它的局部变量 <code>arr</code> 和 <code>max</code>，即将调用 <code>findAndReturnMax()</code> 函数。GDB 的 <code>next</code> 命令执行下一整行 C 源代码。如果这一行含有函数调用，那么该函数调用的完整执行及其返回都会作为一次 <code>next</code> 命令的一部分执行完。想要观察函数执行过程的用户，应当使用 GDB 的 <code>step</code> 命令而不是 <code>next</code> 命令：<code>step</code> 会进入函数调用内部，在执行函数的第一行之前暂停程序。</p>
+<blockquote>
+<p>At this point in the program’s execution, the main function has initialized its local variables <code>arr</code> and <code>max</code> and is about to make a call to the <code>findAndReturnMax()</code> function. The GDB <code>next</code> command executes the next full line of C source code. If that line includes a function call, the full execution of that function call and its return is executed as part of a single <code>next</code> command. A user who wants to observe the execution of the function should issue GDB’s <code>step</code> command instead of the <code>next</code> command: <code>step</code> steps into a function call, pausing the program before the first line of the function is executed.</p>
+</blockquote>
+<p>由于我们怀疑这个程序的缺陷与 <code>findAndReturnMax()</code> 函数有关，我们想进入这个函数的执行过程，而不是跳过它。因此，在第 40 行暂停时，<code>step</code> 命令接下来会让程序在 <code>findAndReturnMax()</code> 的开头暂停（用户也可以在 <code>findAndReturnMax()</code> 处设置断点，让程序的执行在那里暂停）：</p>
+<blockquote>
+<p>Because we suspect that the bug in this program is related to the <code>findAndReturnMax()</code> function, we want to step into the function’s execution rather than past it. So, when paused at line 40, the <code>step</code> command will next pause the program at the start of the <code>findAndReturnMax()</code> (alternately, the user could set a breakpoint at <code>findAndReturnMax()</code> to pause the program’s execution at that point):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">(gdb) next</span><br><span class="line">40	  if ( findAndReturnMax(arr, 5, max) != 0 ) &#123;</span><br><span class="line">(gdb) step</span><br><span class="line">findAndReturnMax (array1=0x7fffffffe290, len=5, max=17) at badprog.c:21</span><br><span class="line">21	  if (!array1 || (len &lt;=0) ) &#123;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>程序现在暂停在 <code>findAndReturnMax</code> 函数内部，它的局部变量和参数现在处于作用域内。<code>print</code> 命令显示它们的值，<code>list</code> 显示暂停点附近的 C 源代码：</p>
+<blockquote>
+<p>The program is now paused inside the <code>findAndReturnMax</code> function, whose local variables and parameters are now in scope. The <code>print</code> command shows their values, and <code>list</code> displays the C source code around the pause point:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print array1[0]</span><br><span class="line">$6 = 17</span><br><span class="line">(gdb) print max</span><br><span class="line">$7 = 17</span><br><span class="line">(gdb) list</span><br><span class="line">16	 */</span><br><span class="line">17	int findAndReturnMax(int *array1, int len, int max) &#123;</span><br><span class="line">18</span><br><span class="line">19	    int i;</span><br><span class="line">20</span><br><span class="line">21	    if (!array1 || (len &lt;=0) ) &#123;</span><br><span class="line">22	        return -1;</span><br><span class="line">23	    &#125;</span><br><span class="line">24	    max = array1[0];</span><br><span class="line">25	    for (i=1; i &lt;= len; i++) &#123;</span><br><span class="line">(gdb) list</span><br><span class="line">26	        if(max &lt; array1[i]) &#123;</span><br><span class="line">27	            max = array1[i];</span><br><span class="line">28	        &#125;</span><br><span class="line">29	    &#125;</span><br><span class="line">30	    return 0;</span><br><span class="line">31	&#125;</span><br><span class="line">32</span><br><span class="line">33	/***************************************/</span><br><span class="line">34	int main(int argc, char *argv[]) &#123;</span><br><span class="line">35</span><br></pre></td></tr></table></figure>
+
+<p>由于我们认为这个函数有缺陷，可能会想在函数内部设置一个断点，以便在它执行到一半时检查运行时状态。特别是，在修改 <code>max</code> 的那一行设置断点，可能有助于我们看清这个函数在做什么。</p>
+<blockquote>
+<p>Because we think there is a bug related to this function, we may want to set a breakpoint inside the function so that we can examine the runtime state part way through its execution. In particular, setting a breakpoint on the line when <code>max</code> is changed may help us see what this function is doing.</p>
+</blockquote>
+<p>我们可以在程序中的特定行号（第 27 行）设置断点，并用 <code>cont</code> 命令让 GDB 从暂停点继续执行应用程序。只有当程序遇到断点时，GDB 才会暂停程序并再次取得控制权，让用户输入其他 GDB 命令。</p>
+<blockquote>
+<p>We can set a breakpoint at a specific line number in the program (line 27) and use the <code>cont</code> command to tell GDB to let the application’s execution continue from its paused point. Only when the program hits a breakpoint will GDB pause the program and grab control again, allowing the user to enter other GDB commands.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break 27</span><br><span class="line">Breakpoint 2 at 0x555555554789: file badprog.c, line 27.</span><br><span class="line"></span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x...e290,len=5,max=17) at badprog.c:27</span><br><span class="line">27	      max = array1[i];</span><br><span class="line">(gdb) print max</span><br><span class="line">$10 = 17</span><br><span class="line">(gdb) print i</span><br><span class="line">$11 = 1</span><br></pre></td></tr></table></figure>
+
+<p><code>display</code> 命令让 GDB 在每次遇到断点时自动打印同一组程序变量。例如，我们会在程序每次遇到断点时（即 <code>findAndReturnMax()</code> 中循环的每次迭代）显示 <code>i</code>、<code>max</code> 和 <code>array1[i]</code> 的值：</p>
+<blockquote>
+<p>The <code>display</code> command asks GDB to automatically print out the same set of program variables every time a breakpoint is hit. For example, we will display the values of <code>i</code>, <code>max</code>, and <code>array1[i]</code> every time the program hits a breakpoint (in each iteration of the loop in <code>findAndReturnMax()</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line">(gdb) display i</span><br><span class="line">1: i = 1</span><br><span class="line">(gdb) display max</span><br><span class="line">2: max = 17</span><br><span class="line">(gdb) display array1[i]</span><br><span class="line">3: array1[i] = 21</span><br><span class="line"></span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x7fffffffe290, len=5, max=21)</span><br><span class="line">    at badprog.c:27</span><br><span class="line">27	      max = array1[i];</span><br><span class="line">1: i = 2</span><br><span class="line">2: max = 21</span><br><span class="line">3: array1[i] = 44</span><br><span class="line"></span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x7fffffffe290, len=5, max=21)</span><br><span class="line">    at badprog.c:27</span><br><span class="line">27	      max = array1[i];</span><br><span class="line">1: i = 3</span><br><span class="line">2: max = 44</span><br><span class="line">3: array1[i] = 2</span><br><span class="line"></span><br><span class="line">(gdb) cont</span><br><span class="line"></span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x7fffffffe290, len=5, max=44)</span><br><span class="line">    at badprog.c:27</span><br><span class="line">27	      max = array1[i];</span><br><span class="line">1: i = 4</span><br><span class="line">2: max = 44</span><br><span class="line">3: array1[i] = 60</span><br><span class="line"></span><br><span class="line">(gdb) cont</span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x7fffffffe290, len=5, max=60)</span><br><span class="line">    at badprog.c:27</span><br><span class="line">27	      max = array1[i];</span><br><span class="line">1: i = 5</span><br><span class="line">2: max = 60</span><br><span class="line">3: array1[i] = 32767</span><br><span class="line"></span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>我们找到了第一个缺陷！<code>array1[i]</code> 的值是 32767，这个值并不在传入的数组中；而 <code>i</code> 的值是 5，但 5 并不是这个数组的有效下标。通过 GDB，我们发现 <code>for</code> 循环的边界需要改为 <code>i &lt; len</code>。</p>
+<blockquote>
+<p>We found our first bug! The value of <code>array1[i]</code> is 32767, a value not in the passed array, and the value of <code>i</code> is 5, but 5 is not a valid index into this array. Through GDB we discovered that the <code>for</code> loop bounds need to be fixed to <code>i &lt; len</code>.</p>
+</blockquote>
+<p>这时，我们可以退出 GDB 会话，到代码中修复这个缺陷。要退出 GDB 会话，输入 <code>quit</code>：</p>
+<blockquote>
+<p>At this point, we could exit the GDB session and fix this bug in the code. To quit a GDB session, type <code>quit</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) quit</span><br><span class="line">The program is running.  Exit anyway? (y or n) y</span><br><span class="line">$</span><br></pre></td></tr></table></figure>
+
+<p>修复这个缺陷、重新编译并运行程序后，它仍然找不到正确的最大值（它仍然认为最大值是 17 而不是 60）。根据之前的 GDB 运行情况，我们可能会怀疑在调用 <code>findAndReturnMax()</code> 函数或从中返回时存在错误。我们在 GDB 中重新运行新版本的程序，这次在 <code>findAndReturnMax()</code> 函数的入口处设置一个断点：</p>
+<blockquote>
+<p>After fixing this bug, recompiling, and running the program, it still does not find the correct max value (it still finds that 17 is the max value and not 60). Based on our previous GDB run, we may suspect that there is an error in calling or returning from the <code>findAndReturnMax()</code> function. We re-run the new version of our program in GDB, this time setting a breakpoint at the entry to the <code>findAndReturnMax()</code> function:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">$ gdb ./a.out</span><br><span class="line">...</span><br><span class="line">(gdb) break main</span><br><span class="line">Breakpoint 1 at 0x7c4: file badprog.c, line 36.</span><br><span class="line"></span><br><span class="line">(gdb) break findAndReturnMax</span><br><span class="line">Breakpoint 2 at 0x748: file badprog.c, line 21.</span><br><span class="line"></span><br><span class="line">(gdb) run</span><br><span class="line">Starting program: ./a.out</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main (argc=1, argv=0x7fffffffe398) at badprog.c:36</span><br><span class="line">36	int main(int argc, char *argv[]) &#123;</span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">Breakpoint 2, findAndReturnMax (array1=0x7fffffffe290, len=5, max=17)</span><br><span class="line">    at badprog.c:21</span><br><span class="line">21	  if (!array1 || (len &lt;=0) ) &#123;</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>如果怀疑函数的参数或返回值有缺陷，检查栈的内容可能会有帮助。GDB 的 <code>where</code>（或 <code>bt</code>，即 “backtrace”，回溯）命令会打印栈的当前状态。在这个例子中，<code>main()</code> 函数位于栈底（在第 1 帧），正在第 40 行执行对 <code>findAndReturnMax()</code> 的调用。<code>findAndReturnMax()</code> 函数位于栈顶（在第 0 帧），当前暂停在第 21 行：</p>
+<blockquote>
+<p>If we suspect a bug in the arguments or return value of a function, it may be helpful to examine the contents of the stack. The <code>where</code> (or <code>bt</code>, for “backtrace”) GDB command prints the current state of the stack. In this example, the <code>main()</code> function is on the bottom of the stack (in frame 1) and is executing a call to <code>findAndReturnMax()</code> at line 40. The <code>findAndReturnMax()</code> function is on the top of the stack (in frame 0), and is currently paused at line 21:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">(gdb) where</span><br><span class="line">#0  findAndReturnMax (array1=0x7fffffffe290, len=5, max=17) at badprog.c:21</span><br><span class="line">#1  0x0000555555554810 in main (argc=1, argv=0x7fffffffe398) at badprog.c:40</span><br></pre></td></tr></table></figure>
+
+<p>GDB 的 <code>frame</code> 命令可以进入栈上任意一帧的上下文。在每个栈帧的上下文中，用户可以检查该帧中的局部变量和参数。在这个例子中，我们进入栈帧 1（调用者的上下文），打印出 <code>main()</code> 函数传给 <code>findAndReturnMax()</code> 的实参的值（例如 <code>arr</code> 和 <code>max</code>）：</p>
+<blockquote>
+<p>GDB’s <code>frame</code> command moves into the context of any frame on the stack. Within each stack frame context, a user can examine the local variables and parameters in that frame. In this example, we move into stack frame 1 (the caller’s context) and print out the values of the arguments that the <code>main()</code> function passes to <code>findAndReturnMax()</code> (for example, <code>arr</code> and <code>max</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">(gdb) frame 1</span><br><span class="line">#1  0x0000555555554810 in main (argc=1, argv=0x7fffffffe398) at badprog.c:40</span><br><span class="line">40	  if ( findAndReturnMax(arr, 5, max) != 0 ) &#123;</span><br><span class="line">(gdb) print arr</span><br><span class="line">$1 = &#123;17, 21, 44, 2, 60&#125;</span><br><span class="line">(gdb) print max</span><br><span class="line">$2 = 17</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>实参的值看起来没问题，所以我们来检查 <code>findAndReturnMax()</code> 函数的返回值。为此，我们在 <code>findAndReturnMax()</code> 即将返回之前加一个断点，看看它为 <code>max</code> 算出了什么值：</p>
+<blockquote>
+<p>The argument values look fine, so let’s check the <code>findAndReturnMax()</code> function’s return value. To do this, we add a breakpoint right before <code>findAndReturnMax()</code> returns to see what value it computes for its <code>max</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break 30</span><br><span class="line">Breakpoint 3 at 0x5555555547ae: file badprog.c, line 30.</span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">Breakpoint 3, findAndReturnMax (array1=0x7fffffffe290, len=5, max=60)</span><br><span class="line">    at badprog.c:30</span><br><span class="line">30	  return 0;</span><br><span class="line"></span><br><span class="line">(gdb) print max</span><br><span class="line">$3 = 60</span><br></pre></td></tr></table></figure>
+
+<p>这表明函数已经找到了正确的最大值（60）。我们再执行接下来的几行代码，看看 <code>main()</code> 函数收到的是什么值：</p>
+<blockquote>
+<p>This shows that the function has found the correct max value (60). Let’s execute the next few lines of code and see what value the <code>main()</code> function receives:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(gdb) next</span><br><span class="line">31	&#125;</span><br><span class="line">(gdb) next</span><br><span class="line">main (argc=1, argv=0x7fffffffe398) at badprog.c:44</span><br><span class="line">44	  printf(&quot;max value in the array is %d\n&quot;, max);</span><br><span class="line"></span><br><span class="line">(gdb) where</span><br><span class="line">#0  main (argc=1, argv=0x7fffffffe398) at badprog.c:44</span><br><span class="line"></span><br><span class="line">(gdb) print max</span><br><span class="line">$4 = 17</span><br></pre></td></tr></table></figure>
+
+<p>我们找到了第二个缺陷！<code>findAndReturnMax()</code> 函数找出了传入数组中正确的最大值（60），但没有把这个值返回给 <code>main()</code> 函数。要修复这个错误，要么修改 <code>findAndReturnMax()</code>，让它返回 <code>max</code> 的值，要么加一个「按指针传递」的参数，让函数通过它修改 <code>main()</code> 函数的局部变量 <code>max</code> 的值。</p>
+<blockquote>
+<p>We found the second bug! The <code>findAndReturnMax()</code> function identifies the correct largest value in the passed array (60), but it doesn’t return that value back to the <code>main()</code> function. To fix this error, we need to either change <code>findAndReturnMax()</code> to return its value of <code>max</code> or add a “pass-by-pointer” parameter that the function will use to modify the value of the <code>main()</code> function’s <code>max</code> local variable.</p>
+</blockquote>
+<h4 id="用-GDB-调试会崩溃的程序的示例（segfaulter-c）"><a href="#用-GDB-调试会崩溃的程序的示例（segfaulter-c）" class="headerlink" title="用 GDB 调试会崩溃的程序的示例（segfaulter.c）"></a>用 GDB 调试会崩溃的程序的示例（segfaulter.c）</h4><p><em>Example Using GDB to Debug a Program That Crashes (segfaulter.c)</em></p>
+<p>第二个 GDB 会话示例（在 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/segfaulter.c">segfaulter.c</a> 程序上运行）演示程序崩溃时 GDB 的行为，以及如何用 GDB 帮助找出崩溃的原因。</p>
+<blockquote>
+<p>The second example GDB session (run on the <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/segfaulter.c">segfaulter.c</a> program) demonstrates how GDB behaves when a program crashes and how we can use GDB to help discover why the crash occurs.</p>
+</blockquote>
+<p>在这个例子中，我们直接在 GDB 中运行 <code>segfaulter</code> 程序，让它崩溃：</p>
+<blockquote>
+<p>In this example, we just run the <code>segfaulter</code> program in GDB and let it crash:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g -o segfaulter segfaulter.c</span><br><span class="line">$ gdb ./segfaulter</span><br><span class="line"></span><br><span class="line">(gdb) run</span><br><span class="line">Starting program: ./segfaulter</span><br><span class="line"></span><br><span class="line">Program received signal SIGSEGV, Segmentation fault.</span><br><span class="line">0x00005555555546f5 in initfunc (array=0x0, len=100) at segfaulter.c:14</span><br><span class="line">14	    array[i] = i;</span><br></pre></td></tr></table></figure>
+
+<p>程序一崩溃，GDB 就会在崩溃点暂停程序的执行并取得控制权。GDB 允许用户发出命令，检查程序崩溃时的运行时状态，这往往能帮助发现程序崩溃的原因以及如何修复。GDB 的 <code>where</code> 和 <code>list</code> 命令对于确定程序在哪里崩溃特别有用：</p>
+<blockquote>
+<p>As soon as the program crashes, GDB pauses the program’s execution at the point it crashes and grabs control. GDB allows a user to issue commands to examine the program’s runtime state at the point of the program crash, often leading to discovering why the program crashed and how to fix the cause of the crash. The GDB <code>where</code> and <code>list</code> commands are particularly useful for determining where a program crashes:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">(gdb) where</span><br><span class="line">#0 0x00005555555546f5 in initfunc (array=0x0, len=100) at segfaulter.c:14</span><br><span class="line">#1 0x00005555555547a0 in main (argc=1, argv=0x7fffffffe378) at segfaulter.c:37</span><br><span class="line"></span><br><span class="line">(gdb) list</span><br><span class="line">9	int initfunc(int *array, int len) &#123;</span><br><span class="line">10</span><br><span class="line">11	    int i;</span><br><span class="line">12</span><br><span class="line">13	    for(i=1; i &lt;= len; i++) &#123;</span><br><span class="line">14	        array[i] = i;</span><br><span class="line">15	    &#125;</span><br><span class="line">16	    return 0;</span><br><span class="line">17	&#125;</span><br><span class="line">18</span><br></pre></td></tr></table></figure>
+
+<p>这一输出告诉我们，程序在 <code>initfunc()</code> 函数的第 14 行崩溃。检查第 14 行处参数和局部变量的值，也许能告诉我们它为什么崩溃：</p>
+<blockquote>
+<p>This output tells us that the program crashes on line 14, in the <code>initfunc()</code> function. Examining the values of the parameters and local variables on line 14 may tell us why it crashes:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print i</span><br><span class="line">$2 = 1</span><br><span class="line">(gdb) print array[i]</span><br><span class="line">Cannot access memory at address 0x4</span><br></pre></td></tr></table></figure>
+
+<p><code>i</code> 的值看起来没问题，但我们在试图访问 <code>array</code> 的下标 <code>i</code> 时看到了错误。我们打印出 <code>array</code> 的值（即数组基地址的值），看看能否发现什么：</p>
+<blockquote>
+<p>The value of <code>i</code> seems fine, but we see an error when trying to access index <code>i</code> of <code>array</code>. Let’s print out the value of <code>array</code> (the value of the base address of the array) to see if that tells us anything:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">(gdb) print array</span><br><span class="line">$3 = (int *) 0x0</span><br></pre></td></tr></table></figure>
+
+<p>我们找到了崩溃的原因！数组的基地址是零（即 <code>NULL</code>），而我们知道，（通过 <code>array[i]</code>）对空指针解引用会导致程序崩溃。</p>
+<blockquote>
+<p>We have found the cause of the crash! The base address of the array is zero (or <code>NULL</code>), and we know that dereferencing a null pointer (via <code>array[i]</code>) causes programs to crash.</p>
+</blockquote>
+<p>我们来看看调用者的栈帧，弄清 <code>array</code> 参数为什么是 <code>NULL</code>：</p>
+<blockquote>
+<p>Let’s see if we can figure out why the <code>array</code> parameter is <code>NULL</code> by looking in the caller’s stack frame:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">(gdb) frame 1</span><br><span class="line">#1 0x00005555555547a0 in main (argc=1, argv=0x7fffffffe378) at segfaulter.c:37</span><br><span class="line">37	  if(initfunc(arr, 100) != 0 ) &#123;</span><br><span class="line">(gdb) list</span><br><span class="line">32	int main(int argc, char *argv[]) &#123;</span><br><span class="line">33</span><br><span class="line">34	    int *arr = NULL;</span><br><span class="line">35	    int max = 6;</span><br><span class="line">36</span><br><span class="line">37	    if(initfunc(arr, 100) != 0 ) &#123;</span><br><span class="line">38	        printf(&quot;init error\n&quot;);</span><br><span class="line">39	        exit(1);</span><br><span class="line">40	    &#125;</span><br><span class="line">41</span><br><span class="line">(gdb) print arr</span><br><span class="line">$4 = (int *) 0x0</span><br><span class="line">(gdb)</span><br></pre></td></tr></table></figure>
+
+<p>进入调用者的栈帧，打印出 <code>main()</code> 传给 <code>initfunc()</code> 的实参的值，可以看出 <code>main()</code> 函数向 <code>initfunc()</code> 函数传入了一个空指针。换句话说，用户忘了在调用 <code>initfunc()</code> 之前分配 <code>arr</code> 数组。修复方法是在第 34 行用 <code>malloc()</code> 函数为 <code>arr</code> 分配一些空间。</p>
+<blockquote>
+<p>Moving into the caller’s stack frame and printing out the value of the arguments <code>main()</code> passes to <code>initfunc()</code> shows that the <code>main()</code> function passes a null pointer to the <code>initfunc()</code> function. In other words, the user forgot to allocate the <code>arr</code> array prior to the call to <code>initfunc()</code>. The fix is to use the <code>malloc()</code> function to allocate some space to <code>arr</code> at line 34.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>仔细看第 13 行的循环 <code>for(i=1; i &lt;= len; i++)</code>：即使分配了 100 个 <code>int</code>，<code>i</code> 等于 100 时 <code>array[100]</code> 仍然越界一个元素——这正是上一个例子里出现过的同类缺陷。修好空指针后，还应把循环改成 <code>for (i = 0; i &lt; len; i++)</code>。</p>
+</div>
+<p>这两个 GDB 会话示例展示了查找程序缺陷时的常用命令。下一节我们会更详细地讨论这些以及其他 GDB 命令。</p>
+<blockquote>
+<p>These two example GDB sessions illustrate commonly used commands for finding bugs in programs. In the next section, we discuss these and other GDB commands in more detail.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C3-C_debug/3.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">3. C 调试工具</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">3.2. GDB 命令详解</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-1-GDB-%E5%85%A5%E9%97%A8"><span class="toc-text">3.1.1. GDB 入门</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-1-2-GDB-%E4%BC%9A%E8%AF%9D%E7%A4%BA%E4%BE%8B"><span class="toc-text">3.1.2. GDB 会话示例</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（七）：DuckLake × DuckDB 源码走读 · Summary</title>
+  <meta name="description" content="前面几篇讲的是「运行时谁在干活」，这一篇换个角度：一条 SQL 怎样从 DuckDB 引擎走进 DuckLake 扩展，最后落成 Parquet 文件和 catalog 里的一行快照记录。  版本：DuckLake v2.0-cyanoptera @ c506b268（构建在 DuckDB v2.0.0 上）。文中 文件:行号 都相对 DuckLake 仓库的 src&#x2F; 目录，按这个提交核对过；换">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（七）：DuckLake × DuckDB 源码走读 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-07-source-walkthrough/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="前面几篇讲的是「运行时谁在干活」，这一篇换个角度：一条 SQL 怎样从 DuckDB 引擎走进 DuckLake 扩展，最后落成 Parquet 文件和 catalog 里的一行快照记录。  版本：DuckLake v2.0-cyanoptera @ c506b268（构建在 DuckDB v2.0.0 上）。文中 文件:行号 都相对 DuckLake 仓库的 src&#x2F; 目录，按这个提交核对过；换">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-16T07:07:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.922Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/" class="current" aria-current="page">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>三、源码</span>
+      </nav>
+      <span class="book-position">第 7 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:07:00.000Z">2026-11-16</time>
+      <span>· 约 12 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>前面几篇讲的是「运行时谁在干活」，这一篇换个角度：一条 SQL 怎样从 DuckDB 引擎走进 DuckLake 扩展，最后落成 Parquet 文件和 catalog 里的一行快照记录。</p>
+<blockquote>
+<p><strong>版本</strong>：DuckLake <code>v2.0-cyanoptera</code> @ <code>c506b268</code>（构建在 DuckDB v2.0.0 上）。文中 <code>文件:行号</code> 都相对 DuckLake 仓库的 <code>src/</code> 目录，按这个提交核对过；换版本后行号会漂，函数名一般不变。<br><strong>范围</strong>：DuckDB 自己的管线（Parser → Binder → Optimizer → PhysicalPlanGenerator → Executor）只当作 DuckLake 插进去的框架来讲；DuckLake 自己的部分逐个追到源码。</p>
+</blockquote>
+<h2 id="0-两个项目怎么连起来"><a href="#0-两个项目怎么连起来" class="headerlink" title="0. 两个项目怎么连起来"></a>0. 两个项目怎么连起来</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">duckdb/     ← 引擎：Parser、Binder、Optimizer、Executor，以及 Catalog / Transaction 等基类</span><br><span class="line">ducklake/   ← 扩展：继承 DuckDB 的存储、catalog、事务接口</span><br><span class="line">               通过 ducklake/duckdb 子模块固定到某个 DuckDB 版本来编译</span><br></pre></td></tr></table></figure>
+
+<p>DuckLake 以 <strong>StorageExtension</strong> 的身份加载。它不改 DuckDB 的查询引擎，只实现引擎会回调的一组虚接口。分工很清楚：DuckDB 负责 parse → bind → optimize → plan → execute；DuckLake 负责「一张表是什么、它的字节在哪、一次提交怎样才算持久化」。</p>
+<h2 id="1-DuckDB-管线与-DuckLake-的接缝"><a href="#1-DuckDB-管线与-DuckLake-的接缝" class="headerlink" title="1. DuckDB 管线与 DuckLake 的接缝"></a>1. DuckDB 管线与 DuckLake 的接缝</h2><pre class="mermaid">flowchart LR
+  SQL[SQL 文本] --&gt; P[Parser] --&gt; B[Binder] --&gt; O[Optimizer] --&gt; PP[PhysicalPlanGenerator] --&gt; E[Executor]
+  B -.查表定义.-&gt; CAT[(Catalog)]
+  PP -.生成写算子.-&gt; CAT
+  E -.读写.-&gt; TXN[(TransactionManager)]
+  CAT === DL[DuckLake 的实现]
+  TXN === DL</pre>
+
+<p>DuckLake 覆盖的每一个接缝：</p>
+<table>
+<thead>
+<tr>
+<th>DuckDB 基类 &#x2F; 钩子</th>
+<th>DuckLake 的实现</th>
+<th>入口</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>StorageExtension</code>（<code>attach</code>、<code>create_transaction_manager</code>）</td>
+<td><code>DuckLakeStorageExtension</code></td>
+<td><code>storage/ducklake_storage.cpp:143</code>（构造函数里挂上 <code>DuckLakeAttach</code> 和 <code>DuckLakeCreateTransactionManager</code>）</td>
+</tr>
+<tr>
+<td><code>Catalog</code></td>
+<td><code>DuckLakeCatalog</code></td>
+<td><code>include/storage/ducklake_catalog.hpp:138</code></td>
+</tr>
+<tr>
+<td><code>TransactionManager</code></td>
+<td><code>DuckLakeTransactionManager</code></td>
+<td><code>storage/ducklake_transaction_manager.cpp:12</code></td>
+</tr>
+<tr>
+<td><code>Transaction</code></td>
+<td><code>DuckLakeTransaction</code></td>
+<td><code>storage/ducklake_transaction.cpp:832</code>（<code>Commit</code>）</td>
+</tr>
+<tr>
+<td><code>TableCatalogEntry</code></td>
+<td><code>DuckLakeTableEntry</code>（扫描函数、统计信息）</td>
+<td><code>storage/ducklake_table_entry.cpp:398</code>（<code>GetScanFunction</code>）</td>
+</tr>
+<tr>
+<td><code>Catalog::PlanInsert</code></td>
+<td>生成 INSERT 物理算子</td>
+<td><code>storage/ducklake_insert.cpp:873</code></td>
+</tr>
+<tr>
+<td><code>Catalog::PlanCreateTableAs</code></td>
+<td>生成 CTAS 物理算子</td>
+<td><code>storage/ducklake_insert.cpp:899</code></td>
+</tr>
+<tr>
+<td><code>Catalog::PlanDelete</code></td>
+<td>生成 DELETE 物理算子</td>
+<td><code>storage/ducklake_delete.cpp:733</code></td>
+</tr>
+<tr>
+<td><code>Catalog::PlanUpdate</code></td>
+<td>生成 UPDATE（删旧行 + 插新行）</td>
+<td><code>storage/ducklake_update.cpp:225</code></td>
+</tr>
+<tr>
+<td><code>Catalog::PlanMergeInto</code></td>
+<td>生成 MERGE INTO</td>
+<td><code>storage/ducklake_merge_into.cpp:9</code></td>
+</tr>
+<tr>
+<td><code>Catalog::BindCreateIndex</code></td>
+<td>建索引的绑定</td>
+<td><code>storage/ducklake_catalog.cpp:1166</code></td>
+</tr>
+<tr>
+<td><code>MultiFileReader</code></td>
+<td><code>DuckLakeMultiFileReader</code>（删除过滤、虚拟列）</td>
+<td><code>storage/ducklake_multi_file_reader.cpp:212</code></td>
+</tr>
+<tr>
+<td><code>MultiFileList</code></td>
+<td><code>DuckLakeMultiFileList</code>（某个快照下有哪些文件）</td>
+<td><code>storage/ducklake_multi_file_list.cpp:377</code>（<code>ComplexFilterPushdown</code>）</td>
+</tr>
+<tr>
+<td><code>TableFunction</code></td>
+<td><code>ducklake_scan</code>（从 <code>parquet_scan</code> 克隆而来）</td>
+<td><code>storage/ducklake_scan.cpp:234</code></td>
+</tr>
+</tbody></table>
+<p>存储扩展、配置项和所有 SQL 函数都在加载时一次性注册：<code>ducklake_extension.cpp:21</code>（<code>LoadInternal</code>），其中 <code>:28</code> 注册名为 <code>ducklake</code> 的存储扩展。</p>
+<h2 id="2-ATTACH-与初始化"><a href="#2-ATTACH-与初始化" class="headerlink" title="2. ATTACH 与初始化"></a>2. ATTACH 与初始化</h2><p><code>ATTACH &#39;ducklake:metadata.db&#39; AS my_lake (DATA_PATH &#39;files/&#39;)</code></p>
+<pre class="mermaid">sequenceDiagram
+  participant DDB as DuckDB StorageManager
+  participant SE as DuckLakeStorageExtension
+  participant CAT as DuckLakeCatalog
+  participant INIT as DuckLakeInitializer
+  participant MM as MetadataManager
+  participant META as 元数据库（DuckDB 文件 / PG / SQLite / Quack）
+
+  DDB-&gt;&gt;SE: attach(name, info, options)
+  SE-&gt;&gt;SE: DuckLakeAttach：解析选项和 secret（ducklake_storage.cpp:73）
+  SE--&gt;&gt;CAT: 创建 DuckLakeCatalog
+  DDB-&gt;&gt;SE: create_transaction_manager(catalog)
+  SE--&gt;&gt;DDB: DuckLakeTransactionManager
+  DDB-&gt;&gt;INIT: Initialize()（ducklake_initializer.cpp:70）
+  INIT-&gt;&gt;MM: AttachMetadata：ATTACH 元数据库（:171）
+  MM-&gt;&gt;META: 经内部 DuckDB Connection 执行
+  INIT-&gt;&gt;MM: MetadataExists()？
+  alt 已存在
+    INIT-&gt;&gt;MM: 加载已有 DuckLake，按需逐级迁移 0.1 → … → 1.0 → 1.1
+  else 不存在
+    INIT-&gt;&gt;MM: InitializeNewDuckLake：建元数据表
+  end
+  INIT-&gt;&gt;MM: ProbeServerCapabilities() 与 ClearCache()（:115）</pre>
+
+<ul>
+<li><strong>选项解析</strong>：<code>HandleDuckLakeOption</code>（<code>storage/ducklake_storage.cpp:13</code>），处理 <code>DATA_PATH</code>、<code>METADATA_SCHEMA</code> &#x2F; <code>METADATA_CATALOG</code>、<code>ENCRYPTED</code>、<code>DATA_INLINING_ROW_LIMIT</code>、<code>SNAPSHOT_VERSION</code> &#x2F; <code>SNAPSHOT_TIME</code>（时间旅行）、<code>CREATE_IF_NOT_EXISTS</code>、<code>AUTOMATIC_MIGRATION</code> 等。</li>
+<li><strong>新建时的并发</strong>：两个进程同时 ATTACH 同一个新库，后到的一方建表失败后会重开元数据事务、确认库已初始化，再按「加载已有」走（<code>ducklake_initializer.cpp:70</code> 里的 try&#x2F;catch）。</li>
+<li><strong>迁移</strong>：catalog 版本低于扩展要求的版本时，<strong>没开 <code>AUTOMATIC_MIGRATION TRUE</code> 就直接报错</strong>，开了才逐级执行 <code>MigrateV01</code> → <code>MigrateV02</code> → <code>MigrateV03</code> → <code>MigrateV04</code> → <code>MigrateV10</code>，最终到 1.1（<code>ducklake_initializer.cpp:244</code> 起）。catalog 比扩展还新时也报错，不做向前兼容。</li>
+<li><strong>能力探测</strong>：<code>ProbeServerCapabilities</code> 只有 Quack 后端真正做事：它查远端有没有 <code>ducklake_commit</code> 函数，有就打开「服务端提交」（<code>metadata_manager/quack_metadata_manager.cpp:97</code>、<code>:108</code>），见第 6 节。</li>
+</ul>
+<h2 id="3-事务生命周期"><a href="#3-事务生命周期" class="headerlink" title="3. 事务生命周期"></a>3. 事务生命周期</h2><pre class="mermaid">sequenceDiagram
+  participant DDB as DuckDB
+  participant TM as DuckLakeTransactionManager
+  participant TX as DuckLakeTransaction
+  participant CONN as 内部 Connection → 元数据库
+
+  DDB-&gt;&gt;TM: StartTransaction()（ducklake_transaction_manager.cpp:12）
+  TM--&gt;&gt;TX: 创建 DuckLakeTransaction 并 Start()
+  Note over TX,CONN: 第一次需要元数据时才惰性创建 CONN：&lt;br/&gt;search_path 固定到元数据 schema，并开启元数据事务（ducklake_transaction.cpp:909）
+  DDB-&gt;&gt;TM: CommitTransaction()（:39）→ TX.Commit()（ducklake_transaction.cpp:832）
+  DDB-&gt;&gt;TM: RollbackTransaction()（:62）→ TX.Rollback()（ducklake_transaction.cpp:883）</pre>
+
+<ul>
+<li><strong>快照</strong>：<code>GetSnapshot()</code>（<code>ducklake_transaction.cpp:1862</code>）确定这个事务读哪个快照版本，这是快照隔离和时间旅行的基础。</li>
+<li><strong>未提交的改动</strong>放在事务本地状态 <code>DuckLakeTransactionState</code> 里（<code>storage/ducklake_transaction_state.cpp</code>）：新写的文件、删掉的文件、schema 变更、内联行。</li>
+<li><strong>内部连接</strong>：<code>GetConnection()</code> 在 <code>connection_lock</code> 下惰性创建一条内部 <code>Connection</code>，把 catalog 搜索路径直接设成元数据 schema，并把会影响元数据查询的会话设置固定下来（比如 <code>default_order</code> 固定为 ASC，<code>errors_as_json</code> 固定关闭）。每个 DuckLake 事务一条，第 6 篇讲过它的串行含义。</li>
+<li><strong>回滚</strong>：<code>Rollback()</code> 先回滚内部连接上的元数据事务，再调用 <code>state-&gt;CleanupFiles()</code> 删掉已经写出去的 Parquet 文件——这些文件没有任何元数据引用，回滚失败时也照删。</li>
+</ul>
+<h2 id="4-读-扫描"><a href="#4-读-扫描" class="headerlink" title="4. 读 &#x2F; 扫描"></a>4. 读 &#x2F; 扫描</h2><pre class="mermaid">sequenceDiagram
+  participant BIND as DuckDB Binder
+  participant TE as DuckLakeTableEntry
+  participant SCAN as ducklake_scan
+  participant MFL as DuckLakeMultiFileList
+  participant MM as MetadataManager
+  participant MFR as DuckLakeMultiFileReader
+  participant PQ as Parquet reader
+
+  BIND-&gt;&gt;TE: GetScanFunction(lookup_info)（ducklake_table_entry.cpp:398）
+  TE-&gt;&gt;SCAN: GetDuckLakeScanFunction：克隆 parquet_scan，&lt;br/&gt;换上 DuckLakeMultiFileReader::CreateInstance（ducklake_scan.cpp:234）
+  Note over BIND,MFL: 优化阶段
+  MFL-&gt;&gt;MFL: ComplexFilterPushdown：把过滤条件记下来（ducklake_multi_file_list.cpp:377）
+  Note over MFL,PQ: 扫描所在 pipeline 被调度时
+  MFL-&gt;&gt;MM: GetFilesForTable：取该快照的数据文件、删除文件，并按列统计剪枝
+  MFR-&gt;&gt;PQ: 逐个读 Parquet（InitializeReader，ducklake_multi_file_reader.cpp:304）
+  MFR-&gt;&gt;MFR: 叠加删除过滤：positional delete 文件或删除向量
+  Note over MFR: 内联数据以「虚拟文件」的形式混在文件清单里，&lt;br/&gt;另有 rowid / snapshot_id 等虚拟列</pre>
+
+<ul>
+<li><strong>复用 Parquet reader</strong>：扫描直接用 DuckDB 的 Parquet reader，只把 <code>MultiFileReader</code> &#x2F; <code>MultiFileList</code> 换成 DuckLake 的版本，于是文件集合按快照划定，删除和内联数据对上层透明。</li>
+<li><strong>文件清单什么时候取</strong>：不是在 planning 阶段，而是在扫描所在 pipeline 被调度时单线程物化（第 6 篇有详细说明）。</li>
+<li><strong>优化器钩子</strong>：<code>DuckLakeStatistics</code>（<code>ducklake_scan.cpp:102</code>）提供列统计；<code>DuckLakeGetPartitionStats</code>（<code>:177</code>）用 catalog 里的统计直接回答精确的 <code>COUNT</code> &#x2F; <code>MIN</code> &#x2F; <code>MAX</code>，事务里有本地改动时会放弃这条捷径。</li>
+<li><strong>删除</strong>：positional delete Parquet 文件走 <code>DuckLakeDeleteFilter::ScanDeleteFile</code>（<code>storage/ducklake_delete_filter.cpp:139</code>），Iceberg V3 风格的 puffin 删除向量（roaring bitmap）走 <code>ScanDeletionVectorFile</code>（<code>:69</code>）。</li>
+<li><strong>内联数据</strong>：内联表在文件清单里表现为一个特殊条目（<code>ducklake_multi_file_list.cpp:41</code> 的 <code>InlinedDataEntry</code>），由 <code>ducklake_inlined_data_reader.cpp</code> 读。</li>
+</ul>
+<h2 id="5-写：INSERT-DELETE-UPDATE-MERGE"><a href="#5-写：INSERT-DELETE-UPDATE-MERGE" class="headerlink" title="5. 写：INSERT &#x2F; DELETE &#x2F; UPDATE &#x2F; MERGE"></a>5. 写：INSERT &#x2F; DELETE &#x2F; UPDATE &#x2F; MERGE</h2><p>所有 DML 都编译成自定义的物理算子，由优化器调用的 <code>DuckLakeCatalog::Plan*</code> 生成：</p>
+<pre class="mermaid">flowchart TD
+  LI[LogicalInsert] --&gt; PI[&quot;DuckLakeCatalog::PlanInsert&lt;br/&gt;ducklake_insert.cpp:873&quot;]
+  PI --&gt; PIPE[&quot;PlanInsertPipeline :794&lt;br/&gt;可选：排序 PlanInsertSort :746&lt;br/&gt;可选：DuckLakeInlineData（内联上限 &gt; 0）&quot;]
+  PIPE --&gt; COPY[&quot;PlanCopyForInsert :667&lt;br/&gt;用 DuckDB 的 COPY 写 Parquet&quot;]
+  COPY --&gt; OP[&quot;DuckLakeInsert::PlanInsert :695&lt;br/&gt;把新文件记进事务本地状态&quot;]
+
+  LD[LogicalDelete] --&gt; PD[&quot;DuckLakeCatalog::PlanDelete&lt;br/&gt;ducklake_delete.cpp:733&quot;]
+  LU[LogicalUpdate] --&gt; PU[&quot;DuckLakeCatalog::PlanUpdate&lt;br/&gt;ducklake_update.cpp:225&quot;]
+  PU --&gt; PD2[&quot;DuckLakeDelete::PlanDelete 删旧行&lt;br/&gt;+ 插入新行&quot;]
+  LM[MERGE INTO] --&gt; PM[&quot;DuckLakeCatalog::PlanMergeInto&lt;br/&gt;ducklake_merge_into.cpp:9&quot;]</pre>
+
+<ul>
+<li><strong>INSERT</strong>（<code>ducklake_insert.cpp:873</code>）：先拒绝暂不支持的 <code>RETURNING</code> 和 <code>ON CONFLICT</code>，加一层 NOT NULL 校验，再搭写入管线：需要时按表的排序键排序，内联上限大于 0 时插入 <code>DuckLakeInlineData</code> 算子（<code>:808</code>），行数没超过上限就直接内联进 catalog，不写 Parquet。</li>
+<li><strong>写 Parquet</strong>：通过 DuckDB 的 COPY（<code>PlanCopyForInsert</code>，<code>:667</code>），按分区（<code>ducklake_partition_data.cpp</code>）和排序（<code>ducklake_sort_data.cpp</code>）规则写。</li>
+<li><strong>加密</strong>：库开了加密时，每个文件生成一把密钥（<code>DuckLakeCatalog::GenerateEncryptionKey</code>，<code>:703</code>）。</li>
+<li><strong>CTAS</strong>（<code>:899</code>）：表还不存在，所以先用列定义现场构造分区、排序和表选项，再走同一条写入管线。</li>
+<li><strong>DELETE</strong> 生成删除文件或删除向量；<strong>UPDATE</strong> 由 <code>DuckLakeUpdate</code> 算子把旧行交给 <code>DuckLakeDelete::PlanDelete</code> 删掉、再插入新行；<strong>MERGE INTO</strong> 在 <code>ducklake_merge_into.cpp</code>。</li>
+<li><strong>这时还没碰 catalog</strong>：所有写入都只是暂存的事务本地改动。数据文件已经在存储上了，但提交之前谁也看不见。</li>
+</ul>
+<h2 id="6-提交（乐观并发）"><a href="#6-提交（乐观并发）" class="headerlink" title="6. 提交（乐观并发）"></a>6. 提交（乐观并发）</h2><pre class="mermaid">sequenceDiagram
+  participant TX as DuckLakeTransaction
+  participant ST as DuckLakeTransactionState
+  participant MM as MetadataManager
+  participant META as 元数据库
+
+  TX-&gt;&gt;TX: Commit()（ducklake_transaction.cpp:832）
+  alt 没有改动
+    TX-&gt;&gt;META: 内部连接 Commit()
+  else 有改动
+    TX-&gt;&gt;TX: FlushChanges()（:1475）：重算过期统计，GetTransactionChanges()
+    alt Quack 远端支持服务端提交，且只改了数据（CanSkipSnapshotFetch）
+      TX-&gt;&gt;MM: FlushChangesServerSide，不先取快照
+    else Quack 远端支持 ducklake_commit
+      TX-&gt;&gt;MM: FlushChangesServerSide
+    else 客户端乐观提交
+      TX-&gt;&gt;ST: RunCommitLoop（:1548）→ Commit（ducklake_transaction_state.cpp:2712）
+      loop 首次尝试 + 最多 max_retry_count 次重试
+        ST-&gt;&gt;MM: 取最新快照，检查与本事务冲突的改动
+        ST-&gt;&gt;MM: 追加数据文件、写内联数据，生成新快照
+        ST-&gt;&gt;META: 内部连接 Commit()
+        Note over ST: 冲突 → 退避等待，重读后重试
+      end
+    end
+  end</pre>
+
+<ul>
+<li><strong>入口</strong>：<code>Commit()</code> 先删掉本事务里过期的快照（如果有），再看有没有改动；有就进 <code>FlushChanges()</code>。</li>
+<li><strong>三条路</strong>（<code>ducklake_transaction.cpp:1475</code>）：<ol>
+<li><strong>Quack 远端支持服务端提交、且这次只改了数据</strong>：<code>CanSkipSnapshotFetch</code> 为真（两个条件都要满足，<code>quack_metadata_manager.cpp:141</code>），连快照都不先取，直接走服务端提交。</li>
+<li><strong>Quack 远端加载了 DuckLake 扩展</strong>（ATTACH 时探测到 <code>ducklake_commit</code> 函数）：走服务端提交。客户端用 <code>DuckLakeStagedCommit</code> 把改动写进暂存表，远端的 <code>ducklake_commit</code> 表函数（<code>functions/ducklake_commit.cpp</code>）调 <code>DuckLakeServerSideCommit::Run</code>（<code>storage/ducklake_server_side_commit.cpp:98</code>）完成提交，重试也在服务端做。</li>
+<li><strong>其他所有后端</strong>（DuckDB 文件、PostgreSQL、SQLite）：客户端乐观提交循环 <code>RunCommitLoop</code>，真正的循环在 <code>DuckLakeTransactionState::Commit</code>。</li>
+</ol>
+</li>
+<li><strong>重试参数</strong>：<code>ducklake_max_retry_count</code> &#x2F; <code>ducklake_retry_wait_ms</code> &#x2F; <code>ducklake_retry_backoff</code>，在 <code>ducklake_extension.cpp:30</code>–<code>:35</code> 注册。超过次数时报错信息会直接建议你调大 <code>ducklake_max_retry_count</code>。</li>
+<li><strong>原子可见</strong>：只有新的<strong>快照行</strong>写进 catalog，提交才算持久化。读旧快照的查询永远看不到它，这就是快照隔离。</li>
+</ul>
+<h2 id="7-元数据管理器与后端"><a href="#7-元数据管理器与后端" class="headerlink" title="7. 元数据管理器与后端"></a>7. 元数据管理器与后端</h2><p><code>DuckLakeMetadataManager</code>（<code>storage/ducklake_metadata_manager.cpp</code>，两百多 KB）是生成<strong>全部</strong>元数据 SQL 的抽象层：快照、表、列、数据文件、删除文件、列统计、分区、标签、内联数据。所有查询都经事务的内部 <code>Connection</code> 执行。</p>
+<p>后端在 ATTACH 时按元数据库的类型选（<code>ducklake_metadata_manager.cpp:52</code> 的注册表，<code>:78</code> 兜底）：</p>
+<table>
+<thead>
+<tr>
+<th>后端</th>
+<th>实现</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DuckDB 数据库文件</strong>（默认）</td>
+<td>基类 <code>DuckLakeMetadataManager</code></td>
+<td>类型不在注册表里时用它，最常见的本地用法</td>
+</tr>
+<tr>
+<td><strong>PostgreSQL</strong></td>
+<td><code>metadata_manager/postgres_metadata_manager.cpp</code></td>
+<td>类型名 <code>postgres</code> &#x2F; <code>postgres_scanner</code></td>
+</tr>
+<tr>
+<td><strong>SQLite</strong></td>
+<td><code>metadata_manager/sqlite_metadata_manager.cpp</code></td>
+<td>类型名 <code>sqlite</code> &#x2F; <code>sqlite_scanner</code></td>
+</tr>
+<tr>
+<td><strong>Quack</strong>（远程 DuckDB）</td>
+<td><code>metadata_manager/quack_metadata_manager.cpp</code></td>
+<td>类型名 <code>quack</code> &#x2F; <code>quack_scanner</code>；<strong>唯一支持服务端提交的后端</strong></td>
+</tr>
+</tbody></table>
+<p>另外还有 <code>ducklake_metadata_manager_v1_1.cpp</code>，按 catalog 规范版本切换 SQL 写法。</p>
+<h2 id="8-维护与自省函数"><a href="#8-维护与自省函数" class="headerlink" title="8. 维护与自省函数"></a>8. 维护与自省函数</h2><p>都在 <code>ducklake_extension.cpp</code> 注册，实现在 <code>functions/</code> 下：</p>
+<table>
+<thead>
+<tr>
+<th>SQL 函数</th>
+<th>作用</th>
+<th>文件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>ducklake_snapshots</code> &#x2F; <code>ducklake_current_snapshot</code> &#x2F; <code>ducklake_last_committed_snapshot</code></td>
+<td>快照历史与当前快照</td>
+<td><code>ducklake_snapshots.cpp</code> 等</td>
+</tr>
+<tr>
+<td><code>ducklake_table_info</code> &#x2F; <code>ducklake_list_files</code></td>
+<td>表信息、文件清单</td>
+<td><code>ducklake_table_info.cpp</code>、<code>ducklake_list_files.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_table_changes</code> &#x2F; <code>ducklake_table_insertions</code> &#x2F; <code>ducklake_table_deletions</code></td>
+<td>变更数据（CDC）</td>
+<td><code>ducklake_table_changes.cpp</code>、<code>ducklake_table_insertions.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_expire_snapshots</code></td>
+<td>清理旧快照</td>
+<td><code>ducklake_expire_snapshots.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_cleanup_old_files</code> &#x2F; <code>ducklake_cleanup_orphaned_files</code></td>
+<td>回收不再被引用的 Parquet</td>
+<td><code>ducklake_cleanup_files.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_merge_adjacent_files</code> &#x2F; <code>ducklake_rewrite_data_files</code></td>
+<td>合并小文件、重写数据文件</td>
+<td><code>ducklake_compaction_functions.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_add_data_files</code></td>
+<td>把外部 Parquet 登记进表</td>
+<td><code>ducklake_add_data_files.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_flush_inlined_data</code></td>
+<td>把内联行刷成 Parquet</td>
+<td><code>ducklake_flush_inlined_data.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_set_option</code> &#x2F; <code>ducklake_options</code> &#x2F; <code>ducklake_settings</code></td>
+<td>库、schema、表级配置</td>
+<td><code>ducklake_set_option.cpp</code>、<code>ducklake_options.cpp</code>、<code>ducklake_settings.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_set_commit_message</code></td>
+<td>给本次提交加说明</td>
+<td><code>ducklake_set_commit_message.cpp</code></td>
+</tr>
+<tr>
+<td><code>ducklake_commit</code></td>
+<td>服务端提交（Quack 远端调用）</td>
+<td><code>ducklake_commit.cpp</code></td>
+</tr>
+<tr>
+<td><code>murmur3_32</code></td>
+<td>兼容 Iceberg 的分桶哈希</td>
+<td><code>ducklake_murmur3.cpp</code></td>
+</tr>
+</tbody></table>
+<h2 id="端到端小结"><a href="#端到端小结" class="headerlink" title="端到端小结"></a>端到端小结</h2><pre class="mermaid">flowchart LR
+  A[&quot;ATTACH 'ducklake:…'&quot;] --&gt; B[DuckLakeCatalog + 事务管理器]
+  B --&gt; C[Initializer：挂元数据库，新建或迁移]
+  C --&gt; D&#123;查询&#125;
+  D --&gt;|SELECT| E[ducklake_scan：按快照取文件清单，叠加删除过滤]
+  D --&gt;|INSERT/DELETE/UPDATE/MERGE| F[Catalog::Plan*：写 Parquet，暂存事务本地改动]
+  F --&gt; G[COMMIT：客户端乐观循环，或 Quack 服务端提交，写入新快照]
+  E --&gt; H[(Parquet 文件)]
+  F --&gt; H
+  G --&gt; I[(元数据库：DuckDB / PG / SQLite / Quack)]</pre>
+
+<p><strong>一句话心智模型</strong>：DuckDB 驱动查询；DuckLake 回答「这张表在这个快照下由哪些 Parquet 文件组成」，DML 时写新的 Parquet，提交时把一行新快照原子地追加进 catalog 数据库。</p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-06-ducklake-thread-model/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-08-ducklake-ecosystem/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（八）：DuckLake 生态逐项目架构</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0-%E4%B8%A4%E4%B8%AA%E9%A1%B9%E7%9B%AE%E6%80%8E%E4%B9%88%E8%BF%9E%E8%B5%B7%E6%9D%A5"><span class="toc-text">0. 两个项目怎么连起来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1-DuckDB-%E7%AE%A1%E7%BA%BF%E4%B8%8E-DuckLake-%E7%9A%84%E6%8E%A5%E7%BC%9D"><span class="toc-text">1. DuckDB 管线与 DuckLake 的接缝</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2-ATTACH-%E4%B8%8E%E5%88%9D%E5%A7%8B%E5%8C%96"><span class="toc-text">2. ATTACH 与初始化</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-%E4%BA%8B%E5%8A%A1%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">3. 事务生命周期</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4-%E8%AF%BB-%E6%89%AB%E6%8F%8F"><span class="toc-text">4. 读 &#x2F; 扫描</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5-%E5%86%99%EF%BC%9AINSERT-DELETE-UPDATE-MERGE"><span class="toc-text">5. 写：INSERT &#x2F; DELETE &#x2F; UPDATE &#x2F; MERGE</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6-%E6%8F%90%E4%BA%A4%EF%BC%88%E4%B9%90%E8%A7%82%E5%B9%B6%E5%8F%91%EF%BC%89"><span class="toc-text">6. 提交（乐观并发）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7-%E5%85%83%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86%E5%99%A8%E4%B8%8E%E5%90%8E%E7%AB%AF"><span class="toc-text">7. 元数据管理器与后端</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8-%E7%BB%B4%E6%8A%A4%E4%B8%8E%E8%87%AA%E7%9C%81%E5%87%BD%E6%95%B0"><span class="toc-text">8. 维护与自省函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AB%AF%E5%88%B0%E7%AB%AF%E5%B0%8F%E7%BB%93"><span class="toc-text">端到端小结</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

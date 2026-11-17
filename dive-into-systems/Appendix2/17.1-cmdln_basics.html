@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.1. Unix 命令行与 Unix 文件系统 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;cmdln_basics.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.1. Unix Command Line and">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.1. Unix 命令行与 Unix 文件系统 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.1-cmdln_basics.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;cmdln_basics.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.1. Unix Command Line and">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/images/unixfs1.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/images/unixfs2.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/images/unixfs1.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html" class="current" aria-current="page">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 172 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.1. Unix 命令行与 Unix 文件系统</h1>
+  
+  
+    <p class="article-meta"><span>约 26 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/cmdln_basics.html">https://diveintosystems.org/book/Appendix2/cmdln_basics.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.1. Unix Command Line and the Unix File System</em></p>
+<p>Unix 系统为用户提供了与系统交互的<strong>命令行界面</strong>（command line interface）。当用户登录到 Unix 系统时，他们与一个在终端窗口中运行的 Unix <strong>shell 程序</strong>交互。shell 读入用户输入的命令，并执行所请求的动作。shell 程序的例子有 <code>bash</code> 和 <code>zsh</code>。shell 显示一个 shell 提示符（例如 <code>$</code>），用户输入一条命令，由 shell 程序执行。读者（尤其是懂 Python 的读者）可能熟悉读取-求值-打印循环（read-eval-print loop，REPL），它是在某种编程语言的语境中实现的一种类似 shell 的环境。与 REPL 一样，shell 的命令行界面循环往复地读入一条命令、求值、打印出结果，然后回到 shell 提示符。与 REPL 不同的是，shell 的命令行界面让用户能够访问操作系统接口，并运行各种不同的程序。例如，<code>whoami</code> 命令会告诉你你的用户名：</p>
+<blockquote>
+<p>Unix systems provide a <strong>command line interface</strong> for users to interact with the system. When a user logs into a Unix system, they interact with a Unix <strong>shell program</strong> that runs in a terminal window. The shell reads in commands entered by the user and performs the requested action. Example shell programs are <code>bash</code> and <code>zsh</code>. The shell displays a shell prompt (e.g., <code>$</code>) and the user types in a command that the shell program executes. Readers (especially those who know Python) may be familiar with a read-eval-print loop (or REPL), which is a shell-like environment that is implemented in the context of a programming language. Like a REPL, the shell’s command line interface reads a command, evaluates it, prints out the results, and then returns to the shell prompt, in a loop. Unlike a REPL, the shell’s command line interface allows users to access the operating system interface and to run a variety of different programs. For example, the <code>whoami</code> command will tell you your user name:</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· Mac 的默认 shell 是 zsh</p><p>本附录以 Linux 和 Bash 为例。如果你在 Mac 上练习，要知道按 Apple 官方说明，从 <strong>macOS 10.15</strong> 开始，新建用户账户的默认登录 shell 和交互式 shell 是 <strong>zsh</strong>（10.14 及更早版本默认是 bash）。zsh 与 Bourne shell（sh）高度兼容，与 bash 也大部分兼容，本附录的大多数命令都能直接使用；但 17.6 节讲的 Bash 配置文件 <code>.bashrc</code> 在 zsh 中对应的是 <code>~/.zshrc</code>。如果想改用 bash，可以用 <code>chsh -s /bin/bash</code> 修改默认 shell。<a target="_blank" rel="noopener" href="https://support.apple.com/en-us/102360">Apple 支持：Use zsh as the default shell on Mac</a></p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ whoami</span><br><span class="line">myusername</span><br></pre></td></tr></table></figure>
+
+<p>Unix 文件系统存放程序和其他文件。用户在 shell 提示符下输入命令来运行程序、在 Unix 文件系统中导航以及操作文件。</p>
+<blockquote>
+<p>The Unix file system stores programs and other files. Users type commands at the shell prompt to run programs, navigate the Unix file system, and manipulate files.</p>
+</blockquote>
+<p>许多命令都有<strong>命令行选项</strong>（command line option），用来指定命令的不同选项或特定行为。许多命令还接收<strong>命令行参数</strong>（command line argument），用来指定操作的对象。例如，<code>cp</code> 是把一个文件复制到另一个文件的复制命令。它接收两个命令行参数：要复制的源文件的名字，以及将存放副本的目标文件的名字。</p>
+<blockquote>
+<p>Many commands have <strong>command line options</strong>, that specify different options or specific behaviors of a command. Many commands also take <strong>command line arguments</strong> that are used to specify the target of the operation. For example, <code>cp</code> is the copy command that copies one file to another. It takes two command line arguments, the name of the file source to copy and the name of the destination file that will contain the copy.</p>
+</blockquote>
+<h3 id="17-1-1-Unix-文件系统"><a href="#17-1-1-Unix-文件系统" class="headerlink" title="17.1.1. Unix 文件系统"></a>17.1.1. Unix 文件系统</h3><p><em>17.1.1. Unix File System</em></p>
+<p>Unix 文件系统由文件和目录组成。文件存放数据，例如程序源代码、程序的输入数据、课堂笔记和二进制可执行代码。目录存放文件和子目录，用来组织存放在文件系统中的文件集合。</p>
+<blockquote>
+<p>The Unix file system consists of files and directories. A file stores data such as program source code, program input data, class notes, and binary executable code. Directories store files and subdirectories and are used to organize the set of files stored in the file system.</p>
+</blockquote>
+<p>Unix 文件系统组织成一种层次化的树形结构，顶端只有一个目录（<code>/</code>），称为根目录。它下面是存放系统内容的一些主要目录。例如，<code>bin</code> 存放可以从 Unix 命令行运行的系统程序，<code>lib</code> 存放系统库代码，<code>home</code> 存放每个用户的主目录，用户可以在自己的主目录中存放自己的文件。<a href="17.1-cmdln_basics.html">图 1</a> 展示了一个 Unix 文件系统目录结构的例子，其中有用户 <code>sam</code> 和 <code>sarita</code> 的两个 <code>home</code> 目录。</p>
+<blockquote>
+<p>The Unix file system is organized in a hierarchical tree structure, with a single directory at the top (<code>/</code>) called the root directory. Under it are some main directories holding system content. Some examples are <code>bin</code> that stores system programs that can be run from the Unix command line, <code>lib</code> that stores system library code, and <code>home</code> that stores every user’s home directory into which they can store their own files. <a href="17.1-cmdln_basics.html">Figure 1</a> shows an example Unix file system directory structure, with two <code>home</code> directories for users <code>sam</code> and <code>sarita</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/Appendix2/images/unixfs1.png" alt="The unix file system with root directory at top, with example child directories bin, home, lib, and two example subdirectories under home sam and sarita."></p>
+<p><strong>图 1.</strong> Unix 文件系统组织成一个层次结构，根目录在顶端，子目录和文件排列在它的下面。</p>
+<p><em>Figure 1. The Unix File System is organized as a hierarchy with the root directory at the top, and subdirectories and files arranged underneath.</em></p>
+<p>注意，<code>/</code> 是顶层目录，它有几个<strong>子</strong>（child）目录，包括 <code>bin</code>、<code>lib</code> 和 <code>home</code>。除根目录外，每个目录都有唯一的一个<strong>父</strong>（parent）目录；根目录是唯一没有父目录的目录。</p>
+<blockquote>
+<p>Note that <code>/</code> is the top-level directory, it has several <strong>child</strong> subdirectories, including <code>bin</code>, <code>lib</code>, and <code>home</code>. Every directory except the root directory has a unique <strong>parent</strong> directory; the root directory is the only one without a parent directory.</p>
+</blockquote>
+<p>系统中的每个用户都有自己的主目录，它是 <code>/home</code> 下的一个子目录。每个用户主目录的名字与其用户名相同。我们在图中展示了几个主目录的例子。除 <code>/</code> 之外，每个目录都恰好有一个父目录。例如，<code>home</code> 是 <code>sarita</code> 的父目录，<code>/</code> 是 <code>home</code> 的父目录。每个目录都由一个从根目录开始的唯一<strong>路径名</strong>（pathname）标识。例如，<code>/home/sarita</code> 是用户 <code>sarita</code> 的主目录的路径名：这个路径名从根目录 <code>/</code> 开始，接着是 <code>/</code> 的子目录 <code>home</code>，最后是 <code>home</code> 的子目录 <code>sarita</code>。</p>
+<blockquote>
+<p>Every user in the system has their own home directory, which is a subdirectory in <code>/home</code>. Each user’s home directory is the same name as their username. In Figure we show a few example home directories. Every directory except <code>/</code> has exactly one parent directory. For example, <code>home</code> is the parent directory of <code>sarita</code>, and <code>/</code> is the parent directory of <code>home</code>. Every directory is identified by a unique <strong>pathname</strong> starting from the root directory. For example, <code>/home/sarita</code> is the pathname of the <code>sarita</code> user’s home directory: the pathname starts at the root directory, <code>/</code>, then follows the <code>home</code> sub-directory of <code>/</code>, and finally the <code>sarita</code> sub-directory of <code>home</code>.</p>
+</blockquote>
+<p>当你第一次登录到 Unix 系统或者启动一个新的 shell 程序时，你会从自己的主目录开始。<code>pwd</code>（print working directory，打印工作目录）命令打印你当前所在的目录，显示它从根目录 <code>/</code> 开始的完整路径名。例如，下面是用户 <code>sarita</code> 登录并输入 <code>pwd</code> 时的输出：</p>
+<blockquote>
+<p>When you first log into a Unix system or start a new shell program, you start out in your home directory. The <code>pwd</code> (print working directory) command prints the directory you are currently in, showing its full pathname starting from the root directory <code>/</code>. For example, here is the output when the user <code>sarita</code> logs in and types, <code>pwd</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pwd</span><br><span class="line">/home/sarita</span><br></pre></td></tr></table></figure>
+
+<p>当用户 <code>sam</code> 登录并输入 <code>pwd</code> 时，输出如下：</p>
+<blockquote>
+<p>When the user <code>sam</code> logs in and types <code>pwd</code>, here is the output:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ pwd</span><br><span class="line">/home/sam</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-1-2-文件系统命令"><a href="#17-1-2-文件系统命令" class="headerlink" title="17.1.2. 文件系统命令"></a>17.1.2. 文件系统命令</h3><p><em>17.1.2. File System Commands</em></p>
+<p>Unix 命令让用户能在目录结构中移动、创建和删除文件与目录、列出目录的内容，以及查看自己当前在哪个目录中。所有动作都是相对于当前工作目录的。例如，如果用户创建一个新文件，这个文件就创建在用户的当前工作目录中。</p>
+<blockquote>
+<p>Unix commands allow users to move around its directory structure, create and delete files and directories, list the contents of a directory, and to see which directory they are currently in. All actions are relative to the current working directory. For example, if a user creates a new file, the file is created in the user’s current working directory.</p>
+</blockquote>
+<p><code>cd</code>（change directory，切换目录）命令改变当前工作目录（即移到另一个目录中）。<code>ls</code>（list，列出）命令列出当前目录的内容。<code>mkdir</code> 命令用来创建新目录。</p>
+<blockquote>
+<p>The <code>cd</code> (change directory) command changes the current working directory (or to moves into a different directory). The <code>ls</code> (list) command lists the contents of the current directory. The <code>mkdir</code> command is used to create a new directory.</p>
+</blockquote>
+<p>例如，要在她的主目录中创建一个名为 <code>unix_notes</code> 的子目录并进入这个目录，<code>sarita</code> 会输入下面的命令：</p>
+<blockquote>
+<p>For example, to create a subdirectory named <code>unix_notes</code> in her home directory, and to move into that directory, <code>sarita</code> would enter the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir unix_notes  # make a new directory named unix_notes</span><br><span class="line">$ ls                # list contents of current directory</span><br><span class="line"> unix_notes/</span><br><span class="line">$ cd unix_notes     # move into the new directory</span><br><span class="line">$ pwd               # print current working directory</span><br><span class="line">/home/sarita/unix_notes</span><br></pre></td></tr></table></figure>
+
+<p>创建新文件的方法有很多。用户常常通过编辑器程序来创建新文件。一种不太常见的创建空的新文件的方法是使用 <code>touch</code> 命令：</p>
+<blockquote>
+<p>There are many ways to create new files. Often users create new files through using an editor program. A less common way to create an empty new file is using the <code>touch</code> command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ touch basics</span><br><span class="line">$ ls</span><br><span class="line"> basics</span><br></pre></td></tr></table></figure>
+
+<p>由于我们还不了解编辑器程序，可以用 <code>echo</code> 命令并把它的输出追加到 <code>basics</code> 文件中，来给这个文件添加一些内容（<code>&gt;&gt;</code> 把 echo 的输出追加到指定的文件，本例中是 <code>basics</code>）。例如：</p>
+<blockquote>
+<p>Since we don’t yet know an editor program, we can add some content to the file using the <code>echo</code> command and appending its output to the <code>basics</code> file (<code>&gt;&gt;</code> appends echo’s output to the specified file, <code>basics</code> in this example). For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ echo &quot;ls: list directory contents&quot; &gt;&gt; basics</span><br><span class="line">$ echo &quot;cd: change directory&quot; &gt;&gt; basics</span><br><span class="line">$ echo &quot;pwd: print working directory&quot; &gt;&gt; basics</span><br></pre></td></tr></table></figure>
+
+<p><code>cat</code> 命令把文件的内容倾倒到终端上。要在运行上面的 <code>echo</code> 命令之后查看 <code>basic</code> 的内容：</p>
+<blockquote>
+<p>The <code>cat</code> command dumps the contents of a file to the terminal. To see the contents of <code>basic</code> after running the <code>echo</code> commands above:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ cat basics</span><br><span class="line">ls: list directory contents</span><br><span class="line">cd: change directory</span><br><span class="line">pwd: print working directory</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">原书注 · Unix 中的文件名（File names in Unix）</p><p>注意，Unix 中的文件名和目录名是区分大小写的，例如 <code>basics</code> 和 <code>Basics</code> 是两个不同的文件名。</p>
+<p>另外，尽管文件名可以包含空格字符，但必须在空格字符之前加转义字符来指定（例如，<code>hello\ there</code> 就是命名文件「hello there」的方式）。因此，Unix 用户通常不创建名字中带空格字符的文件，而是在想在名字中放空格的地方使用 <code>_</code> 或 <code>-</code>（例如 <code>hello_there</code>）。</p>
+<blockquote>
+<p>Note that file and directory names in Unix are case sensitive, <code>basics</code> and <code>Basics</code> are two different file names, for example.</p>
+<p>Also, although file names can contain space characters, they have to be specified using the escape character before the space character (e.g., <code>hello\ there</code> is the way to name the file “hello there”). As a result, Unix user’s typically do not create files with space characters in their names. Instead, users use <code>_</code> or <code>-</code> in places where they would want a space in a name (e.g., <code>hello_there</code>).</p>
+</blockquote>
+</div>
+<p><code>wc</code> 命令统计文件中的字数、行数和字节数。例如，要查看我们刚刚创建的文件的这些信息，运行：</p>
+<blockquote>
+<p>The <code>wc</code> command counts the number of words, lines, and bytes in a file. For example, to see this information for the file we just created, run:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ wc basics</span><br><span class="line"> 3      11      78 basics</span><br></pre></td></tr></table></figure>
+
+<p>Unix 用户通常把自己的主目录组织成一组目录，相关的子目录和文件存放在这些目录下。例如，用户 <code>sam</code> 会用 <code>mkdir</code> 命令在他的主目录中创建三个子目录，一个用于课程作业，一个用于项目，一个用于私人信件：</p>
+<blockquote>
+<p>Unix users typically organize their their home directory as a set of directories under which related subdirectories and files are stored. For example, user <code>sam</code> would use the <code>mkdir</code> command to create three subdirectories in his home directory, one for class work, one for projects, and one for personal correspondence:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir classes</span><br><span class="line">$ mkdir projects</span><br><span class="line">$ mkdir letters</span><br><span class="line"></span><br><span class="line">$ ls</span><br><span class="line">classes/    letters/   projects/</span><br></pre></td></tr></table></figure>
+
+<p>由于这个用户正在上 CS31 这门课，他想在 <code>classes</code> 子目录下为这门课的所有作业创建一个子目录。为此，他会这样做：</p>
+<blockquote>
+<p>Because this user is taking CS31, they want to create a subdirectory under their <code>classes</code> subdirectory for all their work in this class. To do this they would do the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ cd classes</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes</span><br><span class="line">$ mkdir CS31</span><br><span class="line">$ ls</span><br><span class="line">CS31/</span><br><span class="line">$ cd CS31</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br></pre></td></tr></table></figure>
+
+<p><a href="17.1-cmdln_basics.html">图 2</a> 展示了 <code>sam</code> 运行完所有 <code>mkdir</code> 命令之后文件系统的样子。</p>
+<blockquote>
+<p><a href="17.1-cmdln_basics.html">Figure 2</a> shows what the filesystem looks like after <code>sam</code> runs all of the <code>mkdir</code> commands.</p>
+</blockquote>
+<p><img src="/dive-into-systems/Appendix2/images/unixfs2.png" alt="The unix file system after sam creates subdirectories classes, letters, projects, and creates a subdirectory under classes named CS31."></p>
+<p><strong>图 2.</strong> 用户 sam 创建了一些子目录之后的 Unix 文件系统组织结构。</p>
+<p><em>Figure 2. The Unix File System Organization after user sam creates some subdirectories.</em></p>
+<p>现在，<code>sam</code> 在做 CS31 的课程作业时，可以进入他的 CS31 目录，并在这个目录中创建更多的子目录和文件：</p>
+<blockquote>
+<p>Now the <code>sam</code> can move into his CS31 directory when he is working on CS31 course work, and create more subdirectories and files in this directory:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ cd CS31</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br></pre></td></tr></table></figure>
+
+<h4 id="文件路径名与在文件系统中导航"><a href="#文件路径名与在文件系统中导航" class="headerlink" title="文件路径名与在文件系统中导航"></a>文件路径名与在文件系统中导航</h4><p><em>File Pathnames and Navigating the File System</em></p>
+<p>正如我们所见，<code>cd</code> 命令用来在文件系统中导航，<code>ls</code> 列出目录的内容。</p>
+<blockquote>
+<p>As we have seen, the <code>cd</code> command is used to navigate in the file system, and <code>ls</code> lists the contents of a directory.</p>
+</blockquote>
+<p><code>cd</code> 和 <code>ls</code> 都接收一个命令行参数，分别指定要切换到的目录，或要列出其内容的目录。为 <code>cd</code> 指定要切换到的目录位置有两种方式。一种是用<strong>绝对路径名</strong>（absolute path name），即从根目录（<code>/</code>）开始的名字；另一种是用<strong>相对路径名</strong>（relative path name），即从当前工作目录开始的名字。</p>
+<blockquote>
+<p>Both <code>cd</code> and <code>ls</code> take one command line argument that specifies which directory to change into or list the contents of, respectively. There are two ways to name to a directory location for <code>cd</code> to change to. One is to list the directory as its <strong>absolute path name</strong>, its name starting from the root directory (<code>/</code>), and the other is to list it as a <strong>relative path name</strong>, its name from the current working directory.</p>
+</blockquote>
+<p>也可以不带路径名参数运行 <code>cd</code> 和 <code>ls</code>。单独运行 <code>cd</code> 会带你回家（回到你的主目录），单独运行 <code>ls</code> 会列出当前工作目录的内容。下面是用户 <code>sam</code> 尝试的一些例子：</p>
+<blockquote>
+<p>You can also run both <code>cd</code> and <code>ls</code> with no path name argument. Running <code>cd</code> alone will take you home (to your home directory), and running <code>ls</code> alone lists the contents of the current working directory. Here are a some examples that the user <code>sam</code> tried:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">$ cd /home/sam/classes/CS31   # cd with absolute path name</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br><span class="line"></span><br><span class="line">$ cd                          # cd with no path name  (go home)</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/</span><br><span class="line"></span><br><span class="line">$ ls                          # ls with no path name (list in current directory)</span><br><span class="line">classes/    letters/   projects/</span><br><span class="line"></span><br><span class="line">$ cd classes/CS31        # cd with relative path name</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br><span class="line"></span><br><span class="line">$ ls classes/            # ls with relative path name</span><br><span class="line">CS31/</span><br><span class="line"></span><br><span class="line">$ cd /                   # cd with absolute path name (go to root directory)</span><br><span class="line">$ pwd</span><br><span class="line">/</span><br></pre></td></tr></table></figure>
+
+<p>用户常常使用相对路径，因为它们通常输入起来更短（用户往往只是在当前位置附近移动）。</p>
+<blockquote>
+<p>Often users use relative path because they are typically shorter to type (they often are just moving near where they currently are).</p>
+</blockquote>
+<p>每个目录都包含两个隐藏的条目，帮助用 cd 命令在目录之间导航：<code>.</code> 是当前目录的另一个名字，<code>..</code> 是当前目录的父目录的另一个名字。如果给 <code>ls</code> 加上 <code>-a</code> 命令行选项，就能看到列出的这些文件：</p>
+<blockquote>
+<p>Every directory contains two hidden entries that help to navigate directories with the cd command: <code>.</code> is another name for the current directory, and <code>..</code> is another name for the parent directory of the current directory. You can see these files listed if you use the <code>-a</code> command line option to <code>ls</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br><span class="line">$ ls -a</span><br><span class="line">.   ..</span><br></pre></td></tr></table></figure>
+
+<p>它们既可以用在相对路径名中，也可以用在绝对路径名中，用来指定当前目录或父目录。在路径名中使用 <code>..</code> 表示上移一级目录。</p>
+<blockquote>
+<p>These can be used in both relative and absolute path names, to specify the current directory or the parent’s. Using <code>..</code> in a path name means go up one directory.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">$ pwd</span><br><span class="line">/home/sam/classes/CS31</span><br><span class="line"></span><br><span class="line">$ cd ..                 # move up one directory to parent directory</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/classes</span><br><span class="line"></span><br><span class="line">$ cd /bin/../home/sam   # go to sam&#x27;s home directory in an unusual way</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam</span><br><span class="line"></span><br><span class="line">$ cd ./classes/./..     # a wacky example of not going anywhere</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam</span><br></pre></td></tr></table></figure>
+
+<p>最后，<code>~</code> 是 <code>/home</code> 中各目录的简写。单独使用时，<code>~</code> 是用户自己主目录的简写。与另一个用户的用户名结合使用时，<code>~</code> 指的是那个用户的主目录。下面是用户 <code>sam</code> 运行的一些例子：</p>
+<blockquote>
+<p>Finally, <code>~</code> is shorthand for directories in <code>/home</code>. When used alone, <code>~</code> is shorthand for the user’s home directory. When when combined with another’s user name <code>~</code> refers to the other user’s home directory. Here are some examples run by user <code>sam</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cd ~/       # cd into home directory</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam/</span><br><span class="line"></span><br><span class="line">$ ls ~/</span><br><span class="line">classes/    letters/   projects/</span><br><span class="line"></span><br><span class="line">$ ls ~sarita/</span><br><span class="line">unix_notes/</span><br><span class="line"></span><br><span class="line">$ cd ~sartita/</span><br><span class="line">$ pwd</span><br><span class="line">/home/sarita</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-note"><p class="callout-title">原书注 · 关于前面的例子（About the previous example）</p><p>系统管理员常常会在 <code>home/</code> 上设置默认的文件和目录权限，防止用户查看彼此的主目录和文件。在这样的系统上，Sam 可能无法像这个例子中那样 <code>cd</code> 进入 Sarita 的主目录，或者用 <code>ls</code> 列出她的文件。</p>
+<blockquote>
+<p>Often times the system administrator sets up default file and directory permissions on <code>home/</code> that prevent users from viewing each others home directories and files. On such a system, it may not be possible for Sam to <code>cd</code> into Sarita’s home directory, or list her files with <code>ls</code> as he does in this example.</p>
+</blockquote>
+</div>
+<h4 id="复制与移动文件"><a href="#复制与移动文件" class="headerlink" title="复制与移动文件"></a>复制与移动文件</h4><p><em>Copying and Moving Files</em></p>
+<p><code>cp</code> 命令把一个文件（或目录）复制到另一个文件（或目录），<code>mv</code> 命令把一个文件（或目录）从一个目录移到另一个目录中，或者给文件重命名。这两个命令都接收两个命令行参数：源和目标。</p>
+<blockquote>
+<p>The <code>cp</code> command copies one file (or directory) to another, and the <code>mv</code> command moves a file (or directory) from one directory into another one, or it renames a file. Both of these commands take two command line arguments, the source and the destination.</p>
+</blockquote>
+<p>下面是一些例子：</p>
+<blockquote>
+<p>Here are some examples;</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">$ cd unix_notes</span><br><span class="line">$ cp basics test   # copy the basics file to a new file named test</span><br><span class="line">$ ls</span><br><span class="line">basics test</span><br><span class="line"></span><br><span class="line">$ mv test ../blah  # move the test file one directory up and renames it to blah</span><br><span class="line">$ ls</span><br><span class="line">basics</span><br><span class="line"></span><br><span class="line">$ cd ../</span><br><span class="line">$ ls</span><br><span class="line">blah   unix_notes/</span><br><span class="line"></span><br><span class="line">$ cp -r unix_notes notes_copy  # recursively copy all contents of</span><br><span class="line">                               # of unix_notes directory to new directory</span><br><span class="line">                               # named notes_copy</span><br><span class="line">$ cd notes_copy</span><br><span class="line">$ pwd</span><br><span class="line">/home/sarita/notes_copy</span><br><span class="line">$ls</span><br><span class="line">basics</span><br><span class="line"></span><br><span class="line">$ cp basics ../.    # copy basics up a directory to file with same name (/.)</span><br><span class="line">$ cd</span><br><span class="line">$ pwd</span><br><span class="line">/home/sarita/</span><br><span class="line">$ ls</span><br><span class="line">basics unix_notes</span><br></pre></td></tr></table></figure>
+
+<h4 id="删除文件与目录"><a href="#删除文件与目录" class="headerlink" title="删除文件与目录"></a>删除文件与目录</h4><p><em>Removing Files and Directories</em></p>
+<p>有时你想删除文件和目录。<code>rm</code> 命令用来删除文件，<code>rmdir</code> 用来删除目录。两者都接收要删除的文件或目录的名字。两者都有用来指定删除行为的命令行选项。</p>
+<blockquote>
+<p>Sometimes you want to remove files and directories. The <code>rm</code> command is used to remove a file, and the <code>rmdir</code> is used to remove a directory. Both take the name of the file or directory to remove. Both have command line options to specific behavior of removing.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 不带 <code>-i</code> 命令行选项删除文件（Removing files without the <code>-i</code> command line option）</p><p>默认情况下，<code>rm</code> 命令会永久删除文件。它不会像某些其他操作系统删除文件时那样，把文件移到回收站里。因此，使用 <code>rm</code> 时应当谨慎。有时系统管理员会把 <code>rm</code> 配置为默认自动使用它的 <code>-i</code> 命令选项，这样 <code>rm</code> 在删除文件之前会先打印一个提示，让用户有机会输入 <code>n</code>（如果用户对提示输入 <code>y</code> 或 <code>Y</code>，文件就会被删除；输入其他任何内容则不会删除）。</p>
+<p>在 <code>rm</code> 没有被设置为默认运行 <code>rm -i</code> 的系统上，用户常常把这个功能加到自己的 shell 配置文件中。我们会在第 17.6 节中更多地讨论 Bash 配置文件。</p>
+<blockquote>
+<p>By default, the <code>rm</code> command permanently deletes a file. It does not move it to a recycle bin like deleting files on some other operating systems may do. Therefore, <code>rm</code> should be used with caution. Sometimes a system administrator configures <code>rm</code> to automatically use its <code>-i</code> command option by default, so that <code>rm</code> first prints a prompt to give the user a chance to enter <code>n</code> before removing the file (if the user enters <code>y</code> or <code>Y</code> to the prompt the file will be removed, and any other response it will not).</p>
+<p>On systems where <code>rm</code> isn’t set up to by default run <code>rm -i</code>, users often add this feature to their shell configuration file. We discuss Bash configuration files more in Section 17.6.</p>
+</blockquote>
+</div>
+<p>例如（注意，如果你的系统没有设置让 <code>rm</code> 默认使用 <code>-i</code>，你需要输入 <code>rm -i</code> 才能看到同样的行为）：</p>
+<blockquote>
+<p>For example (note that if your system isn’t set up with <code>rm</code> using <code>-i</code> by default, you would type <code>rm -i</code> to see this same behavior).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ls</span><br><span class="line"> basics</span><br><span class="line">$ rm basics</span><br><span class="line">  rm: remove regular file basics? y</span><br><span class="line">$ ls</span><br></pre></td></tr></table></figure>
+
+<p>默认情况下，<code>rmdir</code> 只删除空目录，这个特性迫使用户在删除目录之前先显式地删除目录的全部内容，防止用户意外删除本不想删除的内容。下面是用户 <code>sam</code> 的一些调用示例：</p>
+<blockquote>
+<p>By default, <code>rmdir</code> only removes empty directories, a feature that prevents the user from accidentally removing content that they did not intend, by forcing them to explicitly remove all directory contents before removing the directory. Here are some example calls from user <code>sam</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">$ cd</span><br><span class="line">$ pwd</span><br><span class="line">/home/sam</span><br><span class="line">$ ls</span><br><span class="line">classes/    letters/   projects/</span><br><span class="line">$ rmdir letters</span><br><span class="line">$ ls</span><br><span class="line">classes/    projects/</span><br><span class="line"></span><br><span class="line">$ rmdir classes</span><br><span class="line">rmdir: failed to remove classes: Directory not empty</span><br><span class="line">$ ls</span><br><span class="line">classes/    projects/</span><br></pre></td></tr></table></figure>
+
+<p>用户可以用 <code>rm -r</code> 递归地删除一个目录的内容，还可以再加上 <code>-f</code> 选项强制删除文件（删除文件之前不再有任何提示）：<code>rm -rf</code>。</p>
+<blockquote>
+<p>A user can recursively remove the contents of a directory using <code>rm -r</code>, and can also forcefully remove files (git rid of all prompting before removing files) by adding the <code>-f</code> option too: <code>rm -rf</code>.</p>
+</blockquote>
+<div class="callout callout-warning"><p class="callout-title">原书警示 · 使用 <code>-f</code> 和 <code>-r</code> 命令行选项时要非常小心（Be very careful with the <code>-f</code> and <code>-r</code> command line options）</p><p>对 <code>rm</code> 使用 <code>-f</code> 时要格外小心，因为 <code>rm -i</code> 的提示行为常常能防止意外删除文件；如果运行 <code>rm -rf</code>，你可能会意外地递归删除整整一个目录的文件。因此，最好避免使用这些命令行选项。不过，在删除大量文件和子目录时，它们很有用。在你确实想使用这些选项的情况下，好的做法是在运行 <code>rm -rf</code> 之前，先确认自己在正确的目录中（运行 <code>ls</code> 和 <code>pwd</code>）。</p>
+<blockquote>
+<p>Great care should be taken when using <code>-f</code> with <code>rm</code>, as the prompting behavior of <code>rm -i</code> often prevents accidental removal of files; if you run <code>rm -rf</code> you can accidentally recursively remove a full directory of files. Because of this, it is best to avoid using these command line options. However, when deleting a large number of files and subdirectories, they are useful. In cases when you do want to use these options, it is good practice to first ensure that you are in the right directory (by running <code>ls</code> and <code>pwd</code>) before running <code>rm -rf</code>.</p>
+</blockquote>
+</div>
+<h3 id="17-1-3-基本命令小结"><a href="#17-1-3-基本命令小结" class="headerlink" title="17.1.3. 基本命令小结"></a>17.1.3. 基本命令小结</h3><p><em>17.1.3. Basic Commands Summary</em></p>
+<p>下面是本节讨论过的一些 UNIX 命令的小结，附有示例：</p>
+<blockquote>
+<p>Here is a summary of some of the UNIX commands discussed in this section, with examples:</p>
+</blockquote>
+<ul>
+<li><code>pwd</code>：打印工作目录，打印出当前目录（cwd）的完整路径名。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>pwd</code> — Print working directory: prints out the full pathname of the current directory (cwd).</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>cd &lt;pathname&gt;</code>：切换目录，把当前目录改为 <code>&lt;pathname&gt;</code> 指定的目录。路径名可以是相对于 cwd 的，也可以是从 <code>/</code> 开始的绝对路径名。<ul>
+<li>从当前目录进入 <code>sub1</code> 目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd sub1</span><br></pre></td></tr></table></figure></li>
+<li>无论当前在哪个目录，都进入 <code>/home/sam</code> 目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /home/</span><br></pre></td></tr></table></figure></li>
+<li>切换到当前目录的父目录（即在文件系统层次结构中上移一级）：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ..</span><br></pre></td></tr></table></figure></li>
+<li>切换到你的「主」目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>cd &lt;pathname&gt;</code> — Change directory: changes the current directory to be the directory specified by <code>&lt;pathname&gt;</code>. The pathname can be relative to the cwd or an absolute pathname from <code>/</code>.</p>
+<ul>
+<li><p>Move into the <code>sub1</code> directory from the current directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd sub1</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Move into the <code>/home/sam</code> directory, regardless of the current directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd /home/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Change to the parent directory of the current directory (i.e., move up one level in the filesystem hierarchy):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd ..</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Change to your “home” directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cd</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>第二个例子的说明是进入 <code>/home/sam</code>，但代码写的是 <code>cd /home/</code>，应为 <code>cd /home/sam</code>。</p>
+</div>
+<ul>
+<li><code>ls</code>：列出，列出当前目录中的文件和目录。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>ls</code> — List: list files and directories in the current directory.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>ls &lt;pathname&gt;</code>：列出，列出 <code>&lt;pathname&gt;</code> 指定的目录中的文件和目录。<ul>
+<li>列出用户 <code>sam</code> 的主目录的内容：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls /home/sam</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>ls &lt;pathname</code> — List: list files and directories in the directory specified by <code>&lt;pathname&gt;</code>.</p>
+<ul>
+<li><p>List the contents of user <code>sam</code>‘s home directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ls /home/sam</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>mv &lt;p1&gt; &lt;p2&gt;</code>：移动，把路径名 <code>&lt;p1&gt;</code> 指定的文件移动&#x2F;重命名为 <code>&lt;p2&gt;</code>。<ul>
+<li>把 <code>oldfile</code> 重命名为 <code>newfile</code>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv oldfile newfile</span><br></pre></td></tr></table></figure></li>
+<li>把 <code>newfile</code> 移到子目录 <code>sub1</code> 中：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv newfile sub1/</span><br></pre></td></tr></table></figure></li>
+<li>把 <code>sub1</code> 目录重命名为 <code>sub2</code>：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv sub1 sub2</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>mv &lt;p1&gt; &lt;p2&gt;</code> — Move: move&#x2F;rename file specified by pathname <code>&lt;p1&gt;</code> to <code>&lt;p2&gt;</code>.</p>
+<ul>
+<li><p>Rename <code>oldfile</code> to be <code>newfile</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv oldfile newfile</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Move <code>newfile</code> into subdirectory <code>sub1</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv newfile sub1/</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Rename <code>sub1</code> directory to <code>sub2</code>:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mv sub1 sub2</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>cp &lt;p1&gt; &lt;p2&gt;</code>：复制，为路径名 <code>&lt;p1&gt;</code> 指定的文件创建一个新副本，并把新副本命名为 <code>&lt;p2&gt;</code>。<ul>
+<li>把 <code>oldfile</code> 复制为 <code>newfile</code>（<code>oldfile</code> 仍然存在）：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp oldfile newfile</span><br></pre></td></tr></table></figure></li>
+<li>把 <code>oldfile</code> 复制到上一级目录中，副本也叫 <code>oldfile</code>（当前目录和父目录中都有一个名为 <code>oldfile</code> 的文件，在其中一个文件被修改之前，它们的内容完全相同）：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp oldfile ../.</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>cp &lt;p1&gt; &lt;p2&gt;</code> — Copy: make a new copy of the file specified by pathname <code>&lt;p1&gt;</code> and name the new copy <code>&lt;p2&gt;</code>.</p>
+<ul>
+<li><p>Copy <code>oldfile</code> to <code>newfile</code> (<code>oldfile</code> still exists):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp oldfile newfile</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Copy <code>oldfile</code> up one directory to a file also named <code>oldfile</code> (current directory and parent directory both have a file named <code>oldfile</code>, whose contents are identical until one of the files is modified):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cp oldfile ../.</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>rm &lt;pathname&gt;</code>：删除，删除 <code>&lt;pathname&gt;</code> 指定的文件。<ul>
+<li>删除我的主目录中名为 <code>temp</code> 的文件：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm ~/temp</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>rm &lt;pathname&gt;</code> — Remove: delete the file specified by <code>&lt;pathname&gt;</code>.</p>
+<ul>
+<li><p>Delete file named <code>temp</code> in my home directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rm ~/temp</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>mkdir &lt;dir&gt;</code>：创建目录，创建一个名为 <code>&lt;dir&gt;</code> 的新目录。<ul>
+<li>在当前目录中创建一个名为 <code>test</code> 的新目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir test</span><br></pre></td></tr></table></figure></li>
+<li>在我的主目录中创建一个名为 <code>private</code> 的新目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/private</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>mkdir &lt;dir&gt;</code> — Make directory: create a new directory named <code>&lt;dir&gt;</code>.</p>
+<ul>
+<li><p>Create a new directory named <code>test</code> in the current directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir test</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Create a new directory named <code>private</code> in my home directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/private</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>rmdir &lt;dir&gt;</code>：删除目录，删除路径名 <code>&lt;dir&gt;</code> 指定的目录（必须为空）。<ul>
+<li>删除我的主目录中名为 <code>private</code> 的目录：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rmdir ~/private</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>rmdir &lt;dir&gt;</code> — Remove directory: delete the directory specified by pathname <code>&lt;dir&gt;</code> (must be empty).</p>
+<ul>
+<li><p>Remove directory named <code>private</code> in my home directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">rmdir ~/private</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>wc &lt;file&gt;</code>：字数统计，列出文件中的字节数、字数和行数。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>wc &lt;file&gt;</code> — Word count: list the number of bytes, words, and lines in a file.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>touch &lt;file&gt;</code>：创建一个名为 <code>&lt;file&gt;</code> 的新的空文件。<ul>
+<li>在当前目录中创建一个名为 <code>my_notes</code> 的新的空文件：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch my_notes</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>touch &lt;file&gt;</code> — Create a new empty file with name <code>&lt;file&gt;</code>.</p>
+<ul>
+<li><p>Create a new empty file named <code>my_notes</code> in the current directory:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">touch my_notes</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>cat &lt;file&gt;</code>：把 <code>&lt;file&gt;</code> 的内容打印到终端上。<ul>
+<li>打印 <code>basics</code> 文件的内容：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat basics</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>cat &lt;file&gt;</code> — Print out contents of <code>&lt;file&gt;</code> to the terminal.</p>
+<ul>
+<li><p>Print the contents of the <code>basics</code> file:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">cat basics</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>less &lt;file&gt;</code>：把 <code>&lt;file&gt;</code> 的内容打印到终端上，一次一页，每页都会暂停。按空格键前进到下一页。<ul>
+<li>一次一页地打印 <code>basics</code> 文件的内容：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">less basics</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><code>less &lt;file&gt;</code> — Print out the contents of <code>&lt;file&gt;</code> to the terminal, one page at a time, pausing at each page. The space bar key advances to the next page.</p>
+<ul>
+<li><p>Print the contents of the <code>basics</code> file one page at a time:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">less basics</span><br></pre></td></tr></table></figure></li>
+</ul>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>more &lt;file&gt;</code>：另一个分页程序（与 <code>less</code> 类似），用来一次一页地查看文件。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>more &lt;file&gt;</code> — Another pager (like <code>less</code>) for viewing files one page at at time.</li>
+</ul>
+</blockquote>
+<h3 id="17-1-4-参考资料"><a href="#17-1-4-参考资料" class="headerlink" title="17.1.4. 参考资料"></a>17.1.4. 参考资料</h3><p><em>17.1.4. References</em></p>
+<p>更多信息参见：</p>
+<blockquote>
+<p>For more information see:</p>
+</blockquote>
+<ul>
+<li>cheat-sheets.org 上的<a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">最常用的 Unix 命令</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">most used Unix commands</a> from cheat-sheets.org</li>
+</ul>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash 参考手册</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash Reference Manual</a> from gnu.org.</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.0-index.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17. 附录 2：使用 Unix</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.2-man.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.2. man 与 Unix 手册</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-1-1-Unix-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F"><span class="toc-text">17.1.1. Unix 文件系统</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-1-2-%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E5%91%BD%E4%BB%A4"><span class="toc-text">17.1.2. 文件系统命令</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-1-3-%E5%9F%BA%E6%9C%AC%E5%91%BD%E4%BB%A4%E5%B0%8F%E7%BB%93"><span class="toc-text">17.1.3. 基本命令小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-1-4-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.1.4. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>6. 在 C 之下：潜入汇编 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C6-asm_intro&#x2F;index.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  6. Under the C: Diving into Ass">
+<meta property="og:type" content="website">
+<meta property="og:title" content="6. 在 C 之下：潜入汇编 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C6-asm_intro/6.0-index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C6-asm_intro&#x2F;index.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  6. Under the C: Diving into Ass">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.985Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.985Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html" class="current" aria-current="page">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>6. 在 C 之下：潜入汇编</span>
+      </nav>
+      <span class="book-position">第 72 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">6. 在 C 之下：潜入汇编</h1>
+  
+  
+    <p class="article-meta"><span>约 14 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C6-asm_intro/index.html">https://diveintosystems.org/book/C6-asm_intro/index.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>6. Under the C: Diving into Assembly</em></p>
+<p><em>在 C 之下，在 C 之下</em></p>
+<blockquote>
+<p><em>Under the C, under the C</em></p>
+</blockquote>
+<p><em>难道你不知道这样更好</em></p>
+<blockquote>
+<p><em>Don’t you know it’s better</em></p>
+</blockquote>
+<p><em>跟寄存器</em></p>
+<blockquote>
+<p><em>Dealing with registers</em></p>
+</blockquote>
+<p><em>和汇编打交道？</em></p>
+<blockquote>
+<p><em>And assembly?</em></p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这几句套用了迪士尼动画《小美人鱼》中螃蟹 Sebastian 演唱的《Under the Sea》（在海底）的歌词，把 sea 换成了同音的 C。下一行的「—— Sebastian（大概吧）」就是在调侃这一点。</p>
+</div>
+<p>—— Sebastian（大概吧）</p>
+<blockquote>
+<p>-Sebastian, probably</p>
+</blockquote>
+<p>在计算机发展的早期、编译器发明之前，许多程序员用<strong>汇编语言</strong>（assembly language）编写代码，它直接规定了计算机在执行过程中遵循的指令集合。汇编语言是程序员在不直接写 1 和 0 的前提下，最接近机器层面的编程方式，它是<strong>机器码</strong>（machine code）的一种可读形式。要写出高效的汇编代码，程序员必须深入理解底层机器体系结构的运作方式。</p>
+<blockquote>
+<p>Prior to the invention of the compiler in the early days of computing, many programmers coded in <strong>assembly language</strong>, which directly specifies the set of instructions that a computer follows during execution. Assembly language is the closest a programmer gets to coding at the machine level without writing code directly in 1s and 0s, and is a readable form of <strong>machine code</strong>. To write efficient assembly code, programmers must intimately understand the operation of the underlying machine architecture.</p>
+</blockquote>
+<p>编译器的发明从根本上改变了程序员编写代码的方式。<strong>编译器</strong>（compiler）把人类可读的编程语言（通常用英文单词写成）翻译成计算机能理解的语言（即机器码）。编译器依据编程语言的规则、操作系统的规范以及机器的指令集，把人类可读的代码翻译成机器码，并在这个过程中提供一定的错误检测和类型检查。大多数现代编译器生成的汇编代码，与过去手写的汇编代码一样高效。</p>
+<blockquote>
+<p>The invention of the compiler fundamentally changed the way programmers write code. A <strong>compiler</strong> translates a human-readable programming language (usually written using English words) into a language that a computer understands (i.e., machine code). Compilers translate the human-readable code into machine code using the rules of the programming language, the specification of the operating system, and the instruction set of the machine, and provide some error detection and type checking in the process. Most modern compilers produce assembly code that is as efficient as the handwritten assembly code of yesteryear.</p>
+</blockquote>
+<h3 id="学习汇编的好处"><a href="#学习汇编的好处" class="headerlink" title="学习汇编的好处"></a>学习汇编的好处</h3><p><em>The Benefits of Learning Assembly</em></p>
+<p>编译器有这么多好处，学习汇编有什么用可能就不那么显而易见了。然而，学习和理解汇编代码有几个很有说服力的理由。下面举几个例子。</p>
+<blockquote>
+<p>Given all the benefits of compilers, it may not be obvious why learning assembly is useful. However, there are several compelling reasons to learn and understand assembly code. Here are a few examples.</p>
+</blockquote>
+<h4 id="1-更高层的抽象隐藏了有价值的程序细节"><a href="#1-更高层的抽象隐藏了有价值的程序细节" class="headerlink" title="1. 更高层的抽象隐藏了有价值的程序细节"></a>1. 更高层的抽象隐藏了有价值的程序细节</h4><p><em>1. Higher-Level Abstraction Hides Valuable Program Details</em></p>
+<p>高级编程语言提供的抽象对降低编程的复杂度大有裨益。但与此同时，这种简化让程序员很容易在没有完全理解其选择在机器层面产生何种影响的情况下做出设计决策。缺乏汇编知识，常常使程序员无法了解程序如何运行的宝贵信息，也限制了他们理解自己的代码实际在做什么的能力。</p>
+<blockquote>
+<p>The abstraction provided by high-level programming languages is a boon for reducing the complexity of programming. At the same time, this simplification makes it easy for programmers to make design decisions without fully understanding the ramifications of their choices at the machine level. Lacking knowledge of assembly often prevents a programmer from understanding valuable information on how a program runs, and limits their ability to understand what their code is actually doing.</p>
+</blockquote>
+<p>举个例子，看看下面这个程序：</p>
+<blockquote>
+<p>As an example, take a look at the following program:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int adder() &#123;</span><br><span class="line">    int a;</span><br><span class="line">    return a + 2;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int assign() &#123;</span><br><span class="line">    int y = 40;</span><br><span class="line">    return y;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int x;</span><br><span class="line">    assign();</span><br><span class="line">    x = adder();</span><br><span class="line">    printf(&quot;x is: %d\n&quot;, x);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个程序的输出是什么？乍一看，<code>assign</code> 函数似乎没有任何作用，因为 <code>main</code> 中没有任何变量保存它的返回值。<code>adder</code> 函数返回 <code>a + 2</code> 的值，尽管变量 <code>a</code> 没有初始化（不过在某些机器上编译器会把 <code>a</code> 初始化为 0）。打印 <code>x</code> 应该得到一个不确定的值。然而，在大多数 64 位机器上编译并运行它，得到的结果始终是 <code>42</code>：</p>
+<blockquote>
+<p>What is the program’s output? At first glance, the <code>assign</code> function appears to have no effect, as its return value is not stored by any variable in <code>main</code>. The <code>adder</code> function returns the value of <code>a + 2</code>, although the variable <code>a</code> is uninitialized (though on some machines the compiler will initialize <code>a</code> to 0). Printing out <code>x</code> should result in an undefined value. However, compiling and running it on most 64-bit machines consistently produces an answer of <code>42</code>:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>读取未初始化的局部变量是未定义行为，<code>42</code> 只是在不开优化时、两个函数的栈帧恰好重叠在同一块内存上的结果。译者在 Apple Silicon Mac 上试过：默认（<code>-O0</code>）编译输出 <code>x is: 42</code>，加上 <code>-O2</code> 优化后输出的就是一个毫无规律的值。所以这个例子是用来理解栈帧的，千万别在真实代码里依赖这种行为。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o example example.c</span><br><span class="line">$ ./example</span><br><span class="line">x is: 42</span><br></pre></td></tr></table></figure>
+
+<p>乍一看，这个程序的输出似乎毫无道理，因为 <code>adder</code> 和 <code>assign</code> 函数看起来毫不相干。理解栈帧以及函数在底层如何执行，会帮助你明白答案为什么是 <code>42</code>。我们会在接下来的几章中再次讨论这个例子。</p>
+<blockquote>
+<p>The output of this program seems nonsensical at first glance, as the <code>adder</code> and <code>assign</code> functions appear to be disconnected. Understanding stack frames and how functions execute under the hood will help you understand why the answer is <code>42</code>. We will revisit this example in the upcoming chapters.</p>
+</blockquote>
+<h4 id="2-有些计算系统的资源太有限，无法使用编译器"><a href="#2-有些计算系统的资源太有限，无法使用编译器" class="headerlink" title="2. 有些计算系统的资源太有限，无法使用编译器"></a>2. 有些计算系统的资源太有限，无法使用编译器</h4><p><em>2. Some Computing Systems Are Too Resource-Constrained for Compilers</em></p>
+<p>最常见的「计算机」，是那些我们不容易认出是计算机的设备。这些设备无处不在，从汽车、咖啡机到洗衣机和智能手表。传感器、微控制器和其他嵌入式处理器在我们的生活中扮演着越来越重要的角色，它们都需要软件才能运转。然而，这类设备中的处理器往往太小，无法执行用高级编程语言编写并编译出的代码。在许多情况下，这些设备需要独立的汇编程序，不依赖常见编程语言所需的运行时库。</p>
+<blockquote>
+<p>The most common types of “computer” are those we cannot readily identify as computers. These devices exist everywhere from cars and coffee makers to washing machines and smart watches. Sensors, microcontrollers, and other embedded processors play an increasingly dominant role in our lives, and all require software to operate. However, the processors contained in such devices are often so small that they cannot execute the compiled code written by higher-level programming languages. In many cases, these devices require standalone assembly programs that are not dependent on the runtime libraries required by common programming languages.</p>
+</blockquote>
+<h4 id="3-漏洞分析"><a href="#3-漏洞分析" class="headerlink" title="3. 漏洞分析"></a>3. 漏洞分析</h4><p><em>3. Vulnerability Analysis</em></p>
+<p>有一部分安全专业人员每天都在设法找出各类计算机系统中的漏洞。许多攻击程序的途径都与程序存储其运行时信息的方式有关。学习汇编能让安全专业人员理解漏洞是如何产生的，以及它们可能被如何利用。</p>
+<blockquote>
+<p>A subset of security professionals spend their days trying to identify vulnerabilities in various types of computer systems. Many avenues for attacking a program involve the way the program stores its runtime information. Learning assembly enables security professionals to understand how vulnerabilities arise and how they can be exploited.</p>
+</blockquote>
+<p>另一些安全专业人员则花时间对恶意软件中的恶意代码进行「逆向工程」。掌握汇编的实用知识，对这些软件工程师迅速开发出保护系统免受攻击的对策至关重要。最后，不了解自己写的代码如何被翻译成汇编的开发者，可能会在不知不觉中写出有漏洞的代码。</p>
+<blockquote>
+<p>Other security professionals spend time “reverse engineering” malicious code in malware and other malicious software. A working knowledge of assembly is essential to enable these software engineers to quickly develop countermeasures to protect systems against attack. Lastly, developers who lack an understanding of how the code they write translates to assembly may end up unwittingly writing vulnerable code.</p>
+</blockquote>
+<h4 id="4-系统级软件中的关键代码序列"><a href="#4-系统级软件中的关键代码序列" class="headerlink" title="4. 系统级软件中的关键代码序列"></a>4. 系统级软件中的关键代码序列</h4><p><em>4. Critical Code Sequences in System-Level Software</em></p>
+<p>最后，计算机系统中有些部件无法被编译器充分优化，需要手写汇编。在某些系统层面，对性能至关重要、需要针对具体机器进行细致优化的地方，存在手写的汇编代码。例如，所有计算机的启动序列都是用汇编代码编写的。操作系统中用于线程或进程上下文切换的部分常常包含手写的汇编。对于这些短小而对性能至关重要的代码序列，人往往能写出比编译器优化得更好的汇编代码。</p>
+<blockquote>
+<p>Lastly, there are some components of a computer system that just cannot be optimized sufficiently by compilers and require handwritten assembly. Some system levels have handwritten assembly code in areas where detailed machine-specific optimizations are critical for performance. For example, the boot sequence on all computers is written in assembly code. Operating systems often contain handwritten assembly for thread or process context-switching. Humans are often able to produce better-optimized assembly code than compilers for these short and performance-critical sequences.</p>
+</blockquote>
+<h3 id="接下来几章你将学到什么"><a href="#接下来几章你将学到什么" class="headerlink" title="接下来几章你将学到什么"></a>接下来几章你将学到什么</h3><p><em>What You Will Learn in the Coming Chapters</em></p>
+<p>接下来的三章介绍三种不同风格的汇编。<a href="../C7-x86_64/7.0-index.html">第 7 章</a>和<a href="../C8-IA32/8.0-index.html">第 8 章</a>介绍 x86_64 及其早期形式 IA32。<a href="../C9-ARM64/9.0-index.html">第 9 章</a>介绍 ARMv8-A 汇编，它是大多数现代 ARM 设备采用的 ISA，包括树莓派这样的单板计算机。<a href="../C10-asm_takeaways/10.0-index.html">第 10 章</a>给出学习汇编的小结和一些关键要点。</p>
+<blockquote>
+<p>The next three chapters cover three different flavors of assembly. <a href="../C7-x86_64/7.0-index.html">Chapter 7</a> and <a href="../C8-IA32/8.0-index.html">Chapter 8</a> cover x86_64 and its earlier form, IA32. <a href="../C9-ARM64/9.0-index.html">Chapter 9</a> covers ARMv8-A assembly, which is the ISA found on most modern ARM devices, including single-board computers like the Raspberry Pi. <a href="../C10-asm_takeaways/10.0-index.html">Chapter 10</a> contains a summary and some key takeaways for learning assembly.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 用 Mac 学汇编的建议</p><p>Apple Silicon Mac 的 CPU 是 ARM64，第 9 章（ARMv8-A）的内容最贴近你手头的机器（不过 macOS 的汇编语法和调用约定在细节上与 Linux 略有不同）；第 7、8 章的 x86 汇编则需要 x86 Linux 环境才能运行，或者至少用 <code>gcc -S -target x86_64-linux-gnu</code> 交叉生成汇编来对照阅读。</p>
+</div>
+<p>每种汇编风格实现的是不同的指令集架构（ISA）。回想一下，<a href="../C5-Arch/5.0-index.html">ISA</a> 定义了指令集合及其二进制编码、CPU 寄存器集合，以及执行指令对 CPU 和存储器状态的影响。</p>
+<blockquote>
+<p>Each of these different flavors of assembly implement different instruction set architectures (ISAs). Recall that an <a href="../C5-Arch/5.0-index.html">ISA</a> defines the set of instructions and their binary encoding, the set of CPU registers, and the effects of executing instructions on the state of the CPU and memory.</p>
+</blockquote>
+<p>在接下来的三章中，你会看到所有 ISA 之间的总体相似之处，包括都把 CPU 寄存器用作许多指令的操作数，以及每种 ISA 都提供类似类型的指令：</p>
+<blockquote>
+<p>In the following three chapters, you will see general similarities across all the ISAs, including that CPU registers are used as operands of many instructions, and that each ISA provides similar types of instructions:</p>
+</blockquote>
+<ol>
+<li>执行算术和逻辑运算（如加法或按位与）的指令</li>
+</ol>
+<blockquote>
+<ol>
+<li>instructions for computing arithmetic and logic operations, such as addition or bitwise AND</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>控制流指令，用于实现分支，如 if-else、循环以及函数调用和返回</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>instructions for control flow that are used to implement branching such as if-else, loops, and function call and return</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>数据移动指令，用于在 CPU 寄存器和存储器之间加载和存储值</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>instructions for data movement that load and store values between CPU registers and memory</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>向栈中压入和从栈中弹出值的指令。这些指令用来实现执行调用栈：函数调用时，一个新的栈帧（存放正在运行的函数的局部变量和参数）被加到栈顶；函数返回时，一个栈帧从栈顶移除。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>instructions for pushing and popping values from the stack. These instructions are used to implement the execution call stack, where a new frame of stack memory (that stores a running function’s local variables and parameters) is added to the top of the stack on a function call, and a frame is removed from the top of the stack on a function return.</li>
+</ol>
+</blockquote>
+<p>C 编译器把 C 源代码翻译成某种特定 ISA 的指令集。编译器把 C 语句（包括循环、<code>if</code>-<code>else</code>、函数调用和变量访问）翻译成由该 ISA 定义、并由设计来执行该 ISA 指令的 CPU 所实现的一组特定指令。例如，编译器把 C 翻译成 x86 指令，在 Intel x86 处理器上执行；或者把 C 翻译成 ARM 指令，在 ARM 处理器上执行。</p>
+<blockquote>
+<p>A C compiler translates C source code to a specific ISA instruction set. The compiler translates C statements, including loops, <code>if</code>-<code>else</code>, function calls, and variable access, to a specific set of instructions that are defined by the ISA and implemented by a CPU that is designed to execute instructions from the specific ISA. For example, a compiler translates C to x86 instructions for execution on an Intel x86 processor, or translates C to ARM instructions for execution on an ARM processor.</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 在浏览器里看 C 被编译成什么汇编</p><p>读接下来几章时，可以配合开源网站 Compiler Explorer（<a target="_blank" rel="noopener" href="https://godbolt.org/">https://godbolt.org/</a>）做练习。它在 GitHub 上的项目说明是「在浏览器里交互式地运行编译器，并与生成的汇编交互」（Run compilers interactively from your web browser and interact with the assembly）。<br>在网页里输入一段 C 代码，旁边就会显示编译器为它生成的汇编。2026 年 11 月抓取时，页面默认的编译器是 x86-64 gcc 16.2。用户可以换用别的编译器、填写编译选项，也可以设置成源码一改动就自动重新编译，还能生成 <code>godbolt.org/z/…</code> 形式的链接，把代码和输出分享给别人。<br>本书的 C 示例可以直接贴进去，把生成的汇编和书中的清单逐行对照。要注意，编译器版本和优化选项不同，生成的汇编也会不同。<br>来源：<a target="_blank" rel="noopener" href="https://godbolt.org/">Compiler Explorer</a>；<a target="_blank" rel="noopener" href="https://github.com/compiler-explorer/compiler-explorer">GitHub：compiler-explorer&#x2F;compiler-explorer</a></p>
+</div>
+<p>在阅读本书汇编部分的各章时，你可能会注意到一些关键术语被重新定义了一遍，一些插图也被重复使用。为了更好地帮助其他计算机科学教师，我们把每一章都设计成可以在特定的学院和大学中独立使用。虽然每章的大部分内容都是独有的，但我们希望各章之间的共同之处，能帮助读者加深对不同汇编风格之间相似性的印象。</p>
+<blockquote>
+<p>As you read the chapters in the assembly part of the book, you may notice that some key terms are defined again and that some figures are reproduced. To best aid other CS educators, we designed each chapter to be used independently at particular colleges and universities. While most of the material in each chapter is unique, we hope the commonalities between the chapters help reinforce the similarities between the different flavors of assembly in the mind of readers.</p>
+</blockquote>
+<p>准备好学习汇编了吗？让我们直接潜下去！点击下面的链接访问你感兴趣的章节：</p>
+<blockquote>
+<p>Ready to learn assembly? Let’s dive right in! Follow the links below to visit particular chapters of interest:</p>
+</blockquote>
+<ul>
+<li><a href="../C7-x86_64/7.0-index.html">x86-64 汇编</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a href="../C7-x86_64/7.0-index.html">x86-64 Assembly</a></li>
+</ul>
+</blockquote>
+<ul>
+<li><a href="../C8-IA32/8.0-index.html">IA32 汇编</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a href="../C8-IA32/8.0-index.html">IA32 Assembly</a></li>
+</ul>
+</blockquote>
+<ul>
+<li><a href="../C9-ARM64/9.0-index.html">ARMv8-A 汇编</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a href="../C9-ARM64/9.0-index.html">ARMv8-A Assembly</a></li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C5-Arch/5.11-exercises.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">5.11. 练习</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C7-x86_64/7.0-index.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">7. 64 位 x86 汇编（x86-64）</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E6%B1%87%E7%BC%96%E7%9A%84%E5%A5%BD%E5%A4%84"><span class="toc-text">学习汇编的好处</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%8E%A5%E4%B8%8B%E6%9D%A5%E5%87%A0%E7%AB%A0%E4%BD%A0%E5%B0%86%E5%AD%A6%E5%88%B0%E4%BB%80%E4%B9%88"><span class="toc-text">接下来几章你将学到什么</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

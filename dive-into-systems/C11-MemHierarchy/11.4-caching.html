@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>11.4. CPU 缓存 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;caching.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.4. CPU Caches 在描述了存储设备">
+<meta property="og:type" content="website">
+<meta property="og:title" content="11.4. CPU 缓存 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/11.4-caching.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C11-MemHierarchy&#x2F;caching.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  11.4. CPU Caches 在描述了存储设备">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectMapping.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AddressIndex.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AddressTag.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AddressOffset.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AddressBits.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample0.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample1.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample2.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample3.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample4.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/CacheDirty.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample5.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectExample6.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocLookup.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/CacheLRU.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample0.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample1.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample2.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample3.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample4.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample5.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/AssocExample6.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.934Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C11-MemHierarchy/images/DirectMapping.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html" class="current" aria-current="page">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>11. 存储与存储器层次结构</span>
+      </nav>
+      <span class="book-position">第 123 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">11.4. CPU 缓存</h1>
+  
+  
+    <p class="article-meta"><span>约 43 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C11-MemHierarchy/caching.html">https://diveintosystems.org/book/C11-MemHierarchy/caching.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>11.4. CPU Caches</em></p>
+<p>在<a href="11.2-devices.html">描述了存储设备</a>、认识了<a href="11.3-locality.html">时间局部性和空间局部性</a>这两种重要模式之后，我们就可以来探讨 CPU 缓存是如何设计和实现的了。<strong>缓存</strong>（cache）是 CPU 上一种小而快的存储设备，存放主存的有限子集。缓存面临几个重要的设计问题：</p>
+<blockquote>
+<p>Having <a href="11.2-devices.html">characterized storage devices</a> and recognized the important patterns of <a href="11.3-locality.html">temporal and spatial locality</a>, we’re ready to explore how CPU caches are designed and implemented. A <strong>cache</strong> is a small, fast storage device on a CPU that holds limited subsets of main memory. Caches face several important design questions:</p>
+</blockquote>
+<ul>
+<li>缓存应当存放程序内存的<em>哪些</em>子集？</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Which</em> subsets of a program’s memory should the cache hold?</li>
+</ul>
+</blockquote>
+<ul>
+<li>缓存应当在<em>何时</em>把程序数据的某个子集从主存复制到缓存，或者反过来？</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>When</em> should the cache copy a subset of a program’s data from main memory to the cache, or vice versa?</li>
+</ul>
+</blockquote>
+<ul>
+<li>系统<em>如何</em>判断程序的数据是否在缓存中？</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>How</em> can a system determine whether a program’s data is present in the cache?</li>
+</ul>
+</blockquote>
+<p>在探讨这些棘手的问题之前，我们需要先介绍一些缓存的行为和术语。回想一下，访问内存中的数据时，程序首先<a href="../C8-IA32/8.1-basics.html">计算数据的内存地址</a>。理想情况下，所需地址处的数据已经在缓存中了，程序就可以完全跳过对主存的访问。为了使性能最大化，硬件会把所需的地址<em>同时</em>发送给缓存和主存。由于缓存更快、离 ALU 更近，它的响应比内存快得多。如果数据在缓存中（<strong>缓存命中</strong>，cache hit），缓存硬件就会取消挂起的内存访问，因为缓存提供数据比内存快。</p>
+<blockquote>
+<p>Before exploring these challenging questions, we need to introduce some cache behavior and terminology. Recall that when accessing data in memory, a program first <a href="../C8-IA32/8.1-basics.html">computes the data’s memory address</a>. Ideally, the data at the desired address already resides in the cache, allowing the program to skip accessing main memory altogether. To maximize performance, the hardware simultaneously sends the desired address to <em>both</em> the cache and main memory. Because the cache is faster and closer to the ALU, the cache responds much more quickly than memory. If the data is present in the cache (a <strong>cache hit</strong>), the cache hardware cancels the pending memory access because the cache can serve the data faster than memory.</p>
+</blockquote>
+<p>否则，如果数据不在缓存中（<strong>缓存未命中</strong>，cache miss），CPU 别无选择，只能等待内存取回数据。但关键的是，对主存的请求完成后，CPU 会把取回的数据加载到缓存中，以便后续对同一地址的请求（得益于时间局部性，这很可能发生）能由缓存快速满足。即使未命中的内存访问是<em>写</em>内存，CPU 在未命中时仍然会把值加载到缓存中，因为程序将来很可能会再次访问同一位置。</p>
+<blockquote>
+<p>Otherwise, if the data isn’t in the cache (a <strong>cache miss</strong>), the CPU has no choice but to wait for memory to retrieve it. Critically though, when the request to main memory completes, the CPU loads the retrieved data into the cache so that subsequent requests for the same address (which are likely thanks to temporal locality) can be serviced quickly from the cache. Even if the memory access that misses is <em>writing</em> to memory, the CPU still loads the value into the cache on a miss because it’s likely that the program will attempt to access the same location again in the future.</p>
+</blockquote>
+<p>在未命中后把数据加载到缓存时，CPU 常常会发现缓存没有足够的空闲空间。在这种情况下，缓存必须先<strong>驱逐</strong>（evict）一些驻留的数据，为要加载的新数据腾出空间。由于缓存存放的是从主存复制来的数据子集，驱逐已被修改过的缓存数据时，缓存必须先更新主存的内容，然后才能把数据从缓存中驱逐出去。</p>
+<blockquote>
+<p>When loading data into a cache after a miss, a CPU often finds that the cache doesn’t have enough free space available. In such cases, the cache must first <strong>evict</strong> some resident data to make room for the new data that it’s loading in. Because a cache stores subsets of data copied from main memory, evicting cached data that has been modified requires the cache to update the contents of main memory prior to evicting data from the cache.</p>
+</blockquote>
+<p>为了提供上述所有功能，缓存设计者采用三种设计之一。本节首先考察<em>直接映射缓存</em>，它比其他设计更简单。</p>
+<blockquote>
+<p>To provide all the aforementioned functionality, cache designers employ one of three designs. This section begins by examining <em>direct-mapped caches</em>, which are less complex than the other designs.</p>
+</blockquote>
+<h3 id="11-4-1-直接映射缓存"><a href="#11-4-1-直接映射缓存" class="headerlink" title="11.4.1. 直接映射缓存"></a>11.4.1. 直接映射缓存</h3><p><em>11.4.1. Direct-Mapped Caches</em></p>
+<p>直接映射缓存把它的存储空间划分成称为<strong>缓存行</strong>（cache line）的单元。根据缓存的大小，它可能有几十、几百甚至几千个缓存行。在直接映射缓存中，每个缓存行都独立于其他所有缓存行，并包含两类重要的信息：<em>缓存数据块</em>和<em>元数据</em>。</p>
+<blockquote>
+<p>A direct-mapped cache divides its storage space into units called <strong>cache lines</strong>. Depending on the size of a cache, it might hold dozens, hundreds, or even thousands of cache lines. In a direct-mapped cache, each cache line is independent of all the others and contains two important types of information: a <em>cache data block</em> and <em>metadata</em>.</p>
+</blockquote>
+<ol>
+<li><p><strong>缓存数据块</strong>（cache data block，常简称为<strong>缓存块</strong>，cache block）存放来自主存的程序数据的一个子集。缓存块存放多字节的程序数据块，以利用<a href="11.3-locality.html">空间局部性</a>。缓存块的大小决定了缓存与主存之间数据传输的单位。也就是说，从内存向缓存加载数据时，缓存每次收到的都是一个缓存块大小的数据块。</p>
+<p> 缓存设计者在选择缓存的块大小时需要权衡。在存储预算固定的情况下，缓存可以存放较多的小块，或者较少的大块。使用较大的块能提高空间局部性好的程序的性能，而块数较多则让缓存有机会存放更多样化的内存子集。归根结底，哪种策略性能最好取决于应用程序的工作负载。由于通用 CPU 无法对系统上的应用程序做太多假设，如今典型的 CPU 缓存使用 16 到 64 字节之间的折中块大小。</p>
+</li>
+</ol>
+<blockquote>
+<ol>
+<li><p>A <strong>cache data block</strong> (often shortened to <strong>cache block</strong>) stores a subset of program data from main memory. Cache blocks store multibyte chunks of program data to take advantage of <a href="11.3-locality.html">spatial locality</a>. The size of a cache block determines the unit of data transfer between the cache and main memory. That is, when loading a cache with data from memory, the cache always receives a chunk of data the size of a cache block.</p>
+<p>Cache designers balance a trade-off in choosing a cache’s block size. Given a fixed storage budget, a cache can store more smaller blocks or fewer larger blocks. Using larger blocks improves performance for programs that exhibit good spatial locality, whereas having more blocks gives a cache the opportunity to store a more diverse subset of memory. Ultimately, which strategy provides the best performance depends on the workload of applications. Because general-purpose CPUs can’t assume much about a system’s applications, a typical CPU cache today uses middle-of-the-road block sizes ranging from 16 to 64 bytes.</p>
+</li>
+</ol>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>Apple Silicon 是一个例外：译者在 Apple M1 Pro 上用 <code>sysctl hw.cachelinesize</code> 查到的缓存行大小是 128 字节。</p>
+</div>
+<ol start="2">
+<li><strong>元数据</strong>（metadata）存放关于缓存行数据块内容的信息。缓存行的元数据<em>不</em>包含程序数据，而是维护缓存行的簿记信息（例如，帮助识别缓存行的数据块存放的是内存的哪个子集）。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><strong>Metadata</strong> stores information about the contents of the cache line’s data block. A cache line’s metadata does <em>not</em> contain program data. Instead, it maintains bookkeeping information for the cache line (for example, to help identify which subset of memory the cache line’s data block holds).</li>
+</ol>
+</blockquote>
+<p>当程序试图访问一个内存地址时，缓存必须知道到哪里去找对应的数据，检查所需的数据在那个缓存位置上是否可用，如果可用，就把所存缓存块的一部分取给发出请求的程序。下面的步骤详细介绍在缓存中查找并取出数据的过程。</p>
+<blockquote>
+<p>When a program attempts to access a memory address, a cache must know where to look to find the corresponding data, check whether the desired data is available at that cache location, and if so, retrieve a portion of the stored cache block to the requesting application. The following steps walk through the details of this process for finding data in a cache and retrieving it.</p>
+</blockquote>
+<h4 id="定位缓存中的数据"><a href="#定位缓存中的数据" class="headerlink" title="定位缓存中的数据"></a>定位缓存中的数据</h4><p><em>Locating Cached Data</em></p>
+<p>缓存必须能够快速判断与所请求地址对应的内存子集当前是否在缓存中。要回答这个问题，缓存首先必须确定要检查哪一个（或哪些）缓存行。在直接映射缓存中，内存中的每个地址都对应于<em>恰好</em>一个缓存行。这一限制正是<em>直接映射</em>这个名字的由来：它把每个内存地址直接映射到一个缓存行。</p>
+<blockquote>
+<p>A cache must be able to quickly determine whether the subset of memory corresponding to a requested address currently resides in the cache. To answer that question, a cache must first determine which cache line(s) to check. In a direct-mapped cache, each address in memory corresponds to <em>exactly</em> one cache line. This restriction explains the <em>direct-mapped</em> name — it maps every memory address directly to one cache line.</p>
+</blockquote>
+<p><a href="11.4-caching.html">图 1</a> 展示了在一个有四个缓存行、缓存块大小为 32 字节的小型直接映射缓存中，内存地址是如何映射到缓存行的。回想一下，缓存的块大小代表缓存与主存之间数据传输的最小单位。因此，每个内存地址都落在某个 32 字节的范围内，而每个范围映射到一个缓存行。</p>
+<blockquote>
+<p><a href="11.4-caching.html">Figure 1</a> shows how memory addresses map to cache lines in a small direct-mapped cache with four cache lines and a 32-byte cache block size. Recall that a cache’s block size represents the smallest unit of data transfer between a cache and main memory. Thus, every memory address falls within one 32-byte range, and each range maps to one cache line.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectMapping.png" alt="Each 32-byte region of memory maps to one cache line in a repeating striped pattern. That is, memory regions 0, 4, 8, …​ map to line 0, regions 1, 5, 9, …​ map to line 1, regions 2, 6, 10, …​ map to line 2, and regions 3, 7, 11, …​ map to line 3."></p>
+<p><strong>图 1.</strong> 在一个有四个缓存行、缓存块为 32 字节的直接映射缓存中，内存地址到缓存行的映射示例</p>
+<p><em>Figure 1. An example mapping of memory addresses to cache lines in a four-line direct-mapped cache with 32-byte cache blocks</em></p>
+<p>注意，尽管每个内存区域只映射到一个缓存行，但许多内存范围会映射到<em>同一个</em>缓存行。映射到同一缓存行的所有内存区域（即<a href="11.4-caching.html">图 1</a> 中颜色相同的块）争夺同一个缓存行的空间，所以每种颜色的区域一次只能有一个驻留在缓存中。</p>
+<blockquote>
+<p>Note that although each region of memory maps to only one cache line, many memory ranges map to the <em>same</em> cache line. All of the memory regions that map the same cache line (that is, chunks of the same color in <a href="11.4-caching.html">Figure 1</a>) compete for space in the same cache line, so only one region of each color can reside in the cache at a time.</p>
+</blockquote>
+<p>缓存使用内存地址中的一部分位，把内存地址映射到缓存行。为了把数据更均匀地分散到各个缓存行中，缓存使用取自内存地址<em>中间</em>的位来确定地址映射到哪一行，这部分称为地址的<strong>索引</strong>（index）部分。用作索引的位数（各不相同）决定了缓存有多少行。<a href="11.4-caching.html">图 2</a> 展示了内存地址的索引部分指向一个缓存行。</p>
+<blockquote>
+<p>A cache maps a memory address to a cache line using a portion of the bits in the memory address. To spread data more evenly among cache lines, caches use bits taken from the <em>middle</em> of the memory address, known as the <strong>index</strong> portion of the address, to determine which line the address maps to. The number of bits used as the index (which varies) determines how many lines a cache will hold. <a href="11.4-caching.html">Figure 2</a> shows the index portion of a memory address referring to a cache line.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AddressIndex.png" alt="An address is divided into three regions, and the middle region points to one row (cache line) of a table (direct-mapped cache)."></p>
+<p><strong>图 2.</strong> 内存地址中间的<em>索引</em>部分确定一个缓存行。</p>
+<p><em>Figure 2. The middle <em>index</em> portion of a memory address identifies a cache line.</em></p>
+<p>当程序数据聚集在一起时（局部性好的程序常常如此），使用地址的中间部分可以减少对同一缓存行的争夺。也就是说，程序倾向于把变量彼此相邻地存放在少数几个位置（例如栈上或堆上）。这些聚集在一起的变量具有相同的高位地址位。因此，如果用高位来做索引，这些聚集的变量就会全都映射到同一些缓存行上，让缓存的其余部分闲置。通过使用地址中间的位，缓存能把数据更均匀地分散到可用的缓存行中。</p>
+<blockquote>
+<p>Using the middle of the address reduces competition for the same cache line when program data is clustered together, which is often the case for programs that exhibit good locality. That is, programs tend to store variables nearby one another in one of a few locations (for example, on the stack or heap). Such clustered variables share the same high-order address bits. Thus, indexing with the high-order bits would cause the clustered variables to all map to the same cache lines, leaving the rest of the cache unused. By using bits from the middle of the address, caches spread data more evenly among the available cache lines.</p>
+</blockquote>
+<h4 id="识别缓存中的内容"><a href="#识别缓存中的内容" class="headerlink" title="识别缓存中的内容"></a>识别缓存中的内容</h4><p><em>Identifying Cache Contents</em></p>
+<p>接下来，找到合适的缓存行后，缓存必须判断该行是否存有所请求的地址。由于多个内存范围映射到同一个缓存行，缓存要检查该行的元数据来回答两个重要问题：<em>这个缓存行存放的是不是有效的内存子集？</em> <em>如果是，它当前存放的是映射到这个缓存行的众多内存子集中的哪一个？</em></p>
+<blockquote>
+<p>Next, having located the appropriate cache line, the cache must determine whether that line holds the requested address. Because multiple memory ranges map to the same cache line, the cache examines the line’s metadata to answer two important questions: <em>Does this cache line hold a valid subset of memory?</em> <em>If so, which of the many subsets of memory that map to this cache line does it currently hold?</em></p>
+</blockquote>
+<p>为了回答这些问题，每个缓存行的元数据都包含一个有效位和一个标记。<strong>有效位</strong>（valid bit）是一个单独的位，表示该行当前是否存放着有效的内存子集（有效位为 1 时）。无效的行（有效位为 0）永远不会产生缓存命中，因为还没有数据被加载进去。无效的行实际上代表缓存中的空闲空间。</p>
+<blockquote>
+<p>To answer these questions, each cache line’s metadata includes a valid bit and a tag. The <strong>valid bit</strong> is a single bit that indicates whether a line is currently storing a valid subset of memory (if valid is set to 1). An invalid line (if valid is set to 0) never produces a cache hit because no data has been loaded into it. Invalid lines effectively represent free space in the cache.</p>
+</blockquote>
+<p>除了有效位之外，每个缓存行的元数据还存有一个<strong>标记</strong>（tag），它唯一地标识该行的缓存块存放的是内存的哪个子集。标记字段存放缓存行中所存地址范围的高位，让缓存行能够记录它的数据块来自内存中的哪个位置。换句话说，由于许多内存子集映射到同一个缓存行（那些索引位相同的子集），标记记录的是其中哪一个子集当前存在于缓存行中。</p>
+<blockquote>
+<p>In addition to a valid bit, each cache line’s metadata stores a <strong>tag</strong> that uniquely identifies which subset of memory the line’s cache block holds. The tag field stores the high-order bits of the address range stored in the cache line and allows a cache line to track where in memory its data block came from. In other words, because many memory subsets map to the same cache line (those with the same index bits), the tag records which of those subsets is currently present in the cache line.</p>
+</blockquote>
+<p>要让缓存查找产生命中，缓存行中存放的标记字段必须与程序所请求内存地址的标记部分（高位）完全匹配。标记不匹配表示缓存行的数据块不包含所请求的内存，即使该行存放的是有效数据。<a href="11.4-caching.html">图 3</a> 展示了缓存如何把内存地址划分为标记和索引，用索引位选出目标缓存行，验证该行的有效位，并检查该行的标记是否匹配。</p>
+<blockquote>
+<p>For a cache lookup to produce a hit, the tag field stored in the cache line must exactly match the tag portion (upper bits) of the program’s requested memory address. A tag mismatch indicates that a cache line’s data block does not contain the requested memory, even if the line stores valid data. <a href="11.4-caching.html">Figure 3</a> illustrates how a cache divides a memory address into a tag and an index, uses the index bits to select a target cache line, verifies a line’s valid bit, and checks the line’s tag for a match.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AddressTag.png" alt="The cache sends the address’s tag to a comparator circuit to check whether it matches the tag stored in the cache line."></p>
+<p><strong>图 3.</strong> 用所请求内存地址的索引位找到合适的缓存行后，缓存同时验证该行的有效位，并把它的标记与所请求地址的标记进行比较。如果该行有效且标记匹配，查找就以命中告终。</p>
+<p><em>Figure 3. After using the requested memory address’s index bits to locate the proper cache line, the cache simultaneously verifies the line’s valid bit and checks its tag against the requested address’s tag. If the line is valid with a matching tag, the lookup succeeds as a hit.</em></p>
+<h4 id="取出缓存中的数据"><a href="#取出缓存中的数据" class="headerlink" title="取出缓存中的数据"></a>取出缓存中的数据</h4><p><em>Retrieving Cached Data</em></p>
+<p>最后，用程序所请求的内存地址找到合适的缓存行，并验证该行存放着包含该地址的有效内存子集之后，缓存把所请求的数据发送给 CPU 中需要它的部件。由于缓存行数据块的大小（例如 64 字节）通常比程序请求的数据量（例如 4 字节）大得多，缓存把所请求地址的低位用作缓存数据块内的<strong>偏移</strong>（offset）。<a href="11.4-caching.html">图 4</a> 描绘了地址的偏移部分如何确定程序想取的是缓存块中的哪些字节。</p>
+<blockquote>
+<p>Finally, after using the program’s requested memory address to find the appropriate cache line and verifying that the line holds a valid subset of memory containing that address, the cache sends the requested data to the CPU’s components that need it. Because a cache line’s data block size (for example, 64 bytes) is typically much larger than the amount of data that programs request (for example, 4 bytes), caches use the low-order bits of the requested address as an <strong>offset</strong> into the cached data block. <a href="11.4-caching.html">Figure 4</a> depicts how the offset portion of an address identifies which bytes of a cache block the program expects to retrieve.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AddressOffset.png" alt="A subset of the cache data block’s cells are highlighted to match the color of an address’s offset portion."></p>
+<p><strong>图 4.</strong> 给定一个缓存数据块，地址的偏移部分确定程序想取的是哪些字节。</p>
+<p><em>Figure 4. Given a cache data block, the offset portion of an address identifies which bytes the program wants to retrieve.</em></p>
+<h4 id="内存地址的划分"><a href="#内存地址的划分" class="headerlink" title="内存地址的划分"></a>内存地址的划分</h4><p><em>Memory Address Division</em></p>
+<p>缓存的<em>尺寸参数</em>决定了内存地址中有多少位被解释为偏移、索引和标记部分。等价地，地址中每一部分的位数也意味着缓存必须具有怎样的尺寸参数。在确定地址的哪些位属于哪一部分时，从右往左（即从最低有效位到最高有效位）考虑地址会很有帮助。</p>
+<blockquote>
+<p>The <em>dimensions</em> of a cache dictate how many bits to interpret as the offset, index, and tag portions of a memory address. Equivalently, the number of bits in each portion of an address imply what the dimensions of a cache must be. In determining which bits belong to each portion of an address, it’s helpful to consider the address from right to left (that is, from least to most significant bit).</p>
+</blockquote>
+<p>地址最右边的部分是<em>偏移</em>，它的长度取决于缓存的块大小。地址的偏移部分必须有足够的位，以便指向缓存数据块中每一个可能的字节。例如，假设缓存存放 32 字节的数据块。由于程序可能来要这 32 个字节中的任何一个，缓存需要足够的偏移位来准确描述程序想要的是 32 个可能位置中的哪一个。在这种情况下，偏移需要五位，因为表示 32 个不同的值需要五位（log<sub>2</sub>32 &#x3D; 5）。反过来，偏移使用四位的缓存，必定存放 16 字节的数据块（2<sup>4</sup> &#x3D; 16）。</p>
+<blockquote>
+<p>The rightmost portion of the address is the <em>offset</em>, and its length depends on a cache’s block size dimension. The offset portion of an address must contain enough bits to refer to every possible byte within a cache data block. For example, suppose that a cache stores 32-byte data blocks. Because a program might come along asking for any of those 32 bytes, the cache needs enough offset bits to describe exactly which of the 32 possible positions the program might want. In this case, it would need five bits for the offset because five bits are necessary to represent 32 unique values (log<sub>2</sub>32 &#x3D; 5). In the reverse direction, a cache that uses four bits for the offset must store 16-byte data blocks (2<sup>4</sup> &#x3D; 16).</p>
+</blockquote>
+<p>地址的<em>索引</em>部分紧挨在偏移的左边。要确定索引的位数，就要考虑缓存的行数，因为索引需要足够的位来唯一地标识每一个缓存行。用与偏移类似的逻辑，有 1,024 行的缓存需要 10 位索引（log<sub>2</sub> 1,024 &#x3D; 10）。同样，索引使用 12 位的缓存必定有 4,096 行（2<sup>12</sup> &#x3D; 4,096）。</p>
+<blockquote>
+<p>The <em>index</em> portion of the address begins immediately to the left of the offset. To determine the number of index bits, consider the number of lines in the cache, given that the index needs enough bits to uniquely identify every cache line. Using similar logic to the offset, a cache with 1,024 lines needs 10 bits for the index (log<sub>2</sub> 1,024 &#x3D; 10). Likewise, a cache that uses 12 bits for the index must have 4,096 lines (2<sup>12</sup> &#x3D; 4,096).</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AddressBits.png" alt="With i index bits, an address can refer to 2^i^ lines. With f offset bits, an address can refer to 2^f^ bytes in a cache data block."></p>
+<p><strong>图 5.</strong> 地址的索引部分唯一地标识一个缓存行，偏移部分唯一地标识该行数据块中的一个位置。</p>
+<p><em>Figure 5. The index portion of an address uniquely identifies a cache line, and the offset portion uniquely identifies a position in the line’s data block.</em></p>
+<p>地址中剩下的位构成标记。由于标记必须唯一地标识缓存行中所含的内存子集，标记必须使用地址中<em>所有</em>剩余的、未被占用的位。例如，如果机器使用 32 位地址，一个有 5 个偏移位和 10 个索引位的缓存，就用地址中剩下的 32 - 15 &#x3D; 17 位来表示标记。</p>
+<blockquote>
+<p>The remaining address bits form the tag. Because the tag must uniquely identify the subset of memory contained within a cache line, the tag must use <em>all</em> of the remaining, unclaimed bits of the address. For example, if a machine uses 32-bit addresses, a cache with 5 offset bits and 10 index bits uses the remaining 32 - 15 &#x3D; 17 bits of the address to represent the tag.</p>
+</blockquote>
+<h4 id="直接映射的读取示例"><a href="#直接映射的读取示例" class="headerlink" title="直接映射的读取示例"></a>直接映射的读取示例</h4><p><em>Direct-Mapped Read Examples</em></p>
+<p>考虑一个具有以下特征的 CPU：</p>
+<blockquote>
+<p>Consider a CPU with the following characteristics:</p>
+</blockquote>
+<ul>
+<li>16 位内存地址</li>
+</ul>
+<blockquote>
+<ul>
+<li>16-bit memory addresses</li>
+</ul>
+</blockquote>
+<ul>
+<li>一个有 128 个缓存行的直接映射缓存</li>
+</ul>
+<blockquote>
+<ul>
+<li>a direct-mapped cache with 128 cache lines</li>
+</ul>
+</blockquote>
+<ul>
+<li>32 字节的缓存数据块。</li>
+</ul>
+<blockquote>
+<ul>
+<li>32-byte cache data blocks.</li>
+</ul>
+</blockquote>
+<p>缓存开始时是空的（所有行都无效），如<a href="11.4-caching.html">图 6</a> 所示。</p>
+<blockquote>
+<p>The cache starts empty (all lines are invalid), as shown in <a href="11.4-caching.html">Figure 6</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample0.png" alt="A cache with lines marked from 0 to 127. Each line is currently invalid."></p>
+<p><strong>图 6.</strong> 一个空的直接映射示例缓存</p>
+<p><em>Figure 6. An empty direct-mapped example cache</em></p>
+<p>假设在这个 CPU 上运行的程序访问下面这些内存位置：</p>
+<blockquote>
+<p>Suppose that a program running on this CPU accesses the following memory locations:</p>
+</blockquote>
+<ol>
+<li>读地址 1010000001100100</li>
+</ol>
+<blockquote>
+<ol>
+<li>Read from address 1010000001100100</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>读地址 1010000001100111</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Read from address 1010000001100111</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>读地址 1001000000100000</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Read from address 1001000000100000</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>读地址 1111000001100101</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>Read from address 1111000001100101</li>
+</ol>
+</blockquote>
+<p>把整个序列串起来，跟踪缓存的行为时按照下面的步骤：</p>
+<blockquote>
+<p>To put the entire sequence together, follow these steps when tracing the behavior of a cache:</p>
+</blockquote>
+<ol>
+<li>把所请求的地址从右（低位）到左（高位）划分为三部分：缓存数据块内的偏移、指向相应缓存行的索引，以及标识该行存放的是哪个内存子集的标记。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Divide the requested address into three portions, from right (low-order bits) to left (high-order bits): an offset within the cache data block, an index into the appropriate cache line, and a tag to identify which subset of memory the line stores.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>用所请求地址的中间部分索引缓存，找到该地址映射到的缓存行。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Index into the cache using the middle portion of the requested address to find the cache line to which the address maps.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>检查缓存行的有效位。有效位无效时，无论标记是什么，程序都不能使用该缓存行的内容（缓存未命中）。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Check the cache line’s valid bit. When invalid, the program can’t use a cache line’s contents (cache miss), regardless of what the tag might be.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>检查缓存行的标记。如果地址的标记与缓存行的标记匹配并且该行有效，那么缓存行的数据块中就存有程序要找的数据（缓存命中）。否则，缓存必须从主存中把数据加载到所确定的索引处（缓存未命中）。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>Check the cache line’s tag. If the address’s tag matches the cache line’s tag and the line is valid, the cache line’s data block holds the data the program is looking for (cache hit). Otherwise, the cache must load the data from main memory at the identified index (cache miss).</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li>命中时，用地址的低位偏移从所存的块中取出程序想要的数据。（示例中未展示。）</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>On a hit, use the low-order offset bits of the address to extract the program’s desired data from the stored block. (Not shown in example.)</li>
+</ol>
+</blockquote>
+<h5 id="地址划分"><a href="#地址划分" class="headerlink" title="地址划分"></a>地址划分</h5><p><em>Address Division</em></p>
+<p>首先确定如何把内存地址划分为<em>偏移</em>、<em>索引</em>和<em>标记</em>部分。从低位到高位（从右到左）考虑地址的各个部分：</p>
+<blockquote>
+<p>Begin by determining how to divide the memory addresses into their <em>offset</em>, <em>index</em>, and <em>tag</em> portions. Consider the address portions from low-order to high-order bits (right to left):</p>
+</blockquote>
+<ul>
+<li><em>偏移</em>：块大小为 32 字节，意味着地址最右边的五位（log<sub>2</sub> 32 &#x3D; 5）构成偏移部分。有了五位，偏移就能唯一地标识块中 32 个字节中的任何一个。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Offset</em>: A 32-byte block size implies that the rightmost five bits of the address (log<sub>2</sub> 32 &#x3D; 5) comprise the offset portion. With five bits, the offset can uniquely identify any of the 32 bytes in block.</li>
+</ul>
+</blockquote>
+<ul>
+<li><em>索引</em>：缓存有 128 行，意味着地址接下来的七位（log<sub>2</sub> 128 &#x3D; 7）构成索引部分。有了七位，索引就能唯一地标识每一个缓存行。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Index</em>: A cache with 128 lines implies that the next seven bits of the address (log<sub>2</sub> 128 &#x3D; 7) comprise the index portion. With seven bits, the index can uniquely identify each cache line.</li>
+</ul>
+</blockquote>
+<ul>
+<li><em>标记</em>：标记由不属于偏移或索引的所有剩余地址位组成。在这里，地址还剩下四位构成标记（16 - (5 + 7) &#x3D; 4）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Tag</em>: The tag consists of any remaining address bits that don’t belong to the offset or index. Here, the address has four remaining bits left that form the tag (16 - (5 + 7) &#x3D; 4).</li>
+</ul>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample1.png" alt="Result: miss, the line was invalid prior to access."></p>
+<p><strong>图 7.</strong> 读地址 1010000001100100。索引 0000011（第 3 行）无效，所以请求未命中，缓存从主存加载数据。</p>
+<p><em>Figure 7. Read from address 1010000001100100. Index 0000011 (line 3) is invalid, so the request misses and the cache loads data from main memory.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample2.png" alt="Result: hit, the line is valid, and the tag matches."></p>
+<p><strong>图 8.</strong> 读地址 1010000001100111。索引 0000011（第 3 行）有效，并且标记（1010）匹配，所以请求命中。缓存给出其数据块中从第 7 个字节（偏移 0b00111）开始的数据。</p>
+<p><em>Figure 8. Read from address 1010000001100111. Index 0000011 (line 3) is valid, and the tag (1010) matches, so the request hits. The cache yields data beginning at byte 7 (offset 0b00111) of its data block.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample3.png" alt="Result: miss, the line was invalid prior to access."></p>
+<p><strong>图 9.</strong> 读地址 1001000000100000。索引 0000001（第 1 行）无效，所以请求未命中，缓存从主存加载数据。</p>
+<p><em>Figure 9. Read from address 1001000000100000. Index 0000001 (line 1) is invalid, so the request misses and the cache loads data from main memory.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample4.png" alt="Result: miss, the line is valid, but the tag doesn’t match."></p>
+<p><strong>图 10.</strong> 读地址 1111000001100101。索引 0000011（第 3 行）有效，但标记不匹配，所以请求未命中，缓存从主存加载数据。</p>
+<p><em>Figure 10. Read from address 1111000001100101. Index 0000011 (line 3) is valid, but the tag doesn’t match, so the request misses and the cache loads data from main memory.</em></p>
+<h4 id="写缓存中的数据"><a href="#写缓存中的数据" class="headerlink" title="写缓存中的数据"></a>写缓存中的数据</h4><p><em>Writing to Cached Data</em></p>
+<p>到目前为止，本节主要考虑的是 CPU 在缓存中执行查找的读内存操作。缓存还必须允许程序存储值，它们用以下两种策略之一来支持存储操作。</p>
+<blockquote>
+<p>So far, this section has primarily considered memory read operations for which a CPU performs lookups in the cache. Caches must also allow programs to store values, and they support store operations with one of two strategies.</p>
+</blockquote>
+<ol>
+<li>在<strong>写直达缓存</strong>（write-through cache）中，写内存操作修改缓存中的值，同时更新主存的内容。也就是说，写操作<em>总是</em>立即同步缓存和主存的内容。</li>
+</ol>
+<blockquote>
+<ol>
+<li>In a <strong>write-through cache</strong>, a memory write operation modifies the value in the cache and simultaneously updates the contents of main memory. That is, a write operation <em>always</em> synchronizes the contents of the cache and main memory immediately.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>在<strong>写回缓存</strong>（write-back cache）中，写内存操作修改缓存数据块中存放的值，但<em>不</em>更新主存。因此，更新缓存中的数据之后，写回缓存的内容就与主存中对应的数据不同了。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>In a <strong>write-back cache</strong>, a memory write operation modifies the value stored in the cache’s data block, but it does <em>not</em> update main memory. Thus, after updating the cache’s data, a write-back cache’s contents differ from the corresponding data in main memory.</li>
+</ol>
+</blockquote>
+<p>为了识别那些内容与主存中对应数据不同的缓存块，写回缓存中的每一行都额外存放一位元数据，称为<strong>脏位</strong>（dirty bit）。从脏的缓存行驱逐数据块时，必须先把缓存块的数据写回主存，使两者的内容同步。<a href="11.4-caching.html">图 11</a> 展示了一个包含脏位的直接映射缓存，脏位标出了在驱逐时必须写回内存的那些行。</p>
+<blockquote>
+<p>To identify cache blocks whose contents differ from their main memory counterparts, each line in a write-back cache stores an additional bit of metadata, known as a <strong>dirty bit</strong>. When evicting the data block from a dirty cache line, the cache block’s data must first be written back to main memory to synchronize their contents. <a href="11.4-caching.html">Figure 11</a> shows a direct-mapped cache that includes a dirty bit to mark lines that must be written to memory upon eviction.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/CacheDirty.png" alt="The dirty bit is a one-bit flag that indicates whether the data stored in a cache line has been written. When set, the data in the cache is out of sync with main memory and must be written back to memory before eviction."></p>
+<p><strong>图 11.</strong> 扩展了脏位的缓存</p>
+<p><em>Figure 11. Cache extended with a dirty bit</em></p>
+<p>照例，不同设计之间的差异体现了一种权衡。写直达缓存比写回缓存简单，而且不必为每一行额外存放脏位这种元数据。另一方面，写回缓存能降低反复写同一内存位置的代价。</p>
+<blockquote>
+<p>As usual, the difference between the designs reveals a trade-off. Write-through caches are less complex than write-back caches, and they avoid storing extra metadata in the form of a dirty bit for each line. On the other hand, write-back caches reduce the cost of repeated writes to the same location in memory.</p>
+</blockquote>
+<p>例如，假设程序频繁地更新同一个变量，而该变量所在的内存从未被驱逐出缓存。写直达缓存在每次更新时都要写主存，尽管后一次更新只是覆盖前一次；而写回缓存只在最终驱逐缓存块时才写内存。由于把一次内存访问的代价分摊到多次写操作上能显著提高性能，大多数现代缓存都选择写回设计。</p>
+<blockquote>
+<p>For example, suppose that a program frequently updates the same variable without that variable’s memory ever being evicted from the cache. A write-through cache writes to main memory on every update, even though each subsequent update is just going to overwrite the previous one, whereas a write-back cache writes to memory only when eventually evicting the cache block. Because amortizing the cost of a memory access across many writes significantly improves performance, most modern caches opt for a write-back design.</p>
+</blockquote>
+<h4 id="直接映射的写入示例（写回）"><a href="#直接映射的写入示例（写回）" class="headerlink" title="直接映射的写入示例（写回）"></a>直接映射的写入示例（写回）</h4><p><em>Direct-Mapped Write Examples (Write-Back)</em></p>
+<p>对缓存的写操作与读操作类似，只是还要设置被修改缓存行的脏位。驱逐一个脏的缓存行时，缓存必须先把修改过的数据块写回内存，然后才能丢弃它。</p>
+<blockquote>
+<p>Writes to the cache behave like reads, except they also set the modified cache line’s dirty bit. When evicting a dirty cache line, the cache must write the modified data block to memory before discarding it.</p>
+</blockquote>
+<p>假设上面描述的示例场景继续进行另外两次内存访问：</p>
+<blockquote>
+<p>Suppose that the example scenario described above continues with two additional memory accesses:</p>
+</blockquote>
+<ol start="5">
+<li>写地址：1111000001100000</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>Write to address: 1111000001100000</li>
+</ol>
+</blockquote>
+<ol start="6">
+<li>写地址：1010000001100100</li>
+</ol>
+<blockquote>
+<ol start="6">
+<li>Write to address: 1010000001100100</li>
+</ol>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample5.png" alt="Result: hit, the line is valid, and the tag matches. Set dirty bit to 1 on write."></p>
+<p><strong>图 12.</strong> 写地址 1111000001100000。索引 0000011（第 3 行）有效，并且标记（1111）匹配，所以请求命中。由于这次访问是写操作，缓存把该行的脏位设为 1。</p>
+<p><em>Figure 12. Write to address 1111000001100000. Index 0000011 (line 3) is valid, and the tag (1111) matches, so the request hits. Because this access is a write, the cache sets the line’s dirty bit to 1.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/DirectExample6.png" alt="Result: miss, the line is valid, but the tag doesn’t match. Save cache data block to memory before evicting it. Set dirty bit to 1 on write (again)."></p>
+<p><strong>图 13.</strong> 写地址 1010000001100100。索引 0000011（第 3 行）有效，但标记不匹配，所以请求未命中。由于目标行既有效又是脏的，缓存必须先把现有的数据块保存到主存，然后才能加载新的数据块。这次访问是写操作，所以缓存把新加载的行的脏位设为 1。</p>
+<p><em>Figure 13. Write to address 1010000001100100. Index 0000011 (line 3) is valid, but the tag doesn’t match, so the request misses. Because the target line is both valid and dirty, the cache must save the existing data block to main memory before loading the new one. This access is a write, so the cache sets the newly loaded line’s dirty bit to 1.</em></p>
+<p>在本例的第四次和第六次内存访问中，缓存驱逐了数据，因为两个内存区域在争夺同一个缓存行。接下来，我们将探讨一种旨在减少这类争夺的不同缓存设计。</p>
+<blockquote>
+<p>In the fourth and sixth memory accesses of the example, the cache evicts data because two memory regions are competing for the same cache line. Next, we’ll explore a different cache design that aims to reduce this type of competition.</p>
+</blockquote>
+<h3 id="11-4-2-缓存未命中与相联设计"><a href="#11-4-2-缓存未命中与相联设计" class="headerlink" title="11.4.2. 缓存未命中与相联设计"></a>11.4.2. 缓存未命中与相联设计</h3><p><em>11.4.2. Cache Misses and Associative Designs</em></p>
+<p>缓存设计者的目标是使缓存的命中率最大化，以确保尽可能多的内存请求不必访问主存。尽管局部性为获得良好的命中率带来了希望，但由于多种原因，真实的缓存不可能指望每次访问都命中：</p>
+<blockquote>
+<p>Cache designers aim to maximize a cache’s hit rate to ensure that as many memory requests as possible can avoid going to main memory. Even though locality provides hope for achieving a good hit rate, real caches can’t expect to hit on every access for a variety of reasons:</p>
+</blockquote>
+<ul>
+<li><strong>强制性未命中</strong>（compulsory miss）或<strong>冷启动未命中</strong>（cold-start miss）：如果程序从未访问过某个内存位置（或它附近的任何位置），它就几乎不可能在缓存中找到该位置的数据。因此，程序首次访问新的内存地址时，常常无法避免缓存未命中。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Compulsory misses</strong> or <strong>cold-start misses</strong>: If a program has never accessed a memory location (or any location near it), it has little hope of finding that location’s data in the cache. Thus, programs often cannot avoid cache misses when first accessing new memory addresses.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>容量未命中</strong>（capacity miss）：缓存存放主存的一个子集，理想情况下，它<em>恰好</em>存放程序正在使用的那部分内存。然而，如果程序正在使用的内存超过了缓存能容纳的量，它就不可能在缓存中找到想要的<em>所有</em>数据，从而导致未命中。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Capacity misses</strong>: A cache stores a subset of main memory, and ideally, it stores <em>exactly</em> the subset of memory that a program is actively using. However, if a program is actively using more memory than fits in the cache, it can’t possibly find <em>all</em> of the data it wants in the cache, leading to misses.</li>
+</ul>
+</blockquote>
+<ul>
+<li><strong>冲突未命中</strong>（conflict miss）：为了降低查找数据的复杂度，有些缓存设计限制了数据在缓存中可以存放的位置，这些限制可能导致未命中。例如，即使直接映射缓存没有 100% 装满，程序也可能碰巧有两个常用变量的地址映射到同一个缓存位置。在这种情况下，由于它们争夺同一个缓存行，对其中一个变量的每次访问都会把另一个驱逐出缓存。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Conflict misses</strong>: To reduce the complexity of finding data, some cache designs limit where in the cache data can reside, and those restrictions can lead to misses. For example, even if a direct-mapped cache is not 100% full, a program might end up with the addresses of two frequently used variables mapping to the same cache location. In such cases, each access to one of those variables evicts the other from the cache as they compete for the same cache line.</li>
+</ul>
+</blockquote>
+<p>每种未命中的相对频率取决于程序的内存访问模式。不过一般来说，在不增大缓存的前提下，缓存的设计主要影响的是冲突未命中率。尽管直接映射缓存比其他设计简单，但它受冲突的影响最大。</p>
+<blockquote>
+<p>The relative frequency of each miss type depends on a program’s memory access pattern. In general though, without increasing the cache size, a cache’s design mainly affects its conflict miss rate. Although direct-mapped caches are less complex than other designs, they suffer the most from conflicts.</p>
+</blockquote>
+<p>直接映射缓存的替代方案是<em>相联</em>（associative）缓存。相联设计让缓存能灵活地在多个位置中选择一个来存放某个内存区域。直观地说，可选的存放位置越多，冲突的可能性就越小，但每次访问需要检查的位置也越多，复杂度随之增加。</p>
+<blockquote>
+<p>The alternative to a direct-mapped cache is an <em>associative</em> cache. An associative design gives a cache the flexibility to choose among more than one location to store a region of memory. Intuitively, having more storage location options reduces the likelihood of conflicts but also increases complexity due to more locations needing to be checked on every access.</p>
+</blockquote>
+<p><strong>全相联</strong>（fully associative）缓存允许任何内存区域占据任何缓存位置。全相联缓存提供了最大的灵活性，但它的查找和驱逐复杂度也最高，因为任何操作都要同时考虑每一个位置。尽管全相联缓存在一些小型的专门应用（例如 <a href="../C13-OS/13.3-vm.html">TLB</a>）中很有价值，但其高复杂度使它一般不适合用作通用 CPU 的缓存。</p>
+<blockquote>
+<p>A <strong>fully associative</strong> cache allows any memory region to occupy any cache location. Fully associative caches offer the most flexibility, but they also have the highest lookup and eviction complexity because every location needs to be simultaneously considered during any operation. Although fully associative caches are valuable in some small, specialized applications (for example, <a href="../C13-OS/13.3-vm.html">TLBs</a>), their high complexity makes them generally unfit for a general-purpose CPU cache.</p>
+</blockquote>
+<p><strong>组相联</strong>（set associative）缓存介于直接映射和全相联设计之间，因而很适合通用 CPU。在组相联缓存中，每个内存区域恰好映射到一个<strong>缓存组</strong>（cache set），但每个组存放多个缓存行。一个组中允许的行数是缓存的一个固定尺寸参数，组相联缓存通常每组存放二到八行。</p>
+<blockquote>
+<p><strong>Set associative</strong> caches occupy the middle ground between direct-mapped and fully associative designs, which makes them well suited for general-purpose CPUs. In a set associative cache, every memory region maps to exactly one <strong>cache set</strong>, but each set stores multiple cache lines. The number of lines allowed in a set is a fixed dimension of a cache, and set associative caches typically store two to eight lines per set.</p>
+</blockquote>
+<h3 id="11-4-3-组相联缓存"><a href="#11-4-3-组相联缓存" class="headerlink" title="11.4.3. 组相联缓存"></a>11.4.3. 组相联缓存</h3><p><em>11.4.3. Set Associative Caches</em></p>
+<p>组相联设计在复杂度与冲突之间提供了很好的折中。组中的行数限制了缓存在一次查找中需要检查的位置数，而映射到同一组的多个内存区域，除非整个组都满了，否则不会引发冲突未命中。</p>
+<blockquote>
+<p>A set associative design offers a good compromise between complexity and conflicts. The number of lines in a set limits how many places a cache needs to check during a lookup, and multiple memory regions that map to the same set don’t trigger conflict misses unless the entire set fills.</p>
+</blockquote>
+<p>在组相联缓存中，内存地址的<em>索引</em>部分把地址映射到一组缓存行。执行地址查找时，缓存同时检查组中的每一行。<a href="11.4-caching.html">图 14</a> 展示了二路组相联缓存中的标记和有效位检查。</p>
+<blockquote>
+<p>In a set associative cache, the <em>index</em> portion of a memory address maps the address to one set of cache lines. When performing an address lookup, the cache simultaneously checks every line in the set. <a href="11.4-caching.html">Figure 14</a> illustrates the tag and valid bit checks in a two-way set associative cache.</p>
+</blockquote>
+<p>如果组中某个有效行的标记与地址的标记部分匹配，这个匹配的行就完成了查找。当查找把范围缩小到只有一个缓存行时，接下来的过程就和直接映射缓存一样：缓存用地址的<em>偏移</em>把所需的字节从该行的缓存块发送给 CPU 的运算部件。</p>
+<blockquote>
+<p>If any of a set’s valid lines contains a tag that matches the address’s tag portion, the matching line completes the lookup. When the lookup narrows the search to just one cache line, it proceeds like a direct-mapped cache: the cache uses the address’s <em>offset</em> to send the desired bytes from the line’s cache block to the CPU’s arithmetic components.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocLookup.png" alt="The cache sends the address’s tag to two comparator circuits in parallel to check whether it matches the tag stored in either cache line of the set."></p>
+<p><strong>图 14.</strong> 二路组相联缓存中的有效位验证与标记匹配</p>
+<p><em>Figure 14. Valid bit verification and tag matching in a two-way set associative cache</em></p>
+<p>一个组中有多个缓存行带来的额外灵活性减少了冲突，但也引入了一个新的麻烦：把值加载到缓存中时（以及驱逐已驻留在缓存中的数据时），缓存必须决定使用候选行中的<em>哪一行</em>。</p>
+<blockquote>
+<p>The additional flexibility of multiple cache lines in a set reduces conflicts, but it also introduces a new wrinkle: when loading a value into a cache (and when evicting data already resident in the cache), the cache must decide <em>which</em> of the line options to use.</p>
+</blockquote>
+<p>为了帮助解决这个选择问题，缓存求助于局部性的思想。具体来说，时间局部性表明最近使用过的数据很可能会被再次使用。因此，缓存采用了上一节<a href="11.3-locality.html">管理示例书架</a>时用过的同一策略：在决定驱逐组中的哪一行时，选择最近最少使用（least recently used，LRU）的那一行。LRU 被称为一种<strong>缓存替换策略</strong>（cache replacement policy），因为它支配着缓存的驱逐机制。</p>
+<blockquote>
+<p>To help solve this selection problem, caches turn to the idea of locality. Specifically, temporal locality suggests that recently used data is likely to be used again. Therefore, caches adopt the same strategy that the previous section used to <a href="11.3-locality.html">manage our example bookcase</a>: when deciding which line in a set to evict, choose the least recently used (LRU) line. LRU is known as a <strong>cache replacement policy</strong> because it governs the cache’s eviction mechanism.</p>
+</blockquote>
+<p>LRU 策略要求每个组额外存放几位元数据，用来标识组中哪一行是最近最少使用的。随着组中行数的增加，编码组的 LRU 状态所需的位数也随之增加。这些额外的元数据位，正是组相联设计相比简单的直接映射设计「复杂度更高」的原因之一。</p>
+<blockquote>
+<p>The LRU policy requires each set to store additional bits of metadata to identify which line of the set was used least recently. As the number of lines in a set increases, so does the number of bits required to encode the LRU status of the set. These extra metadata bits contribute to the “higher complexity” of set associative designs compared to simpler direct-mapped variants.</p>
+</blockquote>
+<p><a href="11.4-caching.html">图 15</a> 展示了一个二路组相联缓存，即每个组包含两行。只有两行时，每个组只需一位 LRU 元数据来记录哪一行是最近最少使用的。在图中，LRU 值为零表示左边的行最近最少使用，值为一则表示右边的行最近最少使用。</p>
+<blockquote>
+<p><a href="11.4-caching.html">Figure 15</a> illustrates a two-way set associative cache, meaning each set contains two lines. With just two lines, each set requires one LRU metadata bit to keep track of which line was least recently used. In the figure, an LRU value of zero indicates the leftmost line was least recently used, and a value of one means the rightmost line was least recently used.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/CacheLRU.png" alt="The LRU bit is a one-bit flag that indicates whether the leftmost line of the set was least recently used (LRU = 0) or the rightmost line of the set was least recently used (LRU = 1)."></p>
+<p><strong>图 15.</strong> 一个二路组相联缓存，每个组存放一位 LRU 元数据，为驱逐决策提供依据</p>
+<p><em>Figure 15. A two-way set associative cache in which each set stores one bit of LRU metadata to inform eviction decisions</em></p>
+<div class="callout callout-warning"><p class="callout-title">原书警示</p><p><a href="11.4-caching.html">图 15</a> 中用零表示「左」、用一表示「右」的选择是任意的。不同缓存对 LRU 位的解释各不相同。如果作业中要求你处理缓存，不要想当然地认为作业使用的是同样的 LRU 编码方案！</p>
+<blockquote>
+<p><a href="11.4-caching.html">Figure 15</a>‘s choice that zero means “left” and one means “right” is arbitrary. The interpretation of LRU bits varies across caches. If you’re asked to work with caches on an assignment, don’t assume the assignment is using the same LRU encoding scheme!</p>
+</blockquote>
+</div>
+<h4 id="组相联缓存示例"><a href="#组相联缓存示例" class="headerlink" title="组相联缓存示例"></a>组相联缓存示例</h4><p><em>Set Associative Cache Examples</em></p>
+<p>考虑一个具有以下特征的 CPU：</p>
+<blockquote>
+<p>Consider a CPU with the following characteristics:</p>
+</blockquote>
+<ul>
+<li>16 位内存地址。</li>
+</ul>
+<blockquote>
+<ul>
+<li>16-bit memory addresses.</li>
+</ul>
+</blockquote>
+<ul>
+<li>一个有 64 个组的二路组相联缓存。注意，把缓存做成二路组相联会使它的存储容量翻倍（每组两行），所以这个例子把组数减半，使它存放的行数与前面的直接映射示例相同。</li>
+</ul>
+<blockquote>
+<ul>
+<li>A two-way set associative cache with 64 sets. Note that making a cache two-way set associative doubles its storage capacity (two lines per set), so this example halves the number of sets so that it stores the same number of lines as the earlier direct-mapped example.</li>
+</ul>
+</blockquote>
+<ul>
+<li>32 字节的缓存块。</li>
+</ul>
+<blockquote>
+<ul>
+<li>32-byte cache blocks.</li>
+</ul>
+</blockquote>
+<ul>
+<li>LRU 缓存替换策略，用 LRU 位表示组中左边的行最近最少使用（LRU &#x3D; 0），还是右边的行最近最少使用（LRU &#x3D; 1）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>An LRU cache replacement policy that indicates whether the leftmost line of the set was least recently used (LRU &#x3D; 0) or the rightmost line of the set was least recently used (LRU &#x3D; 1).</li>
+</ul>
+</blockquote>
+<p>最初，缓存是空的（所有行都无效，LRU 位都为 0），如<a href="11.4-caching.html">图 16</a> 所示。</p>
+<blockquote>
+<p>Initially, the cache is empty (all lines invalid and LRU bits 0), as shown in <a href="11.4-caching.html">Figure 16</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample0.png" alt="A cache with sets marked from 0 to 63. Each set has two lines that are both invalid. Each set’s LRU bit starts at 0."></p>
+<p><strong>图 16.</strong> 一个空的二路组相联示例缓存</p>
+<p><em>Figure 16. An empty two-way set associative example cache</em></p>
+<p>假设在这个 CPU 上运行的程序访问下面这些内存位置（与直接映射示例相同）：</p>
+<blockquote>
+<p>Suppose that a program running on this CPU accesses the following memory locations (same as the direct-mapped example):</p>
+</blockquote>
+<ol>
+<li>读地址 1010000001100100</li>
+</ol>
+<blockquote>
+<ol>
+<li>Read from address 1010000001100100</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>读地址 1010000001100111</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Read from address 1010000001100111</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>读地址 1001000000100000</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Read from address 1001000000100000</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>读地址 1111000001100101</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>Read from address 1111000001100101</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li>写地址 1111000001100000</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>Write to address 1111000001100000</li>
+</ol>
+</blockquote>
+<ol start="6">
+<li>写地址 1010000001100100</li>
+</ol>
+<blockquote>
+<ol start="6">
+<li>Write to address 1010000001100100</li>
+</ol>
+</blockquote>
+<h5 id="地址划分-1"><a href="#地址划分-1" class="headerlink" title="地址划分"></a>地址划分</h5><p><em>Address Division</em></p>
+<p>首先确定如何把内存地址划分为<em>偏移</em>、<em>索引</em>和<em>标记</em>部分。从低位到高位（从右到左）考虑地址的各个部分：</p>
+<blockquote>
+<p>Begin by determining how to divide the memory addresses into their <em>offset</em>, <em>index</em>, and <em>tag</em> portions. Consider the address portions from low-order to high-order bits (right to left):</p>
+</blockquote>
+<ul>
+<li><em>偏移</em>：块大小为 32 字节，意味着地址最右边的五位（log<sub>2</sub> 32 &#x3D; 5）构成偏移部分。五位让偏移能唯一地标识块中的任何一个字节。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Offset</em>: A 32-byte block size implies that the rightmost five bits of the address (log<sub>2</sub> 32 &#x3D; 5) comprise the offset portion. Five bits allows the offset to uniquely identify any of the bytes in a block.</li>
+</ul>
+</blockquote>
+<ul>
+<li><em>索引</em>：缓存有 64 个组，意味着地址接下来的六位（log<sub>2</sub> 64 &#x3D; 6）构成索引部分。六位让索引能唯一地标识缓存中的每一个组。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Index</em>: A 64-set cache implies that the next six bits of the address (log<sub>2</sub> 64 &#x3D; 6) comprise the index portion. Six bits allows the index to uniquely identify each set in the cache.</li>
+</ul>
+</blockquote>
+<ul>
+<li><em>标记</em>：标记由不属于偏移或索引的所有剩余地址位组成。在这里，地址还剩下五位用作标记（16 - (5 + 6) &#x3D; 5）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><em>Tag</em>: The tag consists of any remaining bits of the address that don’t belong to the offset or index. Here, the address has five remaining bits left over for the tag (16 - (5 + 6) &#x3D; 5).</li>
+</ul>
+</blockquote>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample1.png" alt="miss, both lines in set 3 are invalid prior to the access. Update LRU bit to 1."></p>
+<p><strong>图 17.</strong> 读地址 1010000001100100。索引 000011（第 3 组）处的两行都无效，所以请求未命中，缓存从主存加载数据。该组的 LRU 位为 0，所以缓存把数据加载到左边的行，并把 LRU 位更新为 1。</p>
+<p><em>Figure 17. Read from address 1010000001100100. Both lines at index 000011 (set 3) are invalid, so the request misses, and the cache loads data from main memory. The set’s LRU bit is 0, so the cache loads data into the left line and updates the LRU bit to 1.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample2.png" alt="hit, one line in the set is valid and holds a matching tag."></p>
+<p><strong>图 18.</strong> 读地址 1010000001100111。索引 000011（第 3 组）处左边的行存有匹配的标记，所以请求命中。</p>
+<p><em>Figure 18. Read from address 1010000001100111. The left line at index 000011 (set 3) holds a matching tag, so the request hits.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample3.png" alt="miss, both lines in set 1 are invalid prior to the access. Update LRU bit to 1."></p>
+<p><strong>图 19.</strong> 读地址 1001000000100000。索引 000001（第 1 组）处的两行都无效，所以请求未命中，缓存从主存加载数据。该组的 LRU 位为 0，所以缓存把数据加载到左边的行，并把 LRU 位更新为 1。</p>
+<p><em>Figure 19. Read from address 1001000000100000. Both lines at index 000001 (set 1) are invalid, so the request misses, and the cache loads data from main memory. The set’s LRU bit is 0, so the cache loads data into the left line and updates the LRU bit to 1.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample4.png" alt="miss, one line’s tag doesn’t match, and the other is invalid. Update LRU bit to 0."></p>
+<p><strong>图 20.</strong> 读地址 1111000001100101。在索引 000011（第 3 组）处，一行的标记不匹配，另一行无效，所以请求未命中。该组的 LRU 位为 1，所以缓存把数据加载到右边的行，并把 LRU 位更新为 0。</p>
+<p><em>Figure 20. Read from address 1111000001100101. At index 000011 (set 3), one line’s tag doesn’t match, and the other line is invalid, so the request misses. The set’s LRU bit is 1, so the cache loads data into the right line and updates the LRU bit to 0.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample5.png" alt="hit, one of the valid lines holds a matching tag. Set the line’s dirty bit to 1."></p>
+<p><strong>图 21.</strong> 写地址 1111000001100000。索引 000011（第 3 组）处右边的行有效并存有匹配的标记，所以请求命中。由于这次访问是写操作，缓存把该行的脏位设为 1。LRU 位保持为 0，表示左边的行仍然是最近最少使用的。</p>
+<p><em>Figure 21. Write to address 1111000001100000. The right line at index 000011 (set 3) is valid and holds a matching tag, so the request hits. Because this access is a write, the cache sets the line’s dirty bit to 1. The LRU bit remains 0 to indicate that the left line remains least recently used.</em></p>
+<hr>
+<p><img src="/dive-into-systems/C11-MemHierarchy/images/AssocExample6.png" alt="hit, one of the valid lines holds a matching tag. Set the line’s dirty bit to 1. Update LRU bit to 1."></p>
+<p><strong>图 22.</strong> 写地址 1010000001100100。索引 000011（第 3 组）处左边的行有效并存有匹配的标记，所以请求命中。由于这次访问是写操作，缓存把该行的脏位设为 1。访问了左边的行之后，缓存把该组的 LRU 位设为 1。</p>
+<p><em>Figure 22. Write to address 1010000001100100. The left line at index 000011 (set 3) is valid and holds a matching tag, so the request hits. Because this access is a write, the cache sets the line’s dirty bit to 1. After accessing the left line, the cache sets the line’s LRU bit to 1.</em></p>
+<p>在这个例子中，同样的内存访问序列在直接映射缓存中产生了两次冲突未命中，而在二路组相联缓存中则完全没有冲突。</p>
+<blockquote>
+<p>In this example, the same memory access sequence that produced two conflict misses with a direct-mapped cache suffers from no conflicts with a two-way set associative cache.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">11.3. 局部性</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">11.5. 缓存分析与 Valgrind</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-1-%E7%9B%B4%E6%8E%A5%E6%98%A0%E5%B0%84%E7%BC%93%E5%AD%98"><span class="toc-text">11.4.1. 直接映射缓存</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-2-%E7%BC%93%E5%AD%98%E6%9C%AA%E5%91%BD%E4%B8%AD%E4%B8%8E%E7%9B%B8%E8%81%94%E8%AE%BE%E8%AE%A1"><span class="toc-text">11.4.2. 缓存未命中与相联设计</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#11-4-3-%E7%BB%84%E7%9B%B8%E8%81%94%E7%BC%93%E5%AD%98"><span class="toc-text">11.4.3. 组相联缓存</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

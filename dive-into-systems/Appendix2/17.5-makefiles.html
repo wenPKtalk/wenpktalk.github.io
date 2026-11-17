@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.5. make 与 Makefile · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;makefiles.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.5. make and Makefiles 在本节中，">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.5. make 与 Makefile · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.5-makefiles.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;makefiles.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.5. make and Makefiles 在本节中，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.930Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html" class="current" aria-current="page">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 176 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.5. make 与 Makefile</h1>
+  
+  
+    <p class="article-meta"><span>约 43 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/makefiles.html">https://diveintosystems.org/book/Appendix2/makefiles.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.5. make and Makefiles</em></p>
+<p>在本节中，我们讨论 <code>make</code> 命令和 Makefile。我们会给出一些例子，从简单的 Makefile 开始，逐步构建出一个更复杂、更通用的 Makefile（<a href="17.5-makefiles.html">第 17.5.10 节</a>），它适合作为大多数用途的起点。关于编写 Makefile 的更多信息，参见 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/">GNU Make 手册</a>。</p>
+<blockquote>
+<p>In this section we discuss the <code>make</code> command and Makefiles. We present some examples starting from simple Makefile and building up to a more complex and more generic Makefile (<a href="17.5-makefiles.html">Section 17.5.10</a>) that is a good starting point for most uses. For more information about writing Makefiles see <a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/">the GNU Make Manual</a>.</p>
+</blockquote>
+<h3 id="17-5-1-关于-make"><a href="#17-5-1-关于-make" class="headerlink" title="17.5.1. 关于 make"></a>17.5.1. 关于 make</h3><p><em>17.5.1. About make</em></p>
+<p>Unix 的 <code>make</code> 工具简化了程序的编译。用户（或程序）在 Makefile 中写好要执行的规则。用户只需运行 <code>make</code>，<code>make</code> 程序就会从 <code>Makefile</code> 中读入告诉它如何编译程序的规则。</p>
+<blockquote>
+<p>The Unix <code>make</code> utility simplifies compiling programs. A user (or a program) writes the Makefile with the rules to execute. A user just runs <code>make</code> and the <code>make</code> program reads in rules from the <code>Makefile</code> that tell it how to compile a program.</p>
+</blockquote>
+<p><code>make</code> 的一个好处是，只需输入 <code>make</code> 就能执行复杂的命令来构建可执行文件，而不必每次都由用户输入很长的 <code>gcc</code> 命令来构建。较大的程序常常被拆分成由多个 <code>.c</code> 和 <code>.h</code> 文件组成的独立模块。它们还可能要链接多个库，或者把头文件和库文件存放在非标准的位置。所有这些都会让编译变得更复杂，<code>gcc</code> 命令行也更长、更复杂。在这些情况下，在 shell 提示符下手动输入完整的 <code>gcc</code> 命令行既费时又容易出错。例如，下面是一条很长的 <code>gcc</code> 命令行，手动输入它会很繁琐：</p>
+<blockquote>
+<p>One benefit of <code>make</code> is that it can execute complex commands to build executable files simply by typing <code>make</code> versus the user having to type in long <code>gcc</code> commands to build each time. Larger programs are often split into separate modules consisting of multiple <code>.c</code> and <code>.h</code> files. They may also link in multiple libraries, or store header and library files in non-standard locations. All of these make compiling more complicated, and <code>gcc</code> command lines longer and more complex. In these cases, manually typing the full <code>gcc</code> command line at the shell prompt is both time consuming and error prone. For example, here is a long <code>gcc</code> command line that would be tedious to type by hand:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">gcc -Wall -g  -I../includes -I. -o mycc emitter.c init.c lexer.c symbol.c parser.c ast.c error.c symbol_table.c codegen.c emitcode.c main.c -L../libs -lmylib -lpthread</span><br></pre></td></tr></table></figure>
+
+<p>有了 <code>make</code>，用户只需输入 <code>make</code>，就能执行 Makefile 中列出的命令。</p>
+<blockquote>
+<p>With <code>make</code> the user simply types <code>make</code> to execute the commands listed in the Makefile.</p>
+</blockquote>
+<p><code>make</code> 的另一个好处是，它只重新构建那些需要重新构建的东西，即那些依赖于自上次构建以来被修改过的文件的目标文件和可执行文件。对于大型程序，从头开始编译所有东西可能非常耗时，因此 <code>make</code> 只重新构建需要重新构建的东西，可以节省大量的编译时间。</p>
+<blockquote>
+<p>Another benefit of <code>make</code> is that it only rebuilds those things that need to be rebuilt — just the object and executable files that depend on files that have been modified since the last time they were built. For large programs, compiling everything from scratch can be very time consuming, and thus <code>make</code> can save a lot of compilation time by only rebuilding those things that need to be rebuilt.</p>
+</blockquote>
+<p>用户通常自己编写 Makefile，写好让 <code>make</code> 执行的规则。也有一些程序（例如 CMake 和 GNU Autotools）可以生成 Makefile。它们通常用于构建大型软件，以及方便地支持跨不同系统的编译，包括在特定系统上找到所需的编译器和其他软件、库以及头文件。</p>
+<blockquote>
+<p>A user typically writes the Makefile with the rules for <code>make</code> to execute. There are also programs, like CMake and GNU Autotools, that generate Makefiles. These are typically used for building large software and for easily supporting compilation across different systems that includes finding needed compilers and other software, libraries, and header files on a particular system.</p>
+</blockquote>
+<h3 id="17-5-2-使用-make"><a href="#17-5-2-使用-make" class="headerlink" title="17.5.2. 使用 make"></a>17.5.2. 使用 make</h3><p><em>17.5.2. Using make</em></p>
+<p>使用 <code>make</code> 的步骤是：</p>
+<blockquote>
+<p>The steps for using <code>make</code> are:</p>
+</blockquote>
+<ol>
+<li>创建一个 Makefile，列出构建可执行文件的规则。默认情况下，这个文件应当命名为「Makefile」。这只需要做一次，除非程序中加入了新的模块（.c 或 .h 文件），这时就需要更新 Makefile，给现有的规则加上新模块的依赖，或者加入新的规则把它们纳入编译。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Create a Makefile listing the rules for building the executable. By default the file should be named ‘Makefile’. This only has to be done once, except when new modules (.c or .h files) are added to the program, then the Makefile needs to be updated to add new module dependencies to existing rules or to add new rules to include them in compilation.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>编辑了程序文件之后，输入 make 重新构建可执行文件： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make</span><br></pre></td></tr></table></figure>
+ 可以这样输入来执行 Makefile 中某条特定的规则： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make target_label</span><br></pre></td></tr></table></figure>
+ 例如，要执行 <code>rm</code> 命令删除下面列出的示例 Makefile 所构建的所有文件，输入： <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make clean</span><br></pre></td></tr></table></figure></li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><p>After editing program file(s), rebuild the executable by typing make:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make</span><br></pre></td></tr></table></figure>
+
+<p>A specific rule in the Makefile can be executed by typing:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make target_label</span><br></pre></td></tr></table></figure>
+
+<p>For example, to execute the <code>rm</code> command to remove all built files in the example Makefile listed below, type:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ make clean</span><br></pre></td></tr></table></figure></li>
+</ol>
+</blockquote>
+<h3 id="17-5-3-创建-Makefile"><a href="#17-5-3-创建-Makefile" class="headerlink" title="17.5.3. 创建 Makefile"></a>17.5.3. 创建 Makefile</h3><p><em>17.5.3. Creating a Makefile</em></p>
+<p>Makefile 通常以一些变量定义开头，后面是一组用于构建特定目标（通常是构建 .o 文件和可执行文件）的规则（或称目标条目）。每条规则由一个目标标签和一组为该目标运行的相关命令（有时称为配方，recipe）组成。下面是规则的一般格式：</p>
+<blockquote>
+<p>A Makefile typically starts with some variable definitions which are then followed by a set of rules (or target entries) for building specific targets (typically for building .o and executable files). Each rule consists of a target label and a set of associated commands (sometimes called recipes) that are run for the target. The following is the general format of a rule:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"># comment</span><br><span class="line"># (note: the &lt;tab&gt; in the command line is necessary for make to work)</span><br><span class="line">target:  dependency1 dependency2 ...</span><br><span class="line">      &lt;tab&gt; command</span><br></pre></td></tr></table></figure>
+
+<p>下面是一个例子：</p>
+<blockquote>
+<p>Here is an example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># target entry to build program executable from program.o</span><br><span class="line"># and util.o object files</span><br><span class="line">#</span><br><span class="line">program: program.o util.o</span><br><span class="line">	gcc -o program program.o util.o</span><br></pre></td></tr></table></figure>
+
+<div class="callout callout-warning"><p class="callout-title">原书警示 · make 与空白字符（Make and whitespace characters）</p><p><code>make</code> 对空白字符非常挑剔。例如，在 Makefile 目标条目的命令部分所在行之前的 &lt;tab&gt;，对 <code>make</code> 正确解析目标条目并执行命令部分非常重要。例如，如果你用空格字符代替 &lt;tab&gt;，<code>make</code> 就不能正确解析这个目标条目，也不会运行它的相关命令。</p>
+<blockquote>
+<p><code>make</code> is very picky about whitespace characters. For example, the &lt;tab&gt; on the line before the command part of a Makefile target entry is very important for <code>make</code> to correctly parse the target entry and execute the command part. If, for example, you use space characters in place of the &lt;tab&gt;, then <code>make</code> will not correctly parse the target entry and will not run its associated command.</p>
+</blockquote>
+</div>
+<h3 id="17-5-4-一个简单的-Makefile"><a href="#17-5-4-一个简单的-Makefile" class="headerlink" title="17.5.4. 一个简单的 Makefile"></a>17.5.4. 一个简单的 Makefile</h3><p><em>17.5.4. A Simple Makefile</em></p>
+<p>下面是一个简单的 Makefile 示例，它从单个名为 <code>myprog.c</code> 的 .c 文件构建一个可执行文件：</p>
+<blockquote>
+<p>Here is an example simple Makefile that builds an executable from a single .c file named <code>myprog.c</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># build an executable named myprog from myprog.c</span><br><span class="line">all: myprog.c</span><br><span class="line">	gcc -g -Wall -o myprog myprog.c</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	rm myprog</span><br></pre></td></tr></table></figure>
+
+<p>输入 <code>make</code> 会触发与 <code>all</code> 目标标签相关联的命令：如果文件 <code>myprog.c</code> 的修改日期比文件 <code>myprog</code> 的修改日期新，或者 <code>myprog</code> 不存在，就运行 <code>gcc -g -Wall -o myprog myprog.c</code>。注意，名字 <code>all</code> 并没有什么特别之处，默认情况下，<code>make</code> 选择 Makefile 中的第一个目标标签来执行。要执行除列出的第一条规则之外的某条特定规则，在 <code>make</code> 命令行上写出目标名即可。例如，<code>make clean</code> 运行 <code>rm myprog</code> 命令，删除之前构建的可执行文件 <code>myprog</code>。</p>
+<blockquote>
+<p>Typing <code>make</code> triggers the command associated with the <code>all</code> target label to run <code>gcc -g -Wall -o myprog myprog.c</code> if the modification date on the file <code>myprog.c</code> is newer than the modification date on the file <code>myprog</code> or if <code>myprog</code> doesn’t exist. Note that the name <code>all</code> isn’t special, by default <code>make</code> picks the first target label in the Makefile to execute. To execute a specific rule other than the first one listed in the makefile, list the target name on the <code>make</code> command line. For example, <code>make clean</code> runs the <code>rm myprog</code> command to remove the previously built executable file <code>myprog</code>.</p>
+</blockquote>
+<p>在<a href="17.5-makefiles.html">第 17.5.8 节</a>中，我们会展示如何用 Makefile 变量编写这个 Makefile 更通用的版本，只需复制并稍作修改，就能为构建另一个程序创建新的 Makefile。</p>
+<blockquote>
+<p>In <a href="17.5-makefiles.html">Section 17.5.8</a> we show how to use Makefile variables to write more generic versions of this Makefile—​one that can be copied and minimally edited to create a new Makefile for building a different program.</p>
+</blockquote>
+<h3 id="17-5-5-用于多个源文件的-Makefile"><a href="#17-5-5-用于多个源文件的-Makefile" class="headerlink" title="17.5.5. 用于多个源文件的 Makefile"></a>17.5.5. 用于多个源文件的 Makefile</h3><p><em>17.5.5. A Makefile for multiple source files</em></p>
+<p>下面是一个从多个 <code>.c</code> 和 <code>.h</code> 文件构建可执行文件的 Makefile 示例。它先把每个 <code>.c</code> 编译成一个 <code>.o</code> 文件，然后把各个 <code>.o</code> 和库链接在一起，构建出可执行文件。由于它为每个 <code>.o</code> 文件列出了依赖关系，如果修改了某一个 <code>.c</code> 文件，就只需要重新构建一个 <code>.o</code>（依赖于被修改的那个 <code>.c</code> 的那个），而不会重新构建所有的 <code>.o</code> 文件。对于由许多 <code>.c</code> 文件组成的较大程序，这是一个特别好的特性，能加快编译时间。</p>
+<blockquote>
+<p>Below is an example Makefile for building an executable from multiple <code>.c</code> and <code>.h</code> files. It first compiles each <code>.c</code> into a <code>.o</code> file, and then links the <code>.o</code> and libraries together to build the executable. Because it lists dependencies for each <code>.o</code> file, if one <code>.c</code> file is modified only one <code>.o</code> needs to be rebuilt (the one that is dependent on the modified <code>.c</code>) and it does not rebuild all <code>.o</code> files. This is a particularly nice feature that speeds up compile time for larger programs consisting of many <code>.c</code> files.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"># Example Makefile for a program with many .c modules</span><br><span class="line"># make: build count executable program</span><br><span class="line"># make clean: clean-up all built files</span><br><span class="line"></span><br><span class="line">all: count</span><br><span class="line"></span><br><span class="line"># To create the executable file count we need the object files</span><br><span class="line"># countwords.o, counter.o, and scanner.o:</span><br><span class="line">count: countwords.o counter.o scanner.o</span><br><span class="line">	gcc -g -Wall -o count countwords.o counter.o scanner.o</span><br><span class="line"></span><br><span class="line"># To create the object file countwords.o, we need the source</span><br><span class="line"># files countwords.c, scanner.h, and counter.h:</span><br><span class="line">countwords.o: countwords.c scanner.h counter.h</span><br><span class="line">	gcc -g -Wall -c countwords.c</span><br><span class="line"></span><br><span class="line"># To create the object file counter.o, we need the source files</span><br><span class="line"># counter.c and counter.h:</span><br><span class="line">counter.o: counter.c counter.h</span><br><span class="line">	gcc -g -Wall -c counter.c</span><br><span class="line"></span><br><span class="line"># To create the object file scanner.o, we need the source files</span><br><span class="line"># scanner.c and scanner.h:</span><br><span class="line">scanner.o: scanner.c scanner.h</span><br><span class="line">	gcc -g -Wall -c scanner.c</span><br><span class="line"></span><br><span class="line"># To start over from scratch, type &#x27;make clean&#x27;.  This</span><br><span class="line"># removes the executable file, as well as old .o object</span><br><span class="line"># files and *~ backup files:</span><br><span class="line">clean:</span><br><span class="line">	rm -f count *.o *~</span><br></pre></td></tr></table></figure>
+
+<p>第一次运行 <code>make</code> 之后，如果修改了 <code>counter.c</code> 文件，那么下次运行 <code>make</code> 时，只会执行下面这两条规则（因为它们依赖于 <code>counter.c</code> 或 <code>counter.o</code>）：</p>
+<blockquote>
+<p>After running <code>make</code> the first time, if the <code>counter.c</code> file is modified, then on the next run of <code>make</code>, only these two rules are executed (due to their dependency on <code>counter.c</code> or <code>counter.o</code>):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">counter.o: counter.c counter.h</span><br><span class="line">	gcc -g -Wall -c counter.c</span><br><span class="line"></span><br><span class="line">count: countwords.o counter.o scanner.o</span><br><span class="line">	gcc -g -Wall -o count countwords.o counter.o scanner.o</span><br></pre></td></tr></table></figure>
+
+<p>在<a href="17.5-makefiles.html">第 17.5.9 节</a>和<a href="17.5-makefiles.html">第 17.5.10 节</a>中，我们会展示如何利用 Makefile 变量、Makefile 隐式规则和自动依赖生成，来编写更通用的 Makefile。<a href="17.5-makefiles.html">第 17.5.10 节</a>中的 Makefile 是一个很好的通用 Makefile，适用于由许多 <code>.c</code> 和 <code>.h</code> 文件构建、并且构建时可能要用到存放在非标准位置的头文件或库的应用程序。</p>
+<blockquote>
+<p>In <a href="17.5-makefiles.html">Section 17.5.9</a> and <a href="17.5-makefiles.html">Section 17.5.10</a> we show how to use Makefile variables, implicit Makefile rules, and automatic dependency generation, to write more generic versions of a Makefile. The Makefile in <a href="17.5-makefiles.html">Section 17.5.10</a> is a good generic Makefile for applications built from many <code>.c</code> and <code>.h</code> files, and that may build with header files or libraries stored in non-standard locations.</p>
+</blockquote>
+<h3 id="17-5-6-make-错误"><a href="#17-5-6-make-错误" class="headerlink" title="17.5.6. make 错误"></a>17.5.6. make 错误</h3><p><em>17.5.6. make Errors</em></p>
+<p><code>make</code> 的错误一般源于两个原因之一。第一个是 Makefile 本身的语法错误，第二个是编译错误，可能是由于 Makefile 中缺少规则，也可能是由于程序本身的错误。使用 <code>make</code> 时，有时可能很难判断需要修正的是 Makefile 还是程序。</p>
+<blockquote>
+<p>Errors in <code>make</code> generally stem from one of two causes. The first are errors in the syntax of the Makefile itself, and the second are compilation errors either due to missing rules in the Makefile, or due to errors in the program itself. When using <code>make</code> it can sometimes be difficult to determine if you need to fix the Makefile or your program.</p>
+</blockquote>
+<p>Makefile 语法错误会报告出错处在 Makefile 中的行号，帮助你找到语法问题。然而，有一些常见的错误很难看出来，因为它们与空白字符的使用错误有关。这类错误的两个例子是：</p>
+<blockquote>
+<p>Errors in Makefile syntax will be reported with the line number in the Makefile of the error to help you track down the syntax problem. However, there are some common errors that are difficult to see because they are related to errors with use of whitespace characters. Two example of this type are:</p>
+</blockquote>
+<ul>
+<li>在目标条目命令部分的开头使用空格字符而不是 <code>&lt;tab&gt;</code>。例如，如果这个目标条目第二行的开头是空格字符而不是 <code>&lt;tab&gt;</code> 字符，<code>make</code> 就无法正确解析这条规则：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">all: myprog.c</span><br><span class="line">     $(CC) $(CFLAGS) $(INCLUDES) -o myprog myprog.c</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>Using space characters instead of a <code>&lt;tab&gt;</code> at the start of the command part of a target entry. For example, if there are space characters at the beginning of this target entry’s second line instead of a <code>&lt;tab&gt;</code> character, <code>make</code> cannot correctly parse this rule:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">all: myprog.c</span><br><span class="line">     $(CC) $(CFLAGS) $(INCLUDES) -o myprog myprog.c</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<ul>
+<li>文件名前缀的末尾有多余的空格，而 Makefile 在其他地方会给这个前缀加上不同的后缀来展开。例如：<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TARGET = myprog</span><br><span class="line">SRC = $(TARGET).c</span><br></pre></td></tr></table></figure>
+如果 <code>myprog</code> 后面有尾随空白，那么 <code>SRC</code> 就不是 <code>myprog.c</code>，而是类似 <code>myprog .c</code> 的东西，这不是一个合法的文件名。</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>Having extra spaces at the end of the prefix of a file name that the Makefile expands in other places by adding different suffixes to. For example:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">TARGET = myprog</span><br><span class="line">SRC = $(TARGET).c</span><br></pre></td></tr></table></figure>
+
+<p>If there is trailing whitespace after <code>myprog</code>, then instead of <code>SRC</code> being <code>myprog.c</code> it will be something like <code>myprog .c</code>, which is not a valid file name.</p>
+</li>
+</ul>
+</blockquote>
+<p>如果错误出在编译或链接上，原因可能是你的 Makefile 有错，也可能是你的程序有错。导致编译或链接错误的 Makefile 错误的一些例子包括：缺少编译某个 <code>.o</code> 的规则；缺少依赖，没有强制重新编译；没有显式链接所需的某个库；或者缺少编译程序所需的头文件和库位置的包含路径（<code>-I</code> 或 <code>-L</code>）。许多这类错误会以 <code>gcc</code> 错误的形式出现，但需要修正的是 Makefile 而不是程序源代码。</p>
+<blockquote>
+<p>If the error is with compiling or linking, it could be due to errors in your Makefile or due to an error in your program. Some examples Makefile errors that cause compilation or linking errors include: a missing rule to compile a <code>.o</code>; missing dependencies not forcing re-compilation; missing explicitly linking in a needed library; or missing including paths (<code>-I</code> or <code>-L</code>) to header file and library locations needed to compile the program. Many of these errors will show up as <code>gcc</code> errors, but require fixes to the Makefile instead of the program source.</p>
+</blockquote>
+<p>下面是帮助你判断需要修正的是 Makefile、源代码还是两者都要修正的一些提示：</p>
+<blockquote>
+<p>Some tips to help you determine if the Makefile, the source code, or both need to be fixed include:</p>
+</blockquote>
+<ul>
+<li>作为查看是否缺少依赖的第一步，运行 <code>make clean</code>，然后运行 <code>make</code>，从头开始重新构建所有东西。如果这样能成功，说明 Makefile 中缺少某个依赖。</li>
+</ul>
+<blockquote>
+<ul>
+<li>As a first step to see if you are missing a dependency, run <code>make clean</code> and then <code>make</code> to rebuild everything from scratch. If it is successful, a dependency is missing in the Makefile.</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果你没有看到需要链接进来的某个 <code>.o</code> 文件，问题在于你需要添加一条构建它的规则（也许要更新 <code>SRCS</code> 定义来包含这个新文件）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If you don’t see a <code>.o</code> file that you need to link in, the problem is that you need to add a rule to build it (perhaps updating your <code>SRCS</code> definition to include this new file).</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果编译器报错说找不到某个 <code>.h</code> 文件，这表明你需要更新 <code>INCLUDES</code> 变量，加入一个形如 <code>-I[包含目录的路径]</code> 的选项，告诉 make 到哪里去找它们。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If there is an error with the compiler not being able to find a <code>.h</code> file, then this indicates that you need to update your <code>INCLUDES</code> variable to add a of the form <code>-I[path to include directory]</code> to tell make where to find them.</li>
+</ul>
+</blockquote>
+<ul>
+<li>同样，如果编译器报错说找不到库（这些错误在编译的最后阶段，即链接时，以「未定义」错误的形式出现），你需要更新 <code>LIBDIR</code> 或 <code>LIBS</code> 的定义，加入库的路径（<code>-L</code>），或者在命令行中加入需要链接的、缺失的库（<code>-l</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Similarly, if there are errors with the compiler not being able to find libraries (these show up as undefined errors during the final compilation stage, linking), you need to update your <code>LIBDIR</code> or <code>LIBS</code> definitions to include paths to libraries (<code>-L</code>) or to add to the command line any missing libraries that need to be linked in (<code>-l</code>).</li>
+</ul>
+</blockquote>
+<ul>
+<li>在某些情况下，如果错误出在 C 源文件中，例如缺少 <code>#include</code>，那么可能需要同时更新 C 源文件和 Makefile 才能修正错误。例如，在 C 源文件中加入一个 <code>#include</code>，可能还需要在 Makefile 中更新包含路径（<code>-I</code>），在某些情况下还要更新库路径（<code>-L</code>）并显式链接某个库（<code>-l</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>In some cases when the error is in a C source file, such as missing <code>#include</code>, both the C source file and the Makefile may need to be updated to fix the error. For example, adding an <code>#include</code> to a C source file, may also result in updating the include (<code>-I</code>) path, and in some cases also a library path (<code>-L</code>) and explicitly linking in a library (<code>-l</code>) in the Makefile.</li>
+</ul>
+</blockquote>
+<h3 id="17-5-7-并行-make"><a href="#17-5-7-并行-make" class="headerlink" title="17.5.7. 并行 make"></a>17.5.7. 并行 make</h3><p><em>17.5.7. Parallel make</em></p>
+<p>对于由许多 <code>.c</code> 和 <code>.h</code> 文件组成的大型程序，编译可能需要很长时间。其中大部分时间可能花在从每个 <code>.c</code> 文件编译出一个 <code>.o</code> 文件上。编译每个 <code>.o</code> 与编译其他 <code>.o</code> 文件是相互独立的，因此这是一个很好的并行化目标：多个线程或进程可以同时并行地编译不同的 <code>.c</code> 文件。给 <code>make</code> 使用 <code>-j[num]</code> 命令行选项，告诉它一次最多运行 <code>num</code> 个作业，即并行地同时执行 <code>num</code> 个不同的配方。</p>
+<blockquote>
+<p>For large programs consisting of many <code>.c</code> and <code>.h</code> files, compiling can take a long time. Much of the time can be due to compiling a <code>.o</code> file from each <code>.c</code> file. Compiling each <code>.o</code> is independent of compiling other <code>.o</code> files, and thus this is a good target for parallelization where multiple threads or processes can simultaneously compile a different <code>.c</code> file in parallel. Using the <code>-j[num]</code> command line option to <code>make</code> tells it to run up to <code>num</code> jobs at a time, or to in parallel simultaneously execute <code>num</code> different recipes.</p>
+</blockquote>
+<p>例如，要让 <code>make</code> 并行化、一次执行 12 个配方，输入：</p>
+<blockquote>
+<p>For example, to parallelize <code>make</code> to perform 12 recipes at a time type:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j12</span><br></pre></td></tr></table></figure>
+
+<p>在有 12 个或更多核心的机器上，这会比 <code>make</code> 快大约十二倍。</p>
+<blockquote>
+<p>On a machine with 12 or more cores, this will run about twelve times faster than <code>make</code>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这是理想情况下的上限。实际加速比还受目标之间的依赖关系，以及最后链接这类只能串行执行的步骤限制（参见第 14 章的阿姆达尔定律）。</p>
+</div>
+<h3 id="17-5-8-进阶：一个通用的简单-Makefile"><a href="#17-5-8-进阶：一个通用的简单-Makefile" class="headerlink" title="17.5.8. 进阶：一个通用的简单 Makefile"></a>17.5.8. 进阶：一个通用的简单 Makefile</h3><p><em>17.5.8. Advanced: A Generic Simple Makefile</em></p>
+<p>我们可以改写<a href="17.5-makefiles.html">第 17.5.4 节</a>中的简单 Makefile，让它更通用。通用的 Makefile 更容易修改后用于另一个程序（用户通常先复制一个现有的 Makefile 再修改，而不是每次都从头开始写）。这个更通用的 Makefile 用 Makefile 变量替换规则中具体的应用程序文件名，使规则对任何程序都通用。定义 Makefile 变量的语法是 <code>&lt;variable_name&gt; = &lt;value&gt;</code>。例如：</p>
+<blockquote>
+<p>We can rewrite the simple Makefile from <a href="17.5-makefiles.html">Section 17.5.4</a> to make it more generic. A generic Makefile is one that is easier to edit for use for another program (typically users start a new Makefile with a copy of an existing one that they then modify versus writing one from scratch each time). This more generic Makefile replaces the specific application file names in rules with Makefile variables resulting in the rule being generic for any program. The syntax for defining Makefile variables is <code>&lt;variable_name&gt; = &lt;value&gt;</code>. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># define CC to be the name of the compiler</span><br><span class="line">CC = gcc</span><br></pre></td></tr></table></figure>
+
+<p>定义之后，可以在 Makefile 后面用 <code>$(variable_name)</code> 语法使用这个 Makefile 变量。例如：</p>
+<blockquote>
+<p>Once defined, the Makefile variable can be used later in the Makefile using <code>$(variable_name)</code> syntax. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># use the value of CC in a target entry:</span><br><span class="line">all:</span><br><span class="line">    $(CC) -o myprog myprog.c</span><br></pre></td></tr></table></figure>
+
+<p>下面是前面那个从单个 .c 文件构建可执行文件的简单 Makefile 的一个稍微通用一点的版本。这个更通用的简单 Makefile 用变量指定使用哪个编译器（<code>CC</code>）、要传入的编译器选项（<code>CFLAGS</code>）、<code>.c</code> 源文件的名字（<code>SRCS</code>），以及要构建的程序可执行文件的名字（<code>TARGET</code>）。<code>RM</code> 变量是 Makefile 的一个内置变量，定义为 <code>rm</code> 命令。你可以在 Makefile 中把任何内置变量重新定义为别的东西，从而改变它的值。</p>
+<blockquote>
+<p>Below is an example of a slightly more generic version of the simple Makefile above to build an executable from a single .c file. This more generic version of the simple Makefile specifies variables to indicate which compiler to use (<code>CC</code>), the compiler flags to pass (<code>CFLAGS</code>, the name of the <code>.c</code> source file (<code>SRCS</code>), and the name of the program executable to build (<code>TARGET</code>). The <code>RM</code> variable is a builtin Makefile variable that is defined to be the <code>rm</code> command. You can change the value of any builtin variables by redefining them to be something else in the Makefile.</p>
+</blockquote>
+<p>使用 Makefile 变量的结果是，Makefile 中从 <code>all:</code> 开始的所有内容都是通用的，适用于任何程序。要构建另一个程序，只需修改 <code>SRCS</code> 和 <code>TARGET</code> 变量。</p>
+<blockquote>
+<p>By using Makefile variables, the result is that everything in the Makefile starting with <code>all:</code> is generic and will work for any program. Only the <code>SRCS</code> and <code>TARGET</code> variables need to be changed to build a different program.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"># define the compiler: gcc for C programs</span><br><span class="line">CC = gcc</span><br><span class="line"></span><br><span class="line"># define the compiler flags:</span><br><span class="line">#  -g    adds debugging information to the executable file</span><br><span class="line">#  -Wall turns on most, but not all, compiler warnings</span><br><span class="line">CFLAGS  = -g -Wall</span><br><span class="line"></span><br><span class="line"># source file (could actually list multiple .c files here)</span><br><span class="line">SRCS = myprog.c</span><br><span class="line"></span><br><span class="line"># define the executable file (assume source is same name):</span><br><span class="line">TARGET = myprog</span><br><span class="line"></span><br><span class="line"># this is generic:</span><br><span class="line">all: $(TARGET)</span><br><span class="line"></span><br><span class="line">$(TARGET): $(SRCS)</span><br><span class="line">	$(CC) $(CFLAGS) -o $(TARGET) $(SRCS)</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">	$(RM) $(TARGET)</span><br></pre></td></tr></table></figure>
+
+<p>只需把 <code>SRCS</code> 定义为列出各个 <code>c</code> 文件，这个 Makefile 也可以用来从多个 <code>.c</code> 源文件构建可执行文件。例如，如果可执行文件由 <code>myprog.c</code> 和 <code>util.c</code> 两个源文件构建，就把 <code>SRCS</code> 定义为：</p>
+<blockquote>
+<p>This Makefile can also be used for building an executable from more than one <code>.c</code> source file by just defining <code>SRCS</code> to list each <code>c</code> file. For example, if the executable is built from two source files <code>myprog.c</code> and <code>util.c</code>, define <code>SRCS</code> to be:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">SRCS = myprog.c util.c</span><br></pre></td></tr></table></figure>
+
+<p>关于这个 Makefile，需要注意的一点是：只要 <code>SRCS</code> 中列出的任何一个源文件被修改了，它总会从所有源文件重新编译可执行文件（因为有这条依赖：<code>$(TARGET): $(SRCS)</code>）。对于可能只由一个或几个 <code>.c</code> 文件组成的小程序，这也许没有问题。不过，我们可以调整 Makefile，让它在某个源文件被修改时只重新构建需要重新构建的部分。为此，我们加入从每个 <code>.c</code> 文件编译出目标文件（<code>.o</code>）的规则，然后通过把各个 <code>.o</code> 文件（以及任何库）链接起来构建可执行文件。</p>
+<blockquote>
+<p>One thing to note about this Makefile is that it always recompiles the executable from all source files listed in <code>SRCS</code> if any one of them have been modified (because of this dependency: <code>$(TARGET): $(SRCS)</code>). For small programs, that may consist of just one or a few <code>.c</code> files, this may be fine. However, we can adjust the Makefile to have it only rebuild parts that need to be rebuilt when a source file is modified. We do this by adding rules to compile object files (<code>.o</code>) from each <code>.c</code> file, and then to build the executable file from linking the <code>.o</code> files (and any libraries) into the executable.</p>
+</blockquote>
+<h3 id="17-5-9-进阶：一个用于多个文件的通用-Makefile"><a href="#17-5-9-进阶：一个用于多个文件的通用-Makefile" class="headerlink" title="17.5.9. 进阶：一个用于多个文件的通用 Makefile"></a>17.5.9. 进阶：一个用于多个文件的通用 Makefile</h3><p><em>17.5.9. Advanced: A Generic Makefile for Multiple Files</em></p>
+<p>我们可以利用 Makefile 变量和模式替换规则，把<a href="17.5-makefiles.html">第 17.5.5 节</a>中从多个源文件编译可执行文件的 Makefile 改写成一个更通用的 Makefile。</p>
+<blockquote>
+<p>We can rewrite the Makefile from <a href="17.5-makefiles.html">Section 17.5.5</a> that compiled an executable from multiple source files as a more generic Makefile by making use of Makefile variables and pattern replacement rules.</p>
+</blockquote>
+<p>注意，原来的 Makefile（<a href="17.5-makefiles.html">第 17.5.5 节</a>中的）里从 <code>.c</code> 构建 <code>.o</code> 文件的那些规则，除了具体的文件名之外都很相似。如果能用一条更通用的、从 <code>.c</code> 文件构建 <code>.o</code> 的规则来简化它们就好了。</p>
+<blockquote>
+<p>Note that the rules for building the <code>.o</code> files from the <code>.c</code> in the orginal Makefile (in <a href="17.5-makefiles.html">Section 17.5.5</a>) are all similar except for the specific file names. It would be nice if we could simplify this with a more generic rule for building <code>.o</code> from <code>.c</code> files.</p>
+</blockquote>
+<p>一种做法是使用一条模式替换规则，它会为任何由 <code>.c</code> 文件构建的 <code>.o</code> 文件触发。下面是这样一条规则的例子。它使用 makefile 自动变量：<code>$&lt;</code> 表示规则的依赖项（一个 <code>.c</code> 源文件）的名字，<code>$@</code> 表示目标文件（<code>.o</code> 目标文件）。关于自动变量的更多信息，参见 GNU make 手册。</p>
+<blockquote>
+<p>One way to do this is to use a pattern-replacement rule that is triggered for any <code>.o</code> file built from a <code>.c</code> file. Below is an example of such a rule. It uses makefile automatic variables <code>$&lt;</code> for the name of the dependency of the rule (a <code>.c</code> source file) and <code>$@</code> for the target file (the <code>.o</code> object file). See the gnu make manual for more information about automatic variables.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"># This is a pattern replacement rule for building .o files from their</span><br><span class="line"># associated .c files.  It uses automatic variables:</span><br><span class="line">#   $&lt;  the name of the first dependency of the rule (a .c file)</span><br><span class="line">#   $@  the name of the target of the rule (a .o file)</span><br><span class="line">%.o : %.c</span><br><span class="line">        $(CC) $(CFLAGS) -c $&lt; -o $@</span><br></pre></td></tr></table></figure>
+
+<p>这是一条短得多的通用规则，适用于任何 C 程序的 Makefile。</p>
+<blockquote>
+<p>This is a much shorter rule, and a generic rule, that will work for any C Makefile.</p>
+</blockquote>
+<p>不过，我们还能做得更好！由于从 <code>.c</code> 文件编译出 <code>.o</code> 是一种非常常见的构建模式，make 有一条从 <code>.c</code> 文件构建 <code>.o</code> 文件的隐式规则。如果我们想使用这条隐式规则，就不在 makefile 中添加任何从 .c 文件构建 .o 文件的规则。这条隐式规则如下：</p>
+<blockquote>
+<p>However, we can do even better than this! Because compiling a <code>.o</code> from a <code>.c</code> file is such a common build pattern, make has an implicit rule for building <code>.o</code> files from <code>.c</code> files. If we want to use this implicit rule, we don’t add any rule for building .o files from .c files to our makefile. The implicit rule is the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"># make&#x27;s implicit rule for building .o files from .c:</span><br><span class="line">%.o : %.c</span><br><span class="line">	$(CC) $(CPPFLAGS) $(CFLAGS) -c $&lt; -o $@</span><br></pre></td></tr></table></figure>
+
+<p>这条隐式规则使用了一些有默认值的 makefile 变量，不过这些变量也可以在 Makefile 中重新定义（而且通常都会重新定义）：</p>
+<blockquote>
+<p>The implicit rule uses some makefile variables that have default values, but that can also be redefined in the Makefile (and usually are):</p>
+</blockquote>
+<ul>
+<li><code>CC</code>：定义编译器（我们的 Makefile 把 <code>CC</code> 定义为 <code>gcc</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>CC</code>: defines the compiler (our Makefile defines <code>CC</code> to be <code>gcc</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>CFLAGS</code>：定义编译器选项（我们的 Makefile 把它们定义为 <code>-g -Wall</code>，即包含调试信息并打开所有警告）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>CFLAGS</code>: defines compiler flags (our Makefile defines these to be <code>-g -Wall</code> which includes debugging information and turns on all warnings).</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>CPPFLAGS</code>：定义预处理器选项（我们的 Makefile 没有定义）。预处理器是编译器最先运行的部分。它展开所有以 <code>#</code> 开头的东西，例如 <code>#include</code>。这里有关于<a href="../C2-C_depth/2.9.5-advanced_libraries.html">编译各阶段</a>的更多信息。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>CPPFLAGS</code>: defines preprocessor flags (our Makefile doesn’t define any). The preprocessor is the first part of the compiler that runs. It expands anything starting with a <code>#</code>, like <code>#include</code>. Here is some more information about the <a href="../C2-C_depth/2.9.5-advanced_libraries.html">the phases of compilation</a>.</li>
+</ul>
+</blockquote>
+<p>由于我们有一条构建 <code>$(TARGET)</code> 的规则，它依赖于 <code>$(OBJS)</code>，<code>make</code> 就会寻找从源文件（<code>.c</code> 文件）构建目标文件（<code>.o</code>）的规则，如果在 Makefile 中找不到，就使用它的隐式规则。如果隐式规则就够用了，我们就不必在 Makefile 中加入任何构建目标文件的规则！我们只需定义它所使用的 makefile 变量（或者使用其默认定义）。如果我们不喜欢这条隐式规则，就需要用自己的规则来覆盖它。</p>
+<blockquote>
+<p>Because we have a rule for building <code>$(TARGET)</code> that has a dependency <code>$(OBJS)</code>, <code>make</code> will look for a rule for building object files (<code>.o</code>) from source files (<code>.c</code> files), and it if doesn’t find one in the Makefile, it uses its implicit rule. If the implicit rule suffices, we don’t have to include any rule for building object files in our Makefile! Instead we just define the makefile variables it uses (or use its default definitions). If we don’t like the implicit rule, then we need to override it using our own rule.</p>
+</blockquote>
+<p>下面是使用隐式规则来构建 <code>.o</code> 文件的 Makefile 版本（注意，Makefile 中从 <code>OBJS =</code> 开始的所有内容都是通用的！）：</p>
+<blockquote>
+<p>The following is a version of the Makefile that uses the implicit rule for building <code>.o</code> files (and note that everything in the Makefile starting with <code>OBJS =</code> is generic!):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"># Example Makefile using make&#x27;s implicit .c:.o rule</span><br><span class="line">#   make: build count executable program</span><br><span class="line">#   make clean: clean-up all built files</span><br><span class="line"></span><br><span class="line"># define the compiler</span><br><span class="line">CC = gcc</span><br><span class="line"></span><br><span class="line"># define compiler flags</span><br><span class="line">CFLAGS  = -g -Wall</span><br><span class="line"></span><br><span class="line"># define the executable file</span><br><span class="line">TARGET = count</span><br><span class="line"></span><br><span class="line"># define source files</span><br><span class="line">SRCS = countwords.c counter.c scanner.c</span><br><span class="line"></span><br><span class="line"># define the object files</span><br><span class="line"># This uses Suffix Replacement within a macro:</span><br><span class="line">#   $(name:str1=str2): for each word in &#x27;name&#x27; replace &#x27;str1&#x27; with &#x27;str2&#x27;</span><br><span class="line"># Here replace the suffix .c of all words in the macro SRCS with .o suffix</span><br><span class="line">#</span><br><span class="line">OBJS = $(SRCS:.c=.o)</span><br><span class="line"></span><br><span class="line"># typing &#x27;make&#x27; will invoke the first target entry in the file</span><br><span class="line">all: $(TARGET)</span><br><span class="line"></span><br><span class="line"># To create the executable file count we need the object files</span><br><span class="line"># countwords.o, counter.o, and scanner.o:</span><br><span class="line">#</span><br><span class="line">$(TARGET): $(OBJS)</span><br><span class="line">	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)</span><br><span class="line"></span><br><span class="line"># using implicit rule to build .o files from .c!</span><br><span class="line"></span><br><span class="line"># clean up built files</span><br><span class="line">clean:</span><br><span class="line">	$(RM) -f $(TARGET) *.o *~</span><br></pre></td></tr></table></figure>
+
+<p>这是一个简短而通用的 Makefile。不过，它有一个更长、不太通用的版本所没有的微妙问题：我们丢失了目标文件对头文件的依赖关系，这意味着如果用户更新了一个头文件，然后输入 <code>make</code>，可执行文件和 .o 文件不会被重新构建，而我们希望它们被重新构建。为了解决这个问题，我们可以在 Makefile 中为 <code>TARGET</code> 和 <code>OBJS</code> 或者为单个目标文件加入额外的依赖：</p>
+<blockquote>
+<p>This is a short and generic Makefile. However, there is one subtle problem with this that we don’t have with the longer less generic version: we have lost the dependencies of the header files on the object files, meaning that if the user updates a header file and types <code>make</code> the executable and .o files will not be rebuilt, but we want them to be. To fix this problem, we can add additional dependencies to the Makefile for <code>TARGET</code> and <code>OBJS</code> or for individual object files:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"># define a variable to be the set of header files</span><br><span class="line">HDRS = scanner.h counter.h</span><br><span class="line"></span><br><span class="line"># add a dependency to this rule:</span><br><span class="line">$(TARGET): $(OBJS)  $(HDRS)</span><br><span class="line"></span><br><span class="line"># add a generic dependency on all $(OBJS)</span><br><span class="line"># (note: no command part to this rule, it is just defining a dependency):</span><br><span class="line">$(OBJS): $(HDRS) $(SRCS)</span><br></pre></td></tr></table></figure>
+
+<p>得到的 makefile 如下所示：</p>
+<blockquote>
+<p>The resulting makefile looks like:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line"># Example Makefile with implicit .c:.o rule and header file dependencies</span><br><span class="line"># make: build count executable program</span><br><span class="line"># make clean: clean-up all built files</span><br><span class="line"></span><br><span class="line"># define the compiler</span><br><span class="line">CC = gcc</span><br><span class="line"></span><br><span class="line"># define compiler flags</span><br><span class="line">CFLAGS  = -g -Wall</span><br><span class="line"></span><br><span class="line"># define source files</span><br><span class="line">SRCS = countwords.c counter.c scanner.c</span><br><span class="line"></span><br><span class="line"># define the object files</span><br><span class="line"># This uses Suffix Replacement within a macro:</span><br><span class="line">#   $(name:str1=str2): for each word in &#x27;name&#x27; replace &#x27;str1&#x27; with &#x27;str2&#x27;</span><br><span class="line"># Here replace the suffix .c of all words in the macro SRCS with .o suffix</span><br><span class="line">#</span><br><span class="line">OBJS = $(SRCS:.c=.o)</span><br><span class="line"></span><br><span class="line"># define the header files</span><br><span class="line">HDRS = scanner.h counter.h</span><br><span class="line"></span><br><span class="line"># define the executable file</span><br><span class="line">TARGET = count</span><br><span class="line"></span><br><span class="line"># typing &#x27;make&#x27; will invoke the first target entry in the file</span><br><span class="line">all: $(TARGET)</span><br><span class="line"></span><br><span class="line"># To create the executable file count we need the object files</span><br><span class="line"># countwords.o, counter.o, and scanner.o:</span><br><span class="line">#</span><br><span class="line">$(TARGET): $(OBJS) $(HDRS)</span><br><span class="line">	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)</span><br><span class="line"></span><br><span class="line">$(OBJS): $(HDRS) $(SRCS)</span><br><span class="line"></span><br><span class="line"># clean up built files</span><br><span class="line">clean:</span><br><span class="line">	$(RM) -f $(TARGET) *.o *~</span><br></pre></td></tr></table></figure>
+
+<p>加入了 .h 文件的依赖之后，对 .c 或 .h 文件的修改都会触发 .o 文件和可执行文件的重新构建。不过，这种解决方法有一个微妙的低效之处。问题出在目标文件对所有源文件和头文件的通用依赖上，这意味着当某个特定的 .h 或 .c 文件被更新时，有些 .o 文件会被不必要地重新构建。例如，如果 <code>counter.h</code> 被更新，<code>scanner.o</code> 也会被重新构建，但其实并不需要。解决办法是在 Makefile 中更明确地列举每个 .o 文件的具体依赖，让依赖关系不那么通用，而是针对每个 <code>.o</code> 文件更加具体。例如，把上面 Makefile 中的 <code>$(OBJS): $(HDRS) $(SRCS)</code> 替换为：</p>
+<blockquote>
+<p>With added dependencies of .h files added, changes to either a .c or a .h file will trigger rebuilding of .o and executable files. There is, however, one subtle inefficiency with this solution. The problem is with the generic dependency of objects on all sources and headers, which means that some .o files will be unnecessarily rebuilt when a specific .h or .c file is updated. For example, <code>scanner.o</code> will be rebuilt if <code>counter.h</code> is updated, but it does not need to be. The solution to this is to more explicitly enumerate the specific dependencies on each .o file in the Makefile, making the dependencies less generic and more specific for each <code>.o</code> file. For example, replace <code>$(OBJS): $(HDRS) $(SRCS)</code> in the above Makefile with:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">count.o: count.c count.h</span><br><span class="line">scanner.o: scanner.c scanner.h</span><br><span class="line">countwords.o: countwords.c scanner.h counter.h</span><br></pre></td></tr></table></figure>
+
+<p>加入这些具体的依赖会让 Makefile 不那么通用，但它避免了更通用的 <code>$(OBJS): $(HDRS) $(SRCS)</code> 带来的不必要的编译。对于小程序，更通用的解决方法可能就够了，但对于较大的程序，仔细列举每个 .o 文件的依赖很重要，既能避免大量不必要的重新编译，也能确保当某个 .o 文件所依赖的文件被修改时，它会被重新构建。</p>
+<blockquote>
+<p>Adding these specific dependencies makes the Makefile less generic, but it avoids unnecessary compilation with the more generic <code>$(OBJS): $(HDRS) $(SRCS)</code>. For small programs the more generic solution might be fine, but for larger programs carefully enumerating the dependencies for each .o file is important to avoid a lot of unnecessary re-compilation, and also to ensure that a .o file is rebuilt when a file it depends on is modified.</p>
+</blockquote>
+<p>正因为如此，有一些方法可以为每个 .o 文件（以及每个可执行文件）自动生成完整的依赖集合。对于由许多源文件和头文件构建程序的 Makefile 来说，为了确保文件被修改时能正确编译，使用自动生成依赖的工具几乎是必不可少的。<code>makedepend</code> 就是这样一个工具，它检查 .c 和 .h 文件，并把依赖关系加到 Makefile 的末尾。另一种方法是使用 gcc 的 <code>-MD</code>（make dependencies，生成依赖）预编译选项生成依赖文件（<code>.d</code>），并在 Makefile 中包含这些文件。</p>
+<blockquote>
+<p>Because of this, there are ways to automatically generate a full set of dependencies for each .o file (and for each executable). Using automatic dependency generating tools is almost necessary for Makefiles for building programs from many source and header files in order to ensure correct compilation when a file is modified. One such tool is <code>makedepend</code>, which examines .c and .h files and adds dependencies to the end of a Makefile. Another is to use the gcc <code>-MD</code> (make dependencies) precompiler flag to generate dependency files (<code>.d</code>) and to include these files in the Makefile.</p>
+</blockquote>
+<h3 id="17-5-10-进阶：一个通用的、功能齐全的-Makefile"><a href="#17-5-10-进阶：一个通用的、功能齐全的-Makefile" class="headerlink" title="17.5.10. 进阶：一个通用的、功能齐全的 Makefile"></a>17.5.10. 进阶：一个通用的、功能齐全的 Makefile</h3><p><em>17.5.10. Advanced: A Generic Featureful Makefile</em></p>
+<p>我们最后一个 makefile 示例是一个通用的、通用目的的 makefile，它包含编译 C 程序常用的一组更完整的 Makefile 变量，还演示了一些更高级的语法和功能，具体包括：</p>
+<blockquote>
+<p>Our last makefile example is a generic general-purpose makefile that includes a more complete set of commonly used Makefile variables for compiling C programs, and it also demonstrates some more advanced syntax and features, specifically:</p>
+</blockquote>
+<ul>
+<li>链接库（<code>-l</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>linking in libraries (<code>-l</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>定义链接路径和包含路径（<code>-L</code> 和 <code>-I</code>），以找到不在默认位置的库文件和头文件。</li>
+</ul>
+<blockquote>
+<ul>
+<li>defining link and include paths (<code>-L</code> and <code>-I</code>) for finding library and header files that are not in default locations.</li>
+</ul>
+</blockquote>
+<ul>
+<li>自动生成文件依赖规则（<code>-MD</code>），并把它们包含到 makefile 中（<code>include</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>auto generating file dependency rules (<code>-MD</code>) and including them in a makefile (<code>include</code>).</li>
+</ul>
+</blockquote>
+<p>这也是一个很好的 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/Makefile.txt">Makefile</a> 示例，可以复制并修改后供你自己使用</p>
+<blockquote>
+<p>This is also a good example <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/Makefile.txt">Makefile</a> to copy and edit for your own use</p>
+</blockquote>
+<p>一般来说，C 程序会隐式地链接许多库，但有时还需要用 <code>-l</code> 编译选项显式地链接其他库。<code>gcc</code> 编译器在默认位置查找库代码，但对于不在这些位置的库，需要在 <code>gcc</code> 命令行中显式地写出链接路径。这些路径用 <code>-L</code> 加到 makefile 中。同样，头文件也可能位于非标准的位置，这时 Makefile 需要指定一个指向包含它们的位置的包含文件路径定义。包含路径用 <code>-I</code> 给出。</p>
+<blockquote>
+<p>In general, C programs have many libraries implicitly linked into them, but sometimes other libraries need to be explicitly linked in using the <code>-l</code> compiler flag. The <code>gcc</code> compiler looks in default locations for library code, but for libraries that are not in those locations, a link path needs to be explicitly included in the <code>gcc</code> command line. These are added to the makefile using <code>-L</code>. Similarly, header files also may be located in non-standard locations, and then the Makefile needs to specify an include file path definition to the location containing them. Include paths are given using <code>-I</code>.</p>
+</blockquote>
+<p>最后，对于有多个 <code>.c</code> 和 <code>.h</code> 文件的程序，自动生成依赖是很有用的。在这个例子中，我们使用 <code>gcc</code> 的 <code>-MD</code>（make dependencies）预编译选项（加到 <code>CPPFLAGS</code> 的定义中）。它在编译的预处理阶段（第一个阶段）为每个 <code>.o</code> 文件创建相应的依赖文件（<code>.d</code>）。然后把这些依赖文件包含到 Makefile 中（<code>include</code>）。<code>.d</code> 文件对 <code>.c</code> 文件有隐式的依赖，所以如果修改了一个 <code>.c</code> 文件，它的 <code>.o</code> 和 <code>.d</code> 都会重新生成。此外，<code>-MP</code> 选项通常与 <code>-MD</code> 选项一起使用，它能在头文件被重命名时抑制错误。</p>
+<blockquote>
+<p>Finally, for a program with multiple <code>.c</code> and <code>.h</code> files, it is useful to automatically generate dependencies. In this example we use the <code>gcc</code> <code>-MD</code> (make dependencies) precompiler flag (added to the <code>CPPFLAGS</code> definition). It creates dependency files (<code>.d</code>) associated with each <code>.o</code> file during the preprocessing phase of compilation (the first phase). These dependency files are then included in the Makefile (<code>include</code>). There is an implicit dependency of <code>.d</code> files on <code>.c</code> files, so if a <code>.c</code> file is modified both its <code>.o</code> and <code>.d</code> are regenerated. Also, the <code>-MP</code> flag is typically used with the <code>-MD</code> flag, which suppresses errors if header files are renamed.</p>
+</blockquote>
+<p>下面是得到的 Makefile，它是一个很好的通用 makefile，可以复制并修改后供你自己使用：</p>
+<blockquote>
+<p>Here is the resulting Makefile, which is a good generic makefile to copy and modify for your own use:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br></pre></td><td class="code"><pre><span class="line"># Example Makefile to copy and edit for your own use</span><br><span class="line">#   make: build .d, .o, and executable target</span><br><span class="line">#   make clean: remove built files</span><br><span class="line"></span><br><span class="line"># define compiler</span><br><span class="line">CC = gcc</span><br><span class="line"></span><br><span class="line"># define compiler flags</span><br><span class="line">CFLAGS = -Wall -g</span><br><span class="line"></span><br><span class="line"># define include paths:</span><br><span class="line">#  define any non-default paths to header files (.h) used by this program</span><br><span class="line">#  (default location, /usr/include/, is searched by gcc last)</span><br><span class="line">INCLUDES =  -I../includes -I.</span><br><span class="line"></span><br><span class="line"># define preprocessor flags</span><br><span class="line"># -MD and -MP flags create dependency files (.d) for all SRCS</span><br><span class="line">CPPFLAGS = -MD -MP $(INCLUDES)</span><br><span class="line"></span><br><span class="line"># library paths</span><br><span class="line">#  define any non-default paths to where libraries used by the program may be</span><br><span class="line">#  (default location, /usr/lib/, is searched by gcc last)</span><br><span class="line">LFLAGS = -L../lib -L/home/newhall/lib</span><br><span class="line"></span><br><span class="line"># define libraries to link into executable</span><br><span class="line">#    -lm: std math library in /usr/lib (named libm.so or libm.a)</span><br><span class="line">#    -lmylib: is a library not in standard location, so -L paths</span><br><span class="line">#             are used to find it (named libmylib.so or libmylib.a)</span><br><span class="line">LIBS = -lm -lmylib</span><br><span class="line"></span><br><span class="line"># set of source files</span><br><span class="line">#  (\ is the line continuation character)</span><br><span class="line">SRCS =  emitter.c init.c lexer.c  symbol.c parser.c ast.c  \</span><br><span class="line">        error.c symbol_table.c codegen.c emitcode.c main.c</span><br><span class="line"></span><br><span class="line"># set of object files</span><br><span class="line">#  obtained from SRCS using suffix replacement rule</span><br><span class="line">OBJS = $(SRCS:.c=.o)</span><br><span class="line"></span><br><span class="line"># executable file name</span><br><span class="line">TARGET = mycc</span><br><span class="line"></span><br><span class="line"># .PHONY tells make that these targets are not file names but</span><br><span class="line">#   the target labels for a set of commands to run when `make [target label]`</span><br><span class="line">#   is invoked (e.g., `make clean` executes a `rm` command)</span><br><span class="line">#</span><br><span class="line">.PHONY: clean</span><br><span class="line"></span><br><span class="line"># the rest of this is generic and should not need to be edited:</span><br><span class="line">all:    $(TARGET)</span><br><span class="line"></span><br><span class="line">$(TARGET):  $(OBJS)</span><br><span class="line">	$(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) -o $(TARGET) $(OBJS) $(LFLAGS) $(LIBS)</span><br><span class="line"></span><br><span class="line"># just use make&#x27;s built-in rule (.c.o:) to build .o from .c files!</span><br><span class="line"></span><br><span class="line">clean:</span><br><span class="line">        $(RM) *.o *~ $(TARGET) *.d</span><br><span class="line"></span><br><span class="line"># include the dependency files here</span><br><span class="line">#   this uses a suffix replacement within a macro $(name:string1=string2):</span><br><span class="line">#     (for each word in &#x27;name&#x27; replace &#x27;string1&#x27; with &#x27;string2&#x27;)</span><br><span class="line">#     here we replace the suffix .c with .d for every name in SRCS</span><br><span class="line">#</span><br><span class="line">#   the &#x27;-&#x27; before &#x27;include&#x27; suppresses error messages when a .d file</span><br><span class="line">#     doesn&#x27;t already exist</span><br><span class="line">-include $(SRCS:%.c=%.d)</span><br></pre></td></tr></table></figure>
+
+<p><strong><code>INCLUDES</code></strong> 变量定义了搜索路径，用来查找把 <code>.c</code> 编译成 <code>.o</code> 时需要的 <code>.h</code> 文件。只有当 <code>.h</code> 文件不在当前工作目录中、也不在 <code>gcc</code> 默认检查的位置时，才需要指定这个路径。</p>
+<blockquote>
+<p>The <strong><code>INCLUDES</code></strong> variable defines paths to search to find <code>.h</code> files that are needed to compile <code>.c</code> files to <code>.o</code> for any <code>.h</code>. The path only needs to be specified if <code>.h</code> files are not in the current working directory or in locations that <code>gcc</code> checks by default.</p>
+</blockquote>
+<p>在编译的链接阶段，编译器链接数学库 <code>-lm</code> 以及由 <strong><code>LIBS</code></strong> 变量定义的本地库 <code>-lmylib</code>，它依据 <strong><code>LFLAGS</code></strong> 变量中指定的搜索路径定义找到这个库。只有在库文件不在 <code>gcc</code> 默认自动搜索的位置时，才需要指定路径。</p>
+<blockquote>
+<p>During the linking phase of compilation, the compiler links the math library <code>-lm</code> and a local library <code>-lmylib</code> defined by the <strong><code>LIBS</code></strong> variable that it finds given the library path definitions in the <strong><code>LFLAGS</code></strong> variable specifying paths to search. The path only needs to be specified in cases where the library file is not in locations that <code>gcc</code> automatically searches by default.</p>
+</blockquote>
+<p>使用这个 makefile 运行 <code>make</code>，会先为每个 <code>.c</code> 文件生成 <code>.d</code> 文件，因为我们把 <code>CPPFLAGS</code> 定义为包含 **<code>-MD</code>**，即生成依赖文件。如果你运行 <code>ls</code>，就会看到这些 <code>.d</code> 文件：</p>
+<blockquote>
+<p>Running <code>make</code> using this makefile will first generate <code>.d</code> files for each <code>.c</code> file because we define <code>CPPFLAGS</code> to have <strong><code>-MD</code></strong>, which means make dependency files. If you run <code>ls</code> you will see these <code>.d</code> files:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">$ make</span><br><span class="line">$ ls</span><br><span class="line">Makefile ast.c ast.d ast.o codegen.c codegen.d codegen.o ...</span><br></pre></td></tr></table></figure>
+
+<p>依赖文件在 Makefile 的最后一行被包含进来：</p>
+<blockquote>
+<p>The dependency files are included in the Makefile in the last line:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-include $(SRCS:%.c=%d)</span><br></pre></td></tr></table></figure>
+
+<p>这里使用了一个后缀替换规则（<code>SRC:%.c=%d</code>）来指定包含每一个 <code>.d</code> 文件，<code>include</code> 前面的 <code>-</code> 在 <code>.d</code> 文件尚不存在时抑制错误信息。更多细节参见 microHOWTO 上的<a target="_blank" rel="noopener" href="http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html">自动生成 makefile 依赖</a>。</p>
+<blockquote>
+<p>This uses a suffix replacement rule (<code>SRC:%.c=%d</code>) to specify including every <code>.d</code> file, and the <code>-</code> before <code>include</code> suppresses error messages if the <code>.d</code> file doesn’t already exist. For more details, see <a target="_blank" rel="noopener" href="http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html">automatically generate makefile dependencies</a> from microHOWTO.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 少了一个点</p><p>上一行代码中的 <code>$(SRCS:%.c=%d)</code> 应为 <code>$(SRCS:%.c=%.d)</code>。按原写法，<code>myprog.c</code> 会被替换成 <code>myprogd</code> 而不是 <code>myprog.d</code>，于是生成的依赖文件永远不会被包含进来（而且由于前面有 <code>-</code>，这个错误不会有任何提示）。译者用 GNU Make 验证：<code>SRCS = myprog.c util.c</code> 时，<code>$(SRCS:%.c=%d)</code> 展开为 <code>myprogd utild</code>，<code>$(SRCS:%.c=%.d)</code> 才展开为 <code>myprog.d util.d</code>。</p>
+</div>
+<p>这个 Makefile 还使用了 make 的内置规则来从 <code>.c</code> 文件构建 <code>.o</code> 文件：</p>
+<blockquote>
+<p>This Makefile also uses make’s built-in rule to build <code>.o</code> files from <code>.c</code> files:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">.c.o:</span><br><span class="line">    $(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) -c $&lt;  -o $@</span><br></pre></td></tr></table></figure>
+
+<p>由于我们把 <code>CPPFLAGS</code> 设为包含 <code>INCLUDES</code> 以及创建 <code>.d</code> 依赖文件的命令选项，所以可以使用内置规则。</p>
+<blockquote>
+<p>Because we set <code>CPPFLAGS</code> to include the <code>INCLUDES</code> as well as the command options to create the <code>.d</code> dependency files, we can use the built-in rule.</p>
+</blockquote>
+<p>如果我们没有把 <code>INCLUDES</code> 加到 <code>CPPFLAGS</code> 中，就可以在 Makefile 中用我们自己的规则覆盖内置规则（有时确实需要像这样覆盖内置命令，但这里并不是这种情况）：</p>
+<blockquote>
+<p>If we didn’t add <code>INCLUDES</code> to <code>CPPFLAGS</code>, then we could override the built-in rule in the Makefile with our own (sometimes it is necessary to override a built-in command like this, but this is not an example where it is):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">...</span><br><span class="line">INCLUDES = -I../includes/ -I.</span><br><span class="line">CPPFLAGS = -MD -MP</span><br><span class="line">...</span><br><span class="line"># override built-in command with our version:</span><br><span class="line">.c.o:</span><br><span class="line">        $(CC) $(CPPFLAGS) $(CFLAGS) $(INCLUDES) -c $&lt;  -o $@</span><br></pre></td></tr></table></figure>
+
+<h3 id="17-5-11-进阶：Makefile-生成器"><a href="#17-5-11-进阶：Makefile-生成器" class="headerlink" title="17.5.11. 进阶：Makefile 生成器"></a>17.5.11. 进阶：Makefile 生成器</h3><p><em>17.5.11. Advanced: Makefile Generators</em></p>
+<p>对于非常大的程序，尤其是可能安装在不同系统上的软件，使用一个为特定系统生成 Makefile 的程序，会让管理不同的构建目标容易得多。GNU Automake（GNU Autotools 库的一部分）和 CMake 是 makefile 生成程序的两个例子。两者都从配置文件中读取用户的规格说明，在特定系统上查找库并建立依赖关系，然后为该系统自动生成 Makefile。我们在这里不讨论它们中的任何一个，但我们的参考资料一节中有指向它们的更多信息的链接。</p>
+<blockquote>
+<p>For very large programs, and particularly for software that may be installed on different systems, using a program that generates a Makefile for a particular system makes managing different build targets considerably easier. GNU Automake (part of GNU Autotools library) and CMake are two examples of makefile generating programs. Both take user-specifications in a config file to find libraries and create dependencies on specific systems and auto generate Makefiles for that system. We don’t discuss either here, but our references section has links to more information about both.</p>
+</blockquote>
+<h3 id="17-5-12-参考资料"><a href="#17-5-12-参考资料" class="headerlink" title="17.5.12. 参考资料"></a>17.5.12. 参考资料</h3><p><em>17.5.12. References</em></p>
+<p>下面是使用 make 和编写 makefile 的几个参考资料：</p>
+<blockquote>
+<p>Here are a few references for using make and writing makefiles:</p>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/">GNU Make 手册</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/make/manual/">the GNU Make Manual</a> from gnu.org.</li>
+</ul>
+</blockquote>
+<ul>
+<li>microHOWTO 上的<a target="_blank" rel="noopener" href="http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html">自动生成 makefile 依赖</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="http://www.microhowto.info/howto/automatically_generate_makefile_dependencies.html">automatically generate makefile dependencies</a> from microHOWTO</li>
+</ul>
+</blockquote>
+<ul>
+<li>Aniket Bhattacharyea 的<a target="_blank" rel="noopener" href="https://earthly.dev/blog/make-flags/">理解和使用 Makefile 选项</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://earthly.dev/blog/make-flags/">Understanding and Using Makefile flags</a> by Aniket Bhattacharyea</li>
+</ul>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/automake/">GNU Automake</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/automake/">GNU Automake</a> from gnu.org.</li>
+</ul>
+</blockquote>
+<ul>
+<li>cmake.org 上的 <a target="_blank" rel="noopener" href="https://cmake.org/">CMake</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cmake.org/">CMake</a> from cmake.org.</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.4-editors.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17.4. Unix 编辑器</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.6-grep.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.6. 搜索：grep 与 find</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-1-%E5%85%B3%E4%BA%8E-make"><span class="toc-text">17.5.1. 关于 make</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-2-%E4%BD%BF%E7%94%A8-make"><span class="toc-text">17.5.2. 使用 make</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-3-%E5%88%9B%E5%BB%BA-Makefile"><span class="toc-text">17.5.3. 创建 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-4-%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84-Makefile"><span class="toc-text">17.5.4. 一个简单的 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-5-%E7%94%A8%E4%BA%8E%E5%A4%9A%E4%B8%AA%E6%BA%90%E6%96%87%E4%BB%B6%E7%9A%84-Makefile"><span class="toc-text">17.5.5. 用于多个源文件的 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-6-make-%E9%94%99%E8%AF%AF"><span class="toc-text">17.5.6. make 错误</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-7-%E5%B9%B6%E8%A1%8C-make"><span class="toc-text">17.5.7. 并行 make</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-8-%E8%BF%9B%E9%98%B6%EF%BC%9A%E4%B8%80%E4%B8%AA%E9%80%9A%E7%94%A8%E7%9A%84%E7%AE%80%E5%8D%95-Makefile"><span class="toc-text">17.5.8. 进阶：一个通用的简单 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-9-%E8%BF%9B%E9%98%B6%EF%BC%9A%E4%B8%80%E4%B8%AA%E7%94%A8%E4%BA%8E%E5%A4%9A%E4%B8%AA%E6%96%87%E4%BB%B6%E7%9A%84%E9%80%9A%E7%94%A8-Makefile"><span class="toc-text">17.5.9. 进阶：一个用于多个文件的通用 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-10-%E8%BF%9B%E9%98%B6%EF%BC%9A%E4%B8%80%E4%B8%AA%E9%80%9A%E7%94%A8%E7%9A%84%E3%80%81%E5%8A%9F%E8%83%BD%E9%BD%90%E5%85%A8%E7%9A%84-Makefile"><span class="toc-text">17.5.10. 进阶：一个通用的、功能齐全的 Makefile</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-11-%E8%BF%9B%E9%98%B6%EF%BC%9AMakefile-%E7%94%9F%E6%88%90%E5%99%A8"><span class="toc-text">17.5.11. 进阶：Makefile 生成器</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#17-5-12-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.5.12. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

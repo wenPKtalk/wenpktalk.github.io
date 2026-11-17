@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>9.4.3. 汇编中的循环 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C9-ARM64&#x2F;loops.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  9.4.3. Loops in Assembly 与 if 语句一样，">
+<meta property="og:type" content="website">
+<meta property="og:title" content="9.4.3. 汇编中的循环 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C9-ARM64/9.4.3-loops.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C9-ARM64&#x2F;loops.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  9.4.3. Loops in Assembly 与 if 语句一样，">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:48.021Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:48.021Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html" class="current" aria-current="page">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>9. ARM 汇编</span>
+      </nav>
+      <span class="book-position">第 110 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">9.4.3. 汇编中的循环</h1>
+  
+  
+    <p class="article-meta"><span>约 14 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C9-ARM64/loops.html">https://diveintosystems.org/book/C9-ARM64/loops.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>9.4.3. Loops in Assembly</em></p>
+<p>与 <code>if</code> 语句一样，汇编中的循环也是用分支指令实现的。不过，循环能让指令根据所求条件的结果被<em>重复执行</em>。</p>
+<blockquote>
+<p>Like <code>if</code> statements, loops in assembly are also implemented using branch instructions. However, loops enable instructions to be <em>revisited</em> based on the result of an evaluated condition.</p>
+</blockquote>
+<p>下面例子中的 <code>sumUp</code> 函数把从 1 到用户指定的整数 <em>n</em> 之间的所有正整数加起来。这段代码是有意写得不够优化的，以便演示 C 中的 <code>while</code> 循环。</p>
+<blockquote>
+<p>The <code>sumUp</code> function in the following example sums up all the positive integers from 1 to a user-defined integer <em>n</em>. This code is intentionally written suboptimally to illustrate a <code>while</code> loop in C.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">int sumUp(int n) &#123;</span><br><span class="line">    //initialize total and i</span><br><span class="line">    int total = 0;</span><br><span class="line">    int i = 1;</span><br><span class="line"></span><br><span class="line">    while (i &lt;= n) &#123;  //while i is less than or equal to n</span><br><span class="line">        total += i;   //add i to total</span><br><span class="line">        i++;          //increment i by 1</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>编译这段代码并用 GDB 反汇编，得到如下汇编代码：</p>
+<blockquote>
+<p>Compiling this code and disassembling it using GDB yields the following assembly code:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Dump of assembler code for function sumUp:</span><br><span class="line">0x0724 &lt;+0&gt;:   sub   sp, sp, #0x20</span><br><span class="line">0x0728 &lt;+4&gt;:   str   w0, [sp, #12]</span><br><span class="line">0x072c &lt;+8&gt;:   str   wzr, [sp, #24]</span><br><span class="line">0x0730 &lt;+12&gt;:  mov   w0, #0x1</span><br><span class="line">0x0734 &lt;+16&gt;:  str   w0, [sp, #28]</span><br><span class="line">0x0738 &lt;+20&gt;:  b     0x758 &lt;sumUp+52&gt;</span><br><span class="line">0x073c &lt;+24&gt;:  ldr   w1, [sp, #24]</span><br><span class="line">0x0740 &lt;+28&gt;:  ldr   w0, [sp, #28]</span><br><span class="line">0x0744 &lt;+32&gt;:  add   w0, w1, w0</span><br><span class="line">0x0748 &lt;+36&gt;:  str   w0, [sp, #24]</span><br><span class="line">0x074c &lt;+40&gt;:  ldr   w0, [sp, #28]</span><br><span class="line">0x0750 &lt;+44&gt;:  add   w0, w0, #0x1</span><br><span class="line">0x0754 &lt;+48&gt;:  str   w0, [sp, #28]</span><br><span class="line">0x0758 &lt;+52&gt;:  ldr   w1, [sp, #28]</span><br><span class="line">0x075c &lt;+56&gt;:  ldr   w0, [sp, #12]</span><br><span class="line">0x0760 &lt;+60&gt;:  cmp   w1, w0</span><br><span class="line">0x0764 &lt;+64&gt;:  b.le  0x73c &lt;sumUp+24&gt;</span><br><span class="line">0x0768 &lt;+68&gt;:  ldr   w0, [sp, #24]</span><br><span class="line">0x076c &lt;+72&gt;:  add   sp, sp, #0x20</span><br><span class="line">0x0770 &lt;+76&gt;:  ret</span><br></pre></td></tr></table></figure>
+
+<p>同样，在这个例子中我们不会明确地画出栈。不过，我们鼓励读者自己把栈画出来。</p>
+<blockquote>
+<p>Again, we will not draw out the stack explicitly in this example. However, we encourage readers to draw the stack out themselves.</p>
+</blockquote>
+<h4 id="前五条指令"><a href="#前五条指令" class="headerlink" title="前五条指令"></a>前五条指令</h4><p><em>The First Five Instructions</em></p>
+<p>这个函数的前五条指令为函数的执行设置好栈，并存放一些临时值：</p>
+<blockquote>
+<p>The first five instructions of this function set the stack up for function execution and store some temporary values:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">0x0724 &lt;+0&gt;:  sub  sp, sp, #0x20   //grow stack by 32 bytes (new stack frame)</span><br><span class="line">0x0728 &lt;+4&gt;:  str  w0, [sp, #12]   //store n at sp+12 (n)</span><br><span class="line">0x072c &lt;+8&gt;:  str  wzr, [sp, #24]  //store 0 at sp+24 (total)</span><br><span class="line">0x0730 &lt;+12&gt;: mov  w0, #0x1        //w0 = 1</span><br><span class="line">0x0734 &lt;+16&gt;: str  w0, [sp, #28]   //store 1 at sp+28 (i)</span><br></pre></td></tr></table></figure>
+
+<p>具体来说，它们：</p>
+<blockquote>
+<p>Specifically, they:</p>
+</blockquote>
+<ul>
+<li>让调用栈增长 32 字节，标出新的栈帧。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Grow the call stack by 32 bytes, marking the new frame.</li>
+</ul>
+</blockquote>
+<ul>
+<li>把第一个参数（<code>n</code>）存到栈位置 <code>sp + 12</code> 处。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Store the first parameter (<code>n</code>) at stack location <code>sp + 12</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>把值 0 存到栈位置 <code>sp + 24</code> 处，表示 <code>total</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Store the value 0 at stack location <code>sp + 24</code>, indicating <code>total</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>把值 1 复制到寄存器 <code>w0</code> 中。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Copy the value 1 into register <code>w0</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>把值 1 存到栈位置 <code>sp + 28</code> 处，表示 <code>i</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>Store the value 1 at stack location <code>sp + 28</code>, indicating <code>i</code>.</li>
+</ul>
+</blockquote>
+<p>回想一下，栈上的位置存放的是函数中的<em>临时变量</em>。为简单起见，我们把 <code>sp + 24</code> 标记的位置称为 <code>total</code>，把 <code>sp + 28</code> 称为 <code>i</code>。<code>sumUp</code> 的输入参数（<code>n</code>）位于栈地址 <code>sp + 12</code> 处。尽管临时变量被放在栈上，但要记住，在第一条指令（<code>sub sp, sp, #0x20</code>）执行之后，栈指针就没有再改变过。</p>
+<blockquote>
+<p>Recall that stack locations store <em>temporary variables</em> in a function. For simplicity we will refer to the location marked by <code>sp + 24</code> as <code>total</code> and <code>sp + 28</code> as <code>i</code>. The input parameter to <code>sumUp</code> (<code>n</code>) is located at stack address <code>sp + 12</code>. Despite the placement of temporary variables on the stack, keep in mind that the stack pointer has not changed after the execution of the first instruction (<code>sub sp, sp, #0x20</code>).</p>
+</blockquote>
+<h4 id="循环的核心"><a href="#循环的核心" class="headerlink" title="循环的核心"></a>循环的核心</h4><p><em>The Heart of the Loop</em></p>
+<p><code>sumUp</code> 函数中接下来的 12 条指令是这个循环的核心：</p>
+<blockquote>
+<p>The next 12 instructions in the <code>sumUp</code> function represent the heart of the loop:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">0x0738 &lt;+20&gt;: b     0x758 &lt;sumUp+52&gt;  // goto &lt;sumUp+52&gt;</span><br><span class="line">0x073c &lt;+24&gt;: ldr   w1, [sp, #24]     // w1 = total</span><br><span class="line">0x0740 &lt;+28&gt;: ldr   w0, [sp, #28]     // w0 = i</span><br><span class="line">0x0744 &lt;+32&gt;: add   w0, w1, w0        // w0 =  i + total</span><br><span class="line">0x0748 &lt;+36&gt;: str   w0, [sp, #24]     // store (total + i) in total</span><br><span class="line">0x074c &lt;+40&gt;: ldr   w0, [sp, #28]     // w0 = i</span><br><span class="line">0x0750 &lt;+44&gt;: add   w0, w0, #0x1      // w0 = i + 1</span><br><span class="line">0x0754 &lt;+48&gt;: str   w0, [sp, #28]     // store (i+1) in i (i.e. i++)</span><br><span class="line">0x0758 &lt;+52&gt;: ldr   w1, [sp, #28]     // w1 = i</span><br><span class="line">0x075c &lt;+56&gt;: ldr   w0, [sp, #12]     // w0 = n</span><br><span class="line">0x0760 &lt;+60&gt;: cmp   w1, w0            // compare i and n</span><br><span class="line">0x0764 &lt;+64&gt;: b.le  0x73c &lt;sumUp+24&gt;  // if (i &lt;= n) goto &lt;sumUp+24&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>第一条指令是直接跳转到 <code>&lt;sumUp+52&gt;</code>，它把程序计数器寄存器（<code>pc</code>）设为地址 0x758。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The first instruction is a direct jump to <code>&lt;sumUp+52&gt;</code>, which sets the program counter register (<code>pc</code>) to address 0x758.</li>
+</ul>
+</blockquote>
+<ul>
+<li>接下来执行的两条指令（位于 <code>&lt;sumUp+52&gt;</code> 和 <code>&lt;sumUp+56&gt;</code>）把 <code>i</code> 和 <code>n</code> 分别加载到寄存器 <code>w1</code> 和 <code>w0</code> 中。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The next two instructions that execute (at <code>&lt;sumUp+52&gt;</code> and <code>&lt;sumUp+56&gt;</code>) load <code>i</code> and <code>n</code> into registers <code>w1</code> and <code>w0</code>, respectively.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+60&gt;</code> 处的 <code>cmp</code> 指令比较 <code>i</code> 和 <code>n</code>，设置相应的条件标志。程序计数器 <code>pc</code> 前进到下一条指令，即地址 0x764。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>cmp</code> instruction at <code>&lt;sumUp+60&gt;</code> compares <code>i</code> and <code>n</code>, setting the appropriate condition flags. The program counter <code>pc</code> advances to the next instruction, or address 0x764.</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果 <code>i</code> 小于或等于 <code>n</code>，<code>&lt;sumUp+64&gt;</code> 处的 <code>b.le</code> 指令就把 <code>pc</code> 寄存器替换为地址 0x73c。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>b.le</code> instruction at <code>&lt;sumUp+64&gt;</code> replaces the <code>pc</code> register with address 0x73c if <code>i</code> is less than or equal to <code>n</code>.</li>
+</ul>
+</blockquote>
+<p>如果走了分支（也就是说，如果 <code>i &lt;= n</code>），程序的执行跳转到 <code>&lt;sumUp+24&gt;</code>，并执行下面的指令：</p>
+<blockquote>
+<p>If the branch is taken (that is, if <code>i &lt;= n</code>), program execution jumps to <code>&lt;sumUp+24&gt;</code> and the following instructions execute:</p>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+24&gt;</code> 和 <code>&lt;sumUp+28&gt;</code> 处的 <code>ldr</code> 指令把 <code>total</code> 和 <code>i</code> 分别加载到寄存器 <code>w1</code> 和 <code>w0</code> 中。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>ldr</code> instructions at <code>&lt;sumUp+24&gt;</code> and <code>&lt;sumUp+28&gt;</code> load <code>total</code> and <code>i</code> into registers <code>w1</code> and <code>w0</code>, respectively.</li>
+</ul>
+</blockquote>
+<ul>
+<li>然后，<code>&lt;sumUp+32&gt;</code> 处的 <code>add</code> 指令把 <code>total</code> 加到 <code>i</code> 上（即 <code>i + total</code>），并把结果存入 <code>w0</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>add</code> instruction at <code>&lt;sumUp+32&gt;</code> then adds <code>total</code> to <code>i</code> (i.e., <code>i + total</code>) and stores the result in <code>w0</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>然后，<code>&lt;sumUp+36&gt;</code> 处的 <code>str</code> 指令用寄存器 <code>w0</code> 中的值更新 <code>total</code>（即 <code>total = total + i</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>str</code> instruction at <code>&lt;sumUp+36&gt;</code> then updates <code>total</code> with the value in register <code>w0</code> (i.e., <code>total = total + i</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+40&gt;</code> 处的 <code>ldr</code> 指令把 <code>i</code> 加载到寄存器 <code>w0</code> 中。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>ldr</code> instruction at <code>&lt;sumUp+40&gt;</code> loads <code>i</code> into register <code>w0</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+44&gt;</code> 处的 <code>add</code> 指令把 <code>i</code> 加 1，并把结果存入寄存器 <code>w0</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>add</code> instruction at <code>&lt;sumUp+44&gt;</code> adds 1 to <code>i</code> and stores the result in register <code>w0</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+48&gt;</code> 处的 <code>str</code> 指令用寄存器 <code>w0</code> 中存放的值更新 <code>i</code>（即 <code>i = i + 1</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>str</code> instruction at <code>&lt;sumUp+48&gt;</code> updates <code>i</code> with the value stored in register <code>w0</code> (i.e., <code>i = i + 1</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+52&gt;</code> 和 <code>&lt;sumUp+56&gt;</code> 处的 <code>ldr</code> 指令把 <code>i</code> 和 <code>n</code> 分别加载到寄存器 <code>w1</code> 和 <code>w0</code> 中。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>ldr</code> instructions at <code>&lt;sumUp+52&gt;</code> and <code>&lt;sumUp+56&gt;</code> load <code>i</code> and <code>n</code> into registers <code>w1</code> and <code>w0</code>, respectively.</li>
+</ul>
+</blockquote>
+<ul>
+<li><code>&lt;sumUp+60&gt;</code> 处的 <code>cmp</code> 指令比较 <code>i</code> 和 <code>n</code>，并设置相应的条件码标志。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>cmp</code> instruction at <code>&lt;sumUp+60&gt;</code> compares <code>i</code> to <code>n</code> and sets the appropriate condition code flags.</li>
+</ul>
+</blockquote>
+<ul>
+<li>接着执行 <code>b.le</code> 指令。如果 <code>i</code> 小于或等于 <code>n</code>，程序的执行跳回 <code>&lt;sumUp+24&gt;</code>，<code>pc</code> 被设为 0x73c，<code>&lt;sumUp+24&gt;</code> 到 <code>&lt;sumUp+64&gt;</code> 之间的指令再次执行。否则，寄存器 <code>pc</code> 被设为顺序中下一条指令的地址，即 0x768（<code>&lt;sumUp+68&gt;</code>）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The <code>b.le</code> instruction then executes. If <code>i</code> is less than or equal to <code>n</code>, program execution jumps back to <code>&lt;sumUp+24&gt;</code>, <code>pc</code> is set to 0x73c, and the instructions between <code>&lt;sumUp+24&gt;</code> and <code>&lt;sumUp+64&gt;</code> repeat execution. Otherwise, register <code>pc</code> is set to the address of the next instruction in sequence, or 0x768 (<code>&lt;sumUp+68&gt;</code>).</li>
+</ul>
+</blockquote>
+<p>如果<em>没有</em>走分支（即 <code>i</code> 大于 <code>n</code>），就执行下面的指令：</p>
+<blockquote>
+<p>If the branch is <em>not</em> taken (i.e., <code>i</code> is greater than <code>n</code>), the following instructions execute:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">0x0768 &lt;+68&gt;:  ldr   w0, [sp, #24]   // w0 = total</span><br><span class="line">0x076c &lt;+72&gt;:  add   sp, sp, #0x20   // restore stack</span><br><span class="line">0x0770 &lt;+76&gt;:  ret                   // return w0 (total)</span><br></pre></td></tr></table></figure>
+
+<p>这些指令把 <code>total</code> 复制到返回寄存器 <code>w0</code>，通过收缩 <code>sp</code> 恢复调用栈，然后退出函数。因此，函数退出时返回 <code>total</code>。</p>
+<blockquote>
+<p>These instructions copy <code>total</code> to the return register <code>w0</code>, restore the call stack by shrinking <code>sp</code>, and exit the function. Thus, the function returns <code>total</code> upon exit.</p>
+</blockquote>
+<p><a href="9.4.3-loops.html">表 1</a> 并排展示了 <code>sumUp</code> 函数的汇编形式和 C 的 <code>goto</code> 形式：</p>
+<blockquote>
+<p><a href="9.4.3-loops.html">Table 1</a> shows the assembly and C <code>goto</code> forms of the <code>sumUp</code> function side by side:</p>
+</blockquote>
+<p><strong>表 1.</strong> 把 <code>sumUp()</code> 翻译成 goto 形式的 C 代码</p>
+<p><em>Table 1. Translating <code>sumUp()</code> into goto C form.</em></p>
+<p><strong>汇编</strong></p>
+<blockquote>
+<p><strong>Assembly</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">&lt;sumUp&gt;:</span><br><span class="line">  &lt;+0&gt;:   sub   sp, sp, #0x20</span><br><span class="line">  &lt;+4&gt;:   str   w0, [sp, #12]</span><br><span class="line">  &lt;+8&gt;:   str   wzr, [sp, #24]</span><br><span class="line">  &lt;+12&gt;:  mov   w0, #0x1</span><br><span class="line">  &lt;+16&gt;:  str   w0, [sp, #28]</span><br><span class="line">  &lt;+20&gt;:  b     0x758 &lt;sumUp+52&gt;</span><br><span class="line">  &lt;+24&gt;:  ldr   w1, [sp, #24]</span><br><span class="line">  &lt;+28&gt;:  ldr   w0, [sp, #28]</span><br><span class="line">  &lt;+32&gt;:  add   w0, w1, w0</span><br><span class="line">  &lt;+36&gt;:  str   w0, [sp, #24]</span><br><span class="line">  &lt;+40&gt;:  ldr   w0, [sp, #28]</span><br><span class="line">  &lt;+44&gt;:  add   w0, w0, #0x1</span><br><span class="line">  &lt;+48&gt;:  str   w0, [sp, #28]</span><br><span class="line">  &lt;+52&gt;:  ldr   w1, [sp, #28]</span><br><span class="line">  &lt;+56&gt;:  ldr   w0, [sp, #12]</span><br><span class="line">  &lt;+60&gt;:  cmp   w1, w0</span><br><span class="line">  &lt;+64&gt;:  b.le  0x73c &lt;sumUp+24&gt;</span><br><span class="line">  &lt;+68&gt;:  ldr   w0, [sp, #24]</span><br><span class="line">  &lt;+72&gt;:  add   sp, sp, #0x20</span><br><span class="line">  &lt;+76&gt;:  ret</span><br></pre></td></tr></table></figure>
+
+<p><strong>翻译出的 goto 形式</strong></p>
+<blockquote>
+<p><strong>Translated Goto Form</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">int sumUp(int n) &#123;</span><br><span class="line">    int total = 0;</span><br><span class="line">    int i = 1;</span><br><span class="line">    goto start;</span><br><span class="line">body:</span><br><span class="line">    total += i;</span><br><span class="line">    i += 1;</span><br><span class="line">start:</span><br><span class="line">    if (i &lt;= n) &#123;</span><br><span class="line">        goto body;</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上面的代码也等价于下面这段不含 <code>goto</code> 语句的 C 代码：</p>
+<blockquote>
+<p>The preceding code is also equivalent to the following C code without <code>goto</code> statements:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int sumUp(int n) &#123;</span><br><span class="line">    int total = 0;</span><br><span class="line">    int i = 1;</span><br><span class="line">    while (i &lt;= n) &#123;</span><br><span class="line">        total += i;</span><br><span class="line">        i += 1;</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="汇编中的-for-循环"><a href="#汇编中的-for-循环" class="headerlink" title="汇编中的 for 循环"></a>汇编中的 for 循环</h4><p><em>for Loops in Assembly</em></p>
+<p><code>sumUp</code> 函数中的主循环也可以写成 <code>for</code> 循环：</p>
+<blockquote>
+<p>The primary loop in the <code>sumUp</code> function can also be written as a <code>for</code> loop:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">int sumUp2(int n) &#123;</span><br><span class="line">    int total = 0;             //initialize total to 0</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 1; i &lt;= n; i++) &#123; //initialize i to 1, increment by 1 while i&lt;=n</span><br><span class="line">        total += i;            //updates total by i</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它生成的汇编代码与我们的 <code>while</code> 循环示例完全相同。我们在下面重复这段汇编代码，并为每一行加上英文注释：</p>
+<blockquote>
+<p>This yields identical assembly code to our <code>while</code> loop example. We repeat the assembly code below and annotate each line with its English translation:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">Dump of assembler code for function sumUp2:</span><br><span class="line">0x0774 &lt;+0&gt;:  sub   sp, sp, #0x20     // grow stack by 32 bytes (new frame)</span><br><span class="line">0x0778 &lt;+4&gt;:  str   w0, [sp, #12]     // store n at sp+12 (n)</span><br><span class="line">0x077c &lt;+8&gt;:  str   wzr, [sp, #24]    // store 0 at sp+24 (total)</span><br><span class="line">0x0780 &lt;+12&gt;: mov   w0, #0x1          // w0 = 1</span><br><span class="line">0x0784 &lt;+16&gt;: str   w0, [sp, #28]     // store 1 at sp+28 (i)</span><br><span class="line">0x0788 &lt;+20&gt;: b     0x7a8 &lt;sumUp2+52&gt; // goto &lt;sumUp2+52&gt;</span><br><span class="line">0x078c &lt;+24&gt;: ldr   w1, [sp, #24]     // w1 = total</span><br><span class="line">0x0790 &lt;+28&gt;: ldr   w0, [sp, #28]     // w0 = i</span><br><span class="line">0x0794 &lt;+32&gt;: add   w0, w1, w0        // w0 = total + i</span><br><span class="line">0x0798 &lt;+36&gt;: str   w0, [sp, #24]     // store (total+i) in total</span><br><span class="line">0x079c &lt;+40&gt;: ldr   w0, [sp, #28]     // w0 = i</span><br><span class="line">0x07a0 &lt;+44&gt;: add   w0, w0, #0x1      // w0 = i + 1</span><br><span class="line">0x07a4 &lt;+48&gt;: str   w0, [sp, #28]     // store (i+1) in i (i.e. i += 1)</span><br><span class="line">0x07a8 &lt;+52&gt;: ldr   w1, [sp, #28]     // w1 = i</span><br><span class="line">0x07ac &lt;+56&gt;: ldr   w0, [sp, #12]     // w0 = n</span><br><span class="line">0x07b0 &lt;+60&gt;: cmp   w1, w0            // compare i and n</span><br><span class="line">0x07b4 &lt;+64&gt;: b.le  0x78c &lt;sumUp2+24&gt; // if (i &lt;= n) goto &lt;sumUp2+24&gt;</span><br><span class="line">0x07b8 &lt;+68&gt;: ldr   w0, [sp, #24]     // w0 = total</span><br><span class="line">0x07bc &lt;+72&gt;: add   sp, sp, #0x20     // restore stack</span><br><span class="line">0x07c0 &lt;+76&gt;: ret                     // return w0 (total)</span><br></pre></td></tr></table></figure>
+
+<p>要理解为什么这段代码的 <code>for</code> 循环版本与 <code>while</code> 循环版本生成的汇编完全相同，回想一下，<code>for</code> 循环的表示形式是：</p>
+<blockquote>
+<p>To understand why the <code>for</code> loop version of this code results in identical assembly to the <code>while</code> loop version of the code, recall that the <code>for</code> loop has the following representation:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for ( &lt;initialization&gt;; &lt;boolean expression&gt;; &lt;step&gt; )&#123;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它等价于下面的 <code>while</code> 循环表示：</p>
+<blockquote>
+<p>This is equivalent to the following <code>while</code> loop representation:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;initialization&gt;</span><br><span class="line">while (&lt;boolean expression&gt;) &#123;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">    &lt;step&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于<a href="../C1-C_intro/1.3-conditionals.html">每个 <code>for</code> 循环都可以用 <code>while</code> 循环表示</a>，下面两个 C 程序都是前面那段汇编的等价表示：</p>
+<blockquote>
+<p>Since <a href="../C1-C_intro/1.3-conditionals.html">every <code>for</code> loop can be represented by a <code>while</code> loop</a>, the following two C programs are equivalent representations for the previous assembly:</p>
+</blockquote>
+<p><strong>表 2.</strong> 编写 sumUp 函数的两种等价方式</p>
+<p><em>Table 2. Equivalent ways to write the sumUp function.</em></p>
+<p><strong>for 循环</strong></p>
+<blockquote>
+<p><strong>For loop</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">int sumUp2(int n) &#123;</span><br><span class="line">    int total = 0;</span><br><span class="line">    int i = 1;</span><br><span class="line">    for (i; i &lt;= n; i++) &#123;</span><br><span class="line">        total += i;</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>while 循环</strong></p>
+<blockquote>
+<p><strong>While loop</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">int sumUp(int n)&#123;</span><br><span class="line">    int total = 0;</span><br><span class="line">    int i = 1;</span><br><span class="line">    while (i &lt;= n) &#123;</span><br><span class="line">        total += i;</span><br><span class="line">        i += 1;</span><br><span class="line">    &#125;</span><br><span class="line">    return total;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">9.4.2. 汇编中的 if 语句</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C9-ARM64/9.5-functions.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">9.5. 汇编中的函数</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

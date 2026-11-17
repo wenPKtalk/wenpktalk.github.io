@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>16.3. 条件语句与循环 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix1&#x2F;conditionals.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  16.3. Conditionals and Loop">
+<meta property="og:type" content="website">
+<meta property="og:title" content="16.3. 条件语句与循环 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix1/16.3-conditionals.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix1&#x2F;conditionals.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  16.3. Conditionals and Loop">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.927Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.927Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html" class="current" aria-current="page">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>16. 附录 1：面向 Java 程序员的第 1 章</span>
+      </nav>
+      <span class="book-position">第 165 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">16.3. 条件语句与循环</h1>
+  
+  
+    <p class="article-meta"><span>约 15 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/conditionals.html">https://diveintosystems.org/book/Appendix1/conditionals.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>16.3. Conditionals and Loops</em></p>
+<p><a href="16.3-conditionals.html">表 1</a> 表明，C 和 Java 中 <code>if</code>-<code>else</code> 语句的语法和语义是相同的。</p>
+<blockquote>
+<p><a href="16.3-conditionals.html">Table 1</a> shows that the syntax and semantics of <code>if</code>-<code>else</code> statements in C and Java are the same.</p>
+</blockquote>
+<p><strong>表 1.</strong> Java 与 C 中 if-else 语句的语法比较</p>
+<p><em>Table 1. Syntax Comparison of if-else Statements in Java and C</em></p>
+<p><strong>Java 版本</strong></p>
+<blockquote>
+<p><strong>Java version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">/* Java if-else example */</span><br><span class="line"></span><br><span class="line">import java.util.Scanner;</span><br><span class="line"></span><br><span class="line">class IfExample &#123;</span><br><span class="line"></span><br><span class="line"> public static void  main(String[] args) &#123;</span><br><span class="line"></span><br><span class="line">   int n1, n2;</span><br><span class="line">   Scanner in = new Scanner(System.in);</span><br><span class="line"></span><br><span class="line">   System.out.print(&quot;Enter 1st num: &quot;);</span><br><span class="line">   n1 = in.nextInt();</span><br><span class="line">   System.out.print(&quot;Enter 2nd num: &quot;);</span><br><span class="line">   n2 = in.nextInt();</span><br><span class="line"></span><br><span class="line">   if (n1 &gt; n2) &#123;</span><br><span class="line">     System.out.printf(&quot;%d is biggest\n&quot;,n1);</span><br><span class="line">     n2 = n1;</span><br><span class="line">   &#125; else &#123;</span><br><span class="line">     System.out.printf(&quot;%d is biggest\n&quot;,n2);</span><br><span class="line">     n1 = n2;</span><br><span class="line">   &#125;</span><br><span class="line"> &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>C 版本</strong></p>
+<blockquote>
+<p><strong>C version</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">/* C if-else example */</span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line"></span><br><span class="line">  int n1, n2;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">  printf(&quot;Enter 1st num: &quot;);</span><br><span class="line">  scanf(&quot;%d&quot;, &amp;n1);</span><br><span class="line">  printf(&quot;Enter 2nd num: &quot;);</span><br><span class="line">  scanf(&quot;%d&quot;, &amp;n2);</span><br><span class="line"></span><br><span class="line">  if (n1 &gt; n2) &#123;</span><br><span class="line">    printf(&quot;%d is biggest\n&quot;,n1);</span><br><span class="line">    n2 = n1;</span><br><span class="line">  &#125; else &#123;</span><br><span class="line">    printf(&quot;%d is biggest\n&quot;,n2);</span><br><span class="line">    n1 = n2;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Java 和 C 中 <code>if</code>-<code>else</code> 语句的语法完全相同。在两种语言中，<code>else</code> 部分都是可选的。Java 和 C 也都支持通过串接 <code>if</code> 和 <code>else if</code> 语句来实现多路分支。下面是完整的 C <code>if</code>-<code>else</code> 语法：</p>
+<blockquote>
+<p>The Java and C syntax for <code>if</code>-<code>else</code> statements is identical. In both, the <code>else</code> part is optional. Java and C also support multi-way branching by chaining <code>if</code> and <code>else if</code> statements. The following describes the full <code>if</code>-<code>else</code> C syntax:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line">// a one-way branch:</span><br><span class="line">if ( &lt;boolean expression&gt; ) &#123;</span><br><span class="line">    &lt;true body&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// a two-way branch:</span><br><span class="line">if ( &lt;boolean expression&gt; ) &#123;</span><br><span class="line">    &lt;true body&gt;</span><br><span class="line">&#125;</span><br><span class="line">else &#123;</span><br><span class="line">    &lt;false body&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// a multibranch (chaining if-else if-...-else)</span><br><span class="line">// (has one or more &#x27;else if&#x27; following the first if):</span><br><span class="line">if ( &lt;boolean expression 1&gt; ) &#123;</span><br><span class="line">    &lt;true body&gt;</span><br><span class="line">&#125;</span><br><span class="line">else if ( &lt;boolean expression  2&gt; ) &#123;</span><br><span class="line">    // first expression is false, second is true</span><br><span class="line">    &lt;true 2 body&gt;</span><br><span class="line">&#125;</span><br><span class="line">else if ( &lt;boolean expression  3&gt; ) &#123;</span><br><span class="line">    // first and second expressions are false, third is true</span><br><span class="line">    &lt;true 3 body&gt;</span><br><span class="line">&#125;</span><br><span class="line">// ... more else if&#x27;s ...</span><br><span class="line">else if ( &lt;boolean expression  N&gt; ) &#123;</span><br><span class="line">    // first N-1 expressions are false, Nth is true</span><br><span class="line">    &lt;true N body&gt;</span><br><span class="line">&#125;</span><br><span class="line">else &#123; // the final else part is optional</span><br><span class="line">    // if all previous expressions are false</span><br><span class="line">    &lt;false body&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-3-1-C-中的布尔值"><a href="#16-3-1-C-中的布尔值" class="headerlink" title="16.3.1. C 中的布尔值"></a>16.3.1. C 中的布尔值</h3><p><em>16.3.1. Boolean Values in C</em></p>
+<p>C 没有提供取值为 true 或 false 的布尔类型。取而代之的是，整数值在条件语句中会被当作<strong>真</strong>（true）或<strong>假</strong>（false）来求值。在条件表达式中，任何整数表达式：</p>
+<blockquote>
+<p>C doesn’t provide a Boolean type with true or false values. Instead, integer values evaluate to <strong>true</strong> or <strong>false</strong> when used in conditional statements. When used in conditional expressions, any integer expression that is:</p>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· C 早已有布尔类型</p><p>原书说「C 没有提供布尔类型」，这只对 C89 成立。从 C99 起，C 有内置类型 <code>_Bool</code>，包含 <code>&lt;stdbool.h&gt;</code> 后可以写作 <code>bool</code>、<code>true</code>、<code>false</code>；到了 C23，<code>bool</code>、<code>true</code>、<code>false</code> 直接成为语言关键字，无需包含头文件。条件语句中「0 为假、非 0 为真」的规则不变。<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/types/boolean">cppreference：Boolean type support</a> · <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/23">cppreference：C23</a></p>
+</div>
+<ul>
+<li>为<strong>零（0）</strong>时求值为<strong>假</strong></li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>zero (0)</strong> evaluates to <strong>false</strong></li>
+</ul>
+</blockquote>
+<ul>
+<li>为<strong>非零（任何正值或负值）</strong>时求值为<strong>真</strong></li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>nonzero (any positive or negative value)</strong> evaluates to <strong>true</strong></li>
+</ul>
+</blockquote>
+<p>C 有一组用于布尔表达式的关系运算符和逻辑运算符，它们与 Java 的关系运算符和逻辑运算符完全相同。</p>
+<blockquote>
+<p>C has a set of relational and logical operators for Boolean expressions that are identical to Java’s relational and logical operators.</p>
+</blockquote>
+<p><strong>关系运算符</strong>（relational operator）的操作数类型相同，求值结果为零（假）或非零（真）。关系运算符包括：</p>
+<blockquote>
+<p>The <strong>relational operators</strong> take operand(s) of the same type and evaluate to zero (false) or nonzero (true). The set of relational operators are:</p>
+</blockquote>
+<ul>
+<li>相等（<code>==</code>）和不等（<code>!=</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>equality (<code>==</code>) and inequality (not equal, <code>!=</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>比较运算符：小于（<code>&lt;</code>）、小于等于（<code>&lt;=</code>）、大于（<code>&gt;</code>）和大于等于（<code>&gt;=</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>comparison operators: less than (<code>&lt;</code>), less than or equal (<code>&lt;=</code>), greater than (<code>&gt;</code>), and greater than or equal (<code>&gt;=</code>)</li>
+</ul>
+</blockquote>
+<p>下面是几段展示关系运算符用法的 C 代码片段：</p>
+<blockquote>
+<p>Here are some C code snippets showing examples of relational operators:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">// assume x and y are ints, and have been assigned</span><br><span class="line">// values before this point in the code</span><br><span class="line"></span><br><span class="line">if (y &lt; 0) &#123;</span><br><span class="line">    printf(&quot;y is negative\n&quot;);</span><br><span class="line">&#125; else if (y != 0) &#123;</span><br><span class="line">    printf(&quot;y is positive\n&quot;);</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    printf(&quot;y is zero\n&quot;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// set x and y to the larger of the two values</span><br><span class="line">if (x &gt;= y) &#123;</span><br><span class="line">    y = x;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    x = y;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C 的<strong>逻辑运算符</strong>（logical operator）以整数形式的「布尔」值为操作数，求值结果为零（假）或非零（真）。逻辑运算符包括：</p>
+<blockquote>
+<p>C’s <strong>logical operators</strong> take integer “Boolean” operand(s) and evaluate to either zero (false) or nonzero (true). The set of logical operators are:</p>
+</blockquote>
+<ul>
+<li>逻辑非（<code>!</code>）</li>
+</ul>
+<blockquote>
+<ul>
+<li>logical negation (<code>!</code>)</li>
+</ul>
+</blockquote>
+<ul>
+<li>逻辑与（<code>&amp;&amp;</code>）：遇到第一个为假的表达式就停止求值（短路求值）</li>
+</ul>
+<blockquote>
+<ul>
+<li>logical and (<code>&amp;&amp;</code>): stops evaluating at the first false expression (short-circuiting)</li>
+</ul>
+</blockquote>
+<ul>
+<li>逻辑或（<code>||</code>）：遇到第一个为真的表达式就停止求值（短路求值）</li>
+</ul>
+<blockquote>
+<ul>
+<li>logical or (<code>||</code>): stops evaluating at the first true expression (short-circuiting)</li>
+</ul>
+</blockquote>
+<p>C 的逻辑运算符采用<strong>短路</strong>（short-circuit）求值：一旦逻辑表达式的结果已经确定，就停止求值。例如，如果逻辑与（<code>&amp;&amp;</code>）表达式的第一个操作数为假，那么整个 <code>&amp;&amp;</code> 表达式的结果必然为假。因此第二个操作数的值无需求值，也确实不会被求值。</p>
+<blockquote>
+<p>C’s <strong>short-circuit</strong> logical operator evaluation stops evaluating a logical expression as soon as the result is known. For example, if the first operand to a logical and (<code>&amp;&amp;</code>) expression evaluates to false, the result of the <code>&amp;&amp;</code> expression must be false. As a result, the second operand’s value need not be evaluated, and it is not evaluated.</p>
+</blockquote>
+<p>下面是一个在 C 条件语句中使用逻辑运算符的例子（对于复杂的布尔表达式，最好总是加上括号，使其更易读）：</p>
+<blockquote>
+<p>The following is an example of conditional statements in C that use logical operators (it’s always best to use parentheses around complex Boolean expressions to make them easier to read):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">if ( (x &gt; 10) &amp;&amp; (y &gt;= x) ) &#123;</span><br><span class="line">    printf(&quot;y and x are both larger than 10\n&quot;);</span><br><span class="line">    x = 13;</span><br><span class="line">&#125; else if ( ((-x) == 10) || (y &gt; x) ) &#123;</span><br><span class="line">    printf(&quot;y might be bigger than x\n&quot;);</span><br><span class="line">    x = y * x;</span><br><span class="line">&#125; else &#123;</span><br><span class="line">    printf(&quot;I have no idea what the relationship between x and y is\n&quot;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-3-2-C-中的循环"><a href="#16-3-2-C-中的循环" class="headerlink" title="16.3.2. C 中的循环"></a>16.3.2. C 中的循环</h3><p><em>16.3.2. Loops in C</em></p>
+<p>Java 和 C 都在语言层面支持重复执行一段代码。与 Java 一样，C 支持 <code>for</code>、<code>while</code> 和 <code>do</code>-<code>while</code> 循环。这些循环在两种语言中的语法和语义完全相同。Java 还支持对集合进行迭代，而 C 没有这种功能。</p>
+<blockquote>
+<p>Java and C both have language-level support for repeating a sequence of code. Like Java, C supports <code>for</code>, <code>while</code>, and <code>do</code>-<code>while</code> loops. The syntax and semantics of these are identical in both languages. Java additionally has support for iterating over collections that C does not have.</p>
+</blockquote>
+<h4 id="while-循环"><a href="#while-循环" class="headerlink" title="while 循环"></a>while 循环</h4><p><em>while Loops</em></p>
+<p>C 和 Java 中的 <code>while</code> 循环语法完全相同，行为也一样。<a href="16.3-conditionals.html">表 2</a> 展示了一个带 <code>while</code> 循环的 C 示例程序。</p>
+<blockquote>
+<p>The <code>while</code> loop syntax in C and Java is identical, and the behavior is the same. <a href="16.3-conditionals.html">Table 2</a> shows an example C program with a <code>while</code> loop.</p>
+</blockquote>
+<p><strong>表 2.</strong> C 中的 while 循环语法</p>
+<p><em>Table 2. while Loop Syntax in C</em></p>
+<p><strong>C 的 while 循环示例</strong></p>
+<blockquote>
+<p><strong>C while loop example</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">/* C while loop example */</span><br><span class="line"></span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line"></span><br><span class="line">    int num, val;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Enter a value: &quot;);</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;num);</span><br><span class="line">    // make sure num is not negative</span><br><span class="line">    if (num &lt; 0) &#123;</span><br><span class="line">        num = -num;</span><br><span class="line">    &#125;</span><br><span class="line">    val = 1;</span><br><span class="line">    while (val &lt; num) &#123;</span><br><span class="line">        printf(&quot;%d\n&quot;, val);</span><br><span class="line">        val = val * 2;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>C 中的 <code>while</code> 循环语法与 Java 中的相同，两者的求值方式也一样：</p>
+<blockquote>
+<p>The <code>while</code> loop syntax in C is the same as in Java and both are evaluated in the same way:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">while ( &lt;boolean expression&gt; ) &#123;</span><br><span class="line">    &lt;true body&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>while</code> 循环先检查布尔表达式，如果为真就执行循环体。在前面的示例程序中，<code>val</code> 变量的值会在 <code>while</code> 循环中被反复打印，直到它的值大于 <code>num</code> 变量的值为止。如果用户输入 <code>10</code>，C 和 Java 程序都会打印：</p>
+<blockquote>
+<p>The <code>while</code> loop checks the Boolean expression first and executes the body if true. In the preceding example program, the value of the <code>val</code> variable will be repeatedly printed in the <code>while</code> loop until its value is greater than the value of the <code>num</code> variable. If the user enters <code>10</code>, the C and Java programs will print:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">4</span><br><span class="line">8</span><br></pre></td></tr></table></figure>
+
+<p>Java 和 C 也都有 <code>do</code>-<code>while</code> 循环，它与 <code>while</code> 循环类似，但先执行循环体，再检查条件，只要条件为真就重复执行循环体。也就是说，<code>do</code>-<code>while</code> 循环总会至少执行一次循环体：</p>
+<blockquote>
+<p>Java and C also has a <code>do</code>-<code>while</code> loop that is similar to its <code>while</code> loop, but it executes the loop body first and then checks a condition and repeats executing the loop body for as long as the condition is true. That is, a <code>do</code>-<code>while</code> loop will always execute the loop body at least one time:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">do &#123;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">&#125; while ( &lt;boolean expression&gt; );</span><br></pre></td></tr></table></figure>
+
+<p>想看更多 <code>while</code> 循环的例子，可以试试下面两个程序：</p>
+<blockquote>
+<p>For additional <code>while</code> loop examples, try these two programs:</p>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/whileLoop1.c">whileLoop1.c</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/whileLoop1.c">whileLoop1.c</a></li>
+</ul>
+</blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/whileLoop2.c">whileLoop2.c</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/whileLoop2.c">whileLoop2.c</a></li>
+</ul>
+</blockquote>
+<h4 id="for-循环"><a href="#for-循环" class="headerlink" title="for 循环"></a>for 循环</h4><p><em>for Loops</em></p>
+<p>C 中的 <code>for</code> 循环与 Java 中的 <code>for</code> 循环相同，求值方式也一样。C（和 Java）的 <code>for</code> 循环语法是：</p>
+<blockquote>
+<p>The <code>for</code> loop in C is the same as the <code>for</code> loop in Java, and they are evaluated in the same way. The C (and Java) <code>for</code> loop syntax is:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">for ( &lt;initialization&gt;; &lt;boolean expression&gt;; &lt;step&gt; ) &#123;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><code>for</code> 循环的求值规则是：</p>
+<blockquote>
+<p>The <code>for</code> loop evaluation rules are:</p>
+</blockquote>
+<ol>
+<li>第一次进入循环时，对<em>初始化</em>部分求值一次。</li>
+</ol>
+<blockquote>
+<ol>
+<li>Evaluate <em>initialization</em> one time when first entering the loop.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li>对<em>布尔表达式</em>求值。如果它为 0（假），就跳出 <code>for</code> 循环（即程序不再重复执行循环体语句）。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>Evaluate the <em>boolean expression</em>. If it’s 0 (false), drop out of the <code>for</code> loop (that is, the program is done repeating the loop body statements).</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li>执行循环<em>体</em>中的语句。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>Evaluate the statements inside the loop <em>body</em>.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li>对<em>步进</em>（step）表达式求值。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>Evaluate the <em>step</em> expression.</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li>从第（2）步开始重复。</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>Repeat from step (2).</li>
+</ol>
+</blockquote>
+<p>下面是一个打印 0、1、2 的简单 <code>for</code> 循环示例：</p>
+<blockquote>
+<p>Here’s a simple example <code>for</code> loop to print the values 0, 1, and 2:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">int i;</span><br><span class="line"></span><br><span class="line">for (i = 0; i &lt; 3; i++) &#123;</span><br><span class="line">    printf(&quot;%d\n&quot;, i);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>对上面的循环套用 <code>for</code> 循环的求值规则，会得到如下的动作序列：</p>
+<blockquote>
+<p>Executing the <code>for</code> loop evaluation rules on the preceding loop yields the following sequence of actions:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">(1) eval init: i is set to 0  (i=0)</span><br><span class="line">(2) eval bool expr: i &lt; 3 is true</span><br><span class="line">(3) execute loop body: print the value of i (0)</span><br><span class="line">(4) eval step: i is set to 1  (i++)</span><br><span class="line">(2) eval bool expr: i &lt; 3 is true</span><br><span class="line">(3) execute loop body: print the value of i (1)</span><br><span class="line">(4) eval step: i is set to 2  (i++)</span><br><span class="line">(2) eval bool expr: i &lt; 3 is true</span><br><span class="line">(3) execute loop body: print the value of i (2)</span><br><span class="line">(4) eval step: i is set to 3  (i++)</span><br><span class="line">(2) eval bool expr: i &lt; 3 is false, drop out of the for loop</span><br></pre></td></tr></table></figure>
+
+<p>下面的程序展示了一个更复杂的 <code>for</code> 循环例子（也<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/forLoop2.c">可以下载</a>）。注意，C 虽然支持在 <code>for</code> 循环的<em>初始化</em>和<em>步进</em>部分写一串语句，但最好还是保持简单（这个例子展示了一种更复杂的 <code>for</code> 循环语法，但如果把它简化，把步进语句 <code>j += 10</code> 移到循环体的末尾，只保留一条步进语句 <code>i += 1</code>，这个 <code>for</code> 循环会更容易阅读和理解）。</p>
+<blockquote>
+<p>The following program shows a more complicated <code>for</code> loop example (it’s also <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix1/_attachments/forLoop2.c">available to download</a>). Note that just because C supports <code>for</code> loops with a list of statements for its <em>initialization</em> and <em>step</em> parts, it’s best to keep it simple (this example illustrates a more complicated <code>for</code> loop syntax, but the <code>for</code> loop would be easier to read and understand if it were simplified by moving the <code>j += 10</code> step statement to the end of the loop body and having just a single step statement, <code>i += 1</code>).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">/* An example of a more complex for loop which uses multiple variables.</span><br><span class="line"> * (it is unusual to have for loops with multiple statements in the</span><br><span class="line"> * init and step parts, but C supports it and there are times when it</span><br><span class="line"> * is useful...don&#x27;t go nuts with this just because you can)</span><br><span class="line"> */</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int i, j;</span><br><span class="line"></span><br><span class="line">    for (i=0, j=0; i &lt; 10; i+=1, j+=10) &#123;</span><br><span class="line">        printf(&quot;i+j = %d\n&quot;, i+j);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// the rules for evaluating a for loop are the same no matter how</span><br><span class="line">// simple or complex each part is:</span><br><span class="line">// (1) evaluate the initialization statements once on the first</span><br><span class="line">//     evaluation of the for loop:  i=0 and j=0</span><br><span class="line">// (2) evaluate the boolean condition: i &lt; 10</span><br><span class="line">//     if false (when i is 10), drop out of the for loop</span><br><span class="line">// (3) execute the statements inside the for loop body: printf</span><br><span class="line">// (4) evaluate the step statements:  i += 1, j += 10</span><br><span class="line">// (5) repeat, starting at step (2)</span><br></pre></td></tr></table></figure>
+
+<p>与 Java 一样，在 C 中，<code>for</code> 循环和 <code>while</code> 循环的表达能力是相同的，即任何 <code>while</code> 循环都可以表示为 <code>for</code> 循环，反之亦然。</p>
+<blockquote>
+<p>As in Java, in C <code>for</code> loops and <code>while</code> loops are equivalent in power, meaning that any <code>while</code> loop can be expressed as a <code>for</code> loop, and vice versa.</p>
+</blockquote>
+<p>来看下面这个 C 中的 <code>while</code> 循环：</p>
+<blockquote>
+<p>Consider the following <code>while</code> loop in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int guess = 0;</span><br><span class="line"></span><br><span class="line">while (guess != num) &#123;</span><br><span class="line">    printf(&quot;%d is not the right number\n&quot;, guess);</span><br><span class="line">    printf(&quot;Enter another guess: &quot;);</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;guess);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个循环可以翻译成 C 中等价的 <code>for</code> 循环：</p>
+<blockquote>
+<p>This loop can be translated to an equivalent <code>for</code> loop in C:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">int guess;</span><br><span class="line"></span><br><span class="line">for (guess = 0; guess != num; ) &#123;</span><br><span class="line">    printf(&quot;%d is not the right number\n&quot;, guess);</span><br><span class="line">    printf(&quot;Enter another guess: &quot;);</span><br><span class="line">    scanf(&quot;%d&quot;, &amp;guess);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>由于在 C 中 <code>for</code> 循环和 <code>while</code> 循环的表达能力相同，语言中其实只需要一种循环结构。然而，<code>for</code> 循环更适合表达确定次数的循环（例如遍历一个范围内的值），而 <code>while</code> 循环更适合表达不确定次数的循环（例如一直重复，直到用户输入一个偶数为止）。因此，C（和 Java）把两者都提供给程序员。</p>
+<blockquote>
+<p>Because <code>for</code> and <code>while</code> loops are equally expressive in C, only one looping construct is needed in the language. However, <code>for</code> loops are a more natural language construct for definite loops (like iterating over a range of values), whereas <code>while</code> loops are a more natural language construct for indefinite loops (like repeating until the user enters an even number). As a result, C (and Java) provides both to programmers.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix1/16.2-input_output.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">16.2. 输入/输出（printf 与 scanf）</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix1/16.4-functions.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">16.4. 函数</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-1-C-%E4%B8%AD%E7%9A%84%E5%B8%83%E5%B0%94%E5%80%BC"><span class="toc-text">16.3.1. C 中的布尔值</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#16-3-2-C-%E4%B8%AD%E7%9A%84%E5%BE%AA%E7%8E%AF"><span class="toc-text">16.3.2. C 中的循环</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

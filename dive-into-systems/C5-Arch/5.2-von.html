@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5.2. 冯·诺依曼体系结构 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;von.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.2. The von Neumann Architecture 冯·诺依">
+<meta property="og:type" content="website">
+<meta property="og:title" content="5.2. 冯·诺依曼体系结构 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/5.2-von.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;von.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.2. The von Neumann Architecture 冯·诺依">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonNArch.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonFD.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonES.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonNArch.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html" class="current" aria-current="page">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span>
+      </nav>
+      <span class="book-position">第 59 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">5.2. 冯·诺依曼体系结构</h1>
+  
+  
+    <p class="article-meta"><span>约 18 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C5-Arch/von.html">https://diveintosystems.org/book/C5-Arch/von.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>5.2. The von Neumann Architecture</em></p>
+<p>冯·诺依曼体系结构是大多数现代计算机的基础。本节简要刻画这种体系结构的主要组成部分。</p>
+<blockquote>
+<p>The von Neumann architecture serves as the foundation for most modern computers. In this section, we briefly characterize the architecture’s major components.</p>
+</blockquote>
+<p>冯·诺依曼体系结构（如<a href="5.2-von.html">图 1</a> 所示）由五个主要部件组成：</p>
+<blockquote>
+<p>The von Neumann architecture (depicted in <a href="5.2-von.html">Figure 1</a>) consists of five main components:</p>
+</blockquote>
+<ol>
+<li><strong>处理单元</strong>（processing unit）执行程序指令。</li>
+</ol>
+<blockquote>
+<ol>
+<li>The <strong>processing unit</strong> executes program instructions.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li><strong>控制单元</strong>（control unit）驱动处理单元执行程序指令。处理单元和控制单元一起构成 CPU。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li>The <strong>control unit</strong> drives program instruction execution on the processing unit. Together, the processing and control units make up the CPU.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li><strong>存储单元</strong>（memory unit）存储程序数据和指令。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li>The <strong>memory unit</strong> stores program data and instructions.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li><strong>输入单元</strong>（input unit）把程序数据和指令加载到计算机上，并启动程序的执行。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li>The <strong>input unit(s)</strong> load program data and instructions on the computer and initiate program execution.</li>
+</ol>
+</blockquote>
+<ol start="5">
+<li><strong>输出单元</strong>（output unit）存储或接收程序的结果。</li>
+</ol>
+<blockquote>
+<ol start="5">
+<li>The <strong>output unit(s)</strong> store or receive program results.</li>
+</ol>
+</blockquote>
+<p>各个单元之间由总线连接，单元之间用总线互相发送控制信息和数据信息。<strong>总线</strong>（bus）是在通信端点（值的发送方和接收方）之间传送二进制值的通信通道。例如，连接存储单元和 CPU 的数据总线可以用 32 根并行导线来实现，它们一起传送一个 4 字节的值，每根导线传送 1 位。通常，体系结构有各自独立的总线，用于在单元之间传送数据、内存地址和控制信息。各单元用控制总线发送控制信号，请求其他单元执行某个动作或通知其他单元某个动作；用地址总线向存储单元发送读或写请求的内存地址；用数据总线在单元之间传送数据。</p>
+<blockquote>
+<p>Buses connect the units, and are used by the units to send control and data information to one another. A <strong>bus</strong> is a communication channel that transfers binary values between communication endpoints (the senders and receivers of the values). For example, a data bus that connects the memory unit and the CPU could be implemented as 32 parallel wires that together transfer a 4-byte value, 1-bit transferred on each wire. Typically, architectures have separate buses for sending data, memory addresses, and control between units. The units use the control bus to send control signals that request or notify other units of actions, the address bus to send the memory address of a read or write request to the memory unit, and the data bus to transfer data between units.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/vonNArch.png" alt="the 5 units of the von Neumann architecture are shown as boxes, the units are connected by buses shown as lines running below the boxes to which each box is connected."></p>
+<p><strong>图 1.</strong> 冯·诺依曼体系结构由处理单元、控制单元、存储单元、输入单元和输出单元组成。控制单元和处理单元构成 CPU，CPU 包含 ALU、通用 CPU 寄存器和一些专用寄存器（IR 和 PC）。各单元由总线连接，总线用于单元之间的数据传送和通信。</p>
+<p><em>Figure 1. The von Neumann architecture consists of the processing, control, memory, input, and output units. The control and processing units make up the CPU, which contains the ALU, the general-purpose CPU registers, and some special-purpose registers (IR and PC). The units are connected by buses used for data transfer and communication between the units.</em></p>
+<h3 id="5-2-1-CPU"><a href="#5-2-1-CPU" class="headerlink" title="5.2.1. CPU"></a>5.2.1. CPU</h3><p><em>5.2.1. The CPU</em></p>
+<p>控制单元和处理单元一起实现了 CPU，即计算机中在程序数据上执行程序指令的部分。</p>
+<blockquote>
+<p>The control and processing units together implement the CPU, which is the part of the computer that executes program instructions on program data.</p>
+</blockquote>
+<h3 id="5-2-2-处理单元"><a href="#5-2-2-处理单元" class="headerlink" title="5.2.2. 处理单元"></a>5.2.2. 处理单元</h3><p><em>5.2.2. The Processing Unit</em></p>
+<p>冯·诺依曼机器的<strong>处理单元</strong>由两部分组成。第一部分是<strong>算术逻辑单元</strong>（arithmetic&#x2F;logic unit，ALU），它执行加法、减法和逻辑或等数学运算。现代 ALU 通常能执行大量的算术运算。处理单元的第二部分是一组寄存器。<strong>寄存器</strong>（register）是一种小而快的存储单元，用来存放程序数据以及 ALU 正在执行的指令。关键在于，在冯·诺依曼体系结构中，指令和数据没有区别。从任何意义上讲，指令<em>就是</em>数据。因此，每个寄存器都能存放一个数据字。</p>
+<blockquote>
+<p>The <strong>processing unit</strong> of the von Neumann machine consists of two parts. The first is the <strong>arithmetic&#x2F;logic unit</strong> (ALU), which performs mathematical operations such as addition, subtraction, and logical or, to name a few. Modern ALUs typically perform a large set of arithmetic operations. The second part of the processing unit is a set of registers. A <strong>register</strong> is a small, fast unit of storage used to hold program data and the instructions that are being executed by the ALU. Crucially, there is no distinction between instructions and data in the von Neumann architecture. For all intents and purposes, instructions <em>are</em> data. Each register is therefore capable of holding one data word.</p>
+</blockquote>
+<h3 id="5-2-3-控制单元"><a href="#5-2-3-控制单元" class="headerlink" title="5.2.3. 控制单元"></a>5.2.3. 控制单元</h3><p><em>5.2.3. The Control Unit</em></p>
+<p><strong>控制单元</strong>驱动程序指令的执行：它从存储器中加载指令，并把指令的操作数和操作送入处理单元。控制单元还包含一些存储空间，用于记录执行状态并确定下一步要采取的动作：<strong>程序计数器</strong>（program counter，PC）保存下一条要执行的指令的内存地址，<strong>指令寄存器</strong>（instruction register，IR）存放从存储器中加载的、当前正在执行的指令。</p>
+<blockquote>
+<p>The <strong>control unit</strong> drives the execution of program instructions by loading them from memory and feeding instruction operands and operations through the processing unit. The control unit also includes some storage to keep track of execution state and to determine its next action to take: the <strong>program counter</strong> (PC) keeps the memory address of the next instruction to execute, and the <strong>instruction register</strong> (IR) stores the instruction, loaded from memory, that is currently being executed.</p>
+</blockquote>
+<h3 id="5-2-4-存储单元"><a href="#5-2-4-存储单元" class="headerlink" title="5.2.4. 存储单元"></a>5.2.4. 存储单元</h3><p><em>5.2.4. The Memory Unit</em></p>
+<p>内部存储器是冯·诺依曼体系结构的一项关键创新。它在靠近处理单元的地方提供程序数据存储，大大缩短了执行计算所需的时间。<strong>存储单元</strong>同时存储程序数据和程序指令——存储程序指令是冯·诺依曼体系结构存储程序模型的关键部分。</p>
+<blockquote>
+<p>Internal memory is a key innovation of the von Neumann architecture. It provides program data storage that is close to the processing unit, significantly reducing the amount of time to perform calculations. The <strong>memory unit</strong> stores both program data and program instructions — storing program instructions is a key part of the stored-program model of the von Neumann architecture.</p>
+</blockquote>
+<p>不同系统的存储器大小各不相同。不过，系统的 ISA 限制了它能表示的地址范围。在现代系统中，内存的最小可寻址单位是一个字节（8 位），因此每个地址对应一个字节的唯一存储位置。于是，32 位体系结构通常支持的最大地址空间大小是 2<sup>32</sup>，相当于 4 GB（GiB）的可寻址内存。</p>
+<blockquote>
+<p>The size of memory varies from system to system. However, a system’s ISA limits the range of addresses that it can express. In modern systems, the smallest addressable unit of memory is one byte (8 bits), and thus each address corresponds to a unique memory location for one byte of storage. As a result, 32-bit architectures typically support a maximum address space size of 2<sup>32</sup>, which corresponds to 4 gigabytes (GiB) of addressable memory.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>64 位体系结构理论上可寻址 2<sup>64</sup> 字节，但实际的处理器并没有用满 64 位地址。例如在 x86-64 Linux 上，使用 4 级页表时每个进程的用户空间约为 128 TB（47 位地址），启用 5 级页表后扩大到 64 PB。<a target="_blank" rel="noopener" href="https://www.kernel.org/doc/html/latest/arch/x86/x86_64/mm.html">Linux 内核文档：x86_64 内存映射</a></p>
+</div>
+<p><strong>存储器</strong>（memory）这个术语有时指系统中整个存储层次结构，它可以包括处理单元中的寄存器，也可以包括硬盘驱动器（HDD）或固态硬盘（SSD）这样的辅助存储设备。在<a href="../C11-MemHierarchy/11.0-index.html">存储与存储器层次结构</a>一章中，我们会详细讨论存储器层次结构。目前，我们把「存储器」（或「内存」）与内部的<strong>随机存取存储器</strong>（random access memory，RAM）当作同义词使用，即中央处理器可以访问的存储器。RAM 之所以是随机存取的，是因为所有 RAM 存储位置（地址）都可以被直接访问。把 RAM 想象成一个线性的地址数组会很有帮助，每个地址对应一个字节的内存。</p>
+<blockquote>
+<p>The term <strong>memory</strong> sometimes refers to an entire hierarchy of storage in the system. It can include registers in the processing unit as well as secondary storage devices like hard disk drives (HDD) or solid-state drives (SSD). In the <a href="../C11-MemHierarchy/11.0-index.html">Storage and Memory Hierarchy Chapter</a>, we discuss the memory hierarchy in detail. For now, we use the term “memory” interchangeably with internal <strong>random access memory</strong> (RAM) — memory that can be accessed by the central processing unit. RAM storage is random access because all RAM storage locations (addresses) can be accessed directly. It is useful to think of RAM as a linear array of addresses, where each address corresponds to one byte of memory.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书旁注 · 历史上的字长（Word sizes through history）</p><p><strong>字长</strong>（word size）由 ISA 定义，是处理器作为一个整体来处理的标准数据大小的位数。标准字长多年来几经变化。EDVAC 的字长被提议为 30 位。在 1950 年代，36 位字长很常见。随着 1960 年代 IBM 360 的问世，字长或多或少地标准化了，并开始从 16 位扩展到 32 位，再到今天的 64 位。如果你更仔细地研究 Intel 体系结构，可能会注意到其中一些早期决策的遗迹，因为 32 位和 64 位体系结构都是作为最初 16 位体系结构的扩展而加入的。</p>
+<blockquote>
+<p><strong>Word size</strong>, which is defined by an ISA, is the number of bits of the standard data size that a processor handles as a single unit. The standard word size has fluctuated over the years. For EDVAC, the word size was proposed at 30 bits. In the 1950s, 36-bit word sizes were common. With the innovation of the IBM 360 in the 1960s, word sizes became more or less standardized, and started to expand from 16 bits, to 32 bits, to today’s 64 bits. If you examine the Intel architecture in more detail, you may notice the remnants of some of these old decisions, as 32-bit and 64-bit architectures were added as extensions of the original 16-bit architecture.</p>
+</blockquote>
+</div>
+<h3 id="5-2-5-输入和输出（I-O）单元"><a href="#5-2-5-输入和输出（I-O）单元" class="headerlink" title="5.2.5. 输入和输出（I&#x2F;O）单元"></a>5.2.5. 输入和输出（I&#x2F;O）单元</h3><p><em>5.2.5. The Input and Output (I&#x2F;O) Units</em></p>
+<p>控制单元、处理单元和存储单元构成了计算机的基础，而输入和输出单元使计算机能够与外部世界交互。具体来说，它们提供了把程序的指令和数据加载到存储器中、把数据存储到存储器之外，以及向用户显示结果的机制。</p>
+<blockquote>
+<p>While the control, processing, and memory units form the foundation of the computer, the input and output units enable it to interact with the outside world. In particular, they provide mechanisms for loading a program’s instructions and data into memory, storing its data outside of memory, and displaying its results to users.</p>
+</blockquote>
+<p><strong>输入单元</strong>由一组设备构成，使用户或程序能把外部世界的数据送入计算机。如今最常见的输入设备是键盘和鼠标。摄像头和麦克风也是例子。</p>
+<blockquote>
+<p>The <strong>input unit</strong> consists of the set of devices that enable a user or program to get data from the outside world into the computer. The most common forms of input devices today are the keyboard and mouse. Cameras and microphones are other examples.</p>
+</blockquote>
+<p><strong>输出单元</strong>由一组设备构成，它们把计算结果从计算机传回外部世界，或者把结果存储到内部存储器之外。例如，显示器就是一种常见的输出设备。其他输出设备包括扬声器和触觉反馈装置。</p>
+<blockquote>
+<p>The <strong>output unit</strong> consists of the set of devices that relay results of computation from the computer back to the outside world or that store results outside internal memory. For example, the monitor is a common output device. Other output devices include speakers and haptics.</p>
+</blockquote>
+<p>一些现代设备，例如触摸屏，同时充当输入和输出设备，让用户可以通过同一个设备既输入数据又接收数据。</p>
+<blockquote>
+<p>Some modern devices, such as the touchscreen, act as both input and output, enabling users to both input and receive data from a single unified device.</p>
+</blockquote>
+<p>固态硬盘和硬盘是另一类同时充当输入和输出设备的例子。当它们存储着由操作系统加载到计算机内存中运行的程序可执行文件时，它们充当输入设备；当它们存储着写入了程序结果的文件时，它们充当输出设备。</p>
+<blockquote>
+<p>Solid-state and hard drives are another example of devices that act as both input and output devices. These storage devices act as input devices when they store program executable files that the operating system loads into computer memory to run, and they act as output devices when they store files to which program results are written.</p>
+</blockquote>
+<h3 id="5-2-6-冯·诺依曼机器的运转：执行一个程序"><a href="#5-2-6-冯·诺依曼机器的运转：执行一个程序" class="headerlink" title="5.2.6. 冯·诺依曼机器的运转：执行一个程序"></a>5.2.6. 冯·诺依曼机器的运转：执行一个程序</h3><p><em>5.2.6. The von Neumann Machine in Action: Executing a Program</em></p>
+<p>构成冯·诺依曼体系结构的五个单元协同工作，实现一个由<strong>取指—译码—执行—存储</strong>（fetch-decode-execute-store）组成的动作循环，共同执行程序指令。这个循环从程序的第一条指令开始，不断重复，直到程序退出：</p>
+<blockquote>
+<p>The five units that make up the von Neumann architecture work together to implement a <strong>fetch-decode-execute-store</strong> cycle of actions that together execute program instructions. This cycle starts with a program’s first instruction, and is repeated until the program exits:</p>
+</blockquote>
+<ol>
+<li><strong>控制单元从存储器中<em>取出</em>下一条指令</strong>。控制单元有一个特殊的寄存器——程序计数器（PC），其中存放着下一条要取出的指令的地址。它把这个地址放到<em>地址总线</em>上，并在<em>控制总线</em>上向存储单元发出一个<em>读</em>命令。存储单元随后读取指定地址处存放的字节，并通过<em>数据总线</em>把它们发送给控制单元。指令寄存器（IR）存放从存储单元收到的指令字节。控制单元还会增加 PC 的值，使它存放下一条要取的新指令的地址。</li>
+</ol>
+<blockquote>
+<ol>
+<li><strong>The control unit <em>fetches</em> the next instruction from memory</strong>. The control unit has a special register, the program counter (PC), that contains the address of the next instruction to fetch. It places that address on the <em>address bus</em> and places a <em>read</em> command on the <em>control bus</em> to the memory unit. The memory unit then reads the bytes stored at the specified address and sends them to the control unit on the <em>data bus</em>. The instruction register (IR) stores the bytes of the instruction received from the memory unit. The control unit also increments the PC’s value to store the address of the new next instruction to fetch.</li>
+</ol>
+</blockquote>
+<ol start="2">
+<li><strong>控制单元对存储在 IR 中的指令进行<em>译码</em>（decode）</strong>。它对编码了要执行哪种操作的指令位、以及编码了操作数位置的指令位进行译码。指令位是根据 ISA 对其指令编码的定义来译码的。控制单元还会从操作数所在的位置（CPU 寄存器、存储器，或编码在指令位中）取出数据操作数的值，作为处理单元的输入。</li>
+</ol>
+<blockquote>
+<ol start="2">
+<li><strong>The control unit <em>decodes</em> the instruction stored in the IR</strong>. It decodes the instruction bits that encode which operation to perform and the bits that encode where the operands are located. The instruction bits are decoded based on the ISA’s definition of the encoding of its instructions. The control unit also fetches the data operand values from their locations (from CPU registers, memory, or encoded in the instruction bits), as input to the processing unit.</li>
+</ol>
+</blockquote>
+<ol start="3">
+<li><strong>处理单元<em>执行</em>指令</strong>。ALU 在指令的数据操作数上执行指令的操作。</li>
+</ol>
+<blockquote>
+<ol start="3">
+<li><strong>The processing unit <em>executes</em> the instruction</strong>. The ALU performs the instruction operation on instruction data operands.</li>
+</ol>
+</blockquote>
+<ol start="4">
+<li><strong>控制单元把结果<em>存储</em>到存储器中</strong>。处理单元执行指令的结果被存储到存储器中。控制单元把结果值放到<em>数据总线</em>上，把存储位置的地址放到<em>地址总线</em>上，并在<em>控制总线</em>上发出一个<em>写</em>命令，从而把结果写入存储器。存储单元收到后，就把这个值写入存储器的指定地址处。</li>
+</ol>
+<blockquote>
+<ol start="4">
+<li><strong>The control unit <em>stores</em> the result to memory</strong>. The result of the processing unit’s execution of the instruction is stored to memory. The control unit writes the result to memory by placing the result value on the <em>data bus</em>, placing the address of the storage location on the <em>address bus</em>, and placing a <em>write</em> command on the <em>control bus</em>. When received, the memory unit writes the value to memory at the specified address.</li>
+</ol>
+</blockquote>
+<p>输入和输出单元并不直接参与程序指令的执行。它们参与程序执行的方式，是加载程序的指令和数据，以及存储或显示程序的计算结果。</p>
+<blockquote>
+<p>The input and output units are not directly involved in the execution of program instructions. Instead, they participate in the program’s execution by loading a program’s instructions and data and by storing or displaying the results of the program’s computation.</p>
+</blockquote>
+<p><a href="5.2-von.html">图 2</a> 和<a href="5.2-von.html">图 3</a> 以一条操作数存放在 CPU 寄存器中的示例加法指令为例，展示了冯·诺依曼体系结构执行指令的四个阶段。在<em>取指</em>阶段，控制单元读取存放在 PC 中的内存地址（1234）处的指令。它把地址发送到地址总线上，并在控制总线上发出 READ 命令。存储单元收到请求后，读取地址 1234 处的值，并通过数据总线把它发送给控制单元。控制单元把指令字节放进 IR 寄存器，并用下一条指令的地址（本例中是 1238）更新 PC。在<em>译码</em>阶段，控制单元把指令中指定要执行哪种操作的位送入处理单元的 ALU，并利用指定哪些寄存器存放操作数的指令位，把操作数的值从处理单元的寄存器读入 ALU（本例中操作数的值是 3 和 4）。在<em>执行</em>阶段，处理单元中的 ALU 对操作数执行运算，得出结果（3 + 4 等于 7）。最后，在<em>存储</em>阶段，控制单元把处理单元得出的结果（7）写入存储单元：内存地址（5678）通过地址总线发送，WRITE 命令通过控制总线发送，要存储的数据值（7）通过数据总线发送。存储单元收到这个请求后，把 7 存放到内存地址 5678 处。在这个例子中，我们假定存放结果的内存地址编码在指令位中。</p>
+<blockquote>
+<p><a href="5.2-von.html">Figure 2</a> and <a href="5.2-von.html">Figure 3</a> show the four phases of instruction execution by the von Neumann architecture for an example addition instruction whose operands are stored in CPU registers. In the <em>fetch</em> phase, the control unit reads the instruction at the memory address stored in the PC (1234). It sends the address on the address bus, and a READ command on the control bus. The memory unit receives the request, reads the value at address 1234, and sends it to the control unit on the data bus. The control unit places the instruction bytes in the IR register and updates the PC with the address of the next instruction (1238 in this example). In the <em>decode</em> phase, the control unit feeds bits from the instruction that specify which operation to perform to the processing unit’s ALU, and uses instruction bits that specify which registers store operands to read operand values from the processing unit’s registers into the ALU (the operand values are 3 and 4 in this example). In the <em>execute</em> phase, the ALU part of the processing unit executes the operation on the operands to produce the result (3 + 4 is 7). Finally, in the <em>store</em> phase the control unit writes the result (7) from the processing unit to the memory unit. The memory address (5678) is sent on the address bus, a WRITE command is sent on the control bus, and the data value to store (7) is sent on the data bus. The memory unit receives this request and stores 7 at memory address 5678. In this example, we assume that the memory address to store the result is encoded in the instruction bits.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/vonFD.png" alt="This figure of von Neumann execution shows the processing, control and memory units in each of the four stages of execution. Each unit is shown as a box, with buses shown as lines running below the boxes to which each box is connected."></p>
+<p><strong>图 2.</strong> 以一条示例加法指令为例，冯·诺依曼体系结构执行指令的取指和译码阶段。操作数、结果和内存地址以十进制值表示，存储器内容以二进制值表示。</p>
+<p><em>Figure 2. The fetch and decode stages of execution of the von Neumann architecture for an example addition instruction. Operand, result, and memory addresses are shown as decimal values, memory contents are shown as binary values.</em></p>
+<p><img src="/dive-into-systems/C5-Arch/images/vonES.png" alt="This figure of von Neumann execution shows the processing, control and memory units in each of the four stages of execution. Each unit is shown as a box, with buses shown as lines running below the boxes to which each box is connected."></p>
+<p><strong>图 3.</strong> 以一条示例加法指令为例，冯·诺依曼体系结构执行指令的执行和存储阶段。操作数、结果和内存地址以十进制值表示，存储器内容以二进制值表示。</p>
+<p><em>Figure 3. The execute and store stages of execution of the von Neumann architecture for an example addition instruction. Operand, result, and memory addresses are shown as decimal values, memory contents are shown as binary values.</em></p>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C5-Arch/5.1-hist.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">5.1. 现代计算机体系结构的起源</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C5-Arch/5.3-gates.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">5.3. 逻辑门</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-1-CPU"><span class="toc-text">5.2.1. CPU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-2-%E5%A4%84%E7%90%86%E5%8D%95%E5%85%83"><span class="toc-text">5.2.2. 处理单元</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-3-%E6%8E%A7%E5%88%B6%E5%8D%95%E5%85%83"><span class="toc-text">5.2.3. 控制单元</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-4-%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83"><span class="toc-text">5.2.4. 存储单元</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-5-%E8%BE%93%E5%85%A5%E5%92%8C%E8%BE%93%E5%87%BA%EF%BC%88I-O%EF%BC%89%E5%8D%95%E5%85%83"><span class="toc-text">5.2.5. 输入和输出（I&#x2F;O）单元</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-6-%E5%86%AF%C2%B7%E8%AF%BA%E4%BE%9D%E6%9B%BC%E6%9C%BA%E5%99%A8%E7%9A%84%E8%BF%90%E8%BD%AC%EF%BC%9A%E6%89%A7%E8%A1%8C%E4%B8%80%E4%B8%AA%E7%A8%8B%E5%BA%8F"><span class="toc-text">5.2.6. 冯·诺依曼机器的运转：执行一个程序</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

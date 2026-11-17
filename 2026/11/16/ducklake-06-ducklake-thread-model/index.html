@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（六）：DuckLake 在线程上怎么跑 · Summary</title>
+  <meta name="description" content="前三篇讲的是 DuckDB 引擎通用的部分。DuckLake 没有自己的线程池，它的每条读写路径都跑在 DuckDB 的调度之上；这一篇逐条列出谁在跑、哪里串行。 5.1 DuckLake 在线程上怎么跑 动画版：ducklake-engine-animation.html（21 步，按下表逐条走一遍，每步带源码锚点和常见误区）。全景图：ducklake-thread-model.html（一张图">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（六）：DuckLake 在线程上怎么跑 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-06-ducklake-thread-model/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="前三篇讲的是 DuckDB 引擎通用的部分。DuckLake 没有自己的线程池，它的每条读写路径都跑在 DuckDB 的调度之上；这一篇逐条列出谁在跑、哪里串行。 5.1 DuckLake 在线程上怎么跑 动画版：ducklake-engine-animation.html（21 步，按下表逐条走一遍，每步带源码锚点和常见误区）。全景图：ducklake-thread-model.html（一张图">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-06-ducklake-thread-model/ducklake-thread-model.png">
+<meta property="article:published_time" content="2026-11-16T07:06:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.916Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/2026/11/16/ducklake-06-ducklake-thread-model/ducklake-thread-model.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/" class="current" aria-current="page">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>二、引擎原理</span>
+      </nav>
+      <span class="book-position">第 6 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:06:00.000Z">2026-11-16</time>
+      <span>· 约 8 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>前三篇讲的是 DuckDB 引擎通用的部分。DuckLake 没有自己的线程池，它的每条读写路径都跑在 DuckDB 的调度之上；这一篇逐条列出谁在跑、哪里串行。</p>
+<h2 id="5-1-DuckLake-在线程上怎么跑"><a href="#5-1-DuckLake-在线程上怎么跑" class="headerlink" title="5.1 DuckLake 在线程上怎么跑"></a>5.1 DuckLake 在线程上怎么跑</h2><blockquote>
+<p>动画版：<a href="ducklake-engine-animation.html"><code>ducklake-engine-animation.html</code></a>（21 步，按下表逐条走一遍，每步带源码锚点和常见误区）。<br>全景图：<a href="ducklake-thread-model.html"><code>ducklake-thread-model.html</code></a>（一张图看全：上方 DuckDB 调度层，中间 4 条泳道，红框 &#x3D; 串行点）。</p>
+</blockquote>
+<p><img src="/2026/11/16/ducklake-06-ducklake-thread-model/ducklake-thread-model.png" alt="DuckLake 线程工作模型"></p>
+<p><strong>DuckLake 没有自己的线程池</strong>，并行度全部来自 DuckDB 的 pipeline 调度；它唯一自己投任务的地方是：提交重试时用 <code>TaskExecutor</code> 并行重写删除文件（<code>SetDeleteCommitSnapshotTask</code>，<code>ducklake_transaction.cpp:746</code>）。下表按路径列出”谁在跑、哪里串行”（DuckLake 源码路径省略 <code>ducklake/src/</code> 前缀）：</p>
+<table>
+<thead>
+<tr>
+<th>路径</th>
+<th>怎么并行</th>
+<th>串行点</th>
+<th>源码</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>读</strong> <code>ducklake_scan</code></td>
+<td>DuckLake 的文件清单固定报 <code>MULTIPLE_FILES</code>，Parquet 因此不限 MaxThreads → 总是起 <code>threads</code> 个 task（小表也一样，多出来的领不到活就退出）；每个 task 每次领 <strong>1 个 row group</strong></td>
+<td>领取在扫描全局锁下<strong>按文件顺序</strong>进行：文件 k 的 row group 全部被领走，才轮到文件 k+1（已领走的可以同时解码）</td>
+<td><code>storage/ducklake_multi_file_list.cpp:443</code>；<code>duckdb/extension/parquet/parquet_multi_file_info.cpp:423</code>、<code>:592</code>；<code>duckdb/src/include/duckdb/common/multi_file/multi_file_function.hpp:678</code></td>
+</tr>
+<tr>
+<td>文件清单</td>
+<td>—</td>
+<td>pipeline 被调度时，在 <code>InitializeGlobalState</code> 里单线程查一次元数据库（谁调度这条 pipeline 谁执行：首批是调用线程，下游是完成上游的那个线程）；<code>GetFiles</code> 另有 <code>file_lock</code> 兜底</td>
+<td><code>storage/ducklake_multi_file_reader.cpp:288</code>；<code>storage/ducklake_multi_file_list.cpp:825</code></td>
+</tr>
+<tr>
+<td>删除过滤</td>
+<td>打开数据文件的线程同步读它的 delete file &#x2F; puffin DV；开了 read-ahead 时，这个线程就是 ASYNC 池线程</td>
+<td>每个文件一次</td>
+<td><code>storage/ducklake_multi_file_reader.cpp:304</code>；<code>storage/ducklake_delete_filter.cpp:139</code></td>
+</tr>
+<tr>
+<td>行内数据（inlined）</td>
+<td>一张 inlined 表 &#x3D; <strong>1 个 job</strong>，只有一个线程读</td>
+<td>读它的元数据 SQL 在 <code>TryInitializeScan</code> 里执行，而 DuckDB 调它时<strong>持有扫描全局锁</strong>，查询期间同一扫描的其它线程领不到活</td>
+<td><code>storage/ducklake_inlined_data_reader.cpp:125</code></td>
+</tr>
+<tr>
+<td><strong>写</strong> INSERT</td>
+<td>两条 pipeline。① 内层 sink &#x3D; <code>PhysicalCopyToFile</code>：DuckLake 设 <code>rotate=true</code> → DuckDB 把 preserve_insertion_order 置 false → Parquet 选 <code>PARALLEL_COPY_TO_FILE</code>。多线程<strong>并行编码</strong>（Prepare），在单文件锁下<strong>串行追加</strong>（Flush），<strong>写同一个文件</strong>，超过 <code>target_file_size</code> 换下一个。② 外层 <code>DuckLakeInsert</code> 不是并行 sink，但每个文件只处理一行，开销可忽略</td>
+<td>追加在每个文件的锁下串行</td>
+<td><code>storage/ducklake_insert.cpp:610</code>；<code>include/storage/ducklake_insert.hpp:165</code>；<code>duckdb/src/execution/physical_plan/plan_copy_to_file.cpp:28</code>；<code>duckdb/extension/parquet/parquet_extension.cpp:868</code>；<code>duckdb/src/execution/operator/persistent/physical_copy_to_file.cpp:4200</code>、<code>:4250</code></td>
+</tr>
+<tr>
+<td>row group 大小</td>
+<td>写入时由 <code>parquet_row_group_size</code>（默认 122,880）&#x2F; <code>parquet_row_group_size_bytes</code> 决定，读取时一个 row group 就是一个领取单位</td>
+<td>—</td>
+<td><code>storage/ducklake_insert.cpp:613</code></td>
+</tr>
+<tr>
+<td>带排序的 INSERT</td>
+<td><code>PreserveSortedOrder</code> 让 COPY 走 <code>REGULAR_COPY_TO_FILE</code>：<strong>没分区、没开 <code>per_thread_output</code> 时，写 Parquet 只有一个线程</strong></td>
+<td>整个写文件阶段</td>
+<td><code>storage/ducklake_insert.cpp:686</code></td>
+</tr>
+<tr>
+<td>数据内联（InlineData）</td>
+<td>算子并行；全局行数计数器有锁，一旦超过 <code>data_inlining_row_limit</code>，各线程把已缓存的行重新吐给 COPY</td>
+<td>计数器的锁</td>
+<td><code>storage/ducklake_inline_data.cpp:42</code>、<code>:130</code></td>
+</tr>
+<tr>
+<td><strong>DELETE</strong></td>
+<td>Sink、Combine 并行（各线程按文件攒被删行号，flush 进全局时加锁）</td>
+<td><strong>Finalize 单线程逐个文件写 delete file</strong>（直接调用 Parquet 写函数）</td>
+<td><code>storage/ducklake_delete.cpp:363</code>、<code>:588</code>；<code>include/storage/ducklake_delete.hpp:172</code></td>
+</tr>
+<tr>
+<td>compaction &#x2F; flush</td>
+<td>扫描和 COPY 部分并行；<code>merge_adjacent_files</code> 合并相邻文件时要保序，走 <code>PRESERVE_ORDER</code> → 批量 COPY</td>
+<td>两者的 DuckLake sink 都不是并行 sink（每文件一行，开销小）</td>
+<td><code>functions/ducklake_compaction_functions.cpp:777</code>；<code>include/storage/ducklake_compaction.hpp:56</code>；<code>include/storage/ducklake_flush_data.hpp:52</code></td>
+</tr>
+<tr>
+<td><strong>提交</strong></td>
+<td>在执行 COMMIT 的连接线程上跑（按 DuckDB 提交路径推断）；冲突重试的退避用 <code>std::this_thread::sleep_for</code> <strong>阻塞这条连接线程</strong>，不占 worker</td>
+<td>整个提交过程</td>
+<td><code>storage/ducklake_transaction_state.cpp:2801</code></td>
+</tr>
+</tbody></table>
+<p><strong>元数据访问的串行点</strong>：</p>
+<ul>
+<li>**每个 DuckLake 事务一条内部 <code>Connection</code>**，在 <code>connection_lock</code> 下惰性创建（<code>storage/ducklake_transaction.cpp:909</code>），所有元数据 SQL 都经 <code>ExecuteRaw</code> 走这条连接（<code>:1808</code>）。推断：同一事务里多线程同时发的元数据查询会在这条连接的 ClientContext 锁上排队。</li>
+<li>这条内部连接的查询照样编译成 pipeline、投进同一个 TaskScheduler，和用户查询抢同一批 worker。</li>
+<li><code>metadata_query_lock</code>（递归锁）<strong>只有 Quack 后端用</strong>（<code>metadata_manager/quack_metadata_manager.cpp:18</code>）；DuckDB 文件、SQLite、Postgres 后端不加这把锁。</li>
+<li><strong>Postgres 后端</strong>：内部连接里的每个 DuckDB 事务，构造时就从连接池借一条 PG 连接（<code>duckdb-postgres/src/storage/postgres_transaction.cpp:19</code>），见<a href="/2026/11/16/ducklake-05-memory-and-admission/" title="DuckLake 专栏（五）：内存模型与并发准入">第 5 篇</a> 6.1 节。</li>
+</ul>
+<h2 id="第二章小结：结论速查"><a href="#第二章小结：结论速查" class="headerlink" title="第二章小结：结论速查"></a>第二章小结：结论速查</h2><ul>
+<li><code>duplicate()</code> 多连接 &#x3D; 同一实例；单连接一次一条查询；多连接才并行。后台 worker（<code>threads − 1</code>）共用，<strong>每个活跃连接的调用线程另外执行自己查询的 task</strong>，总吞吐仍被核数封顶。</li>
+<li><strong>parse&#x2F;bind&#x2F;plan 在调用线程</strong>；执行才用共享 worker 池。</li>
+<li><strong>两个池</strong>：REGULAR（<code>threads</code> 个，计算，也顺手做 I&#x2F;O）+ ASYNC（默认 <code>min(4×核数, 256)</code>，只做 I&#x2F;O）。每个池一个 moodycamel 队列，物理上<strong>每查询一条 lane</strong>。</li>
+<li>worker 用 <strong>ConsumerToken 轮转</strong>取 task（每条 lane 取满 16 个就整体换 lane）→ 各查询都轮得到；但<strong>无优先级 &#x2F; 无 work-stealing &#x2F; 不抢占</strong>。</li>
+<li>一条 pipeline 的 task 数 &#x3D; <code>min(MaxThreads, threads)</code>；<strong>sink 不并行就只有 1 个 task</strong>。</li>
+<li><strong>morsel &#x3D; row group（12 万行）</strong>；拆 row group 只省”输入内存”，<strong>GROUP BY&#x2F;JOIN&#x2F;SORT 攒的状态</strong>才是内存大头，超了 <strong>spill</strong>。</li>
+<li>Combine <strong>各做各的</strong>；Finalize 是**投进 lane 的 1 个 <code>PipelineFinishTask</code>**，谁取到谁跑；同步靠 <strong>event 计数</strong>，worker <strong>不空等</strong>。</li>
+<li>v2.0 扫描默认开 <strong>read-ahead</strong>（<code>read_ahead_depth=-1</code>），文件打开和 row group I&#x2F;O 提前在 ASYNC 池做。</li>
+<li>DuckLake：写<strong>不总</strong>落 Parquet（inline）、删除&#x3D;<strong>加过滤</strong>、扫描前<strong>按 stats 剪文件</strong>、乐观提交重试。</li>
+<li>DuckLake 线程：<strong>无自建线程池</strong>；INSERT 的 COPY 并行编码 + 单文件串行追加；<strong>带排序的 INSERT 单线程写文件</strong>；<strong>DELETE 的 delete file 在 Finalize 单线程逐个写</strong>；inlined 表 1 个 job 且读元数据时持扫描锁；<strong>每事务一条内部元数据连接</strong>；提交重试 sleep 阻塞连接线程。</li>
+<li><strong>引擎不做准入</strong> → 应用层 <code>Semaphore + 超时</code>；<code>K = min(核数/并行度, mem/单查询内存, PG 侧连接预算)</code>。</li>
+<li>Postgres 连接池 per-ATTACH，默认 <strong><code>force</code> 模式无视上限</strong>、<code>pg_pool_max_connections</code> 只管缓存数；旧的 <code>pg_connection_limit</code> 已弃用。</li>
+</ul>
+<h2 id="出处"><a href="#出处" class="headerlink" title="出处"></a>出处</h2><p><strong>官方文档（DuckDB <code>lts</code> &#x2F; DuckLake <code>stable</code>）</strong></p>
+<ul>
+<li>并发模型：<code>duckdb.org/docs/lts/connect/concurrency#handling-concurrency</code></li>
+<li>行组与并行：<code>.../guides/performance/how_to_tune_workloads#parallelism-multi-core-processing</code>（122,880 行 &#x2F; row group 级并行）</li>
+<li>vector size：<code>.../internals/vector#data-flow</code>（STANDARD_VECTOR_SIZE&#x3D;2048）</li>
+<li>threads 默认 &#x3D; # CPU cores：<code>.../configuration/overview#configuration-reference</code></li>
+<li>OOM 与 spill：<code>.../guides/troubleshooting/oom_errors</code>、<code>.../how_to_tune_workloads#larger-than-memory-workloads-out-of-core-processing</code></li>
+<li>连接最佳实践：<code>.../how_to_tune_workloads#best-practices-for-using-connections</code></li>
+<li>postgres 扩展设置：<code>.../core_extensions/postgres#settings</code>（文档里的 <code>pg_connection_cache</code>、<code>pg_connection_limit</code> 在当前源码已弃用，见<a href="/2026/11/16/ducklake-05-memory-and-admission/" title="DuckLake 专栏（五）：内存模型与并发准入">第 5 篇</a> 6.1 节）</li>
+<li>DuckLake 加密：<code>ducklake.select/docs/stable/duckdb/advanced_features/encryption</code></li>
+<li>DuckLake 事务&#x2F;时间旅行&#x2F;冲突：<code>.../advanced_features/transactions</code>、<code>.../usage/time_travel</code>、<code>.../advanced_features/conflict_resolution</code></li>
+<li>DuckLake 架构&#x2F;inlining&#x2F;delete&#x2F;compaction：<code>.../specification/introduction#building-blocks</code>、<code>.../advanced_features/data_inlining</code>、<code>.../specification/tables/ducklake_delete_file</code>、<code>.../maintenance/merge_adjacent_files</code></li>
+</ul>
+<p><strong>源码（DuckDB v2.0.0，路径相对 <code>duckdb/</code>）</strong></p>
+<ul>
+<li>前端在调用线程：<code>src/main/client_context.cpp:311</code>（<code>CreatePreparedStatementInternal</code>）</li>
+<li>两个池：<code>src/include/duckdb/common/enums/task_scheduler_type.hpp:15</code>；<code>src/parallel/task_scheduler.cpp:156</code>（<code>ExecuteForever</code>：REGULAR 取两个队列、ASYNC 只取自己的）；<code>src/main/config.cpp:706</code>（<code>async_threads</code> 默认）</li>
+<li>轮转取 task：<code>src/parallel/task_scheduler_queue.cpp:16</code>（<code>TaskQueueTraits</code>，配额 16）、<code>Dequeue</code>（<code>try_dequeue(ConsumerToken)</code>）；<code>third_party/concurrentqueue/concurrentqueue.h:1106</code>（<code>try_dequeue(consumer_token_t&amp;)</code>）、<code>:1332</code>（轮转定位）、<code>:292</code>（<code>BLOCK_SIZE=32</code>）；改动提交 <code>0f67e73fd31</code>（2026-10-09）</li>
+<li>默认值：<code>src/common/settings.json</code>（<code>external_threads</code>&#x3D;1、<code>read_ahead_depth</code>&#x3D;-1、<code>scheduler_process_partial</code>&#x3D;false）；<code>src/main/config.cpp:646</code>（memory_limit 80%）</li>
+<li>task 数：<code>src/parallel/pipeline.cpp:127</code>（<code>TryGetMaxThreads</code>）、<code>:330</code>（<code>LaunchScanTasks</code>）</li>
+<li>调用线程：<code>src/parallel/executor.cpp:444</code>（<code>ExecuteTask</code>：只取自己 lane、<code>PROCESS_PARTIAL</code>）</li>
+<li>Combine&#x2F;Finalize：<code>src/parallel/pipeline_executor.cpp:702</code>（<code>Sink::Combine</code>）；<code>src/parallel/event.cpp:56</code>（<code>FinishTask</code> 计数）；<code>src/parallel/pipeline_finish_event.cpp:79</code>（投 1 个 <code>PipelineFinishTask</code>）</li>
+<li>morsel 游标：<code>src/storage/table/row_group_collection.cpp:370</code>（<code>NextParallelScan</code>）；<code>src/include/duckdb/storage/storage_info.hpp:26</code>（<code>DEFAULT_ROW_GROUP_SIZE=122880</code>）</li>
+<li>多文件扫描：<code>src/include/duckdb/common/multi_file/multi_file_function.hpp:678</code>（<code>ClaimNextJobInternal</code>，全局锁下按文件顺序领 job）、<code>:842</code>（<code>max_threads = NumberOfThreads</code>）；<code>extension/parquet/parquet_multi_file_info.cpp:423</code>（<code>MaxThreads</code>）、<code>:592</code>（<code>TryInitializeScan</code>）</li>
+<li>异步 I&#x2F;O：<code>extension/parquet/parquet_reader.cpp:2363</code>、<code>:2488</code>；<code>src/parallel/scan_read_ahead.cpp:144</code>；<code>src/execution/operator/persistent/physical_copy_to_file.cpp:318</code>（生命周期任务走 ASYNC）、<code>:516</code>（Prepare&#x2F;Flush 注释）、<code>:4200</code>、<code>:4250</code></li>
+<li>COPY 并行判定：<code>src/execution/physical_plan/plan_copy_to_file.cpp:28</code>；<code>extension/parquet/parquet_extension.cpp:868</code>（<code>ParquetWriteExecutionMode</code>）</li>
+</ul>
+<p><strong>源码（DuckLake &#x2F; duckdb-postgres）</strong>：DuckLake 各路径见上文表内锚点；Postgres 连接池见<a href="/2026/11/16/ducklake-05-memory-and-admission/" title="DuckLake 专栏（五）：内存模型与并发准入">第 5 篇</a> 6.1 节（<code>duckdb-postgres/src/storage/postgres_connection_pool.cpp:49</code>、<code>src/postgres_extension.cpp:176</code>–<code>:256</code>、<code>src/storage/postgres_transaction.cpp:19</code>；默认值在 <code>github.com/duckdb/database-connector</code> @ <code>c305670</code> 的 <code>src/include/dbconnector/pool/connection_pool_config.hpp</code>，本地子模块未检出，经 GitHub 读取）。</p>
+<blockquote>
+<p>DuckLake 扩展侧：<code>ATTACH &#39;ducklake:…&#39;</code> → <code>DuckLakeStorageExtension</code> → <code>DuckLakeCatalog</code> &#x2F; <code>DuckLakeTransaction</code>（每个 DuckDB 事务一个 DuckLake 事务 + 快照）；元数据 SQL 走每事务一条的内部连接到 catalog（PG 时即上面的连接池）。</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-05-memory-and-admission/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（五）：内存模型与并发准入</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/2026/11/16/ducklake-07-source-walkthrough/" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#5-1-DuckLake-%E5%9C%A8%E7%BA%BF%E7%A8%8B%E4%B8%8A%E6%80%8E%E4%B9%88%E8%B7%91"><span class="toc-text">5.1 DuckLake 在线程上怎么跑</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E5%B0%8F%E7%BB%93%EF%BC%9A%E7%BB%93%E8%AE%BA%E9%80%9F%E6%9F%A5"><span class="toc-text">第二章小结：结论速查</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%87%BA%E5%A4%84"><span class="toc-text">出处</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

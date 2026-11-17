@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>17.15. Shell 编程 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;shellprog.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.15. Shell Programming shell">
+<meta property="og:type" content="website">
+<meta property="og:title" content="17.15. Shell 编程 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/Appendix2/17.15-shellprog.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;Appendix2&#x2F;shellprog.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  17.15. Shell Programming shell">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.929Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html" class="current" aria-current="page">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>17. 附录 2：使用 Unix</span>
+      </nav>
+      <span class="book-position">第 186 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">17.15. Shell 编程</h1>
+  
+  
+    <p class="article-meta"><span>约 14 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/shellprog.html">https://diveintosystems.org/book/Appendix2/shellprog.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>17.15. Shell Programming</em></p>
+<p>shell 脚本常用来把一组应该一起执行的命令组合在一起。<strong>shell 脚本</strong>（shell script）是一个可执行的文本文件，由一串 shell 命令组成，运行时按顺序执行这些命令。shell 还有循环和条件这样的语言结构，可以用来编写复杂而功能丰富的脚本。这些 shell 编程结构既可以用在命令行上，也可以用在 shell 脚本里。下面我们给出几个 Bash shell 编程的例子。其他 shell（例如 <code>zsh</code>、<code>sh</code>、<code>tcsh</code>）有它们自己的 shell 编程语言语法，但提供的功能都差不多。</p>
+<blockquote>
+<p>Shell scripts are often used to group a set of commands that should execute together. A <strong>shell script</strong> is an executable text file that consists of a sequence of shell commands that, when run, execute those commands in order. Shells also have language constructs such as loops and conditionals, which can be used to create complex featureful scripts. These shell programming constructs can also be used at the command line and in shell scripts. Below, we present a few examples of Bash shell programming. Other shells (e.g. <code>zsh</code>, <code>sh</code>, <code>tcsh</code>) have their own shell programming language syntax, but they all provide similar functionality.</p>
+</blockquote>
+<p>Bash 脚本的第一行以一个特殊的注释开头：<code>#</code> 后跟一个感叹号 <code>!</code>（bang），再跟执行该脚本文件内容的程序的路径。下面是一个简单 Bash 脚本的例子，<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/simplescript.sh">simplescript.sh</a>（注意，按照惯例，shell 脚本的文件名带 <code>.sh</code> 后缀）。</p>
+<blockquote>
+<p>The first line of a Bash script starts with a special comment <code>#</code> followed by a bang <code>!</code> and the path to the program that executes the contents of the script file. Below is an example of a simple Bash script, <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/simplescript.sh">simplescript.sh</a> (note that by convention shell scripts are named with a <code>.sh</code> suffix).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line">pwd</span><br><span class="line">whoami</span><br><span class="line">date</span><br></pre></td></tr></table></figure>
+
+<p>在运行之前，<code>simplescript.sh</code> 文件需要被赋予可执行权限。用户可以运行 <code>ls -l</code> 检查它的权限，如果没有设置可执行权限，就用 <code>chmod</code> 设置。例如：</p>
+<blockquote>
+<p>Before it can be run, the <code>simplescript.sh</code> file needs to be given the executable permission. A user can check its permissions by running <code>ls -l</code> and set the executable permission using <code>chmod</code> if it is not set. For example:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ls -l simplescript.sh</span><br><span class="line">-rw------- 1 sam users 31 Mar 28 18:26 simplescript.sh</span><br><span class="line"></span><br><span class="line">$ chmod u+x simplescript.sh</span><br><span class="line"></span><br><span class="line">$ ls -l simplescript.sh</span><br><span class="line">-rwx------ 1 sam users 31 Mar 28 18:26 simplescript.sh</span><br></pre></td></tr></table></figure>
+
+<p>一旦被标记为可执行，脚本就可以像任何可执行文件一样在命令行上运行，脚本中列出的命令会按顺序执行：</p>
+<blockquote>
+<p>Once it is marked as executable, the script can be run on the command line like any executable file, and the sequence of commands listed in the script will execute in order:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./simplescript.sh</span><br><span class="line">/home/sam/</span><br><span class="line">sam</span><br><span class="line">Tue 28 Mar 2023 06:27:38 PM EDT</span><br></pre></td></tr></table></figure>
+
+<p>Unix shell 程序支持迭代（即 for 和 while 循环）和条件（即 if-else）这样的语言结构。虽然这些结构可以在命令行上使用，但它们更常用在 shell 脚本中，用来描述更复杂的执行结构。shell 脚本还可以使用命令行参数和变量，这有助于脚本处理不同的输入值。</p>
+<blockquote>
+<p>Unix shell programs support language constructs such as iteration (i.e., for and while loops) and conditionals (i.e., if-else). Although these constructs can be used at the command line, they are more commonly used in shell scripts to specify more complicated execution structure. Shell scripts can also make use of command line arguments and variables, which help the script work with different input values.</p>
+</blockquote>
+<p>下面是几个使用了这些更高级特性的 Bash shell 脚本例子。第一个是 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/run.sh">runsh.sh</a>，它把某个程序的计时运行重复若干次。在这个例子中，可执行文件名和重复运行的次数作为命令行参数传给脚本。这个例子还展示了如何检查命令行参数的某些约束。这里，程序可执行文件这个命令行参数是运行脚本所必需的，而重复运行的次数是一个可选的命令行参数（如果用户运行脚本时没有指定这个命令行选项，脚本就用默认值 5）。脚本用 <code>if-elif</code> 结构检查命令行选项。它还展示了一个 <code>for</code> 循环的例子，用来按调用者指定的次数重复运行。</p>
+<blockquote>
+<p>Below are a couple examples of Bash shell scripts using some of these more advanced features. The first, <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/run.sh">runsh.sh</a>, is a script that repeats some timed executions of a program. In this example, the executable file name and the number of executions to repeat are given as command line arguments to the script. This example also shows how to test for some constraints on command line arguments. Here the program executable command line argument is required to run the script, but the number of executions to repeat is an optional command line argument (the script uses a default value of 5 when a user runs the script without specifying this command line option). The script uses the <code>if-elif</code> construct to test for command line options. It also shows an example of a <code>for</code> loop used to repeat the number of runs specified by the caller.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>链接文字「runsh.sh」与实际文件名不一致，链接指向的、下文一直使用的都是 <code>run.sh</code>。另外，下面的脚本实际用的是两个独立的 <code>if</code> 语句，并没有用到 <code>elif</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line"># this script performs a number of timed runs of a</span><br><span class="line"># program given as a required command line argument</span><br><span class="line"># the number of runs is an optional cmdln arg</span><br><span class="line"></span><br><span class="line"># script variable N for the number of runs</span><br><span class="line"># assigning N default value of 5</span><br><span class="line">N=5</span><br><span class="line"></span><br><span class="line"># get command line arguments</span><br><span class="line">#  1: name of program is required</span><br><span class="line">#  2: number of runs is optional</span><br><span class="line"># $@ is the array of command line args (like argv)</span><br><span class="line"># $# is the number of command line args (like argc)</span><br><span class="line"></span><br><span class="line"># get the program executable name</span><br><span class="line"># note: space between &quot;[ $&quot; and between &quot;0 ]&quot; is important!</span><br><span class="line">if [[ $# -eq 0 ]]</span><br><span class="line">then</span><br><span class="line">  echo &quot;Error, usage: ./run.sh ./a.out [num times]&quot;</span><br><span class="line">  exit 1</span><br><span class="line">else</span><br><span class="line">  PROG=$1</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"># if they gave the optional cmdln arg, set N to it</span><br><span class="line">if [[ $# -gt 1 ]]</span><br><span class="line">then</span><br><span class="line">  N=$2</span><br><span class="line">fi</span><br><span class="line"></span><br><span class="line"># it&#x27;s useful to output some info about what is run:</span><br><span class="line">echo &quot;running $PROG $N times: &quot;</span><br><span class="line">date</span><br><span class="line">echo &quot;======================= &quot;</span><br><span class="line"></span><br><span class="line"># do N timed runs of PROG:</span><br><span class="line">for((n=1; n &lt;= $N; n++))</span><br><span class="line">do</span><br><span class="line">echo &quot; &quot;</span><br><span class="line">echo &quot;run $n:&quot;</span><br><span class="line">time $PROG</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>这个脚本中有几点值得注意。第一，Bash 脚本中没有类型，因此要由用户根据值隐含的类型恰当地使用它们。</p>
+<blockquote>
+<p>There are a few things to note in this script. First, there are no types in Bash scripts, so it is up to the user to use values appropriately based on their implied types.</p>
+</blockquote>
+<p>第二，注意 Bash shell 变量用 <code>=</code> 运算符赋值，用 <code>$var_name</code> 引用它们的值：</p>
+<blockquote>
+<p>Second, note that Bash shell variables are set using <code>=</code> operator and their values are referenced using <code>$var_name</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">N=5      # set N to 5</span><br><span class="line">n &lt;= $N  # use value of N</span><br></pre></td></tr></table></figure>
+
+<p>第三，注意在 Bash 脚本中访问命令行参数的语法：</p>
+<blockquote>
+<p>Third, note the syntax for accessing command line arguments in the Bash script:</p>
+</blockquote>
+<ul>
+<li><code>$@</code> 是命令行参数的数组，类似于 C 中的 <code>argv</code>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>$@</code> is the array of command line arguments, which is similar to <code>argv</code> in C.</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>与 C 的 <code>argv</code> 不同，<code>$@</code> 只包含 <code>$1</code>、<code>$2</code>、……，不包含脚本名；脚本名在 <code>$0</code> 中。译者在 Mac 上用 <code>bash argt.sh x y</code> 验证：<code>$@</code> 展开为 <code>x y</code>，<code>$#</code> 为 2，<code>$0</code> 是脚本路径。这与下一条所说 <code>$#</code> 不计脚本名是一致的。</p>
+</div>
+<ul>
+<li><code>$#</code> 是命令行参数的个数，类似于 C 中的 <code>argc</code>，区别是 Bash 脚本文件名不算作参数之一（即不带命令行参数运行的 Bash 脚本，<code>$#</code> 的值为 <code>0</code>；而不带命令行参数运行的 C 程序，<code>argc</code> 的值为 1）。</li>
+</ul>
+<blockquote>
+<ul>
+<li><code>$#</code> is the number of command line arguments, which is similar to <code>argc</code> in C except that the name of the Bash script file does not count as one of the arguments (i.e., a Bash script run with no command line arguments has a value of <code>0</code> for <code>$#</code>, whereas a C program run with no command line arguments has a value of 1 for <code>argc</code>).</li>
+</ul>
+</blockquote>
+<p>第四，注意 <code>if-else</code> 的语法及其一般形式：</p>
+<blockquote>
+<p>Fourth, note the <code>if-else</code> syntax, and its general form:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">if [[ cond ]]</span><br><span class="line">then</span><br><span class="line">   # if true stmts</span><br><span class="line">else</span><br><span class="line">   # if false stmts</span><br><span class="line">fi</span><br></pre></td></tr></table></figure>
+
+<p>Bash 用 <code>then</code>、<code>else</code> 和 <code>fi</code> 分别表示 if 块的开始、else 块的开始和 if-else 语句的结束。<code>[[</code> 和 <code>]]</code> 符号用来括起条件语句，它们与条件之间的空格非常重要（没有这些空格，Bash 就无法正确解析这条语句）。条件运算符的语法是：<code>-gt</code> 表示大于，<code>-lt</code> 表示小于，<code>-eq</code> 表示等于，其他运算符也使用类似的记法。</p>
+<blockquote>
+<p>Bash uses <code>then</code>, <code>else</code>, and <code>fi</code> to denote the start of the if block, the start of the else block, and the end of the if-else statement. The <code>[[</code> and <code>]]</code> symbols are used to denote the conditional statement, and the space chars between them and the condition are very important (without these Bash will not correctly parse this statement). The conditional operator syntax is <code>-gt</code> represents greater than, <code>-lt</code> represents less than, <code>-eq</code> represents equal to, and others use similar notation.</p>
+</blockquote>
+<p>最后，注意 <code>for</code> 循环的语法与 C 中的 <code>for</code> 循环类似：for 循环体用 <code>do</code> 和 <code>done</code> 标出，<code>init; cond; step</code> 三部分写在双括号内。下面是这类 Bash <code>for</code> 循环的一般形式（Bash 实际上有不止一种形式的 <code>for</code> 循环）：</p>
+<blockquote>
+<p>Finally, note the syntax of the <code>for</code> loop is similar to <code>for</code> loops in C, where the body of the for loop is denoted by <code>do</code> and <code>done</code> and contains the <code>init; cond; step</code> parts inside double parentheses. Here is the general form of this type of Bash <code>for</code> loop (Bash actually has more than one form of <code>for</code> loop):</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">for ((init; cond; step))</span><br><span class="line">do</span><br><span class="line">  # for loop body statements</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+<p>下面是 <code>run.sh</code> 脚本的几次运行示例：</p>
+<blockquote>
+<p>Below are some sample runs of the <code>run.sh</code> script:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br></pre></td><td class="code"><pre><span class="line">$ ./run.sh</span><br><span class="line">Error, usage: ./run.sh ./a.out [num times]</span><br><span class="line"></span><br><span class="line">$ ./run.sh ./myprog 2</span><br><span class="line">running ./myprog 2 times:</span><br><span class="line">Wed Mar 29 11:34:34 AM EDT 2023</span><br><span class="line">=======================</span><br><span class="line"></span><br><span class="line">run 1:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.060s</span><br><span class="line">user	0m0.003s</span><br><span class="line">sys	0m0.006s</span><br><span class="line"></span><br><span class="line">run 2:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.059s</span><br><span class="line">user	0m0.003s</span><br><span class="line">sys	0m0.006s</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">$ ./run.sh ./myprog</span><br><span class="line">running ./myprog 5 times:</span><br><span class="line">Wed Mar 29 11:34:37 AM EDT 2023</span><br><span class="line">=======================</span><br><span class="line"></span><br><span class="line">run 1:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.057s</span><br><span class="line">user	0m0.008s</span><br><span class="line">sys	0m0.000s</span><br><span class="line"></span><br><span class="line">run 2:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.057s</span><br><span class="line">user	0m0.004s</span><br><span class="line">sys	0m0.004s</span><br><span class="line"></span><br><span class="line">run 3:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.057s</span><br><span class="line">user	0m0.010s</span><br><span class="line">sys	0m0.000s</span><br><span class="line"></span><br><span class="line">run 4:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.056s</span><br><span class="line">user	0m0.009s</span><br><span class="line">sys	0m0.000s</span><br><span class="line"></span><br><span class="line">run 5:</span><br><span class="line">myprog result = 300000</span><br><span class="line"></span><br><span class="line">real	0m0.055s</span><br><span class="line">user	0m0.004s</span><br><span class="line">sys	0m0.004s</span><br></pre></td></tr></table></figure>
+
+<p>使用 <code>run.sh</code> 这类产生大量输出的脚本时，把输出保存到一个文件中，等运行结束后再查看，常常很有帮助。一种做法是用 <a href="17.12-ioredirect.html">I&#x2F;O 重定向</a>把脚本的输出重定向到文件。下面是用命令行选项 <code>./myprog</code> 和 <code>10</code> 运行 <code>run.sh</code> 脚本的例子，它把脚本的 stderr 和 stdout 输出重定向到一个名为 <code>results</code> 的文件：</p>
+<blockquote>
+<p>Often when using scripts like <code>run.sh</code> that produce a lot of output, it is helpful to save the output to a file that can be examined after completion. One way to do this is to use <a href="17.12-ioredirect.html">I&#x2F;O redirection</a> to redirect the script’s output to a file. Below is an example run of the <code>run.sh</code> script with the command line options <code>./myprog</code> and <code>10</code> that redirects its stderr and stdout ouput to a file named <code>results</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ ./run.sh ./myprog 10 &amp;&gt; results</span><br></pre></td></tr></table></figure>
+
+<p>除了支持类似 C <code>for</code> 循环的语法之外，Bash 还支持遍历一组元素的 <code>for</code> 循环语法。下面列出的 Bash 脚本 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/forloops.sh">forloops.sh</a> 中有几个这类 <code>for</code> 循环的例子，展示了获得被遍历元素集合的不同方式。</p>
+<blockquote>
+<p>In addition to supporting syntax similar to a C <code>for</code> loop, Bash supports <code>for</code> loop syntax for iterating over a set of elements. The <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/Appendix2/_attachments/forloops.sh">forloops.sh</a> Bash script (listed below), has a few examples of this type of <code>for</code> loop, showing different ways in which the set of elements iterated over is obtained.</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">#!/bin/bash</span><br><span class="line"></span><br><span class="line">echo &quot;for loop over set of values&quot;</span><br><span class="line"># iterate over a set of given values</span><br><span class="line"># repeats once for each element in the list</span><br><span class="line">for i in cat dog bunny</span><br><span class="line">  do</span><br><span class="line">    echo &quot;next animal is: $i&quot;</span><br><span class="line">  done</span><br><span class="line"></span><br><span class="line">echo</span><br><span class="line"></span><br><span class="line">echo &quot;for loop over sequence&quot;</span><br><span class="line"># &#123;1..5&#125; is the set of values in the sequence: 1,2,3,4,5</span><br><span class="line"># this iterates over &quot;infilei&quot; where i: 1,2,3,4,5</span><br><span class="line">for i in infile&#123;1..5&#125;</span><br><span class="line">  do</span><br><span class="line">    echo &quot;next file is: $i&quot;</span><br><span class="line">  done</span><br><span class="line"></span><br><span class="line">echo</span><br><span class="line"></span><br><span class="line">echo &quot;for loop over set created with ls&quot;</span><br><span class="line"># this iterates over all the files in a subdirectory named input</span><br><span class="line"># $(ls input/): creates a set of value that are all the file</span><br><span class="line"># and directory names in the input/ subdirectory</span><br><span class="line">for i in $(ls input/)</span><br><span class="line">  do</span><br><span class="line">    echo &quot;next input/ file is: $i&quot;</span><br><span class="line">  done</span><br></pre></td></tr></table></figure>
+
+<p>运行时，输出为：</p>
+<blockquote>
+<p>When run, the output is:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">$ ./forloops.sh</span><br><span class="line"></span><br><span class="line">for loop over set of values</span><br><span class="line">next animal is: cat</span><br><span class="line">next animal is: dog</span><br><span class="line">next animal is: bunny</span><br><span class="line"></span><br><span class="line">for loop over sequence</span><br><span class="line">next file is: infile1</span><br><span class="line">next file is: infile2</span><br><span class="line">next file is: infile3</span><br><span class="line">next file is: infile4</span><br><span class="line">next file is: infile5</span><br><span class="line"></span><br><span class="line">for loop over set created with ls</span><br><span class="line">next input/ file is: albums</span><br><span class="line">next input/ file is: artists</span><br><span class="line">next input/ file is: bands</span><br><span class="line">next input/ file is: songs</span><br></pre></td></tr></table></figure>
+
+<p>一般来说，把 Unix 命令与循环、条件、命令行、变量等 Bash shell 语言结构结合起来，用户就能编写出强大的 shell 脚本来完成复杂的操作。本节只展示了几个例子。更多信息请参阅 Bash shell 编程指南。</p>
+<blockquote>
+<p>In general, combining Unix commands with Bash shell language constructs like loops, conditionals, command lines, and variables, allow a user to write powerful shell scripts to perform complex actions. We have shown just a few examples in this section. See a Bash shell programming guide for more information.</p>
+</blockquote>
+<h3 id="17-15-1-参考资料"><a href="#17-15-1-参考资料" class="headerlink" title="17.15.1. 参考资料"></a>17.15.1. 参考资料</h3><p><em>17.15.1. References</em></p>
+<p>更多信息参见：</p>
+<blockquote>
+<p>For more information see:</p>
+</blockquote>
+<ul>
+<li>gnu.org 上的 <a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash 参考手册</a>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.gnu.org/software/bash/manual/html_node/index.html">Bash Reference Manual</a> from gnu.org.</li>
+</ul>
+</blockquote>
+<ul>
+<li>Machtelt Garrels 著 <a target="_blank" rel="noopener" href="https://tldp.org/LDP/Bash-Beginners-Guide/html/">Bash Guide for Beginners</a>（Bash 初学者指南）</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tldp.org/LDP/Bash-Beginners-Guide/html/">Bash Guide for Beginners</a> by Machtelt Garrels</li>
+</ul>
+</blockquote>
+<ul>
+<li>Mendel Cooper 著 <a target="_blank" rel="noopener" href="https://tldp.org/LDP/abs/html/">Advanced Bash-Scripting Guide</a>（高级 Bash 脚本编程指南）</li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://tldp.org/LDP/abs/html/">Advanced Bash-Scripting Guide</a> by Mendel Cooper</li>
+</ul>
+</blockquote>
+<ul>
+<li>cheat-sheets.org 上的<a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">最常用的 Unix 命令</a></li>
+</ul>
+<blockquote>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.cheat-sheets.org/project/tldr/command/special-most-used-linux-commands/">most used Unix commands</a> from cheat-sheets.org</li>
+</ul>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/Appendix2/17.14-dotfiles.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">17.14. 点文件与 .bashrc</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/Appendix2/17.16-sysinfo.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">17.16. 获取系统信息</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#17-15-1-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="toc-text">17.15.1. 参考资料</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

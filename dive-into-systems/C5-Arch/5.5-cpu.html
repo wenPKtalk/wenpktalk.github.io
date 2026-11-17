@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5.5. 构建处理器：把一切组合起来 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;cpu.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.5. Building a Processor: Putting It">
+<meta property="og:type" content="website">
+<meta property="og:title" content="5.5. 构建处理器：把一切组合起来 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/5.5-cpu.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C5-Arch&#x2F;cpu.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  5.5. Building a Processor: Putting It">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonneumann.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/alu.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/aluadd.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/regfile.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/cpu.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.974Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C5-Arch/images/vonneumann.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html" class="current" aria-current="page">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span>
+      </nav>
+      <span class="book-position">第 65 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">5.5. 构建处理器：把一切组合起来</h1>
+  
+  
+    <p class="article-meta"><span>约 18 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C5-Arch/cpu.html">https://diveintosystems.org/book/C5-Arch/cpu.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>5.5. Building a Processor: Putting It All Together</em></p>
+<p><strong>中央处理器</strong>（CPU）实现了冯·诺依曼体系结构中的处理单元和控制单元，即驱动程序指令在程序数据上执行的那些部分（见<a href="5.5-cpu.html">图 1</a>）。</p>
+<blockquote>
+<p>The <strong>central processing unit</strong> (CPU) implements the processing and control units of the von Neumann architecture, the parts that drive the execution of program instructions on program data (see <a href="5.5-cpu.html">Figure 1</a>).</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/vonneumann.png" alt="von Neumann architecture is the 5 units connected by buses"></p>
+<p><strong>图 1.</strong> CPU 实现了冯·诺依曼体系结构中的处理单元和控制单元部分。</p>
+<p><em>Figure 1. The CPU implements the processing and control unit parts of the von Neumann architecture.</em></p>
+<p>CPU 由基本的算术&#x2F;逻辑电路、存储电路和控制电路构件组成。它的主要功能部件包括：执行算术和逻辑运算的<strong>算术逻辑单元</strong>（ALU）；用于存储程序数据的一组通用<strong>寄存器</strong>；实现指令执行时用到的一些控制电路和专用寄存器；以及驱动 CPU 电路执行程序指令的<strong>时钟</strong>（clock）。</p>
+<blockquote>
+<p>The CPU is constructed from basic arithmetic&#x2F;logic, storage, and control circuit building blocks. Its main functional components are the <strong>arithmetic logic unit</strong> (ALU), which performs arithmetic and logic operations; a set of general-purpose <strong>registers</strong> for storing program data; some control circuitry and special-purpose registers that are used in the implementation of instruction execution; and a <strong>clock</strong> that drives the circuitry of the CPU to execute program instructions.</p>
+</blockquote>
+<p>本节介绍 CPU 的主要组成部分，包括 ALU 和寄存器文件，并说明如何把它们组合起来实现一个 CPU。下一节讨论 CPU 如何执行程序指令，以及如何用时钟驱动程序指令的执行。</p>
+<blockquote>
+<p>In this section, we present the main parts of the CPU, including the ALU and register file, and show how they are combined to implement a CPU. In the next section, we discuss how the CPU executes program instructions and how the clock is used to drive the execution of program instructions.</p>
+</blockquote>
+<h3 id="5-5-1-ALU"><a href="#5-5-1-ALU" class="headerlink" title="5.5.1. ALU"></a>5.5.1. ALU</h3><p><em>5.5.1. The ALU</em></p>
+<p>ALU 是一个复杂的电路，它实现对有符号整数和无符号整数的所有算术和逻辑运算。另有一个单独的浮点单元对浮点值执行算术运算。ALU 接收整数操作数值和一个<strong>操作码</strong>（opcode）值，操作码指定要执行的运算（例如加法）。ALU 输出在操作数输入上执行指定运算得到的结果值，以及编码了运算结果相关信息的<strong>条件码</strong>（condition code）值。常见的条件码表示 ALU 的结果是否为负、是否为零，或者运算是否产生了进位输出位。例如，对于 C 语句</p>
+<blockquote>
+<p>The ALU is a complex circuit that implements all arithmetic and logic operations on signed and unsigned integers. A separate floating-point unit performs arithmetic operations on floating-point values. The ALU takes integer operand values and an <strong>opcode</strong> value that specifies the operation to perform (e.g. addition). The ALU outputs the resulting value of performing the specified operation on the operand inputs and <strong>condition code</strong> values that encode information about the result of the operation. Common condition codes specify whether the ALU result is negative, zero, or if there is a carry-out bit from the operation. For example, given the C statement</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">x = 6 + 8;</span><br></pre></td></tr></table></figure>
+
+<p>CPU 开始执行这次加法时，把操作数值（6 和 8）以及编码了 ADD 运算的位送入 ALU 电路。ALU 算出结果并输出，同时输出条件码，表示结果非负、非零，且没有产生进位输出。每个条件码用一个位编码。位值为 1 表示条件成立，位值为 0 表示 ALU 的结果不满足该条件。在我们的例子中，位模式 000 表示执行 6+8 对应的三个条件：结果不为负（0）、不为零（0），进位输出值为零（0）。</p>
+<blockquote>
+<p>the CPU begins executing the addition by feeding the operand values (6 and 8) and the bits that encode an ADD operation to the ALU circuit. The ALU computes the result and outputs it along with condition codes to indicate that the result is nonnegative, is nonzero, and causes no carry-out. Each condition code is encoded in a single bit. A bit value of 1 indicates that the condition holds, and a bit value of 0 indicates that it does not hold for the ALU result. In our example, the bit pattern 000 specifies the set of three conditions associated with executing 6+8: the result is not negative (0), is not zero (0), and the carry-out value is zero (0).</p>
+</blockquote>
+<p>ALU 在执行运算时设置的条件码，有时会被后续根据特定条件选择动作的指令使用。例如，一条 ADD 指令可以计算下面这个 <code>if</code> 语句中的 (x + 8) 部分：</p>
+<blockquote>
+<p>Condition codes, set by the ALU as part of its execution of an operation, are sometimes used by subsequent instructions that choose an action based on a particular condition. For example, an ADD instruction can compute the (x + 8) part of the following <code>if</code> statement:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">if( (x + 8) != 0 ) &#123;</span><br><span class="line">    x++;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>ALU 执行 ADD 指令时，会根据 <code>(x + 8)</code> 相加的结果设置条件码。在 ADD 指令之后执行的条件跳转指令会检测 ADD 指令设置的条件码位，并根据它们的值决定是否跳转（跳过 <code>if</code> 语句体中的指令）。例如，如果 ADD 指令把零条件码设为 0，条件跳转指令就不会跳过 <code>if</code> 语句体对应的指令（零条件码为 0 表示 ADD 的结果不为零）。如果零条件码为 1，它就会跳过 <code>if</code> 语句体的指令。为了实现跳过一组指令，CPU 会把 <code>if</code> 语句体指令之后第一条指令的内存地址写入<strong>程序计数器</strong>（PC），PC 中存放的是下一条要执行的指令的地址。</p>
+<blockquote>
+<p>The ALU’s execution of the ADD instruction sets condition codes based on the result of adding <code>(x + 8)</code>. A conditional jump instruction executed after the ADD instruction tests the condition code bits set by the ADD instruction and either jumps (skips over executing the instructions in the <code>if</code> body) or not based on their value. For example, if the ADD instruction sets the zero condition code to 0, the conditional jump instruction will not jump past the instructions associated with the <code>if</code> body (0 for the zero condition code means that the result of the ADD was not zero). If the zero condition code is 1, it will jump past the <code>if</code> body instructions. To implement a jump past a set of instructions, the CPU writes the memory address of the first instruction after the <code>if</code> body instructions into the <strong>program counter</strong> (PC), which contains the address of the next instruction to execute.</p>
+</blockquote>
+<p>ALU 电路把几个算术和逻辑电路（用于实现它的运算集合）与一个多路复用器电路组合起来，由多路复用器选出 ALU 的输出。一个简单的 ALU 并不试图只选择性地激活与特定运算对应的那个算术电路，而是把它的操作数输入值送入它内部所有的算术和逻辑电路。ALU 内部所有算术和逻辑电路的输出都被输入到它的多路复用器电路，由多路复用器选出 ALU 的输出。ALU 的操作码输入被用作多路复用器的信号输入，以选择哪个算术&#x2F;逻辑运算的结果作为 ALU 的输出。条件码输出则基于 MUX 的输出，再配合检测输出值的电路来确定每个条件码位。</p>
+<blockquote>
+<p>An ALU circuit combines several arithmetic and logic circuits (for implementing its set of operations) with a multiplexer circuit to pick the ALU’s output. Rather than trying to selectively activate only the arithmetic circuit associated with the specific operation, a simple ALU sends its operand input values to all of its internal arithmetic and logic circuits. The output from all of the ALU’s internal arithmetic and logic circuits are input to its multiplexer circuit, which chooses the ALU’s output. The opcode input to the ALU is used as the signal input to the multiplexer to select which arithmetic&#x2F;logic operation to select as the ALU’s output. Condition code output is based on the MUX output combined with circuitry to test the output’s value to determine each condition code bit.</p>
+</blockquote>
+<p><a href="5.5-cpu.html">图 2</a> 展示了一个示例 ALU 电路，它对两个 32 位操作数执行四种不同的运算（ADD、OR、AND 和 EQUALS）。它还产生一个条件码输出，表示运算结果是否为零。注意，ALU 把操作码送到一个多路复用器，由它选择输出 ALU 的四个运算结果中的哪一个。</p>
+<blockquote>
+<p><a href="5.5-cpu.html">Figure 2</a> shows an example ALU circuit that performs four different operations (ADD, OR, AND, and EQUALS) on two 32-bit operands. It also produces a single condition code output that indicates whether the result of the operation is zero. Notice that the ALU directs the opcode to a multiplexer that selects which of the ALU’s four arithmetic results it outputs.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/alu.png" alt="the 4 operations alu with single condition code for zero"></p>
+<p><strong>图 2.</strong> 一个对两个 32 位操作数执行 ADD、OR、AND 和 EQUALS 的四功能 ALU。它有一个条件码输出位，表示结果是否为 0。</p>
+<p><em>Figure 2. A four-function ALU that performs ADD, OR, AND, and EQUALS on two 32-bit operands. It has one condition code output bit that specifies whether the result is 0.</em></p>
+<p>ALU 的操作码输入来自 CPU 正在执行的指令中的某些位。例如，一条 ADD 指令的二进制编码可能由四部分组成：</p>
+<blockquote>
+<p>The opcode input to the ALU comes from bits in the instruction that the CPU is executing. For example, the binary encoding for an ADD instruction might consist of four parts:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">| OPCODE BITS | OPERAND A SOURCE | OPERAND B SOURCE | RESULT DESTINATION |</span><br></pre></td></tr></table></figure>
+
+<p>根据 CPU 体系结构的不同，操作数来源位可能编码一个 CPU 寄存器、存放操作数值的内存地址，或者字面操作数值。例如，在执行 6 + 8 的指令中，字面值 6 和 8 可以直接编码在指令的操作数说明位中。</p>
+<blockquote>
+<p>Depending on the CPU architecture, operand source bits might encode a CPU register, the memory address storing the operand value, or literal operand values. For example, in an instruction to perform 6 + 8, the literal values 6 and 8 could be encoded directly into the operand specifier bits of the instruction.</p>
+</blockquote>
+<p>对于我们的 ALU，由于它支持四种运算，操作码需要两位，因为两位可以编码四个不同的值（00、01、10、11），每个值对应一种运算。一般来说，执行 <em>N</em> 种不同运算的 ALU 需要 log<sub>2</sub>(<em>N</em>) 个操作码位，来指定从 ALU 输出哪个运算的结果。</p>
+<blockquote>
+<p>For our ALU, the opcode requires two bits because the ALU supports four operations, and two bits can encode four distinct values (00, 01, 10, 11), one for each operation. In general, an ALU that performs <em>N</em> distinct operations, needs log<sub>2</sub>(<em>N</em>) opcode bits to specify which operation result to output from the ALU.</p>
+</blockquote>
+<p><a href="5.5-cpu.html">图 3</a> 展示了 ADD 指令的操作码位和操作数位如何作为我们这个 ALU 的输入。</p>
+<blockquote>
+<p><a href="5.5-cpu.html">Figure 3</a> shows an example of how the opcode and operand bits of an ADD instruction are used as input into our ALU.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/aluadd.png" alt="instruction and opcode bits sent as three input values into ALU"></p>
+<p><strong>图 3.</strong> ALU 用指令中的操作码位来选择输出哪个运算的结果。在这个例子中，ADD 指令的不同位被分别送入 ALU 的操作数输入和操作码输入，执行 6 与 8 的加法。</p>
+<p><em>Figure 3. Opcode bits from an instruction are used by the ALU to choose which operation to output. In this example, different bits from an ADD instruction are fed into the ALU operand and opcode inputs to perform addition of 6 and 8.</em></p>
+<h3 id="5-5-2-寄存器文件"><a href="#5-5-2-寄存器文件" class="headerlink" title="5.5.2. 寄存器文件"></a>5.5.2. 寄存器文件</h3><p><em>5.5.2. The Register File</em></p>
+<p>在存储器层次结构的顶端，CPU 的一组通用寄存器存放临时值。CPU 提供的寄存器数量非常少，通常为 8–32 个（例如，IA32 体系结构提供 8 个，MIPS 提供 16 个，ARM 提供 13 个）。指令常常从通用寄存器中获取操作数值，或者把结果存入通用寄存器。例如，一条 ADD 指令可能编码为<em>「把寄存器 1 中的值与寄存器 2 中的值相加，并把结果存入寄存器 3」</em>。</p>
+<blockquote>
+<p>At the top of the memory hierarchy, the CPU’s set of general-purpose registers store temporary values. CPUs provide a very small number of registers, commonly 8-32 (e.g., the IA32 architecture provides 8, MIPS provides 16, and ARM provides 13). Instructions often get their operand values from, or store their results to, general-purpose registers. For example, an ADD instruction may be encoded as <em>“add the value from Register 1 to the value from Register 2 and store the result in Register 3”</em>.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这里列出的寄存器数目只是举例，而且与具体的体系结构版本有关：本书第 7 章会讲到 x86-64 有 16 个通用寄存器，第 9 章会讲到 ARM64（AArch64）有 31 个通用寄存器（x0–x30）；原书说的「ARM 13 个」指的是 32 位 ARM 中 r0–r12 这 13 个寄存器（另有 SP、LR、PC 三个专用寄存器）。</p>
+</div>
+<p>CPU 的一组通用寄存器被组织成一个<strong>寄存器文件</strong>（register file）电路。寄存器文件由一组用于存储数据值的<a href="5.4.3-storagecircs.html">寄存器电路</a>，以及一些控制对其寄存器进行读写的<a href="5.4.2-controlcircs.html">控制电路</a>组成。这个电路通常有一条数据输入线，用于写入其某个寄存器的值；还有两条数据输出线，用于同时从其寄存器中读出两个值。</p>
+<blockquote>
+<p>The CPU’s set of general-purpose registers is organized into a <strong>register file</strong> circuit. A register file consists of a set of <a href="5.4.3-storagecircs.html">register circuits</a> for storing data values and some <a href="5.4.2-controlcircs.html">control circuits</a> for controlling reads and writes to its registers. The circuit typically has a single data input line for the value to write into one of its registers, and two data output lines for simultaneously reading two values from its registers.</p>
+</blockquote>
+<p><a href="5.5-cpu.html">图 4</a> 展示了一个含四个寄存器的寄存器文件电路的例子。它的两个输出值（Data out<sub>0</sub> 和 Data out<sub>1</sub>）由两个多路复用器电路控制。它的每个读选择输入（Sr<sub>0</sub> 和 Sr<sub>1</sub>）分别送入其中一个 MUX，为相应的输出选出寄存器的值。寄存器文件的数据输入（Data in 线）被送到每个寄存器电路，而它的写使能（WE）输入先经过一个多路分配器（DMUX）电路，再送到各个寄存器电路。DMUX 电路接收一个输入值，选择把这个值送到 <em>N</em> 个输出中的哪一个，其余 <em>N-1</em> 个输出都为 0。寄存器文件的写选择输入（S<sub>w</sub>）被送到 DMUX 电路，用来选择 WE 值的目标寄存器。当寄存器文件的 WE 输入值为 0 时，不会有值被写入任何寄存器，因为每个寄存器的 WE 位也都是 0（因此 Data in 对寄存器中存储的值没有影响）。当 WE 位为 1 时，DMUX 只向写选择输入（S<sub>w</sub>）指定的那个寄存器输出值为 1 的 WE 位，从而只把 Data in 的值写入被选中的寄存器。</p>
+<blockquote>
+<p><a href="5.5-cpu.html">Figure 4</a> shows an example of a register file circuit with four registers. Its two output values (Data out<sub>0</sub> and Data out<sub>1</sub>) are controlled by two multiplexer circuits. Each of its read selection inputs (Sr<sub>0</sub> and Sr<sub>1</sub>) is fed into one of the MUXs to pick the register value for the corresponding output. The data input to the register file (the Data in line) is sent to every register circuit, and its write enable (WE) input is fed through a demultiplexer (DMUX) circuit first before being sent to each register circuit. A DMUX circuit takes one input value and chooses which of <em>N</em> outputs to send the value to, sending the remaining <em>N-1</em> outputs 0. The write selection input (S<sub>w</sub>) to the register file is sent to the DMUX circuit to choose the WE value’s destination register. When the register file’s WE input value is 0, no value is written into a register because each register’s WE bit also gets 0 (thus, Data in has no effect on the values stored in the registers). When the WE bit is 1, the DMUX outputs a WE bit value of 1 to only the register specified by the write selection input (S<sub>w</sub>), resulting in the Data in value being written to the selected register only.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/regfile.png" alt="register file"></p>
+<p><strong>图 4.</strong> 寄存器文件：一组 CPU 通用寄存器，用于存储指令的操作数和结果值。</p>
+<p><em>Figure 4. The register file: the set of CPU general-purpose registers used to store instruction operand and result values.</em></p>
+<h4 id="专用寄存器"><a href="#专用寄存器" class="headerlink" title="专用寄存器"></a>专用寄存器</h4><p><em>Special-Purpose Registers</em></p>
+<p>除了寄存器文件中的通用寄存器之外，CPU 还包含一些专用寄存器，用于存储指令的地址和内容。<strong>程序计数器</strong>（PC）存放下一条要执行的指令的内存地址，<strong>指令寄存器</strong>（IR）存放 CPU 当前正在执行的指令的各个位。在指令执行过程中，IR 中存放的指令位被用作 CPU 不同部分的输入。我们会在下一节<a href="5.6-instrexec.html">指令执行</a>中更详细地讨论这些寄存器。</p>
+<blockquote>
+<p>In addition to the set of general-purpose registers in the register file, a CPU contains special-purpose registers that store the address and content of instructions. The <strong>program counter</strong> (PC) stores the memory address of the next instruction to execute, and the <strong>instruction register</strong> (IR) stores the bits of the current instruction being executed by the CPU. The bits of the instruction stored in the IR are used as input into different parts of the CPU during the instruction’s execution. We discuss these registers in more detail in the next section on <a href="5.6-instrexec.html">instruction execution</a>.</p>
+</blockquote>
+<h3 id="5-5-3-CPU"><a href="#5-5-3-CPU" class="headerlink" title="5.5.3. CPU"></a>5.5.3. CPU</h3><p><em>5.5.3. The CPU</em></p>
+<p>有了 ALU 和寄存器文件电路，我们就可以构建 CPU 的主要部分，如<a href="5.5-cpu.html">图 5</a> 所示。由于指令的操作数常常来自通用寄存器中存储的值，寄存器文件的输出把数据送到 ALU 的输入。类似地，由于指令的结果常常存入寄存器，ALU 的结果输出被作为输入送到寄存器文件。CPU 还有额外的电路，用于在 ALU、寄存器文件和其他部件（例如主存）之间移动数据。</p>
+<blockquote>
+<p>With the ALU and register file circuits, we can build the main parts of the CPU, as shown in <a href="5.5-cpu.html">Figure 5</a>. Because instruction operands often come from values stored in general-purpose registers, the register file’s outputs send data to the ALU’s inputs. Similarly, because instruction results are often stored in registers, the ALU’s result output is sent as input to the register file. The CPU has additional circuitry to move data between the ALU, register file, and other components (e.g., main memory).</p>
+</blockquote>
+<p><img src="/dive-into-systems/C5-Arch/images/cpu.png" alt="the cpu is built from register file and ALU circuits"></p>
+<p><strong>图 5.</strong> ALU 和寄存器文件构成了 CPU 的主要部分。ALU 执行运算，寄存器文件存储操作数和结果值。另外的专用寄存器存储指令的地址（PC）和内容（IR）。注意，指令可能从寄存器文件以外的位置（例如主存）获取操作数或存储结果。</p>
+<p><em>Figure 5. The ALU and register file make up the main parts of the CPU. The ALU performs operations, and the register file stores operand and result values. Additional special-purpose registers store instruction addresses (PC) and contents (IR). Note that instructions might retrieve operands from or store results to locations other than the register file (e.g., main memory).</em></p>
+<p>CPU 的这些主要部分构成了它的<strong>数据通路</strong>（data path）。数据通路由 CPU 中执行算术和逻辑运算的部分（ALU）、存储数据的部分（寄存器）以及连接这些部分的总线组成。CPU 还实现了一条<strong>控制通路</strong>（control path），驱动 ALU 在寄存器文件中存储的操作数上执行程序指令。此外，控制通路还根据指令的需要向 I&#x2F;O 设备发出命令并协调内存访问。例如，有些指令可能直接从内存位置获取操作数值（或者直接把结果存入内存位置），而不是通用寄存器。在下一节中，我们对 CPU 指令执行的讨论集中在从寄存器文件获取操作数值并把结果存入寄存器文件的指令上。CPU 需要额外的控制电路来从其他位置读取操作数值或向其他位置写入指令结果，但无论来源和目标位置是什么，指令执行的主要步骤都是相同的。</p>
+<blockquote>
+<p>These main parts of the CPU make up its <strong>data path</strong>. The data path consists of the parts of the CPU that perform arithmetic and logic operations (the ALU) and store data (registers), and the buses that connect these parts. The CPU also implements a <strong>control path</strong> that drives the execution of program instructions by the ALU on operands stored in the register file. Additionally, the control path issues commands to I&#x2F;O devices and coordinates memory accesses as needed by instructions. For example, some instructions may get their operand values directly from (or store their results directly to) memory locations rather than general-purpose registers. In the next section, we focus our discussion of CPU instruction execution on instructions that get operand values and store results to the register file. The CPU requires additional control circuitry to read operand values or to write instruction results to other locations, but the main instruction execution steps behave the same regardless of the source and destination locations.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">5.4.3. 存储电路</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C5-Arch/5.6-instrexec.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">5.6. 处理器对程序指令的执行</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-1-ALU"><span class="toc-text">5.5.1. ALU</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-2-%E5%AF%84%E5%AD%98%E5%99%A8%E6%96%87%E4%BB%B6"><span class="toc-text">5.5.2. 寄存器文件</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-5-3-CPU"><span class="toc-text">5.5.3. CPU</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

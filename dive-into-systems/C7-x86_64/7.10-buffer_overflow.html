@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>7.10. 现实世界：缓冲区溢出 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C7-x86_64&#x2F;buffer_overflow.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  7.10. Real World: Buffer">
+<meta property="og:type" content="website">
+<meta property="og:title" content="7.10. 现实世界：缓冲区溢出 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C7-x86_64&#x2F;buffer_overflow.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  7.10. Real World: Buffer">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/beforeScanf.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/afterScanf.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/afterScanf2.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/finalExploit.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.986Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.986Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C7-x86_64/images/beforeScanf.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html" class="current" aria-current="page">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>7. 64 位 x86 汇编（x86-64）</span>
+      </nav>
+      <span class="book-position">第 86 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">7.10. 现实世界：缓冲区溢出</h1>
+  
+  
+    <p class="article-meta"><span>约 34 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/buffer_overflow.html">https://diveintosystems.org/book/C7-x86_64/buffer_overflow.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>7.10. Real World: Buffer Overflow</em></p>
+<p>C 语言不会自动做数组越界检查。访问数组边界以外的内存是有问题的，常常导致段错误之类的错误。然而，聪明的攻击者可以注入恶意代码，故意越过数组（也称为<strong>缓冲区</strong>，buffer）的边界，迫使程序以非预期的方式执行。在最坏的情况下，攻击者可以运行代码获得 <strong>root 权限</strong>，也就是对计算机系统的操作系统级访问权。利用程序中已知的缓冲区越界错误来达到目的的软件，称为<strong>缓冲区溢出攻击</strong>（buffer overflow exploit）。</p>
+<blockquote>
+<p>The C language does not perform automatic array bounds checking. Accessing memory outside of the bounds of an array is problematic and often results in errors such as segmentation faults. However, a clever attacker can inject malicious code that intentionally overruns the boundary of an array (also known as a <strong>buffer</strong>) to force the program to execute in an unintended manner. In the worst cases, the attacker can run code that allows them to gain <strong>root privilege</strong>, or OS-level access to the computer system. A piece of software that takes advantage of the existence of a known buffer overrun error in a program is known as a <strong>buffer overflow exploit</strong>.</p>
+</blockquote>
+<p>本节我们使用 GDB 和汇编语言，完整剖析缓冲区溢出攻击的机制。阅读本章之前，建议先看看讲解<a href="../C3-C_debug/3.5-gdb_assembly.html">用 GDB 检查汇编代码</a>的那一章。</p>
+<blockquote>
+<p>In this section, we use GDB and assembly language to fully characterize the mechanics of a buffer overflow exploit. Prior to reading this chapter we encourage you to explore the chapter discussing <a href="../C3-C_debug/3.5-gdb_assembly.html">GDB for inspecting assembly code</a>.</p>
+</blockquote>
+<h3 id="7-10-1-著名的缓冲区溢出案例"><a href="#7-10-1-著名的缓冲区溢出案例" class="headerlink" title="7.10.1. 著名的缓冲区溢出案例"></a>7.10.1. 著名的缓冲区溢出案例</h3><p><em>7.10.1. Famous Examples of Buffer Overflow</em></p>
+<p>缓冲区溢出攻击出现于 20 世纪 80 年代，直到 21 世纪头几年一直是计算机行业的头号祸害。虽然许多现代操作系统已经能防御最简单的缓冲区溢出攻击，但粗心的编程错误仍然可能让现代程序门户大开。最近在 Skype<sup>1</sup>、Android<sup>2</sup>、Google Chrome<sup>3</sup> 等软件中都发现过缓冲区溢出漏洞。</p>
+<blockquote>
+<p>Buffer overflow exploits emerged in the 1980s and remained a chief scourge of the computing industry through the early parts of the 2000s. While many modern operating systems have protections against the simplest buffer overflow attacks, careless programming errors can still leave modern programs wide open to attack. Buffer overflow exploits have recently been discovered in Skype<sup>1</sup>, Android<sup>2</sup>, Google Chrome<sup>3</sup>, and others.</p>
+</blockquote>
+<p>下面是几个著名的历史案例。</p>
+<blockquote>
+<p>Here are some notable historic examples of buffer overflow exploits.</p>
+</blockquote>
+<ul>
+<li><p><strong>莫里斯蠕虫</strong>（The Morris Worm）</p>
+<p>莫里斯蠕虫<sup>4</sup>于 1988 年从 MIT 释放到 ARPANet 上（为的是掩盖它出自康奈尔大学一名学生之手），它利用了 UNIX finger 守护进程（<code>fingerd</code>）中的一个缓冲区越界漏洞。在 Linux 和其他类 UNIX 系统中，<strong>守护进程</strong>（daemon）是一类在后台持续运行的进程，通常执行清理和监控任务。<code>fingerd</code> 守护进程返回关于某台计算机或某个人的友好报告。最要命的是，这个蠕虫的复制机制会把它多次发送到同一台计算机上，把系统拖到无法使用的地步。尽管作者声称这个蠕虫只是一次无害的智力练习，但复制机制让它极易传播，也很难清除。此后多年，还有其他蠕虫利用缓冲区溢出攻击未经授权进入系统，著名的有 Code Red（2001）、MS-SQLSlammer（2003）和 W32&#x2F;Blaster（2003）。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong>The Morris Worm</strong></p>
+<p>The Morris Worm<sup>4</sup> was released in 1988 on ARPANet from MIT (to hide that it was written by a student at Cornell) and exploited a buffer overrun vulnerability that existed in the UNIX finger daemon (<code>fingerd</code>). In Linux and other UNIX-like systems, a <strong>daemon</strong> is a type of process that continuously executes in the background, usually performing clean-up and monitoring tasks. The <code>fingerd</code> daemon returns a user-friendly report on a computer or person. Most crucially, the worm had a replication mechanism that caused it to be sent to the same computer multiple times, bogging down the system to an unusable state. Although the author claimed that the worm was meant as a harmless intellectual exercise, the replication mechanism enabled the worm to spread easily and made it difficult to remove. In future years, other worms would employ buffer overflow exploits to gain unauthorized access into systems. Notable examples include Code Red (2001), MS-SQLSlammer (2003), and W32&#x2F;Blaster (2003).</p>
+</li>
+</ul>
+</blockquote>
+<ul>
+<li><p><strong>AOL 聊天大战</strong>（AOL Chat Wars）</p>
+<p>前微软工程师 David Auerbach<sup>5</sup> 详细讲述了他在 20 世纪 90 年代末把微软的 Messenger Service（MMS）与 AOL Instant Messenger 打通时遭遇的一次缓冲区溢出。那时，想和亲友即时通信（IM），AOL Instant Messenger（AIM）是<em>不二之选</em>。微软想在这个市场站稳脚跟，就在 MMS 中设计了一个功能，让 MMS 用户能和他们的 AIM「好友」聊天。AOL 很不高兴，给服务器打了补丁，让 MMS 无法再连上。微软工程师想出办法让 MMS 客户端模仿 AIM 客户端发给 AOL 服务器的消息，使 AOL 难以区分消息来自 MMS 还是 AIM。AOL 的回应是改变 AIM 发送消息的方式，MMS 工程师则相应地修改客户端消息，使之再次与 AIM 的一致。这场「聊天大战」一直持续，直到 AOL 开始利用<em>自家客户端里</em>的一个缓冲区溢出错误来验证发来的消息是否来自 AIM 客户端。由于 MMS 客户端没有同样的漏洞，聊天大战就此结束，AOL 获胜。</p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p><strong>AOL Chat Wars</strong></p>
+<p>David Auerbach<sup>5</sup>, a former Microsoft engineer, detailed his experience with a buffer overflow during his efforts to integrate Microsoft’s Messenger Service (MMS) with AOL Instant Messenger in the late 1990s. Back then, AOL Instant Messenger (AIM) was <em>the</em> service to use if you wanted to instant message (or IM) friends and family. Microsoft tried to gain a foothold in this market by designing a feature in MMS that enabled MMS users to talk to their AIM “buddies.” Displeased, AOL patched their servers so that MMS could no longer connect to them. Microsoft engineers figured out a way for MMS clients to mimic the messages sent by AIM clients to AOL servers, making it difficult for AOL to distinguish between messages received by MMS and AIM. AOL responded by changing the way AIM sent messages, and MMS engineers duly changed their client’s messages to once again match AIM’s. This “chat war” continued until AOL started using a buffer overflow error <em>in their own client</em> to verify that sent messages came from AIM clients. Since MMS clients did not have the same vulnerability, the chat wars ended, with AOL as the victor.</p>
+</li>
+</ul>
+</blockquote>
+<h3 id="7-10-2-初探：猜谜游戏"><a href="#7-10-2-初探：猜谜游戏" class="headerlink" title="7.10.2. 初探：猜谜游戏"></a>7.10.2. 初探：猜谜游戏</h3><p><em>7.10.2. A First Look: The Guessing Game</em></p>
+<p>为了帮助你理解缓冲区溢出攻击的机制，我们提供了一个简单程序的可执行文件，用户可以和它玩猜谜游戏。在<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/secretx86-64.tar.gz">这个链接</a>下载 <code>secret</code> 可执行文件，并用 <code>tar</code> 命令解压：</p>
+<blockquote>
+<p>To help you understand the mechanism of the buffer overflow attack, we provide the executable of a simple program that enables the user to play a guessing game with the program. Download the <code>secret</code> executable at <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/secretx86-64.tar.gz">this link</a> and extract it using the <code>tar</code> command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ tar -xzvf secretx86-64.tar.gz</span><br></pre></td></tr></table></figure>
+
+<p>下面给出与该可执行文件对应的主文件 <code>main.c</code>（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/main.c">main.c</a>）的副本：</p>
+<blockquote>
+<p>Below, we provide a copy of <code>main.c</code> (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/main.c">main.c</a>), the main file associated with the executable:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &quot;other.h&quot; //contains secret function definitions</span><br><span class="line"></span><br><span class="line">/*prints out the You Win! message*/</span><br><span class="line">void endGame(void) &#123;</span><br><span class="line">    printf(&quot;You win!\n&quot;);</span><br><span class="line">    exit(0);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/*main function of the game*/</span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int guess, secret, len, x=3;</span><br><span class="line">    char buf[12]; //buffer (12 bytes long)</span><br><span class="line"></span><br><span class="line">    printf(&quot;Enter secret number:\n&quot;);</span><br><span class="line">    scanf(&quot;%s&quot;, buf); //read guess from user input</span><br><span class="line">    guess = atoi(buf); //convert to an integer</span><br><span class="line"></span><br><span class="line">    secret = getSecretCode(); //call the getSecretCode function</span><br><span class="line"></span><br><span class="line">    //check to see if guess is correct</span><br><span class="line">    if (guess == secret) &#123;</span><br><span class="line">        printf(&quot;You got it right!\n&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        printf(&quot;You are so wrong!\n&quot;);</span><br><span class="line">        return 1; //if incorrect, exit</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Enter the secret string to win:\n&quot;);</span><br><span class="line">    scanf(&quot;%s&quot;, buf); //get secret string from user input</span><br><span class="line"></span><br><span class="line">    guess = calculateValue(buf, strlen(buf)); //call calculateValue function</span><br><span class="line"></span><br><span class="line">    //check to see if guess is correct</span><br><span class="line">    if (guess != secret) &#123;</span><br><span class="line">        printf(&quot;You lose!\n&quot;);</span><br><span class="line">        return 2; //if guess is wrong, exit</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /*if both the secret string and number are correct</span><br><span class="line">    call endGame()*/</span><br><span class="line">    endGame();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>这个游戏先提示用户输入一个秘密数字，再输入一个秘密字符串，两者都对才能赢。头文件 <code>other.h</code> 包含 <code>getSecretCode</code> 和 <code>calculateValue</code> 函数的定义，但我们拿不到它。那么用户怎样才能打败这个程序？暴力穷举会花太长时间。一种策略是在 GDB 中分析 <code>secret</code> 可执行文件，单步执行汇编代码，找出秘密数字和字符串。通过检查汇编代码来弄清它如何工作的过程，通常称为对汇编进行<strong>逆向工程</strong>（reverse engineering）。对自己的 GDB 和汇编阅读能力足够有信心的读者，应该能用 GDB 逆向出秘密数字和秘密字符串分别是什么。</p>
+<blockquote>
+<p>This game prompts the user to enter first a secret number and then a secret string to win the guessing game. The header file <code>other.h</code> contains the definition of the <code>getSecretCode</code> and <code>calculateValue</code> functions, but it is unavailable to us. How then can a user beat the program? Brute forcing the solution will take too long. One strategy is to analyze the <code>secret</code> executable in GDB and step through the assembly to reveal the secret number and string. The process of examining assembly code to reveal knowledge of how it works is commonly referred to as <strong>reverse engineering</strong> assembly. Readers comfortable enough with their GDB and assembly reading skills should be able to figure out what the secret number and the secret string should be by using GDB to reverse engineer their values.</p>
+</blockquote>
+<p>不过，还有另一种更狡猾的取胜方法。</p>
+<blockquote>
+<p>However, there is a different, sneakier way to win.</p>
+</blockquote>
+<h3 id="7-10-3-仔细看看（C-之下）"><a href="#7-10-3-仔细看看（C-之下）" class="headerlink" title="7.10.3. 仔细看看（C 之下）"></a>7.10.3. 仔细看看（C 之下）</h3><p><em>7.10.3. Taking a Closer Look (Under the C)</em></p>
+<p>程序在第一次调用 <code>scanf</code> 处有一个潜在的缓冲区越界漏洞。为了弄清发生了什么，我们用 GDB 查看 <code>main</code> 函数的汇编代码。我们还在地址 0x0000000000400717 处设一个断点，它是调用 <code>scanf</code> 之前那条指令的地址（注意，如果把断点设在 <code>scanf</code> 的地址上，程序会停在 <code>scanf</code> 调用<em>内部</em>，而不是 <code>main</code> 中）。</p>
+<blockquote>
+<p>The program contains a potential buffer overrun vulnerability at the first call to <code>scanf</code>. To understand what is going on, let’s inspect the assembly code of the <code>main</code> function using GDB. Let’s also place a breakpoint at address 0x0000000000400717, which is the address of the instruction right before the call to <code>scanf</code> (note that placing the breakpoint at the address of <code>scanf</code> causes program execution to halt <em>inside</em> the call to <code>scanf</code>, not in <code>main</code>).</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">   0x00000000004006f2 &lt;+0&gt;:   push   %rbp</span><br><span class="line">   0x00000000004006f3 &lt;+1&gt;:   mov    %rsp,%rbp</span><br><span class="line">   0x00000000004006f6 &lt;+4&gt;:   sub    $0x20,%rsp</span><br><span class="line">   0x00000000004006fa &lt;+8&gt;:   movl   $0x3,-0x4(%rbp)</span><br><span class="line">   0x0000000000400701 &lt;+15&gt;:  mov    $0x400873,%edi</span><br><span class="line">   0x0000000000400706 &lt;+20&gt;:  callq  0x400500 &lt;printf@plt&gt;</span><br><span class="line">   0x000000000040070b &lt;+25&gt;:  lea    -0x20(%rbp),%rax</span><br><span class="line">   0x000000000040070f &lt;+29&gt;:  mov    %rax,%rsi</span><br><span class="line">   0x0000000000400712 &lt;+32&gt;:  mov    $0x400888,%edi</span><br><span class="line">=&gt; 0x0000000000400717 &lt;+37&gt;:  mov    $0x0,%eax</span><br><span class="line">   0x000000000040071c &lt;+42&gt;:  callq  0x400540 &lt;scanf@plt&gt;</span><br></pre></td></tr></table></figure>
+
+<p><a href="7.10-buffer_overflow.html">图 1</a> 描绘了调用 <code>scanf</code> 之前那一刻的栈。</p>
+<blockquote>
+<p><a href="7.10-buffer_overflow.html">Figure 1</a> depicts the stack immediately before the call to <code>scanf</code>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C7-x86_64/images/beforeScanf.png" alt="before"></p>
+<p><strong>图 1.</strong> 调用 scanf 之前那一刻的调用栈</p>
+<p><em>Figure 1. The call stack immediately before the call to scanf</em></p>
+<p>调用 <code>scanf</code> 之前，它的前两个参数被分别预先加载到寄存器 <code>%edi</code> 和 <code>%rsi</code> 中。位于 <code>&lt;main+25&gt;</code> 的 <code>lea</code> 指令生成了数组 <code>buf</code> 的引用（地址）。</p>
+<blockquote>
+<p>Prior to the call to <code>scanf</code>, the first two arguments for <code>scanf</code> are preloaded into registers <code>%edi</code> and <code>%rsi</code>, respectively. The <code>lea</code> instruction at location <code>&lt;main+25&gt;</code> creates the reference for array <code>buf</code>.</p>
+</blockquote>
+<p>现在，假设用户在提示符处输入 <code>1234567890</code>。<a href="7.10-buffer_overflow.html">图 2</a> 展示了 <code>scanf</code> 调用刚刚完成时栈的样子。</p>
+<blockquote>
+<p>Now, suppose the user enters <code>1234567890</code> at the prompt. <a href="7.10-buffer_overflow.html">Figure 2</a> illustrates what the stack looks like immediately after the call to <code>scanf</code> completes.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C7-x86_64/images/afterScanf.png" alt="after"></p>
+<p><strong>图 2.</strong> 输入 1234567890 时，scanf 调用刚完成那一刻的调用栈</p>
+<p><em>Figure 2. The call stack immediately after the call to scanf with input 1234567890</em></p>
+<p>回忆一下，数字 0 到 9 的 ASCII 编码的十六进制值是 0x30 到 0x39，并且每个栈内存位置是 8 字节长。帧指针距离栈指针 32 字节。跟着操作的读者可以用 GDB 打印 <code>%rbp</code> 的值（<code>p $rbp</code>）来确认。在这个例子中，<code>%rbp</code> 的值是 0x7fffffffdd10。下面的命令可以查看寄存器 <code>%rsp</code> 之下的 48 个字节（以十六进制显示）：</p>
+<blockquote>
+<p>Recall that the hex values for the ASCII encodings of the digits 0 to 9 are 0x30 to 0x39, and that each stack memory location is eight bytes long. The frame pointer is 32 bytes away from the stack pointer. Readers tracing along can confirm the value of <code>%rbp</code> by using GDB to print its value (<code>p $rbp</code>). In the example shown, the value of <code>%rbp</code> is 0x7fffffffdd10. The following command allows the reader to inspect the 48 bytes (in hex) below register <code>%rsp</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x /48bx $rsp</span><br></pre></td></tr></table></figure>
+
+<p>这条 GDB 命令的输出类似这样：</p>
+<blockquote>
+<p>This GDB command yields output that looks similar to the following:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) x /48bx $rsp</span><br><span class="line">0x7fffffffdcf0: 0x31  0x32  0x33  0x34  0x35  0x36  0x37  0x38</span><br><span class="line">0x7fffffffdcf8: 0x39  0x30  0x00  0x00  0x00  0x00  0x00  0x00</span><br><span class="line">0x7fffffffdd00: 0xf0  0xdd  0xff  0xff  0xff  0x7f  0x00  0x00</span><br><span class="line">0x7fffffffdd08: 0x00  0x00  0x00  0x00  0x03  0x00  0x00  0x00</span><br><span class="line">0x7fffffffdd10: 0xd0  0x07  0x40  0x00  0x00  0x00  0x00  0x00</span><br><span class="line">0x7fffffffdd18: 0x30  0xd8  0xa2  0xf7  0xff  0x7f  0x00  0x00</span><br></pre></td></tr></table></figure>
+
+<p>每一行代表一个 64 位地址，或者说两个 32 位地址。所以，与 32 位地址 0x7fffffffdd0c 对应的值，位于显示 0x7fffffffdd08 的那一行最右边的四个字节。</p>
+<blockquote>
+<p>Each line represents one 64-bit address, or two 32-bit addresses. So, the value associated with the 32-bit address 0x7fffffffdd0c is located at the rightmost four bytes of the line showing 0x7fffffffdd08.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">原书注 · 多字节的值按小端序存储（Multibyte values are stored in little-endian order）</p><p>在前面的汇编片段中，地址 0xf7ffffffdd00 处的字节是 0xf0，地址 0xf7ffffffdd01 处的字节是 0xdd，地址 0xf7ffffffdd02 处的字节是 0xff，地址 0xf7ffffffdd03 处的字节是 0xff，地址 0xf7ffffffdd04 处的字节是 0xff，地址 0xf7ffffffdd05 处的字节是 0x7f。然而，地址 0x7fffffffdd00 处的 64 位<em>值</em>实际上是 0x7fffffffddf0。记住，由于 x86-64 是<a href="../C4-Binary/4.7-byte_order.html">小端</a>系统，地址这类多字节值的各个字节是按相反顺序存储的。</p>
+<blockquote>
+<p>In the preceding assembly segment, the byte at address 0xf7ffffffdd00 is 0xf0, the byte at address 0xf7ffffffdd01 is 0xdd, the byte at address 0xf7ffffffdd02 is 0xff, the byte at address 0xf7ffffffdd03 is 0xff, the byte at address 0xf7ffffffdd04 is 0xff, and the byte at address 0xf7ffffffdd05 is 0x7f. However, the 64-bit <em>value</em> at address 0x7fffffffdd00 is in fact 0x7fffffffddf0. Remember that since x86-64 is a <a href="../C4-Binary/4.7-byte_order.html">little-endian</a> system, the bytes for multibyte values such as addresses are stored in reverse order.</p>
+</blockquote>
+</div>
+<div class="callout callout-note"><p class="callout-title">译注 · 地址笔误</p><p>原文把这几个地址写成了 0xf7ffffffdd00～0xf7ffffffdd05，应为 0x7fffffffdd00～0x7fffffffdd05（对照上面的 GDB 输出）。</p>
+</div>
+<p>在这个例子中，<code>buf</code> 的地址位于栈顶。因此，前两个地址存放的是输入字符串 1234567890 对应的字节：</p>
+<blockquote>
+<p>In this example, the address for <code>buf</code> is located at the top of the stack. Therefore, the first two addresses hold the inputted bytes associated with input the string 1234567890:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">0x7fffffffdcf0: 0x31  0x32  0x33  0x34  0x35  0x36  0x37  0x38</span><br><span class="line">0x7fffffffdcf8: 0x39  0x30  0x00  0x00  0x00  0x00  0x00  0x00</span><br></pre></td></tr></table></figure>
+
+<p>空字符 <code>\0</code> 出现在地址 0x7fffffffdcf8 那一行的第三个字节位置（即地址 0x7fffffffdcfa）。回想一下，<code>scanf</code> 会在所有字符串末尾加上一个空字节。</p>
+<blockquote>
+<p>The null termination byte <code>\0</code> appears in the third most significant byte location at address 0x7fffffffdcf8 (i.e., at address 0x7fffffffdcfa). Recall that <code>scanf</code> terminates all strings with a null byte.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>原文说这是该 8 字节单元中「第三高位」（third most significant）的字节。按小端序，GDB 每行最左边的字节地址最低、权重也最低，所以 0x7fffffffdcfa 其实是这个 64 位值中从低位数起的第三个字节。不影响理解，知道它的地址是 0x7fffffffdcfa 就行。</p>
+</div>
+<p>当然，1234567890 不是秘密数字。下面是用输入字符串 1234567890 运行 <code>secret</code> 时的输出：</p>
+<blockquote>
+<p>Of course, 1234567890 is not the secret number. Here is the output when we try to run <code>secret</code> with input string 1234567890:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ./secret</span><br><span class="line">$ ./secret</span><br><span class="line">Enter secret number:</span><br><span class="line">1234567890</span><br><span class="line">You are so wrong!</span><br><span class="line">$ echo $?</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
+<p><code>echo $?</code> 命令打印 shell 中上一条命令的返回值。在这里，程序返回了 1，因为我们输入的秘密数字是错的。回想一下，按照惯例，程序在没有错误时返回 0。接下来我们的目标是骗程序以返回值 0 退出，表示我们赢了游戏。</p>
+<blockquote>
+<p>The <code>echo $?</code> command prints out the return value of the last executed command in the shell. In this case, the program returned 1, since the secret number we entered is wrong. Recall that by convention, programs return 0 when there are no errors. Our goal going forward is to trick the program into exiting with a return value of 0, indicating that we won the game.</p>
+</blockquote>
+<h3 id="7-10-4-缓冲区溢出：第一次尝试"><a href="#7-10-4-缓冲区溢出：第一次尝试" class="headerlink" title="7.10.4. 缓冲区溢出：第一次尝试"></a>7.10.4. 缓冲区溢出：第一次尝试</h3><p><em>7.10.4. Buffer Overflow: First Attempt</em></p>
+<p>接下来，试着输入字符串 <code>1234567890123456789012345678901234567890123</code>：</p>
+<blockquote>
+<p>Next, let’s try typing in the string <code>1234567890123456789012345678901234567890123</code>:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ ./secret</span><br><span class="line">Enter secret number:</span><br><span class="line">1234567890123456789012345678901234567890123</span><br><span class="line">You are so wrong!</span><br><span class="line">Segmentation fault (core dumped)</span><br><span class="line">$ echo $?</span><br><span class="line">139</span><br></pre></td></tr></table></figure>
+
+<p>有意思！现在程序因段错误崩溃了，返回码是 139。<a href="7.10-buffer_overflow.html">图 3</a> 展示了用这个新输入调用 <code>scanf</code> 刚完成时 <code>main</code> 的调用栈。</p>
+<blockquote>
+<p>Interesting! Now the program crashes with a segmentation fault, with return code 139. <a href="7.10-buffer_overflow.html">Figure 3</a> shows what the call stack for <code>main</code> looks like immediately after the call to <code>scanf</code> with this new input.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 139 从哪里来</p><p>进程被信号杀死时，shell 报告的退出状态是 128 + 信号编号。段错误对应的信号 <code>SIGSEGV</code> 编号为 11，所以是 128 + 11 &#x3D; 139。译者在本机让一个程序解引用空指针，bash 里 <code>echo $?</code> 同样输出 139。</p>
+</div>
+<p><img src="/dive-into-systems/C7-x86_64/images/afterScanf2.png" alt="after2"></p>
+<p><strong>图 3.</strong> 输入 1234567890123456789012345678901234567890123 时，scanf 调用刚完成那一刻的调用栈</p>
+<p><em>Figure 3. The call stack immediately after the call to scanf with input 1234567890123456789012345678901234567890123</em></p>
+<p>输入字符串太长，不仅覆盖了存放在 0xd08 和 0xd10 处的值，还溢出到了 <code>main</code> 栈帧下方的返回地址。回想一下，函数返回时，程序会尝试从返回地址指定的位置继续执行。在这个例子中，程序退出 <code>main</code> 后试图从地址 0xf7ff00333231 处继续执行，而这个地址看起来并不存在，于是程序因段错误崩溃。</p>
+<blockquote>
+<p>The input string is so long that it not only overwrote the values stored at 0xd08 and 0xd10, but it spilled over into the return address below the stack frame for <code>main</code>. Recall that when a function returns, the program tries to resume execution at the address specified by the return address. In this example, the program tries to resume execution at address 0xf7ff00333231 after exiting <code>main</code>, which does not appear to exist. So the program crashes with a segmentation fault.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 地址笔误</p><p>原文的 0xf7ff00333231 应为 0x7fff00333231：返回地址所在的 0x7fffffffdd18 处的 8 个字节是 <code>31 32 33 00 ff 7f 00 00</code>，按小端序读出来是 0x00007fff00333231，与下面 GDB 输出中的 <code>0x00007fff00333231 in ?? ()</code> 一致。</p>
+</div>
+<p>在 GDB 中重新运行程序（<code>input.txt</code> 中存放的是上面的输入字符串），可以看到这番破坏的实际过程：</p>
+<blockquote>
+<p>Rerunning the program in GDB (<code>input.txt</code> contains the input string above) reveals this devilry in action:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">$ gdb secret</span><br><span class="line">(gdb) break *0x0000000000400717</span><br><span class="line">(gdb) run &lt; input.txt</span><br><span class="line">(gdb) ni</span><br><span class="line">(gdb) x /48bx $rsp</span><br><span class="line">0x7fffffffdcf0: 0x31  0x32  0x33  0x34  0x35  0x36  0x37  0x38</span><br><span class="line">0x7fffffffdcf8: 0x39  0x30  0x31  0x32  0x33  0x34  0x35  0x36</span><br><span class="line">0x7fffffffdd00: 0x37  0x38  0x39  0x30  0x31  0x32  0x33  0x34</span><br><span class="line">0x7fffffffdd08: 0x35  0x36  0x37  0x38  0x39  0x30  0x31  0x32</span><br><span class="line">0x7fffffffdd10: 0x33  0x34  0x35  0x36  0x37  0x38  0x39  0x30</span><br><span class="line">0x7fffffffdd18: 0x31  0x32  0x33  0x00  0xff  0x7f  0x00  0x00</span><br><span class="line">(gdb) n</span><br><span class="line">Single stepping until exit from function main,</span><br><span class="line">which has no line number information.</span><br><span class="line">You are so wrong!</span><br><span class="line">0x00007fff00333231 in ?? ()</span><br></pre></td></tr></table></figure>
+
+<p>注意，我们的输入字符串冲破了数组 <code>buf</code> 声明的边界，覆盖了栈上存储的所有其他值。换句话说，我们的字符串造成了缓冲区越界，破坏了调用栈，导致程序崩溃。这个过程也被称为<strong>栈粉碎</strong>（smashing the stack）。</p>
+<blockquote>
+<p>Notice that our input string blew past the stated limits of the array <code>buf</code>, overwriting all the other values stored on the stack. In other words, our string created a buffer overrun and corrupted the call stack, causing the program to crash. This process is also known as <strong>smashing the stack</strong>.</p>
+</blockquote>
+<h3 id="7-10-5-更聪明的缓冲区溢出：第二次尝试"><a href="#7-10-5-更聪明的缓冲区溢出：第二次尝试" class="headerlink" title="7.10.5. 更聪明的缓冲区溢出：第二次尝试"></a>7.10.5. 更聪明的缓冲区溢出：第二次尝试</h3><p><em>7.10.5. A Smarter Buffer Overflow: Second Attempt</em></p>
+<p>第一个例子用垃圾数据覆盖了保存的 <code>%rbp</code> 和返回地址，粉碎了栈，导致程序崩溃。如果攻击者的目的只是让程序崩溃，到这一步就已经满意了。但我们的目标是骗猜谜游戏返回 0，表示我们赢了。为此，我们要用比垃圾值更有意义的数据填充调用栈。例如，可以覆盖栈，把返回地址替换成 <code>endGame</code> 的地址。这样，当程序试图从 <code>main</code> 返回时，它会去执行 <code>endGame</code>，而不是因段错误崩溃。</p>
+<blockquote>
+<p>Our first example smashed the stack by overwriting the <code>%rbp</code> register and return address with junk, causing the program to crash. An attacker whose goal is to simply crash a program would be satisfied at this point. However, our goal is to trick the guessing game to return 0, indicating that we won the game. We accomplish this by filling the call stack with data more meaningful than junk values. For example, we could overwrite the stack so that the return address is replaced with the address of <code>endGame</code>. Then, when the program attempts to return from <code>main</code>, it will instead execute <code>endGame</code> rather than crashing with a segmentation fault.</p>
+</blockquote>
+<p>为了找出 <code>endGame</code> 的地址，我们再次在 GDB 中查看 <code>secret</code>：</p>
+<blockquote>
+<p>To find out the address of <code>endGame</code>, let’s inspect <code>secret</code> again in GDB:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · printf 变成了 puts</p><p>源码里 <code>endGame</code> 调用的是 <code>printf(&quot;You win!\n&quot;)</code>，反汇编中却是 <code>puts@plt</code>：对于只输出一个以换行结尾的常量字符串的 <code>printf</code>，编译器会把它换成等价而更简单的 <code>puts</code>。译者用 clang 以 <code>-O1</code> 为 x86-64 Linux 生成汇编，也看到了同样的替换（<code>-O0</code> 时 clang 保留 <code>printf</code>；原书的 GCC 输出说明它在这里也做了替换）。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ gdb secret</span><br><span class="line">(gdb) disas endGame</span><br><span class="line">Dump of assembler code for function endGame:</span><br><span class="line">   0x00000000004006da &lt;+0&gt;:   push   %rbp</span><br><span class="line">   0x00000000004006db &lt;+1&gt;:   mov    %rsp,%rbp</span><br><span class="line">   0x00000000004006de &lt;+4&gt;:   mov    $0x40086a,%edi</span><br><span class="line">   0x00000000004006e3 &lt;+9&gt;:   callq  0x400500 &lt;puts@plt&gt;</span><br><span class="line">   0x00000000004006e8 &lt;+14&gt;:  mov    $0x0,%edi</span><br><span class="line">   0x00000000004006ed &lt;+19&gt;:  callq  0x400550 &lt;exit@plt&gt;</span><br><span class="line">End of assembler dump.</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，<code>endGame</code> 从地址 0x00000000004006da 开始。<a href="7.10-buffer_overflow.html">图 4</a> 展示了一个迫使 <code>secret</code> 执行 <code>endGame</code> 函数的示例攻击字符串。</p>
+<blockquote>
+<p>Observe that <code>endGame</code> starts at address 0x00000000004006da. <a href="7.10-buffer_overflow.html">Figure 4</a> illustrates a sample exploit that forces <code>secret</code> to run the <code>endGame</code> function.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C7-x86_64/images/finalExploit.png" alt="exploit"></p>
+<p><strong>图 4.</strong> 一个能迫使 secret 执行 endGame 函数的示例字符串</p>
+<p><em>Figure 4. A sample string that can force secret to execute the endGame function</em></p>
+<p>本质上就是 40 字节的垃圾值，后面跟着返回地址。同样，由于 x86-64 是<a href="../C4-Binary/4.7-byte_order.html">小端</a>系统，返回地址中的字节看起来是倒序的。</p>
+<blockquote>
+<p>Essentially, there are 40 bytes of junk values followed by the return address. Again, since x86-64 is a <a href="../C4-Binary/4.7-byte_order.html">little-endian</a> system the bytes in the return address appear to be in reverse order.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 为什么是 40 字节</p><p><code>buf</code> 位于 <code>%rbp-0x20</code>（见上面 <code>lea -0x20(%rbp),%rax</code>），从 <code>buf</code> 起始处到保存的 <code>%rbp</code> 有 32 字节，再加上保存的 <code>%rbp</code> 本身 8 字节，共 40 字节，紧接着就是返回地址。</p>
+<p>另外，这个攻击能直接写入 0x4006da 这样的固定地址，是因为 <code>secret</code> 不是位置无关可执行文件（PIE），代码段总加载在固定地址（0x400000 一带是非 PIE 的 x86-64 程序的传统加载地址）。如果程序编译为 PIE，下文提到的地址随机化也会作用于代码段，攻击者事先就不知道 <code>endGame</code> 的确切地址了。</p>
+</div>
+<p>下面的程序演示了攻击者可以如何构造前面那个攻击字符串：</p>
+<blockquote>
+<p>The following program illustrates how an attacker could construct the preceding exploit:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line"></span><br><span class="line">char ebuff[]=</span><br><span class="line">&quot;\x31\x32\x33\x34\x35\x36\x37\x38\x39\x30&quot; /*first 10 bytes of junk*/</span><br><span class="line">&quot;\x31\x32\x33\x34\x35\x36\x37\x38\x39\x30&quot; /*next 10 bytes of junk*/</span><br><span class="line">&quot;\x31\x32\x33\x34\x35\x36\x37\x38\x39\x30&quot; /*following 10 bytes of junk*/</span><br><span class="line">&quot;\x31\x32\x33\x34\x35\x36\x37\x38\x39\x30&quot; /*last 10 bytes of junk*/</span><br><span class="line">&quot;\xda\x06\x40\x00\x00\x00\x00\x00&quot; /*address of endGame (little endian)*/</span><br><span class="line">;</span><br><span class="line"></span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int i;</span><br><span class="line">    for (i = 0; i &lt; sizeof(ebuff); i++) &#123; /*print each character*/</span><br><span class="line">        printf(&quot;%c&quot;, ebuff[i]);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>每个数字前面的 <code>\x</code> 表示该数字是一个字符的十六进制表示。定义了 <code>ebuff[]</code> 之后，<code>main</code> 函数只是逐个字符地把它打印出来。要得到对应的字节串，像下面这样编译并运行这个程序：</p>
+<blockquote>
+<p>The <code>\x</code> before each number indicates that the number is formatted as the hexadecimal representation of a character. After defining <code>ebuff[]</code>, the <code>main</code> function simply prints it out, character by character. To get the associated byte string, compile and run this program as follows:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>注意循环条件用的是 <code>sizeof(ebuff)</code>，它还包含字符串字面量末尾自动加上的那个 <code>&#39;\0&#39;</code>，所以生成的 <code>exploit</code> 文件一共 49 字节，最后多一个空字节。<code>scanf(&quot;%s&quot;, ...)</code> 读到空字节并不会停下（它只在空白字符处停止），这个空字节随后又被 <code>scanf</code> 自己加的终止符覆盖，所以不影响攻击。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -o genEx genEx.c</span><br><span class="line">$ ./genEx &gt; exploit</span><br></pre></td></tr></table></figure>
+
+<p>要把文件 <code>exploit</code> 作为 <code>scanf</code> 的输入，只需像下面这样以 <code>exploit</code> 为输入运行 <code>secret</code>：</p>
+<blockquote>
+<p>To use the file <code>exploit</code> as input to <code>scanf</code> it suffices to run <code>secret</code> with <code>exploit</code> as follows:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ ./secret &lt; exploit</span><br><span class="line">Enter secret number:</span><br><span class="line">You are so wrong!</span><br><span class="line">You win!</span><br></pre></td></tr></table></figure>
+
+<p>程序打印出「You are so wrong!」，因为 <code>exploit</code> 中的字符串<em>不是</em>秘密数字。但是，程序也打印出了「You win!」。不过回想一下，我们的目标是骗程序返回 0。在一个更大的系统中，「成功」与否由外部程序来跟踪，这时程序返回什么往往比它打印什么更重要。</p>
+<blockquote>
+<p>The program prints out “You are so wrong!” since the string contained in <code>exploit</code> is <em>not</em> the secret number. However, the program also prints out the string “You win!” Recall, though, that our goal is to trick the program to return 0. In a larger system, where the notion of “success” is tracked by an external program, it is often most important what a program returns, not what it prints out.</p>
+</blockquote>
+<p>检查返回值，得到：</p>
+<blockquote>
+<p>Checking the return value yields:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ echo $?</span><br><span class="line">0</span><br></pre></td></tr></table></figure>
+
+<p>攻击成功了！我们赢了游戏！</p>
+<blockquote>
+<p>Our exploit works! We won the game!</p>
+</blockquote>
+<h3 id="7-10-6-防御缓冲区溢出"><a href="#7-10-6-防御缓冲区溢出" class="headerlink" title="7.10.6. 防御缓冲区溢出"></a>7.10.6. 防御缓冲区溢出</h3><p><em>7.10.6. Protecting Against Buffer Overflow</em></p>
+<p>我们展示的例子改变了 <code>secret</code> 可执行文件的控制流，迫使它返回表示成功的零值。然而，这样的攻击可能造成真正的破坏。此外，一些较老的计算机系统会<em>执行</em>栈内存中的字节。如果攻击者把汇编指令对应的字节放到调用栈上，CPU 就会把这些字节当作<em>真正的</em>指令来解释，攻击者就能迫使 CPU 执行<em>任意由他选定的代码</em>。幸运的是，现代计算机系统采用了一些策略，让攻击者更难实施缓冲区溢出攻击：</p>
+<blockquote>
+<p>The example we showed changed the control flow of the <code>secret</code> executable, forcing it to return a zero value associated with success. However, an exploit like this could do some real damage. Furthermore, some older computer systems <em>executed</em> bytes from stack memory. If an attacker placed bytes associated with assembly instructions on the call stack, the CPU would interpret the bytes as <em>real</em> instructions, enabling the attacker to force the CPU to execute <em>any arbitrary code of their choosing</em>. Fortunately, there are strategies that modern computer systems employ to make it more difficult for attackers to run buffer overflow exploits:</p>
+</blockquote>
+<ul>
+<li><strong>栈随机化</strong>（stack randomization）：操作系统把栈的起始地址分配在栈内存中的随机位置，使调用栈的位置&#x2F;大小在程序的每次运行之间都不同。运行同一段代码的多台机器会有不同的栈地址。现代 Linux 系统把栈随机化作为标准做法。然而，执着的攻击者可以用不同的地址反复尝试，暴力破解。一个常见技巧是在真正的攻击代码前面放一个 <strong>NOP 滑板</strong>（NOP sled，即大量 <code>nop</code> 指令）。执行 <code>nop</code> 指令（<code>0x90</code>）除了让程序计数器递增到下一条指令以外没有任何效果。只要攻击者能让 CPU 从 NOP 滑板中的某处开始执行，NOP 滑板最终就会滑到紧随其后的攻击代码。Aleph One 的文章 <em>Smashing the Stack for Fun and Profit</em><sup>6</sup> 详细介绍了这类攻击的机制。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Stack randomization</strong>: The OS allocates the starting address of the stack at a random location in stack memory, causing the position&#x2F;size of the call stack to vary from one run of a program to another. Multiple machines running the same code would have different stack addresses. Modern Linux systems use stack randomization as a standard practice. However, a determined attacker can brute force the attack, by attempting to repeat attacks with different addresses. A common trick is to use a <strong>NOP sled</strong> (i.e., a large number of <code>nop</code> instructions) before the actual exploit code. Executing the <code>nop</code> instruction (<code>0x90</code>) has no effect, other than causing the program counter to increment to the next instruction. As long as the attacker can get the CPU to execute somewhere in the NOP sled, the NOP sled will eventually lead to the exploit code that follows it. Aleph One’s writeup, <em>Smashing the Stack for Fun and Profit</em><sup>6</sup> details the mechanism of this type of attack.</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>栈随机化是<strong>地址空间布局随机化</strong>（ASLR，Address Space Layout Randomization）的一部分：现代系统同样会随机化堆、共享库的位置，若程序编译为位置无关可执行文件（PIE），连代码段的位置也会随机化。</p>
+</div>
+<ul>
+<li><strong>栈破坏检测</strong>（stack corruption detection）：另一道防线是设法检测栈何时被破坏。较新版本的 GCC 使用一种叫作<strong>金丝雀</strong>（canary）的栈保护机制，它充当缓冲区与栈上其他元素之间的守卫。金丝雀是存放在不可写内存区域中的一个值，可以与放在栈上的值进行比较。如果金丝雀在程序执行期间「死掉了」，程序就知道自己受到了攻击，并以一条错误信息中止。不过，聪明的攻击者可以替换金丝雀，让程序检测不到栈的破坏。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Stack corruption detection</strong>: Another line of defense is to try to detect when the stack is corrupted. Recent versions of GCC use a stack protector known as a <strong>canary</strong> that acts as a guard between the buffer and the other elements of the stack. A canary is a value stored in a nonwriteable section of memory that can be compared to a value put on the stack. If the canary “dies” during a program’s execution, the program knows that it is under attack and aborts with an error message. A clever attacker can, however, replace the canary to prevent the program from detecting stack corruption.</li>
+</ul>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 金丝雀实际放在哪</p><p>在 x86-64 Linux 上，金丝雀的参考值存放在线程局部存储中，用 <code>%fs</code> 段寄存器访问。译者用 <code>clang -target x86_64-linux-gnu -O1 -fstack-protector-strong -S</code> 编译一个带局部数组的函数，可以看到函数开头 <code>movq %fs:40, %rax</code> 取出金丝雀并放到栈上，返回前再与 <code>%fs:40</code> 比较，不一致就调用 <code>__stack_chk_fail</code> 中止程序。GCC 的 <code>-fstack-protector</code>、<code>-fstack-protector-strong</code>、<code>-fstack-protector-all</code> 选项控制哪些函数插入这种检查。</p>
+</div>
+<ul>
+<li><strong>限制可执行区域</strong>：这道防线把可执行代码限制在内存中特定的区域。换句话说，调用栈不再是可执行的。然而，就连这种防御也可以被攻破。在利用<strong>面向返回编程</strong>（return-oriented programming，ROP）的攻击中，攻击者可以从可执行区域中「挑选」指令，从一条指令跳到另一条指令，拼凑出攻击代码。网上有一些著名的例子，尤其是在电子游戏中<sup>7</sup>。</li>
+</ul>
+<blockquote>
+<ul>
+<li><strong>Limiting executable regions</strong>: In this line of defense, executable code is restricted to only particular regions of memory. In other words, the call stack is no longer executable. However, even this defense can be defeated. In an attack utilizing <strong>return-oriented programming</strong> (ROP), an attacker can “cherry-pick” instructions in executable regions and jump from instruction to instruction to build an exploit. There are some famous examples of this online, especially in video games<sup>7</sup>.</li>
+</ul>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 硬件影子栈</p><p>针对覆盖返回地址和 ROP 这类攻击，x86 处理器的 CET（Control-flow Enforcement Technology，控制流强制技术）提供了<strong>影子栈</strong>（shadow stack）：执行 <code>call</code> 时，处理器把返回地址同时压入普通栈和一个应用程序无法直接修改的影子栈；函数返回时比较两份副本，不一致就触发异常。本节那种改写栈上返回地址的攻击，在启用影子栈的程序里会被硬件直接拦下。Linux 内核在 <strong>6.6 版（2023 年 10 月）</strong>加入了对用户态 x86 影子栈的支持，程序需要由工具链和加载器（如 glibc）配合启用。<a target="_blank" rel="noopener" href="https://docs.kernel.org/arch/x86/shstk.html">Linux 内核文档：CET Shadow Stack</a>；<a target="_blank" rel="noopener" href="https://kernelnewbies.org/Linux_6.6">Kernel Newbies：Linux 6.6</a></p>
+</div>
+<p>然而，最好的防线永远是程序员自己。要防止程序遭受缓冲区溢出攻击，尽可能使用带<strong>长度说明</strong>（length specifier）的 C 函数，并添加执行数组边界检查的代码。至关重要的是，定义的数组必须与选定的长度说明相匹配。<a href="7.10-buffer_overflow.html">表 1</a> 列出了一些容易受缓冲区溢出影响的「坏」C 函数，以及对应应当使用的「好」函数（假设 <code>buf</code> 分配了 12 个字节）。</p>
+<blockquote>
+<p>However, the best line of defense is always the programmer. To prevent buffer overflow attacks on your programs, use C functions with <strong>length specifiers</strong> whenever possible and add code that performs array bounds checking. It is crucial that any defined arrays match the chosen length specifiers. <a href="7.10-buffer_overflow.html">Table 1</a> lists some common “bad” C functions that are vulnerable to buffer overflow and the corresponding “good” function to use (assume that <code>buf</code> is allocated 12 bytes).</p>
+</blockquote>
+<p><strong>表 1.</strong> 带长度说明的 C 函数</p>
+<p><em>Table 1. C Functions with Length Specifiers</em></p>
+<table>
+<thead>
+<tr>
+<th>不要用：</th>
+<th>改用：</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>gets(buf)</code></td>
+<td><code>fgets(buf, 12, stdin)</code></td>
+</tr>
+<tr>
+<td><code>scanf(&quot;%s&quot;, buf)</code></td>
+<td><code>scanf(&quot;%12s&quot;, buf)</code></td>
+</tr>
+<tr>
+<td><code>strcpy(buf2, buf)</code></td>
+<td><code>strncpy(buf2, buf, 12)</code></td>
+</tr>
+<tr>
+<td><code>strcat(buf2, buf)</code></td>
+<td><code>strncat(buf2, buf, 12)</code></td>
+</tr>
+<tr>
+<td><code>sprintf(buf, &quot;%d&quot;, num)</code></td>
+<td><code>snprintf(buf, 12, &quot;%d&quot;, num)</code></td>
+</tr>
+</tbody></table>
+<blockquote>
+<table>
+<thead>
+<tr>
+<th>Instead of:</th>
+<th>Use:</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>gets(buf)</code></td>
+<td><code>fgets(buf, 12, stdin)</code></td>
+</tr>
+<tr>
+<td><code>scanf(&quot;%s&quot;, buf)</code></td>
+<td><code>scanf(&quot;%12s&quot;, buf)</code></td>
+</tr>
+<tr>
+<td><code>strcpy(buf2, buf)</code></td>
+<td><code>strncpy(buf2, buf, 12)</code></td>
+</tr>
+<tr>
+<td><code>strcat(buf2, buf)</code></td>
+<td><code>strncat(buf2, buf, 12)</code></td>
+</tr>
+<tr>
+<td><code>sprintf(buf, &quot;%d&quot;, num)</code></td>
+<td><code>snprintf(buf, 12, &quot;%d&quot;, num)</code></td>
+</tr>
+</tbody></table>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注 · 表中有两处仍会溢出</p>
+<ul>
+<li>**<code>scanf(&quot;%12s&quot;, buf)</code> 应为 <code>%11s</code>**：<code>%s</code> 的宽度只限制读入的字符数，<code>scanf</code> 还要在后面再写一个 <code>&#39;\0&#39;</code>，所以 <code>%12s</code> 最多写 13 字节，对 12 字节的 <code>buf</code> 正好越界 1 字节。译者用 clang 编译这一行，会得到警告：<code>&#39;scanf&#39; may overflow; destination buffer in argument 2 has size 12, but the corresponding specifier may require size 13</code>。<code>fgets(buf, 12, stdin)</code> 和 <code>snprintf(buf, 12, ...)</code> 的 12 则是包含 <code>&#39;\0&#39;</code> 在内的缓冲区总大小，是对的。</li>
+<li><strong><code>strncat</code> 的第三个参数不是目标缓冲区的大小</strong>，而是最多从源串追加多少个字符；目标缓冲区至少要有 <code>strlen(dst) + strnlen(src, n) + 1</code> 字节（见 <a target="_blank" rel="noopener" href="https://man7.org/linux/man-pages/man3/strncat.3.html">strncat(3)</a>）。若 <code>buf2</code> 中已有内容，<code>strncat(buf2, buf, 12)</code> 照样会溢出，安全的上限应是 <code>sizeof(buf2) - strlen(buf2) - 1</code>。</li>
+<li><code>strncpy(buf2, buf, 12)</code> 不会溢出，但当 <code>buf</code> 的长度不小于 12 时，它不会写入 <code>&#39;\0&#39;</code>，<code>buf2</code> 将不是一个合法的字符串（参见第 2 章关于字符串函数的译注）。</li>
+</ul>
+</div>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· gets 已被移出标准</p><p>表中第一行的 <code>gets</code> 无法安全使用，C99 的第三号技术勘误将其弃用，<strong>C11 标准把它彻底删除了</strong>；替代品是 <code>fgets</code>，或 C11 可选附录 K 中的 <code>gets_s</code>。新代码里不应再出现 <code>gets</code>。<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/io/gets">cppreference：gets, gets_s</a></p>
+</div>
+<p><code>secret2</code> 二进制文件（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/secret2x86-64.tar.gz">secret2x86-64.tar.gz</a>）不再有缓冲区溢出漏洞。这个新二进制文件的 <code>main</code> 函数（<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/main2.c">main2.c</a>）如下：</p>
+<blockquote>
+<p>The <code>secret2</code> binary (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/secret2x86-64.tar.gz">secret2x86-64.tar.gz</a>) no longer has the buffer overflow vulnerability. The <code>main</code> function of this new binary (<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C7-x86_64/_attachments/main2.c">main2.c</a>) appears below:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">#include &lt;stdlib.h&gt;</span><br><span class="line">#include &quot;other.h&quot; //contain secret function definitions</span><br><span class="line"></span><br><span class="line">/*prints out the You Win! message*/</span><br><span class="line">void endGame(void) &#123;</span><br><span class="line">    printf(&quot;You win!\n&quot;);</span><br><span class="line">    exit(0);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/*main function of the game*/</span><br><span class="line">int main(void) &#123;</span><br><span class="line">    int guess, secret, len, x=3;</span><br><span class="line">    char buf[12]; //buffer (12 bytes long)</span><br><span class="line"></span><br><span class="line">    printf(&quot;Enter secret number:\n&quot;);</span><br><span class="line">    scanf(&quot;%12s&quot;, buf); //read guess from user input (fixed!)</span><br><span class="line">    guess = atoi(buf); //convert to an integer</span><br><span class="line"></span><br><span class="line">    secret=getSecretCode(); //call the getSecretCode function</span><br><span class="line"></span><br><span class="line">    //check to see if guess is correct</span><br><span class="line">    if (guess == secret) &#123;</span><br><span class="line">        printf(&quot;You got it right!\n&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        printf(&quot;You are so wrong!\n&quot;);</span><br><span class="line">        return 1; //if incorrect, exit</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    printf(&quot;Enter the secret string to win:\n&quot;);</span><br><span class="line">    scanf(&quot;%12s&quot;, buf); //get secret string from user input (fixed!)</span><br><span class="line"></span><br><span class="line">    guess = calculateValue(buf, strlen(buf)); //call calculateValue function</span><br><span class="line"></span><br><span class="line">    //check to see if guess is correct</span><br><span class="line">    if (guess != secret) &#123;</span><br><span class="line">        printf(&quot;You lose!\n&quot;);</span><br><span class="line">        return 2; //if guess is wrong, exit</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    /*if both the secret string and number are correct</span><br><span class="line">    call endGame()*/</span><br><span class="line">    endGame();</span><br><span class="line"></span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>注意，我们给所有 <code>scanf</code> 调用都加上了长度说明，使 <code>scanf</code> 函数在读入前 12 个字节之后就停止读取。攻击字符串再也无法破坏这个程序了：</p>
+<blockquote>
+<p>Notice that we added a length specifier to all calls of <code>scanf</code>, causing the <code>scanf</code> function to stop reading from input after the first 12 bytes are read. The exploit string no longer breaks the program:</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>按上面表格的译注，<code>%12s</code> 最多会写入 12 个字符加 1 个 <code>&#39;\0&#39;</code>，仍可能越过 <code>buf</code> 末尾 1 字节（写到 <code>%rbp-0x14</code>）。它挡住了本节这种长串攻击，但严格正确的写法应是 <code>%11s</code>。</p>
+</div>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ ./secret2 &lt; exploit</span><br><span class="line">Enter secret number:</span><br><span class="line">You are so wrong!</span><br><span class="line">$ echo $?</span><br><span class="line">1</span><br></pre></td></tr></table></figure>
+
+<p>当然，任何具备基本逆向工程技能的读者，仍然可以通过分析汇编代码赢得这个猜谜游戏。如果你还没尝试过用逆向工程打败这个程序，我们鼓励你现在就试一试。</p>
+<blockquote>
+<p>Of course, any reader with basic reverse-engineering skills can still win the guessing game by analyzing the assembly code. If you haven’t tried to beat the program yet with reverse engineering, we encourage you to do so now.</p>
+</blockquote>
+<h3 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h3><p><em>References</em></p>
+<ol>
+<li><p>Mohit Kumar. <a target="_blank" rel="noopener" href="https://thehackernews.com/2017/06/skype-crash-bug.html">Critical Skype Bug Lets Hackers Remotely Execute Malicious Code</a>. 2017.</p>
+</li>
+<li><p>Tamir Zahavi-Brunner. <a target="_blank" rel="noopener" href="https://blog.zimperium.com/cve-2017-13253-buffer-overflow-multiple-android-drm-services/">CVE-2017-13253: Buffer overflow in multiple Android DRM services</a>. 2018.</p>
+</li>
+<li><p>Tom Spring. <a target="_blank" rel="noopener" href="https://threatpost.com/google-patches-high-severity-browser-bug/128661/">Google Patches ‘High Severity’ Browser Bug</a>. 2017.</p>
+</li>
+<li><p>Christopher Kelty. <a target="_blank" rel="noopener" href="https://limn.it/articles/the-morris-worm/">The Morris Worm</a> Limn Magazine, Issue 1: Systemic Risk. 2011.</p>
+</li>
+<li><p>David Auerbach. <a target="_blank" rel="noopener" href="https://nplusonemag.com/issue-19/essays/chat-wars/">Chat Wars: Microsoft vs. AOL</a> NplusOne Magazine, Issue 19. Spring 2014.</p>
+</li>
+<li><p>Aleph One. <a target="_blank" rel="noopener" href="http://insecure.org/stf/smashstack.html">Smashing the Stack for Fun and Profit</a>. 1996.</p>
+</li>
+<li><p>DotsAreCool. <a target="_blank" rel="noopener" href="https://youtu.be/vAHXK2wut_I">Super Mario World Credit Warp</a> (Nintendo ROP example). 2015.</p>
+</li>
+</ol>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C7-x86_64/7.9-structs.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">7.9. 汇编中的结构体</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C7-x86_64/7.11-exercises.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">7.11. 练习</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-1-%E8%91%97%E5%90%8D%E7%9A%84%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%E6%A1%88%E4%BE%8B"><span class="toc-text">7.10.1. 著名的缓冲区溢出案例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-2-%E5%88%9D%E6%8E%A2%EF%BC%9A%E7%8C%9C%E8%B0%9C%E6%B8%B8%E6%88%8F"><span class="toc-text">7.10.2. 初探：猜谜游戏</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-3-%E4%BB%94%E7%BB%86%E7%9C%8B%E7%9C%8B%EF%BC%88C-%E4%B9%8B%E4%B8%8B%EF%BC%89"><span class="toc-text">7.10.3. 仔细看看（C 之下）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-4-%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%EF%BC%9A%E7%AC%AC%E4%B8%80%E6%AC%A1%E5%B0%9D%E8%AF%95"><span class="toc-text">7.10.4. 缓冲区溢出：第一次尝试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-5-%E6%9B%B4%E8%81%AA%E6%98%8E%E7%9A%84%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA%EF%BC%9A%E7%AC%AC%E4%BA%8C%E6%AC%A1%E5%B0%9D%E8%AF%95"><span class="toc-text">7.10.5. 更聪明的缓冲区溢出：第二次尝试</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7-10-6-%E9%98%B2%E5%BE%A1%E7%BC%93%E5%86%B2%E5%8C%BA%E6%BA%A2%E5%87%BA"><span class="toc-text">7.10.6. 防御缓冲区溢出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="toc-text">参考文献</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>3.6. 用 GDB 调试多线程程序 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C3-C_debug&#x2F;gdb_pthreads.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  3.6. Debugging Multithread">
+<meta property="og:type" content="website">
+<meta property="og:title" content="3.6. 用 GDB 调试多线程程序 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C3-C_debug&#x2F;gdb_pthreads.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  3.6. Debugging Multithread">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html" class="current" aria-current="page">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>3. C 调试工具</span>
+      </nav>
+      <span class="book-position">第 41 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">3.6. 用 GDB 调试多线程程序</h1>
+  
+  
+    <p class="article-meta"><span>约 12 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/gdb_pthreads.html">https://diveintosystems.org/book/C3-C_debug/gdb_pthreads.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>3.6. Debugging Multithreaded Programs with GDB</em></p>
+<p>由于存在多条执行流，以及并发执行的线程之间的相互作用，调试多线程程序可能很棘手。一般来说，下面这些做法能让调试多线程程序稍微容易一些：</p>
+<blockquote>
+<p>Debugging multithreaded programs can be tricky due to the multiple streams of execution and due to interactions between the concurrently executing threads. In general, here are some things to make debugging multithreaded programs a bit easier:</p>
+</blockquote>
+<ul>
+<li>尽可能调试线程数尽量少的程序版本。</li>
+</ul>
+<blockquote>
+<ul>
+<li>When possible, try to debug a version of the program with as few threads as possible.</li>
+</ul>
+</blockquote>
+<ul>
+<li>在代码中加入调试用的 <code>printf</code> 语句时，打印出正在执行的线程的 ID，以便识别是哪个线程在打印，并以 <code>\n</code> 结束这一行。</li>
+</ul>
+<blockquote>
+<ul>
+<li>When adding debugging <code>printf</code> statements to the code, print out the executing thread’s ID to identify which thread is printing and end the line with a <code>\n</code>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>只让其中一个线程打印它自己的信息和公共信息，以限制调试输出的数量。例如，如果每个线程都把自己的逻辑 ID 存放在名为 <code>my_tid</code> 的局部变量中，就可以对 <code>my_tid</code> 的值加一个条件判断，把调试输出限制在一个线程上，如下例所示：</li>
+</ul>
+<blockquote>
+<ul>
+<li>Limit the amount of debug output by having only one of the threads print its information and common information. For example, if each thread stores its logical ID in a local variable named <code>my_tid</code>, a conditional statement on the value of <code>my_tid</code> can be used to limit printing debug output to one thread, as illustrated in the following example:</li>
+</ul>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">if (my_tid == 1) &#123;</span><br><span class="line">    printf(&quot;Tid:%d: value of count is %d and my i is %d\n&quot;, my_tid, count, i);</span><br><span class="line">    fflush(stdout);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="3-6-1-GDB-与-Pthreads"><a href="#3-6-1-GDB-与-Pthreads" class="headerlink" title="3.6.1. GDB 与 Pthreads"></a>3.6.1. GDB 与 Pthreads</h3><p><em>3.6.1. GDB and Pthreads</em></p>
+<p>GDB 调试器对调试多线程程序有专门的支持，包括为单个线程设置断点、检查单个线程的栈。在 GDB 中调试 Pthreads 程序时要注意，每个线程至少有三种标识符：</p>
+<blockquote>
+<p>The GDB debugger has specific support for debugging threaded programs, including setting breakpoints for individual threads and examining the stacks of individual threads. One thing to note when debugging Pthreads programs in GDB is that there are at least three identifiers for each thread:</p>
+</blockquote>
+<ul>
+<li>Pthreads 库为线程分配的 ID（它的 <code>pthread_t</code> 值）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The Pthreads library’s ID for the thread (its <code>pthread_t</code> value).</li>
+</ul>
+</blockquote>
+<ul>
+<li>操作系统为线程分配的轻量级进程（lightweight process，LWP）ID。操作系统部分地用这个 ID 来跟踪该线程，以便进行调度。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The operating system’s lightweight process (LWP) ID value for the thread. This ID is used in part for the OS to keep track of this thread for scheduling purposes.</li>
+</ul>
+</blockquote>
+<ul>
+<li>GDB 为线程分配的 ID。在 GDB 命令中指定某个线程时用的就是这个 ID。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The GDB ID for the thread. This is the ID to use when specifying a specific thread in GDB commands.</li>
+</ul>
+</blockquote>
+<p>这几种线程 ID 之间的具体关系，因操作系统和 Pthreads 库实现的不同而有所差异，但在大多数系统上，Pthreads ID、LWP ID 和 GDB 线程 ID 之间是一一对应的。</p>
+<blockquote>
+<p>The specific relationship between thread IDs can differ from one OS and Pthreads library implementation to another, but on most systems there is a one-to-one-to-one correspondence between a Pthreads ID, an LWP ID, and a GDB thread ID.</p>
+</blockquote>
+<p>我们介绍在 GDB 中调试多线程程序的一些基础知识。关于<a target="_blank" rel="noopener" href="http://www.sourceware.org/gdb/current/onlinedocs/gdb/Threads.html#Threads">在 GDB 中调试多线程程序</a>的更多信息，请参见该链接。</p>
+<blockquote>
+<p>We present a few GDB basics for debugging threaded programs in GDB. See the following for more information about <a target="_blank" rel="noopener" href="http://www.sourceware.org/gdb/current/onlinedocs/gdb/Threads.html#Threads">debugging threaded programs in GDB</a>.</p>
+</blockquote>
+<h3 id="3-6-2-GDB-中与线程相关的命令："><a href="#3-6-2-GDB-中与线程相关的命令：" class="headerlink" title="3.6.2. GDB 中与线程相关的命令："></a>3.6.2. GDB 中与线程相关的命令：</h3><p><em>3.6.2. GDB Thread-Specific Commands:</em></p>
+<ul>
+<li><p>开启线程启动和退出事件的打印：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set print thread-events</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>Enable printing thread start and exit events:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">set print thread-events</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<ul>
+<li><p>列出程序中现有的所有线程（列出的第一个值是 GDB 线程编号，遇到断点的那个线程用 <code>*</code> 标出）：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info threads</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>List all existing threads in the program (the GDB thread number is the first value listed and the thread that hit the breakpoint is denoted with an <code>*</code>):</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">info threads</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<ul>
+<li><p>切换到某个特定线程的执行上下文（例如，以便执行 <code>where</code> 查看它的栈），用线程 ID 指定线程：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">thread &lt;threadno&gt;</span><br><span class="line"></span><br><span class="line">thread 12        # Switch to thread 12&#x27;s execution context</span><br><span class="line">where            # Thread 12&#x27;s stack trace</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>Switch to a specific thread’s execution context (for example, to examine its stack when executing <code>where</code>), specify the thread by its thread ID:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">thread &lt;threadno&gt;</span><br><span class="line"></span><br><span class="line">thread 12        # Switch to thread 12&#x27;s execution context</span><br><span class="line">where            # Thread 12&#x27;s stack trace</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<ul>
+<li><p>只为某个特定线程设置断点。在设置断点的代码位置执行的其他线程，不会触发这个断点使程序暂停并打印 GDB 提示符：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">break &lt;where&gt; thread &lt;threadno&gt;</span><br><span class="line"></span><br><span class="line">break foo thread 12    # Break when thread 12 executes function foo</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>Set a breakpoint for just a particular thread. Other threads executing at the point in the code where the breakpoint is set will not trigger the breakpoint to pause the program and print the GDB prompt:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">break &lt;where&gt; thread &lt;threadno&gt;</span><br><span class="line"></span><br><span class="line">break foo thread 12    # Break when thread 12 executes function foo</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<ul>
+<li><p>要把某条 GDB 命令应用到所有线程或部分线程，可以在 GDB 命令前加上前缀 <code>thread apply &lt;threadno | all&gt;</code>，其中 <code>threadno</code> 指 GDB 线程 ID：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread apply &lt;threadno|all&gt; command</span><br></pre></td></tr></table></figure>
+
+<p>这并不适用于所有 GDB 命令，尤其是设置断点，所以设置线程专属的断点时要改用下面的语法：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">break &lt;where&gt; thread &lt;threadno&gt;</span><br></pre></td></tr></table></figure></li>
+</ul>
+<blockquote>
+<ul>
+<li><p>To apply a specific GDB command to all or to a subset of threads, by adding the prefix <code>thread apply &lt;threadno | all&gt;</code> to a GDB command, where <code>threadno</code> refers to the GDB thread ID:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">thread apply &lt;threadno|all&gt; command</span><br></pre></td></tr></table></figure>
+
+<p>This doesn’t work for every GDB command, setting breakpoints in particular, so use this syntax instead for setting thread-specific breakpoints:</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">break &lt;where&gt; thread &lt;threadno&gt;</span><br></pre></td></tr></table></figure></li>
+</ul>
+</blockquote>
+<p>默认情况下，到达断点时，GDB 会暂停所有线程，直到用户输入 <code>cont</code>。用户可以改变这一行为，要求 GDB 只暂停遇到断点的那些线程，让其他线程继续执行。</p>
+<blockquote>
+<p>Upon reaching a breakpoint, by default, GDB pauses all threads until the user types <code>cont</code>. The user can change the behavior to request that GDB only pause the threads that hit a breakpoint, allowing other threads to continue executing.</p>
+</blockquote>
+<div class="callout callout-note"><p class="callout-title">译注</p><p>这种模式在 GDB 中叫<strong>不停止模式</strong>（non-stop mode），用 <code>set non-stop on</code> 开启（需要在程序开始运行之前设置）；默认的「一停全停」叫 all-stop 模式。<a target="_blank" rel="noopener" href="https://sourceware.org/gdb/current/onlinedocs/gdb.html/Non_002dStop-Mode.html">GDB 手册：Non-Stop Mode</a></p>
+</div>
+<h3 id="3-6-3-示例："><a href="#3-6-3-示例：" class="headerlink" title="3.6.3. 示例："></a>3.6.3. 示例：</h3><p><em>3.6.3. Examples:</em></p>
+<p>下面展示一些 GDB 命令，以及在由 <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/racecond.c">racecond.c</a> 文件编译出的多线程可执行文件上运行 GDB 时的输出。</p>
+<blockquote>
+<p>We show some GDB commands and output from a GDB run on a multithreaded executable compiled from the file <a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C3-C_debug/_attachments/racecond.c">racecond.c</a>.</p>
+</blockquote>
+<p>这个有缺陷的程序在访问共享变量 <code>count</code> 时缺少同步。因此，程序的不同次运行会得出不同的 <code>count</code> 最终值，这表明存在竞态条件。例如，下面是用五个线程运行程序两次、得出不同结果的情形：</p>
+<blockquote>
+<p>This errant program lacks synchronization around accesses to the shared variable <code>count</code>. As a result, different runs of the program produce different final values for <code>count</code>, indicating a race condition. For example, here are two runs of the program with five threads that produce different results:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">./a.out 5</span><br><span class="line">hello I&#x27;m thread 0 with pthread_id 139673141077760</span><br><span class="line">hello I&#x27;m thread 3 with pthread_id 139673115899648</span><br><span class="line">hello I&#x27;m thread 4 with pthread_id 139673107506944</span><br><span class="line">hello I&#x27;m thread 1 with pthread_id 139673132685056</span><br><span class="line">hello I&#x27;m thread 2 with pthread_id 139673124292352</span><br><span class="line">count = 159276966</span><br><span class="line"></span><br><span class="line">./a.out 5</span><br><span class="line">hello I&#x27;m thread 0 with pthread_id 140580986918656</span><br><span class="line">hello I&#x27;m thread 1 with pthread_id 140580978525952</span><br><span class="line">hello I&#x27;m thread 3 with pthread_id 140580961740544</span><br><span class="line">hello I&#x27;m thread 2 with pthread_id 140580970133248</span><br><span class="line">hello I&#x27;m thread 4 with pthread_id 140580953347840</span><br><span class="line">count = 132356636</span><br></pre></td></tr></table></figure>
+
+<p>修复方法是用一个 <code>pthread_mutex_t</code> 变量，把对 <code>count</code> 的访问放进临界区。如果用户仅凭查看 C 代码看不出这个修复方法，那么在 GDB 中运行并在访问 <code>count</code> 变量的位置附近设置断点，也许能帮助程序员发现问题。</p>
+<blockquote>
+<p>The fix is to put accesses to <code>count</code> inside a critical section, using a <code>pthread_mutex_t</code> variable. If the user was not able to see this fix by examining the C code alone, running in GDB and putting breakpoints around accesses to the <code>count</code> variable may help the programmer discover the problem.</p>
+</blockquote>
+<p>下面是在 GDB 中运行这个程序时使用的一些示例命令：</p>
+<blockquote>
+<p>Here are some example commands from a GDB run of this program:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">(gdb) break worker_loop   # Set a breakpoint for all spawned threads</span><br><span class="line">(gdb) break 77 thread 4   # Set a breakpoint just for thread 4</span><br><span class="line">(gdb) info threads        # List information about all threads</span><br><span class="line">(gdb) where               # List stack of thread that hit the breakpoint</span><br><span class="line">(gdb) print i             # List values of its local variable i</span><br><span class="line">(gdb) thread 2            # Switch to different thread&#x27;s (2) context</span><br><span class="line">(gdb) print i             # List thread 2&#x27;s local variables i</span><br></pre></td></tr></table></figure>
+
+<p>下面的例子展示了用 3 个线程（<code>run 3</code>）在 GDB 中运行 <code>racecond</code> 程序的部分输出，演示了在 GDB 调试会话中使用 GDB 线程命令的情形。主线程总是 GDB 线程编号 1，创建出来的三个线程是 GDB 线程 2 到 4。</p>
+<blockquote>
+<p>Shown in the example that follows is partial output of a GDB run of the <code>racecond</code> program with 3 threads (<code>run 3</code>), showing examples of GDB thread commands in the context of a GDB debugging session. The main thread is always GDB thread number 1, and the three spawned threads are GDB threads 2 to 4.</p>
+</blockquote>
+<p>调试多线程程序时，GDB 用户在发出命令时必须清楚当前存在哪些线程。例如，当 <code>main</code> 中的断点被触发时，只存在线程 1（主线程）。因此，GDB 用户必须等到线程被创建之后，才能设置只针对某个特定线程的断点（这个例子展示的是只为线程 4 在程序第 77 行设置断点）。查看这段输出时，注意断点是何时设置和删除的，也注意用 GDB 的 <code>thread</code> 命令切换线程上下文时，每个线程的局部变量 <code>i</code> 的值：</p>
+<blockquote>
+<p>When debugging multithreaded programs, the GDB user must keep track of which threads exist when issuing commands. For example, when the breakpoint in <code>main</code> is hit, only thread 1 (the main thread) exists. As a result, the GDB user must wait until threads are created before setting a breakpoint for only a specific thread (this example shows setting a breakpoint for thread 4 only at line 77 in the program). In viewing this output, note when breakpoints are set and deleted, and note the value of each thread’s local variable <code>i</code> when thread contexts are switched with GDB’s <code>thread</code> command:</p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br></pre></td><td class="code"><pre><span class="line">$ gcc -g racecond.c -pthread</span><br><span class="line"></span><br><span class="line">$ gdb ./a.out</span><br><span class="line">(gdb) break main</span><br><span class="line">Breakpoint 1 at 0x919: file racecond.c, line 28.</span><br><span class="line">(gdb) run 3</span><br><span class="line">Starting program: ...</span><br><span class="line">[Thread debugging using libthread_db enabled] ...</span><br><span class="line"></span><br><span class="line">Breakpoint 1, main (argc=2, argv=0x7fffffffe388) at racecond.c:28</span><br><span class="line">28	    if (argc != 2) &#123;</span><br><span class="line">(gdb) list 76</span><br><span class="line">71	  myid = *((int *)arg);</span><br><span class="line">72</span><br><span class="line">73	  printf(&quot;hello I&#x27;m thread %d with pthread_id %lu\n&quot;,</span><br><span class="line">74	      myid, pthread_self());</span><br><span class="line">75</span><br><span class="line">76	  for (i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">77	      count += i;</span><br><span class="line">78	  &#125;</span><br><span class="line">79</span><br><span class="line">80	  return (void *)0;</span><br><span class="line"></span><br><span class="line">(gdb) break 76</span><br><span class="line">Breakpoint 2 at 0x555555554b06: file racecond.c, line 76.</span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">[New Thread 0x7ffff77c4700 (LWP 5833)]</span><br><span class="line">hello I&#x27;m thread 0 with pthread_id 140737345505024</span><br><span class="line">[New Thread 0x7ffff6fc3700 (LWP 5834)]</span><br><span class="line">hello I&#x27;m thread 1 with pthread_id 140737337112320</span><br><span class="line">[New Thread 0x7ffff67c2700 (LWP 5835)]</span><br><span class="line">[Switching to Thread 0x7ffff77c4700 (LWP 5833)]</span><br><span class="line"></span><br><span class="line">Thread 2 &quot;a.out&quot; hit Breakpoint 2, worker_loop (arg=0x555555757280)</span><br><span class="line">    at racecond.c:76</span><br><span class="line">76	  for (i = 0; i &lt; 10000; i++) &#123;</span><br><span class="line">(gdb) delete 2</span><br><span class="line"></span><br><span class="line">(gdb) break 77 thread 4</span><br><span class="line">Breakpoint 3 at 0x555555554b0f: file racecond.c, line 77.</span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line"></span><br><span class="line">hello I&#x27;m thread 2 with pthread_id 140737328719616</span><br><span class="line">[Switching to Thread 0x7ffff67c2700 (LWP 5835)]</span><br><span class="line"></span><br><span class="line">Thread 4 &quot;a.out&quot; hit Breakpoint 3, worker_loop (arg=0x555555757288)</span><br><span class="line">    at racecond.c:77</span><br><span class="line">77	      count += i;</span><br><span class="line">(gdb) print i</span><br><span class="line">$2 = 0</span><br><span class="line">(gdb) cont</span><br><span class="line">Continuing.</span><br><span class="line">[Switching to Thread 0x7ffff67c2700 (LWP 5835)]</span><br><span class="line"></span><br><span class="line">Thread 4 &quot;a.out&quot; hit Breakpoint 3, worker_loop (arg=0x555555757288)</span><br><span class="line">    at racecond.c:77</span><br><span class="line">77	      count += i;</span><br><span class="line">(gdb) print i</span><br><span class="line">$4 = 1</span><br><span class="line"></span><br><span class="line">(gdb) thread 3</span><br><span class="line">[Switching to thread 3 (Thread 0x7ffff6fc3700 (LWP 5834))]</span><br><span class="line">#0  0x0000555555554b12 in worker_loop (arg=0x555555757284) at racecond.c:77</span><br><span class="line">77	      count += i;</span><br><span class="line">(gdb) print i</span><br><span class="line">$5 = 0</span><br><span class="line"></span><br><span class="line">(gdb) thread 2</span><br><span class="line">[Switching to thread 2 (Thread 0x7ffff77c4700 (LWP 5833))]</span><br><span class="line">#0  worker_loop (arg=0x555555757280) at racecond.c:77</span><br><span class="line">77	      count += i;</span><br><span class="line">(gdb) print i</span><br><span class="line">$6 = 1</span><br></pre></td></tr></table></figure>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">3.5. 调试汇编代码</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C3-C_debug/3.7-summary.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">3.7. 小结</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-1-GDB-%E4%B8%8E-Pthreads"><span class="toc-text">3.6.1. GDB 与 Pthreads</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-2-GDB-%E4%B8%AD%E4%B8%8E%E7%BA%BF%E7%A8%8B%E7%9B%B8%E5%85%B3%E7%9A%84%E5%91%BD%E4%BB%A4%EF%BC%9A"><span class="toc-text">3.6.2. GDB 中与线程相关的命令：</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3-6-3-%E7%A4%BA%E4%BE%8B%EF%BC%9A"><span class="toc-text">3.6.3. 示例：</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

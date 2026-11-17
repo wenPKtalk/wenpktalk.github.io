@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DuckLake 专栏（九）：DuckDB 被嵌入的五种形态 · Summary</title>
+  <meta name="description" content="DuckDB 被别的系统引入，大致有五种形态：嵌进数据库内核、旁路进程、独立服务、嵌在应用里、大量短命实例。这一篇逐类看代表项目的架构和可借鉴点，篇末是没画图的项目、局限和全部来源。 架构图怎么读  图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。 节点颜色： 🟦 写路径 🟩 读路径 🟪 维护 🟧 元数据 &#x2F; catalog 🟨 DuckDB">
+<meta property="og:type" content="article">
+<meta property="og:title" content="DuckLake 专栏（九）：DuckDB 被嵌入的五种形态 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/2026/11/16/ducklake-09-duckdb-embedding/index.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="DuckDB 被别的系统引入，大致有五种形态：嵌进数据库内核、旁路进程、独立服务、嵌在应用里、大量短命实例。这一篇逐类看代表项目的架构和可借鉴点，篇末是没画图的项目、局限和全部来源。 架构图怎么读  图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。 节点颜色： 🟦 写路径 🟩 读路径 🟪 维护 🟧 元数据 &#x2F; catalog 🟨 DuckDB">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2026-11-16T07:09:00.000Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.923Z">
+<meta property="article:author" content="Topsion">
+<meta property="article:tag" content="DuckDB">
+<meta property="article:tag" content="DuckLake">
+<meta name="twitter:card" content="summary">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/ducklake/">DuckDB 与 DuckLake</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>一、入门与全景</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-01-versions-and-maturity/">DuckLake 专栏（一）：2026 年的 DuckDB 与 DuckLake——版本与成熟度</a></li><li><a href="/2026/11/16/ducklake-02-how-ducklake-stores-data/">DuckLake 专栏（二）：DuckLake 怎么存数据</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>二、引擎原理</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-03-connections-and-threads/">DuckLake 专栏（三）：DuckDB 多连接与线程分工</a></li><li><a href="/2026/11/16/ducklake-04-scheduler/">DuckLake 专栏（四）：DuckDB 调度器——两个线程池与 lane 轮转</a></li><li><a href="/2026/11/16/ducklake-05-memory-and-admission/">DuckLake 专栏（五）：内存模型与并发准入</a></li><li><a href="/2026/11/16/ducklake-06-ducklake-thread-model/">DuckLake 专栏（六）：DuckLake 在线程上怎么跑</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>三、源码</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-07-source-walkthrough/">DuckLake 专栏（七）：DuckLake × DuckDB 源码走读</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>四、生态</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/2026/11/16/ducklake-08-ducklake-ecosystem/">DuckLake 专栏（八）：DuckLake 生态逐项目架构</a></li><li><a href="/2026/11/16/ducklake-09-duckdb-embedding/" class="current" aria-current="page">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/ducklake/">DuckDB 与 DuckLake</a>
+        <span aria-hidden="true">›</span><span>四、生态</span>
+      </nav>
+      <span class="book-position">第 9 / 9 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">DuckLake 专栏（九）：DuckDB 被嵌入的五种形态</h1>
+  
+  
+    <p class="article-meta">
+      <time datetime="2026-11-16T07:09:00.000Z">2026-11-16</time>
+      <span>· 约 24 分钟</span>
+      
+        · <a href="/categories/DuckLake/">DuckLake</a>
+      
+      
+        <a class="badge" href="/tags/DuckDB/">DuckDB</a>
+      
+        <a class="badge" href="/tags/DuckLake/">DuckLake</a>
+      
+    </p>
+  
+</header>
+
+    <div class="article-content"><p>DuckDB 被别的系统引入，大致有五种形态：嵌进数据库内核、旁路进程、独立服务、嵌在应用里、大量短命实例。这一篇逐类看代表项目的架构和可借鉴点，篇末是没画图的项目、局限和全部来源。</p>
+<p><strong>架构图怎么读</strong></p>
+<ul>
+<li>图只画到 README 或文档里明确写了的组件。没写的不臆造，在”未核实”里说明。</li>
+<li>节点颜色：<ul>
+<li>🟦 写路径</li>
+<li>🟩 读路径</li>
+<li>🟪 维护</li>
+<li>🟧 元数据 &#x2F; catalog</li>
+<li>🟨 DuckDB 引擎</li>
+<li>🟥 限制或坑</li>
+<li>⬜ 外部系统或存储</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-1-A-类：嵌进数据库内核"><a href="#3-1-A-类：嵌进数据库内核" class="headerlink" title="3.1 A 类：嵌进数据库内核"></a>3.1 A 类：嵌进数据库内核</h2><h3 id="pg-duckdb（duckdb-组织；正式版-v1-1-1，最新-v1-2-0-为-Experimental）"><a href="#pg-duckdb（duckdb-组织；正式版-v1-1-1，最新-v1-2-0-为-Experimental）" class="headerlink" title="pg_duckdb（duckdb 组织；正式版 v1.1.1，最新 v1.2.0 为 Experimental）"></a>pg_duckdb（duckdb 组织；正式版 v1.1.1，最新 v1.2.0 为 Experimental）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>v1.1.1 是正式版</strong>（2025-12-18，内置 DuckDB 1.4.3）。1.0.0（2025-09-04）发布时官方宣布”ready for production”。<br>⚠️ <strong>版本空档：</strong> v1.1.x 内置的 DuckDB 1.4 系列，官方只支持到 2026-11-17（见 DuckDB 2.0 公告）。而能用上 DuckDB 2.0 的 v1.2.0 又还没稳定，见下一条。<br>⚠️ **最新的 v1.2.0（2026-11-03，内置 DuckDB 2.0.0）在 release notes 里自己标了 “Experimental”**：”not ready for production use because there is a number of user-reported serious issues that are still unresolved”。GitHub 上没有勾选 prerelease。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  CL[&quot;psql / 应用&quot;] --&gt; BE[&quot;PG backend 进程&quot;]
+  subgraph BE_IN[&quot;同一个 PG backend 进程内&quot;]
+    HOOK[&quot;SET duckdb.force_execution=true&lt;br/&gt;原有 SQL 不改，交给 DuckDB 执行&quot;]
+    DUCK[&quot;嵌入的 DuckDB&lt;br/&gt;多线程执行&quot;]
+    PGS[&quot;读取 PG 表&lt;br/&gt;（README 的例子：对 orders 表做分析）&quot;]
+  end
+  BE --&gt; HOOK --&gt; DUCK
+  DUCK --&gt; PGS
+  DUCK --&gt;|&quot;read_parquet / iceberg / delta&quot;| OBJ[(&quot;S3 / 本地文件&quot;)]
+  DUCK --&gt;|&quot;可选&quot;| MD[&quot;MotherDuck&quot;]
+  RISK[&quot;与 PG 之间没有资源隔离：&lt;br/&gt;DuckDB 的内存和线程&lt;br/&gt;都算在 PG 进程里&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class DUCK duck
+  class RISK warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>“一个开关切换执行引擎，SQL 不用改”：</strong> 用户感知不到执行引擎换了。</li>
+<li>由 Hydra 和 MotherDuck 合作开发；README 里没有描述内部的接管机制，图里也没画。</li>
+<li><strong>反例：</strong> 同进程嵌入就没有资源隔离。把 DuckDB 嵌在 JVM 里也是同样的问题：DuckDB 用的内存在 JVM 堆外，native crash 会把 JVM 一起带走。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/duckdb/pg_duckdb">GitHub</a></p>
+<h3 id="pg-mooncake-moonlink（Mooncake-Labs，已被-Databricks-收购）"><a href="#pg-mooncake-moonlink（Mooncake-Labs，已被-Databricks-收购）" class="headerlink" title="pg_mooncake + moonlink（Mooncake Labs，已被 Databricks 收购）"></a>pg_mooncake + moonlink（Mooncake Labs，已被 Databricks 收购）</h3><blockquote>
+<p><strong>成熟度：</strong> pg_mooncake ⚫ <strong>停更</strong>：v0.1.2（2025-02），默认分支最后一次提交在 2025-10。moonlink 🟡 <strong>Preview</strong>：README 写”Moonlink is in preview. Expect changes.”，没有 release。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  PGH[&quot;PG 堆表&quot;] --&gt;|&quot;逻辑复制&quot;| ML[&quot;moonlink（Rust）&lt;br/&gt;缓冲 / 建索引 / 缓存放 NVMe&quot;]
+  KF[&quot;Kafka / OTEL&quot;] --&gt; ML
+  ML --&gt;|&quot;刷成尺寸合适的 Parquet&lt;br/&gt;+ 删除向量&quot;| ICE[(&quot;Iceberg 表&quot;)]
+  Q[&quot;PG 查询&quot;] --&gt; PGD[&quot;pg_duckdb（DuckDB）&quot;] --&gt; ICE
+  PGD -.-&gt;|&quot;读取尚未刷盘的数据&quot;| ML
+  ST[&quot;状态：pg_mooncake 默认分支最后提交 2025-10&lt;br/&gt;moonlink 仍活跃（2026-11）&quot;]
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class ML write
+  class ST warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>写放大治理：</strong> 先缓冲再提交大文件。思路和 DuckLake inlining、pg_duckpipe 的批量写一致。</li>
+<li><strong>未核实：</strong> 读路径如何合并”未刷盘缓冲 + Iceberg”，只看到 README 的示意图。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/Mooncake-Labs/pg_mooncake">pg_mooncake</a>、<a target="_blank" rel="noopener" href="https://github.com/Mooncake-Labs/moonlink">moonlink</a></p>
+<h3 id="阿里云-RDS-MySQL-DuckDB-分析只读实例"><a href="#阿里云-RDS-MySQL-DuckDB-分析只读实例" class="headerlink" title="阿里云 RDS MySQL DuckDB 分析只读实例"></a>阿里云 RDS MySQL DuckDB 分析只读实例</h3><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>正式上线</strong>：分析只读实例在 2025-08-06 “正式上线”，按只读实例计费。分析主实例 ⚪ 公告没写阶段，可以免费试用。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  APP[&quot;应用&quot;] --&gt; PROXY&#123;&quot;数据库代理&lt;br/&gt;估算 SQL 代价&quot;&#125;
+  PROXY --&gt;|&quot;OLTP&quot;| MAIN[&quot;MySQL 主实例 / 普通只读实例&lt;br/&gt;InnoDB&quot;]
+  PROXY --&gt;|&quot;OLAP&quot;| DRO[&quot;DuckDB 分析只读实例&lt;br/&gt;表引擎全部转成 DuckDB&quot;]
+  MAIN --&gt;|&quot;① 全量备份初始化&lt;br/&gt;并转换存储引擎&quot;| DRO
+  MAIN --&gt;|&quot;② binlog 增量同步&quot;| DRO
+  LIM[&quot;限制：表必须有主键或非空唯一约束&lt;br/&gt;不支持分区表 / 会删外键 / 只支持 UTF8 和 UTF8MB4&lt;br/&gt;存储空间不少于主实例的一半&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  classDef read fill:#DCFCE7,stroke:#15803D,color:#1f2937
+  class DRO duck
+  class LIM warn
+  class PROXY read</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>按代价分流：</strong> OLAP 走 DuckDB，OLTP 走 InnoDB；也提供直连地址给只跑分析的场景。</li>
+<li><strong>“全量初始化 + 增量同步”两段式：</strong> 区别于每次整表 <code>CREATE OR REPLACE</code> 重建。增量要求有主键，这正是阿里云把”无主键表”排除在外的原因。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://help.aliyun.com/zh/rds/apsaradb-rds-for-mysql/duckdb-based-analytical-instance/">阿里云文档</a></p>
+<h3 id="阿里云-PolarDB-DuckDB-列存表"><a href="#阿里云-PolarDB-DuckDB-列存表" class="headerlink" title="阿里云 PolarDB DuckDB 列存表"></a>阿里云 PolarDB DuckDB 列存表</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ <strong>文档没标阶段</strong>（要求 Oracle 语法兼容 2.0，版本 2.0.14.22.49.0 及以上）。开源的 DuckDB-paimon 扩展 🟠 v0.1.3（2026-10-23）。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  SQL[&quot;CREATE TABLE ... USING duckdb&quot;] --&gt; AM[&quot;访问方法 polar_duckdb&lt;br/&gt;（polar_default_duckdb_table_engine）&quot;]
+  AM --&gt; DK[&quot;内核集成的 DuckDB&lt;br/&gt;扫描 / 过滤 / 聚合 / 连接&lt;br/&gt;以及 UPDATE / DELETE 执行&quot;]
+  DK --&gt; FILES[(&quot;DuckDB 列式数据文件&lt;br/&gt;（不依赖堆表）&quot;)]
+  TX[&quot;支持 PG 事务提交和回滚&lt;br/&gt;同一事务内能读到自己的写&quot;]
+  NO[&quot;不支持：堆表与列存表 JOIN / 主键和索引&lt;br/&gt;MERGE / 行锁 / 跨多张列存表原子提交&lt;br/&gt;两阶段提交 / 逻辑复制和 CDC&quot;]
+  TX -.-&gt; DK
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class DK duck
+  class NO warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>限制清单写得很诚实，可以当作”DuckDB 塞进事务型数据库的边界”参考：</strong> 跨表原子提交、行锁、和行存表 JOIN 都没做。</li>
+<li>另有 IMCI 列存索引方案（行存加 DuckDB 列存，宣称秒级同步、复杂查询快 60 到 100 倍）。原文正文没能抓到，<strong>不画图</strong>。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://help.aliyun.com/en/polardb/polardb-for-oracle/what-is-a-cloud-native-duckdb-column-store-table">PolarDB 文档</a></p>
+<hr>
+<h2 id="3-2-B-类：旁路进程"><a href="#3-2-B-类：旁路进程" class="headerlink" title="3.2 B 类：旁路进程"></a>3.2 B 类：旁路进程</h2><h3 id="pg-lake（Snowflake-Labs，v3-6-0）"><a href="#pg-lake（Snowflake-Labs，v3-6-0）" class="headerlink" title="pg_lake（Snowflake-Labs，v3.6.0）"></a>pg_lake（Snowflake-Labs，v3.6.0）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>正式发布</strong>：v3.6.0（2026-11-04）。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  CL[&quot;Postgres 客户端&quot;] --&gt; PG
+  subgraph PG[&quot;PostgreSQL + pg_lake 扩展&quot;]
+    EXT[&quot;pg_lake_table（FDW）&lt;br/&gt;pg_lake_iceberg&lt;br/&gt;pg_lake_copy&lt;br/&gt;pg_lake_engine&quot;]
+    PLAN[&quot;负责解析、规划、事务边界和编排&quot;]
+  end
+  subgraph PDS[&quot;pgduck_server（独立的多线程进程）&quot;]
+    WIRE[&quot;本地 PG 协议&lt;br/&gt;unix socket :5332&lt;br/&gt;max_clients 10000&quot;]
+    DUCK[&quot;DuckDB + duckdb_pglake 扩展&lt;br/&gt;（补齐 PG 函数语义）&quot;]
+    CACHE[&quot;--cache_dir&lt;br/&gt;远程文件本地缓存&quot;]
+  end
+  CATI[&quot;Iceberg 元数据&lt;br/&gt;由 PG 作为事务性 catalog&quot;]
+  OBJ[(&quot;S3 Parquet / Iceberg&quot;)]
+  EXT --&gt; PLAN
+  PLAN --&gt;|&quot;把扫描和计算下推&quot;| WIRE --&gt; DUCK
+  DUCK --&gt; CACHE --&gt; OBJ
+  PLAN --&gt; CATI
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  class DUCK duck
+  class CATI meta</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>用进程隔离解决宿主和 DuckDB 的不兼容。</strong> README 原话说这样避免了把 DuckDB 嵌进 PG 进程带来的”threading and memory-safety limitations”。</li>
+<li><strong>旁路进程讲标准协议，就能用标准客户端调试：</strong> 用 psql 直接连 5332 端口查看引擎状态。</li>
+<li><strong><code>duckdb_pglake</code> 扩展补齐方言差异。</strong></li>
+<li><strong>远程文件本地缓存（<code>--cache_dir</code>）。</strong></li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/Snowflake-Labs/pg_lake">GitHub README</a></p>
+<hr>
+<h2 id="3-3-C-类：独立服务"><a href="#3-3-C-类：独立服务" class="headerlink" title="3.3 C 类：独立服务"></a>3.3 C 类：独立服务</h2><h3 id="Quack（DuckDB-官方客户端-服务端协议，beta）"><a href="#Quack（DuckDB-官方客户端-服务端协议，beta）" class="headerlink" title="Quack（DuckDB 官方客户端&#x2F;服务端协议，beta）"></a>Quack（DuckDB 官方客户端&#x2F;服务端协议，beta）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟡 <strong>Beta</strong>：官方 FAQ 原话”currently in a beta state”，”protocol is not yet stable”。扩展属于 Secondary 级。社区的 ADBC 驱动是 🟡 public preview（2026-05-21）。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  subgraph SERVER[&quot;服务端 DuckDB 进程（持有唯一实例）&quot;]
+    QS[&quot;CALL quack_serve('quack:host', token=...)&lt;br/&gt;默认只绑 localhost:9494&quot;]
+    AUTHN[&quot;认证回调&lt;br/&gt;可以用 SQL 宏替换（比如查 LDAP）&quot;]
+    AUTHZ[&quot;授权回调（默认放行）&quot;]
+    DB[&quot;DuckDB 实例&lt;br/&gt;多个写者并发修改表&quot;]
+  end
+  RP[&quot;反向代理（nginx）&lt;br/&gt;负责终止 TLS&quot;]
+  C1[&quot;客户端 DuckDB&lt;br/&gt;ATTACH 'quack:...' AS remote&quot;] --&gt; RP --&gt; QS
+  C2[&quot;客户端 DuckDB&lt;br/&gt;remote.query(...) 整条下推&quot;] --&gt; RP
+  QS --&gt; AUTHN --&gt; AUTHZ --&gt; DB
+  DB --&gt;|&quot;application/duckdb&lt;br/&gt;（复用 WAL 的序列化格式）&lt;br/&gt;一次往返完成一个查询&quot;| C1
+  DB --&gt;|&quot;大结果分批 fetch&lt;br/&gt;可以多线程并行&quot;| C2
+  LIM[&quot;单表并发插入超过 8 线程后不再扩展&lt;br/&gt;（DuckDB 自身的限制）&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class DB duck
+  class LIM warn</pre>
+
+<p>官方基准（同可用区两台 m8g.2xlarge）：6000 万行传输 Quack 4.94s，Arrow Flight 17.40s，PG 158.37s；8 线程小写入 5434 tx&#x2F;s。</p>
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>“写集中到一个 server”天然消除了多进程写同一份数据的冲突。</strong></li>
+<li><strong>认证和授权都是可替换的回调，还能直接写成 SQL 宏。</strong></li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://duckdb.org/2026/05/12/quack-remote-protocol.html">Quack 公告</a>、<a target="_blank" rel="noopener" href="https://duckdb.org/quack/faq.html">FAQ</a></p>
+<h3 id="GizmoSQL（v1-42-3）"><a href="#GizmoSQL（v1-42-3）" class="headerlink" title="GizmoSQL（v1.42.3）"></a>GizmoSQL（v1.42.3）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>v1.42.3</strong>（stable 渠道基于 DuckDB 1.5.6）。DuckDB 2.0 的 edge 渠道为 🟡 experimental，官方写”not for production”。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  C[&quot;JDBC（自带驱动）/ ADBC&lt;br/&gt;Python / SQLAlchemy / Ibis&lt;br/&gt;WebSocket / MCP&quot;] --&gt; MW[&quot;中间件：TLS / mTLS&lt;br/&gt;密码登录后签发 JWT&lt;br/&gt;企业版：OIDC 和 SSO&quot;]
+  MW --&gt; SESS[&quot;会话层&lt;br/&gt;企业版：会话埋点 / 强杀会话&quot;]
+  SESS --&gt; FS[&quot;Arrow Flight SQL 服务（C++）&quot;]
+  FS --&gt; BK&#123;&quot;后端（运行时可切换）&quot;&#125;
+  BK --&gt; D[&quot;DuckDB&lt;br/&gt;1.5.6 稳定 / 1.4.5 LTS&lt;br/&gt;2.0.0 edge（实验）&quot;]
+  BK --&gt; S[&quot;SQLite&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class D duck</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>按 DuckDB 版本分发布渠道（stable &#x2F; LTS &#x2F; edge）。</strong></li>
+<li><strong>“强杀会话”和会话埋点。</strong></li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/gizmodata/gizmosql">GitHub README</a></p>
+<h3 id="MyDuck-Server（apecloud）"><a href="#MyDuck-Server（apecloud）" class="headerlink" title="MyDuck Server（apecloud）"></a>MyDuck Server（apecloud）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>未正式发布</strong>：没有 GitHub release，Docker 镜像标签是 <code>v0.3.1-dev</code>（2026-09-19），路线图里认证功能还没完成。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  subgraph PRIM[&quot;主库&quot;]
+    MY[&quot;MySQL&lt;br/&gt;建议开 GTID&quot;]
+    PGP[&quot;Postgres&lt;br/&gt;wal_level=logical&quot;]
+  end
+  subgraph MYDUCK[&quot;MyDuck Server（Go）&quot;]
+    REP[&quot;复制：&lt;br/&gt;START REPLICA（基于 Vitess 的 binlog 流）&lt;br/&gt;CREATE SUBSCRIPTION（PG 逻辑复制）&quot;]
+    TXB[&quot;事务批处理：&lt;br/&gt;合并多个事务后批量写入 DuckDB&lt;br/&gt;保持事务边界，不暴露脏数据&quot;]
+    FE[&quot;MySQL 协议 :3306&lt;br/&gt;PG 协议 :5432&lt;br/&gt;Flight SQL&quot;]
+    DUCK[&quot;DuckDB&quot;]
+  end
+  PROXY[&quot;ProxySQL / MaxScale / PGPool&lt;br/&gt;写走主库，分析走 MyDuck&quot;]
+  MY --&gt; REP
+  PGP --&gt; REP
+  REP --&gt; TXB --&gt; DUCK
+  PROXY --&gt; FE --&gt; DUCK
+  NOAUTH[&quot;路线图：认证功能尚未完成&quot;]
+  classDef write fill:#DBEAFE,stroke:#2563EB,color:#1f2937
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class REP,TXB write
+  class DUCK duck
+  class NOAUTH warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>事务批处理：</strong> 把多个源事务合并成一次 DuckDB 写入，但对外只在事务边界上可见。这是 DuckDB 不擅长高频小写入时的标准对策。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/apecloud/myduckserver">GitHub README</a></p>
+<hr>
+<h2 id="3-4-D-类：嵌在应用里（BI-和嵌入式分析）"><a href="#3-4-D-类：嵌在应用里（BI-和嵌入式分析）" class="headerlink" title="3.4 D 类：嵌在应用里（BI 和嵌入式分析）"></a>3.4 D 类：嵌在应用里（BI 和嵌入式分析）</h2><h3 id="Rill"><a href="#Rill" class="headerlink" title="Rill"></a>Rill</h3><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>版本号 0.x</strong>（v0.91.1，2026-11-03），但 Rill Cloud 是商用服务。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  CONN[&quot;连接器&lt;br/&gt;S3 / GCS / BigQuery / Snowflake&quot;] --&gt; MOD[&quot;Models&lt;br/&gt;SQL 或 YAML 做最后一公里转换&quot;]
+  MOD --&gt; OLAP&#123;&quot;OLAP 引擎&quot;&#125;
+  OLAP --&gt;|&quot;中小数据量 / 快速迭代&quot;| DK[&quot;DuckDB（嵌入）&quot;]
+  OLAP --&gt;|&quot;数十亿行&quot;| CH[&quot;ClickHouse&quot;]
+  OLAP --&gt;|&quot;外部&quot;| EXT[&quot;Druid / Pinot / MotherDuck&quot;]
+  MV[&quot;Metrics View（YAML 语义层）&lt;br/&gt;维度 / 度量 / 时间粒度&lt;br/&gt;行级访问策略&quot;] --&gt;|&quot;查询时生成 SQL&quot;| OLAP
+  DASH[&quot;Explore / Canvas 看板&quot;] --&gt; MV
+  API[&quot;自定义 API / MCP Server&quot;] --&gt; MV
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  class DK duck
+  class MV meta</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>“语义层生成 SQL，引擎可以换”。</strong></li>
+<li><strong>行级访问策略挂在语义层上统一注入：</strong> 不是每个查询自己拼条件。</li>
+<li><strong>Rill 自己的分工：</strong> DuckDB 管中小数据，ClickHouse 管数十亿行。这是给 DuckDB 定规模边界时可以参考的业界判断。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/rilldata/rill">GitHub README</a></p>
+<h3 id="Cube"><a href="#Cube" class="headerlink" title="Cube"></a>Cube</h3><blockquote>
+<p><strong>成熟度：</strong> 🟢 <strong>v1.8.21</strong>。DuckDB 数据源的文档没标阶段。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  API[&quot;REST / GraphQL / SQL API&quot;] --&gt; SL[&quot;Cube 语义层&lt;br/&gt;数据模型&quot;]
+  SL --&gt; ORCH[&quot;查询编排器&quot;]
+  ORCH --&gt;|&quot;命中预聚合&quot;| CS[&quot;Cube Store&lt;br/&gt;预聚合&lt;br/&gt;（Cube 的通用架构，本次未针对 DuckDB 核实）&quot;]
+  ORCH --&gt;|&quot;未命中&quot;| DS[&quot;数据源：DuckDB / MotherDuck&lt;br/&gt;CUBEJS_DB_TYPE=duckdb&quot;]
+  DS --&gt; PQ[(&quot;S3 Parquet&lt;br/&gt;（由 DuckDB 读取，Cube 本身不读文件）&quot;)]
+  LIM[&quot;DuckDB 不支持 export bucket&lt;br/&gt;大规模预聚合构建受限&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class DS duck
+  class LIM warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>预聚合层放在引擎之前。</strong> 命中 rollup 就不用扫明细。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://docs.cube.dev/docs/configuration/data-sources/duckdb">Cube 文档</a>（据检索摘要）</p>
+<h3 id="Metabase-DuckDB-驱动-Superset-duckdb-engine"><a href="#Metabase-DuckDB-驱动-Superset-duckdb-engine" class="headerlink" title="Metabase DuckDB 驱动 &#x2F; Superset duckdb_engine"></a>Metabase DuckDB 驱动 &#x2F; Superset duckdb_engine</h3><blockquote>
+<p><strong>成熟度：</strong> Metabase 驱动 🟢 <strong>1.5.6.0</strong>（版本号跟随 DuckDB；第三方插件，由 MotherDuck 维护，不是 Metabase 官方）。duckdb_engine 🟠 <strong>v0.17.0</strong>（2025-03），其中预加载扩展功能为 🟡 experimental。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  subgraph MB[&quot;Metabase（JVM）&quot;]
+    DRV[&quot;duckdb.metabase-driver.jar&lt;br/&gt;（DuckDB JDBC）&quot;]
+    INIT[&quot;每个新连接都执行一遍 Init SQL&lt;br/&gt;INSTALL / LOAD / ATTACH&quot;]
+  end
+  DRV --&gt; INIT --&gt; DB[&quot;DuckDB&lt;br/&gt;:memory: / 文件 / ducklake:...&quot;]
+  DB --&gt; CAT[&quot;DuckLake catalog&lt;br/&gt;PG / MySQL / 本地文件&quot;]
+  DB --&gt; DATA[(&quot;DATA_PATH&lt;br/&gt;必须是绝对路径或对象存储 URI&quot;)]
+  BUG[&quot;坑：相对 DATA_PATH 会被原样写进 catalog&lt;br/&gt;然后按进程工作目录解析&lt;br/&gt;其他客户端写的文件就打不开了&quot;]
+  BUG -.-&gt; DATA
+  SS[&quot;Superset（Python）&quot;] --&gt; SQA[&quot;duckdb_engine&lt;br/&gt;SQLAlchemy 方言&quot;] --&gt; DB
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class DB duck
+  class BUG warn</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong><code>DATA_PATH</code> 的坑可以直接防住。</strong></li>
+<li><strong>“每个新连接执行 Init SQL”</strong> 是 JDBC 场景下最简单的连接初始化方式。如果是在一个 base 实例上 <code>duplicate()</code> 出连接，ATTACH 是共享的，比这个更省。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/motherduckdb/metabase_duckdb_driver">Metabase 驱动 README</a>、<a target="_blank" rel="noopener" href="https://github.com/Mause/duckdb_engine">duckdb_engine</a></p>
+<h3 id="Omni（DuckDB-当可再查询的缓存，2022-年的文章）"><a href="#Omni（DuckDB-当可再查询的缓存，2022-年的文章）" class="headerlink" title="Omni（DuckDB 当可再查询的缓存，2022 年的文章）"></a>Omni（DuckDB 当可再查询的缓存，2022 年的文章）</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ 商用产品，DuckDB 是内部组件，没有单独的发布阶段。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  U[&quot;用户操作：&lt;br/&gt;收窄过滤 / 上卷 / 改排序&quot;] --&gt; SM&#123;&quot;语义模型判断：&lt;br/&gt;已缓存的数据集能不能回答&quot;&#125;
+  SM --&gt;|&quot;能&quot;| DC[&quot;进程内 DuckDB&lt;br/&gt;在缓存结果上重算&quot;]
+  SM --&gt;|&quot;不能&quot;| WH[&quot;回源数仓&quot;]
+  WH --&gt;|&quot;结果放进缓存&quot;| DC
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef read fill:#DCFCE7,stroke:#15803D,color:#1f2937
+  class DC duck
+  class SM read</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>透视表上的”收窄过滤、上卷到更粗的粒度、改排序”都可以在上一次的结果上完成，不用再查引擎。</strong></li>
+<li><strong>未核实：</strong> 缓存失效策略（文章没写）。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://omni.co/blog/DuckDB-complements-BI">Omni 博客</a></p>
+<h3 id="Mosaic（UW-交互数据实验室）"><a href="#Mosaic（UW-交互数据实验室）" class="headerlink" title="Mosaic（UW 交互数据实验室）"></a>Mosaic（UW 交互数据实验室）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>0.x</strong>：v0.35.0（2026-11-03），学术研究项目。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  subgraph UI[&quot;前端组件&quot;]
+    P1[&quot;图表 1&quot;]
+    P2[&quot;图表 2&quot;]
+    W[&quot;输入控件 / 表格&quot;]
+  end
+  COORD[&quot;Coordinator&lt;br/&gt;组件声明自己要什么数据（声明式查询）&lt;br/&gt;Selection 联动过滤谓词&lt;br/&gt;Filter group 用预聚合物化视图&quot;]
+  P1 --&gt; COORD
+  P2 --&gt; COORD
+  W --&gt; COORD
+  COORD --&gt;|&quot;wasm 客户端&quot;| WASM[&quot;浏览器 DuckDB-WASM&quot;]
+  COORD --&gt;|&quot;rest 客户端&quot;| SRV[&quot;服务端 DuckDB&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  class WASM,SRV duck
+  class COORD meta</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>一个协调器统一管理看板上所有组件的查询，</strong> 可以合并、去重，并为交叉过滤建预聚合。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://github.com/uwdata/mosaic">GitHub README</a></p>
+<h3 id="Hex-Mode-Count-Observable（notebook-和浏览器嵌入，合并成一张图）"><a href="#Hex-Mode-Count-Observable（notebook-和浏览器嵌入，合并成一张图）" class="headerlink" title="Hex &#x2F; Mode &#x2F; Count &#x2F; Observable（notebook 和浏览器嵌入，合并成一张图）"></a>Hex &#x2F; Mode &#x2F; Count &#x2F; Observable（notebook 和浏览器嵌入，合并成一张图）</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ 都是商用产品，DuckDB 是内部组件。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  NB[&quot;notebook / 可视化前端&quot;] --&gt;|&quot;Hex：kernel 内嵌 DuckDB&quot;| K[&quot;DuckDB（kernel）&quot;] --&gt; S3A[(&quot;S3 上的 Arrow 数据&quot;)]
+  NB --&gt;|&quot;Count / Observable：浏览器内执行&quot;| WA[&quot;duckdb-wasm&quot;]
+  NB --&gt;|&quot;Mode：内存探索引擎换成 DuckDB&quot;| M[&quot;DuckDB&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class K,WA,M duck</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 把”二次探索”（排序、筛选、小范围聚合）放到离用户最近的地方执行，服务端只负责首次取数。</li>
+<li>来源：MotherDuck “15+ companies”（厂商汇编，只有一句话级别的描述）。</li>
+</ul>
+<h3 id="Evidence（⚠️-已经不再以-DuckDB-为核心）"><a href="#Evidence（⚠️-已经不再以-DuckDB-为核心）" class="headerlink" title="Evidence（⚠️ 已经不再以 DuckDB 为核心）"></a>Evidence（⚠️ 已经不再以 DuckDB 为核心）</h3><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>过渡期</strong>：最后一个正式发布是旧架构的 <code>@evidence-dev/universal-sql@3.0.1</code>（2026-02-06，基于 DuckDB）。main 分支上的重写版 <code>@evidence/core</code> 和 <code>@evidence/cli</code> 还是 0.0.1，没有发布。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  OLD[&quot;旧版：Markdown + SQL&lt;br/&gt;Universal SQL = DuckDB-WASM&lt;br/&gt;在浏览器里执行&quot;] -.-&gt;|&quot;重写&quot;| NEW[&quot;当前 main 分支：@evidence/cli&lt;br/&gt;依赖 @clickhouse/client&quot;]
+  NEW --&gt; HOST[&quot;Evidence Studio 托管版&lt;br/&gt;对象存储用 ClickHouse S3 表引擎查询&quot;]
+  classDef warn fill:#FEE2E2,stroke:#B91C1C,color:#1f2937
+  class OLD warn</pre>
+
+<ul>
+<li><strong>事实：</strong> 当前 <code>evidence-dev/evidence</code> 的 <code>cli/package.json</code> 依赖 <code>@clickhouse/client</code>。仓库文件树里已经没有含 “duckdb” 的路径，根目录、<code>core/</code> 和 <code>cli/</code> 三个 package.json 里也没有 DuckDB 依赖。托管版文档写的是用 ClickHouse 的 S3 表引擎。</li>
+<li><strong>可借鉴（反面）：</strong> 一个以”浏览器 DuckDB”起家的 BI 工具，做托管多租户时换成了服务端 ClickHouse。说明 DuckDB 在”多租户、集中托管”场景下有天花板。<strong>换引擎的原因官方没说，这里是推断。</strong></li>
+</ul>
+<h3 id="Watershed"><a href="#Watershed" class="headerlink" title="Watershed"></a>Watershed</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ 公司内部方案。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  U[&quot;用户请求&quot;] --&gt; API[&quot;分析 API&lt;br/&gt;把请求翻译成 SQL&quot;] --&gt; D[&quot;服务端 DuckDB&lt;br/&gt;（计算层）&quot;]
+  D --&gt; BC[&quot;字节级缓存&lt;br/&gt;（缓存远程文件块，不缓存结果）&quot;] --&gt; G[(&quot;GCS Parquet&lt;br/&gt;最大客户约 1700 万行 / 750MB&quot;)]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class D duck</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> “请求翻译成 SQL，DuckDB 直接读 Parquet”是嵌入式分析最常见的形态。他们的结论是<strong>字节级缓存比结果缓存更划算</strong>（加上后快了约 10 倍，每天 7.5 万次查询）。</li>
+<li>来源：MotherDuck “15+ companies”（厂商汇编）。</li>
+</ul>
+<h3 id="Definite（Snowflake-迁到-DuckDB，再迁到-DuckLake）"><a href="#Definite（Snowflake-迁到-DuckDB，再迁到-DuckLake）" class="headerlink" title="Definite（Snowflake 迁到 DuckDB，再迁到 DuckLake）"></a>Definite（Snowflake 迁到 DuckDB，再迁到 DuckLake）</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ 商用产品，也是公司内部方案。</p>
+</blockquote>
+<pre class="mermaid">flowchart TB
+  subgraph V1[&quot;2024 版：读写分离&quot;]
+    WI[&quot;写实例 VM&lt;br/&gt;DuckDB + 持久盘&quot;] --&gt;|&quot;改完把表同步上去&quot;| GCS1[(&quot;GCS 副本文件&quot;)]
+    GCS1 --&gt; RI[&quot;读实例 VM&lt;br/&gt;只读 DuckDB&quot;]
+    ETL1[&quot;Meltano / Airflow&quot;] --&gt; WI
+  end
+  subgraph V2[&quot;当前版：DuckLake&quot;]
+    RS[&quot;自研 Rust 服务&lt;br/&gt;连接池 / 查询路由 / 生命周期管理&quot;] --&gt; POD[&quot;GKE 上的 DuckDB 容器&lt;br/&gt;可以横向扩展&quot;]
+    POD --&gt; PGC[&quot;DuckLake catalog（PG）&lt;br/&gt;由它协调并发&quot;]
+    POD --&gt; GCS2[(&quot;GCS Parquet&quot;)]
+    TGT[&quot;target-ducklake&lt;br/&gt;（兼容 Singer / Meltano）&quot;] --&gt; PGC
+    FL[&quot;Flight 服务&lt;br/&gt;（流式负载）&quot;] --&gt; POD
+  end
+  V1 -.-&gt;|&quot;演进&quot;| V2
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  classDef meta fill:#FFEDD5,stroke:#EA580C,color:#1f2937
+  class WI,RI,POD duck
+  class PGC meta</pre>
+
+<p><strong>可借鉴</strong></p>
+<ul>
+<li><strong>演进路线：</strong> 读写分离 → 交给 DuckLake 协调并发 → 前面加一个专门的服务做连接池、路由和生命周期管理。</li>
+<li>他们说单写者限制是<strong>最大的工程挑战</strong>。</li>
+<li><strong>注意：</strong> 文中数字（对 1000 万行做聚合 200 到 400ms 等）是厂商自述。</li>
+</ul>
+<p>来源：<a target="_blank" rel="noopener" href="https://www.definite.app/blog/duckdb-ducklake-business-case">商业论证</a>、<a target="_blank" rel="noopener" href="https://www.definite.app/blog/duckdb-datawarehouse">2024 架构</a>（据检索摘要）</p>
+<hr>
+<h2 id="3-5-E-类：大量短命实例和分布式"><a href="#3-5-E-类：大量短命实例和分布式" class="headerlink" title="3.5 E 类：大量短命实例和分布式"></a>3.5 E 类：大量短命实例和分布式</h2><h3 id="Okta（数千个-serverless-DuckDB）"><a href="#Okta（数千个-serverless-DuckDB）" class="headerlink" title="Okta（数千个 serverless DuckDB）"></a>Okta（数千个 serverless DuckDB）</h3><blockquote>
+<p><strong>成熟度：</strong> ⚪ 公司内部方案。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  LOGS[&quot;安全日志&lt;br/&gt;CloudTrail / VPC flow 等&quot;] --&gt; S3I[(&quot;S3&quot;)]
+  S3I --&gt;|&quot;触发方式未核实&quot;| L1[&quot;Lambda + DuckDB&quot;]
+  S3I --&gt;|&quot;触发方式未核实&quot;| L2[&quot;Lambda + DuckDB&quot;]
+  S3I --&gt;|&quot;触发方式未核实&quot;| LN[&quot;... 数千个并发实例&quot;]
+  L1 --&gt; OUT[(&quot;预处理 / 标准化后的数据&quot;)]
+  L2 --&gt; OUT
+  LN --&gt; OUT
+  OUT --&gt; DOWN[&quot;下游分析&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class L1,L2,LN duck</pre>
+
+<ul>
+<li><strong>规模：</strong> 6 个月处理 7.5 万亿条记录、1.3 亿个文件；单日数据量从 1.5TB 到 50TB 波动，不需要改基础设施。</li>
+<li><strong>可借鉴：</strong> 每个任务一个”用完即弃”的 DuckDB，彻底避开共享实例的并发问题。</li>
+<li><strong>未核实：</strong> 文件如何分配给各实例、输出格式（只读到演讲摘要）。Atlan 的做法类似（用 DuckDB 替换 Spark，由 ArgoCD 编排），没有画图。</li>
+</ul>
+<h3 id="DeepSeek-smallpond"><a href="#DeepSeek-smallpond" class="headerlink" title="DeepSeek smallpond"></a>DeepSeek smallpond</h3><blockquote>
+<p><strong>成熟度：</strong> 🟠 <strong>0.x</strong>：PyPI 0.15.0，2025-03 之后没有更新。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  DF[&quot;sp.read_parquet&lt;br/&gt;→ repartition(n, hash_by=...)&quot;] --&gt; RAY[&quot;Ray 调度（不需要常驻服务）&quot;]
+  RAY --&gt; W1[&quot;DuckDB 进程：分区 1&quot;]
+  RAY --&gt; W2[&quot;DuckDB 进程：分区 2&quot;]
+  RAY --&gt; WN[&quot;DuckDB 进程：分区 N&quot;]
+  W1 --&gt; FS3[(&quot;3FS（Fire-Flyer FS）&lt;br/&gt;Parquet&quot;)]
+  W2 --&gt; FS3
+  WN --&gt; FS3
+  BM[&quot;GraySort：110.5 TiB / 30 分 14 秒&lt;br/&gt;50 个计算节点 + 25 个存储节点&quot;]
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class W1,W2,WN duck</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 手动分区，每个分区一个 DuckDB，就绕开了”分布式查询引擎”的复杂度。前提是能找到天然的分区键。</li>
+<li><strong>状态：</strong> 2025-03 之后没有更新。</li>
+</ul>
+<hr>
+<h2 id="3-6-云厂商：DuckDB-当-Iceberg-客户端（合并一张图）"><a href="#3-6-云厂商：DuckDB-当-Iceberg-客户端（合并一张图）" class="headerlink" title="3.6 云厂商：DuckDB 当 Iceberg 客户端（合并一张图）"></a>3.6 云厂商：DuckDB 当 Iceberg 客户端（合并一张图）</h2><blockquote>
+<p><strong>成熟度：</strong> DuckDB <code>iceberg</code> 扩展 🟢 随 DuckDB 2.0 LTS 发布（Secondary 级），其中 S3 Tables 支持为 🟡 experimental。Cloudflare R2 Data Catalog 🟢 <strong>GA</strong>（已改名 Basin Catalog）。Databricks Unity Catalog 的 Iceberg REST 和 Microsoft Fabric 的状态 ⚪ 没有核实。</p>
+</blockquote>
+<pre class="mermaid">flowchart LR
+  D[&quot;DuckDB&lt;br/&gt;iceberg 扩展（1.4 起支持写入）&quot;] --&gt;|&quot;表桶 ARN（实验性）&quot;| S3T[&quot;AWS S3 Tables&quot;]
+  D --&gt;|&quot;Iceberg REST + R2 token&quot;| R2C[&quot;Cloudflare R2 Data Catalog（已 GA，改名 Basin Catalog）&lt;br/&gt;分区表不能 DELETE&quot;]
+  D --&gt;|&quot;Iceberg REST 端点&quot;| UC[&quot;Databricks Unity Catalog&quot;]
+  FAB[&quot;Microsoft Fabric Python notebook&lt;br/&gt;预装 DuckDB（二手来源）&quot;] --&gt; D
+  classDef duck fill:#FEF9C3,stroke:#CA8A04,color:#1f2937
+  class D duck</pre>
+
+<ul>
+<li><strong>可借鉴：</strong> 如果将来需要和外部平台交换湖数据，Iceberg 的跨引擎支持远比 DuckLake 广。DuckLake 1.1 有一些向 Iceberg 兼容的设计（epoch 分区变换、Puffin 删除向量），但<strong>还没有 DuckLake 导出成 Iceberg 的官方路径</strong>（第三方文章说法，截至 2026-07）。</li>
+</ul>
+<h2 id="3-7-已停止或低活跃（不画图）"><a href="#3-7-已停止或低活跃（不画图）" class="headerlink" title="3.7 已停止或低活跃（不画图）"></a>3.7 已停止或低活跃（不画图）</h2><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>状态</th>
+<th>依据</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ParadeDB pg_analytics</td>
+<td>已归档（2025-03）</td>
+<td><code>gh api</code> 显示 archived</td>
+</tr>
+<tr>
+<td>BemiDB</td>
+<td>仓库已重定向到另一个产品 PgStack，推断已转型或停止</td>
+<td><code>gh api</code> 显示的仓库名</td>
+</tr>
+<tr>
+<td>Hydra columnar</td>
+<td>最后推送 2025-02</td>
+<td><code>gh api</code></td>
+</tr>
+<tr>
+<td>pg_mooncake</td>
+<td>默认分支最后提交 2025-10，母公司被 Databricks 收购</td>
+<td><code>gh api</code></td>
+</tr>
+</tbody></table>
+<h2 id="附录-A：没有画图的项目和其他调研结论"><a href="#附录-A：没有画图的项目和其他调研结论" class="headerlink" title="附录 A：没有画图的项目和其他调研结论"></a>附录 A：没有画图的项目和其他调研结论</h2><h3 id="A-1-没有画图的项目及原因"><a href="#A-1-没有画图的项目及原因" class="headerlink" title="A.1 没有画图的项目及原因"></a>A.1 没有画图的项目及原因</h3><table>
+<thead>
+<tr>
+<th>项目</th>
+<th>没画图的原因</th>
+<th>已知信息</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Trino DuckLake 客户端 ×2（awitten1、brikk）</td>
+<td>只读了 README 的状态部分，没读架构</td>
+<td>brikk 版 v0.5.4，能读写 1.0 格式，不能写 1.1；awitten1 版没有 release</td>
+</tr>
+<tr>
+<td>pandas <code>ducklake-dataframe</code></td>
+<td>没读仓库</td>
+<td>1.0 文章说它主要由 agentic coding 生成</td>
+</tr>
+<tr>
+<td>PolarDB IMCI 列存索引</td>
+<td>文章正文没抓到</td>
+<td>宣称秒级同步、复杂查询快 60 到 100 倍</td>
+</tr>
+<tr>
+<td>Hugging Face 数据集查看器</td>
+<td>只有第三方（MotherDuck）的说法</td>
+<td>据称用 DuckDB 做全文搜索和过滤；HF 官方只确认了 <code>hf://</code> 访问</td>
+</tr>
+<tr>
+<td>Atlan</td>
+<td>只有一句话描述</td>
+<td>用 DuckDB 替换 Spark，由 ArgoCD 编排，pod 级别约快 2.3 倍</td>
+</tr>
+<tr>
+<td>airport（Query-farm）</td>
+<td>没读 README 的架构部分</td>
+<td>通过 Arrow Flight 读写远端数据的 DuckDB 扩展，活跃（2026-11）</td>
+</tr>
+<tr>
+<td>ducklake-sdk &#x2F; ducklake-ruby &#x2F; ducklake-r</td>
+<td>语言绑定，没有独立架构</td>
+<td>都活跃</td>
+</tr>
+<tr>
+<td>Xebia 的 Unity Catalog 集成</td>
+<td>只有一句话描述</td>
+<td>DuckLake 与 Unity Catalog 打通，只读</td>
+</tr>
+<tr>
+<td>GoodData</td>
+<td>只是评估，没有上线</td>
+<td>用 700 多个测试用例评估过 MotherDuck</td>
+</tr>
+<tr>
+<td>Basedash</td>
+<td>只有一句话描述</td>
+<td>BI 仓库底层改用 DuckDB</td>
+</tr>
+<tr>
+<td>ParadeDB &#x2F; BemiDB &#x2F; Hydra columnar</td>
+<td>已停止或低活跃</td>
+<td>见 3.7</td>
+</tr>
+</tbody></table>
+<h3 id="A-2-DuckLake-公开的生产用户（ducklake-select-首页的-logo，直接读过）"><a href="#A-2-DuckLake-公开的生产用户（ducklake-select-首页的-logo，直接读过）" class="headerlink" title="A.2 DuckLake 公开的生产用户（ducklake.select 首页的 logo，直接读过）"></a>A.2 DuckLake 公开的生产用户（ducklake.select 首页的 logo，直接读过）</h3><p>Altertable、Ascend.io、Austrian Supply Chain Intelligence Institute、Decision Computing、Irion、locals.com、Media Cluster Norway、PostHog（已分叉成 Hoglake）、Sliplane、Summation、Summer Forever、Windmill。</p>
+<p>另外还有：MotherDuck（托管服务）、Definite（自述）、Hotdata（维护 DataFusion 客户端）。官方的说法是”dozens of companies”在生产使用，一周下载超过 150 万次。</p>
+<h3 id="A-3-数据接入工具对-DuckLake-的支持"><a href="#A-3-数据接入工具对-DuckLake-的支持" class="headerlink" title="A.3 数据接入工具对 DuckLake 的支持"></a>A.3 数据接入工具对 DuckLake 的支持</h3><table>
+<thead>
+<tr>
+<th>工具</th>
+<th>DuckLake 目的端</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>dlt</td>
+<td>✅ 原生支持</td>
+</tr>
+<tr>
+<td>dbt-duckdb、SQLMesh、lea、Sling</td>
+<td>通过 DuckDB 间接支持（据 awesome-ducklake；SQLMesh 有官方教程）</td>
+</tr>
+<tr>
+<td>Fivetran &#x2F; Airbyte &#x2F; Estuary</td>
+<td>❌ 没找到，只有 DuckDB 或 MotherDuck 目的端</td>
+</tr>
+</tbody></table>
+<h3 id="A-4-国内厂商"><a href="#A-4-国内厂商" class="headerlink" title="A.4 国内厂商"></a>A.4 国内厂商</h3><table>
+<thead>
+<tr>
+<th>厂商</th>
+<th>DuckDB 集成</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>阿里云</td>
+<td>✅ RDS MySQL DuckDB 分析实例、PolarDB DuckDB 列存表和 IMCI、开源的 DuckDB-paimon</td>
+</tr>
+<tr>
+<td>DeepSeek</td>
+<td>✅ smallpond（2025-03 后没有更新）</td>
+</tr>
+<tr>
+<td>腾讯云</td>
+<td>❌ TDSQL-C 的分析引擎是自研的 LibraDB，没找到 DuckDB 的证据</td>
+</tr>
+<tr>
+<td>火山引擎 &#x2F; 华为云</td>
+<td>没检索到（只做了中文检索，没有逐个查官网）</td>
+</tr>
+</tbody></table>
+<h3 id="A-5-生产案例数字（均为厂商或咨询公司自述）"><a href="#A-5-生产案例数字（均为厂商或咨询公司自述）" class="headerlink" title="A.5 生产案例数字（均为厂商或咨询公司自述）"></a>A.5 生产案例数字（均为厂商或咨询公司自述）</h3><table>
+<thead>
+<tr>
+<th>公司</th>
+<th>迁移</th>
+<th>数字</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FinQore</td>
+<td>Postgres → DuckDB</td>
+<td>流水线从 8 小时降到 8 分钟</td>
+</tr>
+<tr>
+<td>ATM.com</td>
+<td>SingleStore → MotherDuck</td>
+<td>成本降 65%</td>
+</tr>
+<tr>
+<td>Watershed</td>
+<td>PG → MotherDuck &#x2F; DuckDB</td>
+<td>每天 7.5 万次查询，快约 10 倍</td>
+</tr>
+<tr>
+<td>Okta</td>
+<td>Snowflake → serverless DuckDB</td>
+<td>6 个月处理 7.5 万亿条记录；原来在 Snowflake 上每天 2000 美元</td>
+</tr>
+<tr>
+<td>Definite</td>
+<td>Snowflake → DuckDB → DuckLake</td>
+<td>基础设施成本降 70% 以上（据检索摘要）</td>
+</tr>
+<tr>
+<td>某物流客户</td>
+<td>Redshift → 单台 VM</td>
+<td>每月约 2200 美元降到 70 美元；为此限制了每个会话的线程数，并加了队列</td>
+</tr>
+</tbody></table>
+<h3 id="A-6-MotherDuck-托管-DuckLake-的状态"><a href="#A-6-MotherDuck-托管-DuckLake-的状态" class="headerlink" title="A.6 MotherDuck 托管 DuckLake 的状态"></a>A.6 MotherDuck 托管 DuckLake 的状态</h3><p>4 月份的博客写的是 public preview。之后的 release notes（04-16、09-24、10-23）都没有标注 GA，以官方后续公告为准。</p>
+<h2 id="没覆盖到的和局限"><a href="#没覆盖到的和局限" class="headerlink" title="没覆盖到的和局限"></a>没覆盖到的和局限</h2><ul>
+<li><strong>画图依据：</strong> 只画了 README 和文档里明确写到的组件。下面几处原文没写，图里已经标成”未核实”或”推断”，没有臆造：<ul>
+<li>MotherDuck 的存储内部机制；</li>
+<li>moonlink 的读路径怎么合并；</li>
+<li>Okta 的触发方式和文件分配；</li>
+<li>Omni 的缓存失效策略；</li>
+<li>Cube Store；</li>
+<li>Spark 连接器怎么登记文件。</li>
+</ul>
+</li>
+<li><strong>没画图的：</strong> 见附录 A.1。</li>
+<li><strong>渲染校验：</strong> 34 张图都用 <code>@mermaid-js/mermaid-cli 11.4.2</code> 实际渲染通过，抽查了 3 张的 PNG。</li>
+<li><strong>国内厂商：</strong> 腾讯云、火山引擎、华为云只做了中文检索，没有逐个查官网文档。</li>
+<li><strong>数字：</strong> 生产案例里的数字都是厂商自述。</li>
+</ul>
+<h2 id="来源"><a href="#来源" class="headerlink" title="来源"></a>来源</h2><ul>
+<li><strong>官方一手：</strong> <a target="_blank" rel="noopener" href="https://ducklake.select/2026/04/13/ducklake-10/">DuckLake 1.0</a> · <a target="_blank" rel="noopener" href="https://ducklake.select/2026/10/21/ducklake-11/">DuckLake 1.1</a> · <a target="_blank" rel="noopener" href="https://ducklake.select/">ducklake.select 首页</a> · <a target="_blank" rel="noopener" href="https://duckdb.org/2026/10/21/announcing-duckdb-200">DuckDB 2.0</a> · <a target="_blank" rel="noopener" href="https://duckdb.org/2026/05/12/quack-remote-protocol.html">Quack 公告</a> · <a target="_blank" rel="noopener" href="https://duckdb.org/quack/faq.html">Quack FAQ</a> · <a target="_blank" rel="noopener" href="https://motherduck.com/docs/about-motherduck/release-notes/">MotherDuck release notes</a> · <a target="_blank" rel="noopener" href="https://motherduck.com/blog/scaling-duckdb-with-ducklings/">MotherDuck 扩展博客</a></li>
+<li><strong>仓库：</strong> <a target="_blank" rel="noopener" href="https://github.com/datafusion-contrib/datafusion-ducklake">datafusion-ducklake</a> · <a target="_blank" rel="noopener" href="https://github.com/motherduckdb/ducklake-spark">ducklake-spark</a> · <a target="_blank" rel="noopener" href="https://github.com/relytcloud/pg_ducklake">pg_ducklake</a> · <a target="_blank" rel="noopener" href="https://github.com/relytcloud/pg_duckpipe">pg_duckpipe</a> · <a target="_blank" rel="noopener" href="https://github.com/starlake-ai/quack-on-demand">quack-on-demand</a> · <a target="_blank" rel="noopener" href="https://github.com/PostHog/hoglake">PostHog&#x2F;hoglake</a> · <a target="_blank" rel="noopener" href="https://github.com/boilingdata/boilstream">boilstream</a> · <a target="_blank" rel="noopener" href="https://github.com/swanlake-io/swanlake">swanlake</a> · <a target="_blank" rel="noopener" href="https://github.com/TFMV/featherman">featherman</a> · <a target="_blank" rel="noopener" href="https://github.com/berndsen-io/ducklake-guard">ducklake-guard</a> · <a target="_blank" rel="noopener" href="https://github.com/tobilg/cloudflare-ducklake">cloudflare-ducklake</a> · <a target="_blank" rel="noopener" href="https://github.com/duckdb/pg_duckdb">pg_duckdb</a> · <a target="_blank" rel="noopener" href="https://github.com/Mooncake-Labs/pg_mooncake">pg_mooncake</a> · <a target="_blank" rel="noopener" href="https://github.com/Mooncake-Labs/moonlink">moonlink</a> · <a target="_blank" rel="noopener" href="https://github.com/Snowflake-Labs/pg_lake">pg_lake</a> · <a target="_blank" rel="noopener" href="https://github.com/gizmodata/gizmosql">GizmoSQL</a> · <a target="_blank" rel="noopener" href="https://github.com/apecloud/myduckserver">MyDuck</a> · <a target="_blank" rel="noopener" href="https://github.com/rilldata/rill">Rill</a> · <a target="_blank" rel="noopener" href="https://github.com/evidence-dev/evidence">Evidence</a> · <a target="_blank" rel="noopener" href="https://github.com/uwdata/mosaic">Mosaic</a> · <a target="_blank" rel="noopener" href="https://github.com/motherduckdb/metabase_duckdb_driver">Metabase 驱动</a> · <a target="_blank" rel="noopener" href="https://github.com/Mause/duckdb_engine">duckdb_engine</a> · <a target="_blank" rel="noopener" href="https://github.com/deepseek-ai/smallpond">smallpond</a> · <a target="_blank" rel="noopener" href="https://github.com/esadek/awesome-ducklake">awesome-ducklake</a></li>
+<li><strong>厂商文档：</strong> <a target="_blank" rel="noopener" href="https://help.aliyun.com/zh/rds/apsaradb-rds-for-mysql/duckdb-based-analytical-instance/">阿里云 RDS DuckDB</a> · <a target="_blank" rel="noopener" href="https://help.aliyun.com/en/polardb/polardb-for-oracle/what-is-a-cloud-native-duckdb-column-store-table">PolarDB DuckDB 列存表</a> · <a target="_blank" rel="noopener" href="https://docs.cube.dev/docs/configuration/data-sources/duckdb">Cube DuckDB</a> · <a target="_blank" rel="noopener" href="https://dlthub.com/docs/dlt-ecosystem/destinations/ducklake">dlt DuckLake</a> · <a target="_blank" rel="noopener" href="https://docs.evidence.dev/core-concepts/data-sources/">Evidence 数据源文档</a> · <a target="_blank" rel="noopener" href="https://duckdb.org/docs/lts/core_extensions/iceberg/amazon_s3_tables">DuckDB S3 Tables</a></li>
+<li><strong>厂商自述或汇编：</strong> <a target="_blank" rel="noopener" href="https://motherduck.com/blog/15-companies-duckdb-in-prod/">MotherDuck 15+ companies</a> · <a target="_blank" rel="noopener" href="https://www.definite.app/blog/duckdb-ducklake-business-case">Definite 商业论证</a> · <a target="_blank" rel="noopener" href="https://www.definite.app/blog/duckdb-datawarehouse">Definite 2024 架构</a> · <a target="_blank" rel="noopener" href="https://omni.co/blog/DuckDB-complements-BI">Omni</a> · <a target="_blank" rel="noopener" href="https://duckdb.org/library/processing-trillions-of-records-at-okta-with-mini-serverless-databases/">Okta 演讲</a> · <a target="_blank" rel="noopener" href="https://www.databricks.com/blog/mooncake-labs-joins-databricks-accelerate-vision-lakebase">Databricks × Mooncake</a> · <a target="_blank" rel="noopener" href="https://www.snowflake.com/en/blog/engineering/pg-lake-postgres-lakehouse-integration/">Snowflake pg_lake</a></li>
+<li><strong>第三方：</strong> <a target="_blank" rel="noopener" href="https://clickhouse.com/resources/engineering/best-postgres-extensions-for-analytics-2026">ClickHouse 写的 PG 扩展盘点（竞品发布）</a> · <a target="_blank" rel="noopener" href="https://www.theregister.com/2025/11/05/snowflake_postgresql_push/">The Register</a> · <a target="_blank" rel="noopener" href="https://www.analyticsvidhya.com/blog/2025/02/deepseek-3fs-and-smallpond-framework/">Analytics Vidhya smallpond</a></li>
+</ul>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/2026/11/16/ducklake-08-ducklake-ecosystem/" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">DuckLake 专栏（八）：DuckLake 生态逐项目架构</span>
+        </a>
+      
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#3-1-A-%E7%B1%BB%EF%BC%9A%E5%B5%8C%E8%BF%9B%E6%95%B0%E6%8D%AE%E5%BA%93%E5%86%85%E6%A0%B8"><span class="toc-text">3.1 A 类：嵌进数据库内核</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pg-duckdb%EF%BC%88duckdb-%E7%BB%84%E7%BB%87%EF%BC%9B%E6%AD%A3%E5%BC%8F%E7%89%88-v1-1-1%EF%BC%8C%E6%9C%80%E6%96%B0-v1-2-0-%E4%B8%BA-Experimental%EF%BC%89"><span class="toc-text">pg_duckdb（duckdb 组织；正式版 v1.1.1，最新 v1.2.0 为 Experimental）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#pg-mooncake-moonlink%EF%BC%88Mooncake-Labs%EF%BC%8C%E5%B7%B2%E8%A2%AB-Databricks-%E6%94%B6%E8%B4%AD%EF%BC%89"><span class="toc-text">pg_mooncake + moonlink（Mooncake Labs，已被 Databricks 收购）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BF%E9%87%8C%E4%BA%91-RDS-MySQL-DuckDB-%E5%88%86%E6%9E%90%E5%8F%AA%E8%AF%BB%E5%AE%9E%E4%BE%8B"><span class="toc-text">阿里云 RDS MySQL DuckDB 分析只读实例</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%98%BF%E9%87%8C%E4%BA%91-PolarDB-DuckDB-%E5%88%97%E5%AD%98%E8%A1%A8"><span class="toc-text">阿里云 PolarDB DuckDB 列存表</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-2-B-%E7%B1%BB%EF%BC%9A%E6%97%81%E8%B7%AF%E8%BF%9B%E7%A8%8B"><span class="toc-text">3.2 B 类：旁路进程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#pg-lake%EF%BC%88Snowflake-Labs%EF%BC%8Cv3-6-0%EF%BC%89"><span class="toc-text">pg_lake（Snowflake-Labs，v3.6.0）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-3-C-%E7%B1%BB%EF%BC%9A%E7%8B%AC%E7%AB%8B%E6%9C%8D%E5%8A%A1"><span class="toc-text">3.3 C 类：独立服务</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Quack%EF%BC%88DuckDB-%E5%AE%98%E6%96%B9%E5%AE%A2%E6%88%B7%E7%AB%AF-%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%8D%8F%E8%AE%AE%EF%BC%8Cbeta%EF%BC%89"><span class="toc-text">Quack（DuckDB 官方客户端&#x2F;服务端协议，beta）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#GizmoSQL%EF%BC%88v1-42-3%EF%BC%89"><span class="toc-text">GizmoSQL（v1.42.3）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#MyDuck-Server%EF%BC%88apecloud%EF%BC%89"><span class="toc-text">MyDuck Server（apecloud）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-4-D-%E7%B1%BB%EF%BC%9A%E5%B5%8C%E5%9C%A8%E5%BA%94%E7%94%A8%E9%87%8C%EF%BC%88BI-%E5%92%8C%E5%B5%8C%E5%85%A5%E5%BC%8F%E5%88%86%E6%9E%90%EF%BC%89"><span class="toc-text">3.4 D 类：嵌在应用里（BI 和嵌入式分析）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Rill"><span class="toc-text">Rill</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Cube"><span class="toc-text">Cube</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Metabase-DuckDB-%E9%A9%B1%E5%8A%A8-Superset-duckdb-engine"><span class="toc-text">Metabase DuckDB 驱动 &#x2F; Superset duckdb_engine</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Omni%EF%BC%88DuckDB-%E5%BD%93%E5%8F%AF%E5%86%8D%E6%9F%A5%E8%AF%A2%E7%9A%84%E7%BC%93%E5%AD%98%EF%BC%8C2022-%E5%B9%B4%E7%9A%84%E6%96%87%E7%AB%A0%EF%BC%89"><span class="toc-text">Omni（DuckDB 当可再查询的缓存，2022 年的文章）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Mosaic%EF%BC%88UW-%E4%BA%A4%E4%BA%92%E6%95%B0%E6%8D%AE%E5%AE%9E%E9%AA%8C%E5%AE%A4%EF%BC%89"><span class="toc-text">Mosaic（UW 交互数据实验室）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Hex-Mode-Count-Observable%EF%BC%88notebook-%E5%92%8C%E6%B5%8F%E8%A7%88%E5%99%A8%E5%B5%8C%E5%85%A5%EF%BC%8C%E5%90%88%E5%B9%B6%E6%88%90%E4%B8%80%E5%BC%A0%E5%9B%BE%EF%BC%89"><span class="toc-text">Hex &#x2F; Mode &#x2F; Count &#x2F; Observable（notebook 和浏览器嵌入，合并成一张图）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Evidence%EF%BC%88%E2%9A%A0%EF%B8%8F-%E5%B7%B2%E7%BB%8F%E4%B8%8D%E5%86%8D%E4%BB%A5-DuckDB-%E4%B8%BA%E6%A0%B8%E5%BF%83%EF%BC%89"><span class="toc-text">Evidence（⚠️ 已经不再以 DuckDB 为核心）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Watershed"><span class="toc-text">Watershed</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Definite%EF%BC%88Snowflake-%E8%BF%81%E5%88%B0-DuckDB%EF%BC%8C%E5%86%8D%E8%BF%81%E5%88%B0-DuckLake%EF%BC%89"><span class="toc-text">Definite（Snowflake 迁到 DuckDB，再迁到 DuckLake）</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-5-E-%E7%B1%BB%EF%BC%9A%E5%A4%A7%E9%87%8F%E7%9F%AD%E5%91%BD%E5%AE%9E%E4%BE%8B%E5%92%8C%E5%88%86%E5%B8%83%E5%BC%8F"><span class="toc-text">3.5 E 类：大量短命实例和分布式</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Okta%EF%BC%88%E6%95%B0%E5%8D%83%E4%B8%AA-serverless-DuckDB%EF%BC%89"><span class="toc-text">Okta（数千个 serverless DuckDB）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#DeepSeek-smallpond"><span class="toc-text">DeepSeek smallpond</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-6-%E4%BA%91%E5%8E%82%E5%95%86%EF%BC%9ADuckDB-%E5%BD%93-Iceberg-%E5%AE%A2%E6%88%B7%E7%AB%AF%EF%BC%88%E5%90%88%E5%B9%B6%E4%B8%80%E5%BC%A0%E5%9B%BE%EF%BC%89"><span class="toc-text">3.6 云厂商：DuckDB 当 Iceberg 客户端（合并一张图）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3-7-%E5%B7%B2%E5%81%9C%E6%AD%A2%E6%88%96%E4%BD%8E%E6%B4%BB%E8%B7%83%EF%BC%88%E4%B8%8D%E7%94%BB%E5%9B%BE%EF%BC%89"><span class="toc-text">3.7 已停止或低活跃（不画图）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%99%84%E5%BD%95-A%EF%BC%9A%E6%B2%A1%E6%9C%89%E7%94%BB%E5%9B%BE%E7%9A%84%E9%A1%B9%E7%9B%AE%E5%92%8C%E5%85%B6%E4%BB%96%E8%B0%83%E7%A0%94%E7%BB%93%E8%AE%BA"><span class="toc-text">附录 A：没有画图的项目和其他调研结论</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#A-1-%E6%B2%A1%E6%9C%89%E7%94%BB%E5%9B%BE%E7%9A%84%E9%A1%B9%E7%9B%AE%E5%8F%8A%E5%8E%9F%E5%9B%A0"><span class="toc-text">A.1 没有画图的项目及原因</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-2-DuckLake-%E5%85%AC%E5%BC%80%E7%9A%84%E7%94%9F%E4%BA%A7%E7%94%A8%E6%88%B7%EF%BC%88ducklake-select-%E9%A6%96%E9%A1%B5%E7%9A%84-logo%EF%BC%8C%E7%9B%B4%E6%8E%A5%E8%AF%BB%E8%BF%87%EF%BC%89"><span class="toc-text">A.2 DuckLake 公开的生产用户（ducklake.select 首页的 logo，直接读过）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-3-%E6%95%B0%E6%8D%AE%E6%8E%A5%E5%85%A5%E5%B7%A5%E5%85%B7%E5%AF%B9-DuckLake-%E7%9A%84%E6%94%AF%E6%8C%81"><span class="toc-text">A.3 数据接入工具对 DuckLake 的支持</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-4-%E5%9B%BD%E5%86%85%E5%8E%82%E5%95%86"><span class="toc-text">A.4 国内厂商</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-5-%E7%94%9F%E4%BA%A7%E6%A1%88%E4%BE%8B%E6%95%B0%E5%AD%97%EF%BC%88%E5%9D%87%E4%B8%BA%E5%8E%82%E5%95%86%E6%88%96%E5%92%A8%E8%AF%A2%E5%85%AC%E5%8F%B8%E8%87%AA%E8%BF%B0%EF%BC%89"><span class="toc-text">A.5 生产案例数字（均为厂商或咨询公司自述）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#A-6-MotherDuck-%E6%89%98%E7%AE%A1-DuckLake-%E7%9A%84%E7%8A%B6%E6%80%81"><span class="toc-text">A.6 MotherDuck 托管 DuckLake 的状态</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B2%A1%E8%A6%86%E7%9B%96%E5%88%B0%E7%9A%84%E5%92%8C%E5%B1%80%E9%99%90"><span class="toc-text">没覆盖到的和局限</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9D%A5%E6%BA%90"><span class="toc-text">来源</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>

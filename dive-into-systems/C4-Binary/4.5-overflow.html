@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>4.5. 整数溢出 · Summary</title>
+  <meta name="description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;overflow.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.5. Integer Overflow 虽然整数在数学上有">
+<meta property="og:type" content="website">
+<meta property="og:title" content="4.5. 整数溢出 · Summary">
+<meta property="og:url" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/4.5-overflow.html">
+<meta property="og:site_name" content="Summary">
+<meta property="og:description" content="说明本文是个人学习用的非官方中英对照译文，原文：https:&#x2F;&#x2F;diveintosystems.org&#x2F;book&#x2F;C4-Binary&#x2F;overflow.html。原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），请勿公开传播本译文。标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。  4.5. Integer Overflow 虽然整数在数学上有">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/BaseTenWheel.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/BaseTenWheelAdding.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/UnsignedWheel.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/SignedWheel.png">
+<meta property="og:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/Pacman.png">
+<meta property="article:published_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:modified_time" content="2026-11-17T09:13:47.970Z">
+<meta property="article:author" content="Topsion">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://wenpktalk.github.io/dive-into-systems/C4-Binary/images/BaseTenWheel.png">
+  <link rel="alternate" href="/atom.xml" title="Summary" type="application/atom+xml">
+  <meta name="generator" content="Hexo 8.1.2">
+  
+  <link rel="icon" href="/images/favicon.png">
+  <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('codex-theme');
+        if (saved === 'dark' || saved === 'light') document.documentElement.setAttribute('data-theme', saved);
+      } catch (e) {}
+    })();
+  </script>
+  
+<link rel="stylesheet" href="/css/codex.css">
+
+</head>
+<body>
+  <a class="skip-link" href="#main">跳到正文</a>
+  <div class="read-progress" aria-hidden="true"></div>
+  
+<header class="site-header">
+  <div class="container header-inner">
+    <a class="site-title" href="/">
+      
+        <img class="brand-avatar" src="/images/avatar.jpg" alt="" width="34" height="34">
+      
+      <span class="brand-text">
+        <span class="brand-name">Summary</span>
+        <span class="brand-sub">总结博客</span>
+      </span>
+    </a>
+    <nav class="site-nav" aria-label="主导航">
+      
+        <a href="/">首页</a>
+      
+        <a href="/books/">专栏</a>
+      
+        <a href="/categories/">分类</a>
+      
+        <a href="/tags/">标签</a>
+      
+        <a href="/archives/">归档</a>
+      
+    </nav>
+    <div class="header-actions">
+      
+        <button class="search-trigger" type="button" data-search-open aria-label="搜索（/）" title="搜索（/）">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span class="search-label">搜索</span>
+          <kbd class="search-kbd" data-shortcut-hint>⌘K</kbd>
+        </button>
+      
+      
+        <a class="icon-button" target="_blank" rel="noopener" href="https://github.com/wenPKtalk" aria-label="GitHub" title="GitHub"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.7 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>
+</a>
+      
+      <button class="icon-button" type="button" data-theme-toggle aria-label="切换深色模式" title="切换深色模式">
+        <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+        <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"/><path d="M12 1.5v3M12 19.5v3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M1.5 12h3M19.5 12h3M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+  <main id="main">
+
+  
+<div class="book-layout">
+  <aside class="book-sidebar" id="book-sidebar">
+    <div class="book-sidebar-inner">
+      <a class="book-sidebar-title" href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+      
+<nav class="book-tree" aria-label="目录">
+  
+    
+      <details class="tree-chapter">
+        <summary><span>关于本译本</span><span class="tree-count">2</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-About/about.html">Dive Into Systems · 全书中英对照（个人学习用）</a></li><li><a href="/dive-into-systems/00-About/glossary.html">译名表与翻译约定（全书统一）</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>前置部分</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/00-Front/copyright.html">版权</a></li><li><a href="/dive-into-systems/00-Front/acknowledgements.html">致谢</a></li><li><a href="/dive-into-systems/00-Front/preface.html">前言</a></li><li><a href="/dive-into-systems/00-Front/0.0-introduction.html">0. 引言</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>1. 在 C 边，在 C 边，在美丽的 C 边</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C1-C_intro/1.0-index.html">1. 在 C 边，在 C 边，在美丽的 C 边</a></li><li><a href="/dive-into-systems/C1-C_intro/1.1-getting_started.html">1.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/C1-C_intro/1.2-input_output.html">1.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/C1-C_intro/1.3-conditionals.html">1.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/C1-C_intro/1.4-functions.html">1.4. 函数</a></li><li><a href="/dive-into-systems/C1-C_intro/1.5-arrays_strings.html">1.5. 数组与字符串</a></li><li><a href="/dive-into-systems/C1-C_intro/1.6-structs.html">1.6. 结构体</a></li><li><a href="/dive-into-systems/C1-C_intro/1.7-summary.html">1.7. 小结</a></li><li><a href="/dive-into-systems/C1-C_intro/1.8-exercises.html">1.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>2. 深入 C 语言编程</span><span class="tree-count">19</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C2-C_depth/2.0-index.html">2. 深入 C 语言编程</a></li><li><a href="/dive-into-systems/C2-C_depth/2.1-scope_memory.html">2.1. 程序内存的组成与作用域</a></li><li><a href="/dive-into-systems/C2-C_depth/2.2-pointers.html">2.2. C 的指针变量</a></li><li><a href="/dive-into-systems/C2-C_depth/2.3-pointers_functions.html">2.3. 指针与函数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.4-dynamic_memory.html">2.4. 动态内存分配</a></li><li><a href="/dive-into-systems/C2-C_depth/2.5-arrays.html">2.5. C 中的数组</a></li><li><a href="/dive-into-systems/C2-C_depth/2.6-strings.html">2.6. 字符串与字符串库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.7-structs.html">2.7. C 结构体</a></li><li><a href="/dive-into-systems/C2-C_depth/2.8-IO.html">2.8. C 中的 I&#x2F;O（标准 I&#x2F;O 与文件 I&#x2F;O）</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9-advanced.html">2.9. C 的一些高级特性</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.1-advanced_switch.html">2.9.1. 常量、switch、enum 与 typedef</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.2-advanced_cmd_line_args.html">2.9.2. 命令行参数</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.3-advanced_voidstar.html">2.9.3. void  类型与类型强制转换</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.4-advanced_pointer_arithmetic.html">2.9.4. 指针运算</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.5-advanced_libraries.html">2.9.5. C 库：使用、编译与链接</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.6-advanced_writing_libraries.html">2.9.6. 编写和使用自己的 C 库</a></li><li><a href="/dive-into-systems/C2-C_depth/2.9.7-advanced_assembly.html">2.9.7. 把 C 编译为汇编，以及编译和链接汇编与 C 代码</a></li><li><a href="/dive-into-systems/C2-C_depth/2.10-summary.html">2.10. 小结</a></li><li><a href="/dive-into-systems/C2-C_depth/2.11-exercises.html">2.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>3. C 调试工具</span><span class="tree-count">8</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C3-C_debug/3.0-index.html">3. C 调试工具</a></li><li><a href="/dive-into-systems/C3-C_debug/3.1-gdb.html">3.1. 用 GDB 调试</a></li><li><a href="/dive-into-systems/C3-C_debug/3.2-gdb_commands.html">3.2. GDB 命令详解</a></li><li><a href="/dive-into-systems/C3-C_debug/3.3-valgrind.html">3.3. 用 Valgrind 调试内存</a></li><li><a href="/dive-into-systems/C3-C_debug/3.4-gdb_advanced.html">3.4. GDB 的高级功能</a></li><li><a href="/dive-into-systems/C3-C_debug/3.5-gdb_assembly.html">3.5. 调试汇编代码</a></li><li><a href="/dive-into-systems/C3-C_debug/3.6-gdb_pthreads.html">3.6. 用 GDB 调试多线程程序</a></li><li><a href="/dive-into-systems/C3-C_debug/3.7-summary.html">3.7. 小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter" open>
+        <summary><span>4. 二进制与数据表示</span><span class="tree-count">14</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C4-Binary/4.0-index.html">4. 二进制与数据表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.1-bases.html">4.1. 数的进制与无符号整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.2-conversion.html">4.2. 进制之间的转换</a></li><li><a href="/dive-into-systems/C4-Binary/4.3-signed.html">4.3. 有符号二进制整数</a></li><li><a href="/dive-into-systems/C4-Binary/4.4-arithmetic.html">4.4. 二进制整数运算</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.1-arithmetic_addition.html">4.4.1. 加法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.2-arithmetic_subtraction.html">4.4.2. 减法</a></li><li><a href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html">4.4.3. 乘法与除法</a></li><li><a href="/dive-into-systems/C4-Binary/4.5-overflow.html" class="current" aria-current="page">4.5. 整数溢出</a></li><li><a href="/dive-into-systems/C4-Binary/4.6-bitwise.html">4.6. 位运算符</a></li><li><a href="/dive-into-systems/C4-Binary/4.7-byte_order.html">4.7. 整数的字节序</a></li><li><a href="/dive-into-systems/C4-Binary/4.8-floating_point.html">4.8. 实数的二进制表示</a></li><li><a href="/dive-into-systems/C4-Binary/4.9-summary.html">4.9. 小结</a></li><li><a href="/dive-into-systems/C4-Binary/4.10-exercises.html">4.10. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>5. 冯·诺依曼早已知道的事：计算机体系结构</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C5-Arch/5.0-index.html">5. 冯·诺依曼早已知道的事：计算机体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.1-hist.html">5.1. 现代计算机体系结构的起源</a></li><li><a href="/dive-into-systems/C5-Arch/5.2-von.html">5.2. 冯·诺依曼体系结构</a></li><li><a href="/dive-into-systems/C5-Arch/5.3-gates.html">5.3. 逻辑门</a></li><li><a href="/dive-into-systems/C5-Arch/5.4-circuits.html">5.4. 电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.1-arithlogiccircs.html">5.4.1. 算术与逻辑电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.2-controlcircs.html">5.4.2. 控制电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.4.3-storagecircs.html">5.4.3. 存储电路</a></li><li><a href="/dive-into-systems/C5-Arch/5.5-cpu.html">5.5. 构建处理器：把一切组合起来</a></li><li><a href="/dive-into-systems/C5-Arch/5.6-instrexec.html">5.6. 处理器对程序指令的执行</a></li><li><a href="/dive-into-systems/C5-Arch/5.7-pipelining.html">5.7. 流水线：让 CPU 更快</a></li><li><a href="/dive-into-systems/C5-Arch/5.8-pipelining_advanced.html">5.8. 流水线指令的进阶问题</a></li><li><a href="/dive-into-systems/C5-Arch/5.9-modern.html">5.9. 展望：今天的 CPU</a></li><li><a href="/dive-into-systems/C5-Arch/5.10-summary.html">5.10. 小结</a></li><li><a href="/dive-into-systems/C5-Arch/5.11-exercises.html">5.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>6. 在 C 之下：潜入汇编</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C6-asm_intro/6.0-index.html">6. 在 C 之下：潜入汇编</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>7. 64 位 x86 汇编（x86-64）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C7-x86_64/7.0-index.html">7. 64 位 x86 汇编（x86-64）</a></li><li><a href="/dive-into-systems/C7-x86_64/7.1-basics.html">7.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.2-common.html">7.2. 常用指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.3-arithmetic.html">7.3. 算术指令</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4-conditional_control_loops.html">7.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.1-preliminaries.html">7.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.2-if_statements.html">7.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C7-x86_64/7.4.3-loops.html">7.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C7-x86_64/7.5-functions.html">7.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C7-x86_64/7.6-recursion.html">7.6. 递归</a></li><li><a href="/dive-into-systems/C7-x86_64/7.7-arrays.html">7.7. 数组</a></li><li><a href="/dive-into-systems/C7-x86_64/7.8-matrices.html">7.8. 矩阵</a></li><li><a href="/dive-into-systems/C7-x86_64/7.9-structs.html">7.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C7-x86_64/7.10-buffer_overflow.html">7.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C7-x86_64/7.11-exercises.html">7.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>8. 32 位 x86 汇编（IA32）</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C8-IA32/8.0-index.html">8. 32 位 x86 汇编（IA32）</a></li><li><a href="/dive-into-systems/C8-IA32/8.1-basics.html">8.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.2-common.html">8.2. 常用指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.3-arithmetic.html">8.3. 算术指令</a></li><li><a href="/dive-into-systems/C8-IA32/8.4-conditional_control_loops.html">8.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.1-preliminaries.html">8.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.2-if_statements.html">8.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C8-IA32/8.4.3-loops.html">8.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C8-IA32/8.5-functions.html">8.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C8-IA32/8.6-recursion.html">8.6. 递归</a></li><li><a href="/dive-into-systems/C8-IA32/8.7-arrays.html">8.7. 数组</a></li><li><a href="/dive-into-systems/C8-IA32/8.8-matrices.html">8.8. 矩阵</a></li><li><a href="/dive-into-systems/C8-IA32/8.9-structs.html">8.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C8-IA32/8.10-buffer_overflow.html">8.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C8-IA32/8.11-exercises.html">8.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>9. ARM 汇编</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C9-ARM64/9.0-index.html">9. ARM 汇编</a></li><li><a href="/dive-into-systems/C9-ARM64/9.1-basics.html">9.1. 潜入汇编：基础知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.2-common.html">9.2. 常用指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.3-arithmetic.html">9.3. 算术指令</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4-conditional_control_loops.html">9.4. 条件控制与循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.1-preliminaries.html">9.4.1. 预备知识</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.2-if_statements.html">9.4.2. 汇编中的 if 语句</a></li><li><a href="/dive-into-systems/C9-ARM64/9.4.3-loops.html">9.4.3. 汇编中的循环</a></li><li><a href="/dive-into-systems/C9-ARM64/9.5-functions.html">9.5. 汇编中的函数</a></li><li><a href="/dive-into-systems/C9-ARM64/9.6-recursion.html">9.6. 递归</a></li><li><a href="/dive-into-systems/C9-ARM64/9.7-arrays.html">9.7. 数组</a></li><li><a href="/dive-into-systems/C9-ARM64/9.8-matrices.html">9.8. 矩阵</a></li><li><a href="/dive-into-systems/C9-ARM64/9.9-structs.html">9.9. 汇编中的结构体</a></li><li><a href="/dive-into-systems/C9-ARM64/9.10-buffer_overflow.html">9.10. 现实世界：缓冲区溢出</a></li><li><a href="/dive-into-systems/C9-ARM64/9.11-exercises.html">9.11. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>10. 汇编要点总结</span><span class="tree-count">1</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C10-asm_takeaways/10.0-index.html">10. 汇编要点总结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>11. 存储与存储器层次结构</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C11-MemHierarchy/11.0-index.html">11. 存储与存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.1-mem_hierarchy.html">11.1. 存储器层次结构</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.2-devices.html">11.2. 存储设备</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.3-locality.html">11.3. 局部性</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.4-caching.html">11.4. CPU 缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.5-cachegrind.html">11.5. 缓存分析与 Valgrind</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.6-coherency.html">11.6. 展望：多核处理器上的缓存</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.7-summary.html">11.7. 小结</a></li><li><a href="/dive-into-systems/C11-MemHierarchy/11.8-exercises.html">11.8. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>12. 代码优化</span><span class="tree-count">5</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C12-CodeOpt/12.0-index.html">12. 代码优化</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.1-basic.html">12.1. 代码优化的第一步：代码剖析</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.2-loops_functions.html">12.2. 其他编译器优化：循环展开与函数内联</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.3-memory_considerations.html">12.3. 内存方面的考虑</a></li><li><a href="/dive-into-systems/C12-CodeOpt/12.4-summary.html">12.4. 要点与小结</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>13. 操作系统</span><span class="tree-count">10</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C13-OS/13.0-index.html">13. 操作系统</a></li><li><a href="/dive-into-systems/C13-OS/13.1-impl.html">13.1. 操作系统如何工作、如何运行</a></li><li><a href="/dive-into-systems/C13-OS/13.2-processes.html">13.2. 进程</a></li><li><a href="/dive-into-systems/C13-OS/13.3-vm.html">13.3. 虚拟内存</a></li><li><a href="/dive-into-systems/C13-OS/13.4-ipc.html">13.4. 进程间通信</a></li><li><a href="/dive-into-systems/C13-OS/13.4.1-ipc_signals.html">13.4.1. 信号</a></li><li><a href="/dive-into-systems/C13-OS/13.4.2-ipc_msging.html">13.4.2. 消息传递</a></li><li><a href="/dive-into-systems/C13-OS/13.4.3-ipc_shm.html">13.4.3. 共享内存</a></li><li><a href="/dive-into-systems/C13-OS/13.5-advanced.html">13.5. 小结与操作系统的其他功能</a></li><li><a href="/dive-into-systems/C13-OS/13.6-exercises.html">13.6. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>14. 多核时代的共享内存利用</span><span class="tree-count">15</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C14-SharedMemory/14.0-index.html">14. 多核时代的共享内存利用</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.1-multicore.html">14.1. 多核系统编程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.2-posix.html">14.2. 你好，线程！编写你的第一个多线程程序</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3-synchronization.html">14.3. 线程同步</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.1-mutex.html">14.3.1. 互斥</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.2-semaphores.html">14.3.2. 信号量</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.3.3-other_syncs.html">14.3.3. 其他同步结构</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4-performance.html">14.4. 测量并行程序的性能</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.1-performance_basics.html">14.4.1. 并行性能基础</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.4.2-performance_advanced.html">14.4.2. 进阶话题</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.5-cache_coherence.html">14.5. 缓存一致性与伪共享</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.6-thread_safety.html">14.6. 线程安全</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.7-openmp.html">14.7. 用 OpenMP 实现隐式多线程</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.8-summary.html">14.8. 小结</a></li><li><a href="/dive-into-systems/C14-SharedMemory/14.9-exercises.html">14.9. 练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>15. 展望：其他并行系统与并行编程模型</span><span class="tree-count">4</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/C15-Parallel/15.0-index.html">15. 展望：其他并行系统与并行编程模型</a></li><li><a href="/dive-into-systems/C15-Parallel/15.1-gpu.html">15.1. 异构计算：硬件加速器、GPGPU 计算与 CUDA</a></li><li><a href="/dive-into-systems/C15-Parallel/15.2-distrmem.html">15.2. 分布式内存系统、消息传递与 MPI</a></li><li><a href="/dive-into-systems/C15-Parallel/15.3-cloud.html">15.3. 迈向百亿亿次及更远：云计算、大数据与计算的未来</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>16. 附录 1：面向 Java 程序员的第 1 章</span><span class="tree-count">9</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix1/16.0-index.html">16. 附录 1：面向 Java 程序员的第 1 章</a></li><li><a href="/dive-into-systems/Appendix1/16.1-getting_started.html">16.1. C 语言编程入门</a></li><li><a href="/dive-into-systems/Appendix1/16.2-input_output.html">16.2. 输入&#x2F;输出（printf 与 scanf）</a></li><li><a href="/dive-into-systems/Appendix1/16.3-conditionals.html">16.3. 条件语句与循环</a></li><li><a href="/dive-into-systems/Appendix1/16.4-functions.html">16.4. 函数</a></li><li><a href="/dive-into-systems/Appendix1/16.5-arrays_strings.html">16.5. 数组与字符串</a></li><li><a href="/dive-into-systems/Appendix1/16.6-structs.html">16.6. 结构体</a></li><li><a href="/dive-into-systems/Appendix1/16.7-summary.html">16.7. 小结</a></li><li><a href="/dive-into-systems/Appendix1/exercises.html">练习</a></li></ol>
+      </details>
+    
+  
+    
+      <details class="tree-chapter">
+        <summary><span>17. 附录 2：使用 Unix</span><span class="tree-count">17</span></summary>
+        <ol class="tree-articles"><li><a href="/dive-into-systems/Appendix2/17.0-index.html">17. 附录 2：使用 Unix</a></li><li><a href="/dive-into-systems/Appendix2/17.1-cmdln_basics.html">17.1. Unix 命令行与 Unix 文件系统</a></li><li><a href="/dive-into-systems/Appendix2/17.2-man.html">17.2. man 与 Unix 手册</a></li><li><a href="/dive-into-systems/Appendix2/17.3-ssh_scp.html">17.3. 远程访问</a></li><li><a href="/dive-into-systems/Appendix2/17.4-editors.html">17.4. Unix 编辑器</a></li><li><a href="/dive-into-systems/Appendix2/17.5-makefiles.html">17.5. make 与 Makefile</a></li><li><a href="/dive-into-systems/Appendix2/17.6-grep.html">17.6. 搜索：grep 与 find</a></li><li><a href="/dive-into-systems/Appendix2/17.7-chmod.html">17.7. 查看与修改文件权限</a></li><li><a href="/dive-into-systems/Appendix2/17.8-tar.html">17.8. 归档与压缩文件</a></li><li><a href="/dive-into-systems/Appendix2/17.9-pskill.html">17.9. 进程控制</a></li><li><a href="/dive-into-systems/Appendix2/17.10-timing.html">17.10. 计时</a></li><li><a href="/dive-into-systems/Appendix2/17.11-history.html">17.11. 命令历史</a></li><li><a href="/dive-into-systems/Appendix2/17.12-ioredirect.html">17.12. I&#x2F;O 重定向</a></li><li><a href="/dive-into-systems/Appendix2/17.13-pipe.html">17.13. 管道</a></li><li><a href="/dive-into-systems/Appendix2/17.14-dotfiles.html">17.14. 点文件与 .bashrc</a></li><li><a href="/dive-into-systems/Appendix2/17.15-shellprog.html">17.15. Shell 编程</a></li><li><a href="/dive-into-systems/Appendix2/17.16-sysinfo.html">17.16. 获取系统信息</a></li></ol>
+      </details>
+    
+  
+</nav>
+
+    </div>
+  </aside>
+  <div class="book-backdrop" data-book-nav-close></div>
+
+  <article class="article book-article">
+    <div class="book-bar">
+      <button class="book-nav-toggle" type="button" data-book-nav-toggle aria-controls="book-sidebar" aria-expanded="false">目录</button>
+      <nav class="breadcrumb" aria-label="breadcrumb">
+        <a href="/books/">专栏</a>
+        <span aria-hidden="true">›</span>
+        <a href="/books/dive-into-systems/">Dive Into Systems 中英对照</a>
+        <span aria-hidden="true">›</span><span>4. 二进制与数据表示</span>
+      </nav>
+      <span class="book-position">第 51 / 187 篇</span>
+    </div>
+
+    <header class="article-header">
+  <h1 class="article-title">4.5. 整数溢出</h1>
+  
+  
+    <p class="article-meta"><span>约 21 分钟</span></p>
+  
+</header>
+
+    <div class="article-content"><div class="callout callout-warning"><p class="callout-title">说明</p><p>本文是个人学习用的<strong>非官方</strong>中英对照译文，原文：<a target="_blank" rel="noopener" href="https://diveintosystems.org/book/C4-Binary/overflow.html">https://diveintosystems.org/book/C4-Binary/overflow.html</a>。<br>原书采用 CC BY-NC-ND 4.0 许可（禁止演绎），<strong>请勿公开传播本译文</strong>。<br>标为「译注」「现代更新」的内容是译者补充，不代表原书作者观点；代码与原文逐字一致，未作改动。</p>
+</div>
+<p><em>4.5. Integer Overflow</em></p>
+<p>虽然整数在数学上有无穷多个，但实际上，计算机内存中的数值类型<a href="4.1-bases.html">只占固定的位数</a>。正如我们在本章中一再暗示的，使用固定的位数意味着程序可能无法表示它们想存储的值。例如，在讨论加法时我们看到，两个合法的值相加可能产生<a href="4.4.1-arithmetic_addition.html">无法表示的结果</a>。缺少足够存储空间来表示其结果的计算，就发生了<strong>溢出</strong>（overflow）。</p>
+<blockquote>
+<p>Although the number of integers is mathematically infinite, in practice, numeric types in a computer’s memory <a href="4.1-bases.html">occupy a fixed number of bits</a>. As we’ve hinted throughout this chapter, using a fixed number of bits implies that programs might be unable to represent values that they’d like to store. For example, the discussion of addition showed that adding two legitimate values can produce <a href="4.4.1-arithmetic_addition.html">a result that can’t be represented</a>. A computation that lacks the storage to represent its result has <strong>overflowed</strong>.</p>
+</blockquote>
+<h3 id="4-5-1-里程表的类比"><a href="#4-5-1-里程表的类比" class="headerlink" title="4.5.1. 里程表的类比"></a>4.5.1. 里程表的类比</h3><p><em>4.5.1. Odometer Analogy</em></p>
+<p>为了刻画溢出，考虑一个来自非计算领域的例子：汽车的里程表。里程表记录汽车行驶的英里数，无论是数字式还是机械式，它都只能显示有限个（十进制）数字。如果汽车行驶的里程超过了里程表能表示的范围，里程表就会「翻转」回零，因为真实的值无法表示出来。例如，对于标准的六位里程表，它能表示的最大值是 999999。再多开一英里，<em>本应</em>显示 1000000，但就像<a href="4.4.1-arithmetic_addition.html">溢出的加法示例</a>那样，那个 1 进位到了六个可用数位之外，只剩下 000000。</p>
+<blockquote>
+<p>To characterize overflow, consider an example from the non-computing world: a car’s odometer. An odometer counts the number of miles a car has driven, and whether it’s digital or analog, it can display only so many (base 10) digits. If the car drives more miles than the odometer can represent, the odometer “rolls over” back to zero, since the true value can’t be expressed. For example, with a standard six-digit odometer, the maximum value it represents is 999999. Driving just one additional mile <em>should</em> display 1000000, but like the <a href="4.4.1-arithmetic_addition.html">overflowing addition example</a>, the 1 carries out from the six available digits, leaving only 000000.</p>
+</blockquote>
+<p>为了简单起见，我们继续分析一个只有一位十进制数字的里程表。也就是说，这个里程表表示的范围是 [0, 9]，每行驶 10 英里就重置回零。把里程表的范围画出来，大概就是<a href="4.5-overflow.html">图 1</a> 的样子。</p>
+<blockquote>
+<p>For simplicity, let’s continue analyzing an odometer that’s limited to just one decimal digit. That is, the odometer represents the range [0, 9], so after every 10 miles the odometer resets back to zero. Illustrating the odometer’s range visually, it might look like <a href="4.5-overflow.html">Figure 1</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/BaseTenWheel.png" alt="A circle with the values 0 to 9 arranged around it."></p>
+<p><strong>图 1.</strong> 一位里程表可能取值的示意图</p>
+<p><em>Figure 1. A visual depiction of a one-digit odometer’s potential values</em></p>
+<p>由于一位里程表到 10 就会翻转，画成圆形可以突出圆顶部的那处不连续（而且<em>只有</em>顶部有）。具体来说，对<em>除 9 以外</em>的任何值加一，结果都会落在预期的值上；而对 9 加一，则会跳到一个并不自然地跟在它后面的值（零）。更一般地说，执行<em>任何</em>跨越 9 和 0 之间这处不连续的算术运算，都会发生溢出。例如，考虑计算 8 + 4，如<a href="4.5-overflow.html">图 2</a> 所示。</p>
+<blockquote>
+<p>Because a one-digit odometer rolls over upon reaching 10, drawing a circular shape emphasizes the discontinuity at the top of the circle (and <em>only</em> at the top). Specifically, by adding one to any value <em>other than nine</em>, the result lands on the expected value. On the other hand, adding one to nine jumps to a value that doesn’t naturally follow it (zero). More generally, when performing <em>any</em> arithmetic that crosses the discontinuity between nine and zero, the computation will overflow. For example, consider adding 8 + 4, as in <a href="4.5-overflow.html">Figure 2</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/BaseTenWheelAdding.png" alt="A circle with the values 0 to 9 arranged around it. The gap between 0 and 9 is labeled as the location where overflow can occur. Arrows show that adding 4 to 8 causes the arithmetic to jump across the marked overflow location."></p>
+<p><strong>图 2.</strong> 只用一位十进制数字计算 8 + 4 的结果。跨越 0 和 9 之间的不连续处，表明发生了溢出。</p>
+<p><em>Figure 2. The result of adding 8 + 4 with only one decimal digit. Crossing the discontinuity between 0 and 9 indicates that an overflow has occurred.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>0 到 9 排成一圈，0 和 9 之间的空隙标注为可能发生溢出的位置；箭头表示 8 加 4 时运算跳过了这个溢出位置。</p>
+</div>
+<p>这里求和得到的是 2，而不是预期的 12。注意，8 加上许多其他的值（例如 8 + 14）也会落在 2 上，区别只在于计算会多绕圆圈几圈。因此，无论汽车开了 2、12 还是 152 英里，最终里程表的读数都是 2。</p>
+<blockquote>
+<p>Here, the sum yields 2 instead of the expected 12. Note that many other values added to 8 (for example, 8 + 14) would also land on two, with the only difference being that the computations would take additional trips around the circle. Consequently, it doesn’t matter whether the car drives 2, 12, or 152 miles — in the end, the odometer will read 2 regardless.</p>
+</blockquote>
+<p>任何行为类似里程表的装置执行的都是<strong>模运算</strong>（modular arithmetic）。在这个例子中，所有的运算都是以 10 为模的，因为一位十进制数字只能表示 10 个值。因此，对于任意的行驶里程，把距离除以 10 取余数，就能算出里程表的读数。如果里程表有两位而不是一位十进制数字，模就会变成 100，因为它可以表示更大范围的值：[0, 99]。类似地，时钟执行的是以 12 小时为模的模运算。</p>
+<blockquote>
+<p>Any device that behaves like an odometer performs <strong>modular arithmetic</strong>. In this case, all arithmetic is modular with respect to a modulus of 10, since one decimal digit represents only 10 values. Therefore, given any number of miles traveled, we can compute what the odometer will read by dividing the distance by 10 and taking the remainder as the result. If the odometer had two decimal digits instead of one, the modulus would change to 100, since it could represent a larger range of values: [0, 99]. Similarly, clocks perform modular arithmetic with an hour modulus of 12.</p>
+</blockquote>
+<h3 id="4-5-2-二进制整数溢出"><a href="#4-5-2-二进制整数溢出" class="headerlink" title="4.5.2. 二进制整数溢出"></a>4.5.2. 二进制整数溢出</h3><p><em>4.5.2. Binary Integer Overflow</em></p>
+<p>看过了一种熟悉的溢出形式之后，我们转向二进制数的编码。回想一下，<em>N</em> 位存储可以表示 2<sup>N</sup> 个不同的位序列，而这些序列可以有不同的解释方式（<em>无符号</em>或<em>有符号</em>）。某些运算在一种解释下得出正确的结果，在另一种解释下却可能溢出，所以硬件需要针对每种解释分别识别溢出。</p>
+<blockquote>
+<p>Having seen a familiar form of overflow, let’s turn to binary number encodings. Recall that <em>N</em> bits of storage represent 2<sup>N</sup> unique bit sequences and that those sequences can be interpreted in different ways (as <em>unsigned</em> or <em>signed</em>). Some operations that yield correct results under one interpretation may exhibit overflow according to the other, so the hardware needs to recognize overflow differently for each.</p>
+</blockquote>
+<p>例如，假设一台机器用四位序列计算 0b0010（2）- 0b0101（5）。按照<a href="4.4.2-arithmetic_subtraction.html">减法过程</a>执行这个运算，得到的二进制结果是 0b1101。把这个结果解释为<em>有符号</em>值，得到 -3（-8 + 4 + 1），这正是 2 - 5 在没有溢出时的预期结果。而把它解释为<em>无符号</em>值，则得到 13（8 + 4 + 1），这是错误的，显然表明发生了溢出。进一步推敲这个例子，从直觉上讲也有道理——结果应该是负数，而有符号解释允许负数，无符号解释则不允许。</p>
+<blockquote>
+<p>For example, suppose that a machine is using four-bit sequences to compute 0b0010 (2) - 0b0101 (5). Running this operation through the <a href="4.4.2-arithmetic_subtraction.html">subtraction procedure</a> produces a binary result of 0b1101. Interpreting this result as a <em>signed</em> value produces -3 (-8 + 4 + 1), the expected result for 2 - 5 without overflow. Alternatively, interpreting it as an <em>unsigned</em> value yields 13 (8 + 4 + 1), which is incorrect and clearly indicative of overflow. Scrutinizing this example further, it instinctively makes some sense — the result should be negative, and a signed interpretation allows for negatives, whereas unsigned does not.</p>
+</blockquote>
+<h4 id="无符号溢出"><a href="#无符号溢出" class="headerlink" title="无符号溢出"></a>无符号溢出</h4><p><em>Unsigned Overflow</em></p>
+<p><em>无符号</em>数的行为与前面十进制里程表的例子类似，因为两者都只表示非负值。<em>N</em> 位表示的无符号值范围是 [0, 2<sup>N</sup> - 1]，所有运算都是以 2<sup>N</sup> 为模的。<a href="4.5-overflow.html">图 3</a> 展示了四位序列的无符号解释在模空间中的排列方式。</p>
+<blockquote>
+<p><em>Unsigned</em> numbers behave similarly to the decimal odometer examples given that both represent only non-negative values. <em>N</em> bits represent unsigned values in the range [0, 2<sup>N</sup> - 1], making all arithmetic modular with respect to 2<sup>N</sup>. <a href="4.5-overflow.html">Figure 3</a> illustrates an arrangement of the unsigned interpretations of four-bit sequences into a modular space.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/UnsignedWheel.png" alt="The numbers 0 to 15 are arranged in a circle. The gap between 15 and 0 (at the top of the circle) is labeled as the location where overflow can occur."></p>
+<p><strong>图 3.</strong> 四位无符号值在模空间中的排列。所有运算都是以 2<sup>4</sup>（16）为模的。</p>
+<p><em>Figure 3. An arrangement of four-bit unsigned values into a modular space. All arithmetic is modular with respect to 2<sup>4</sup> (16).</em></p>
+<p>由于无符号解释不能容纳负值，不连续处同样位于最大值和零之间。因此，任何跨越 2<sup>N</sup>-1 和 0 之间分界的运算都会造成无符号溢出。说得更直白些：如果做加法（本应使结果<em>变大</em>）得到了更小的结果，这次加法就造成了无符号溢出；对称地，如果做减法（本应使结果<em>变小</em>）得到了更大的结果，这次减法就造成了无符号溢出。</p>
+<blockquote>
+<p>Given that unsigned interpretations can’t hold negative values, the discontinuity again sits between the maximum value and zero. Therefore, unsigned overflow results from any operation that crosses the divide between 2<sup>N</sup>-1 and 0. Stated more plainly, if performing addition (which should make the result <em>larger</em>) produces a smaller result, the addition caused unsigned overflow. Symmetrically, if performing subtraction (which should make the result <em>smaller</em>) produces a larger result, the subtraction caused unsigned overflow.</p>
+</blockquote>
+<p>作为检测加法和减法无符号溢出的快捷方法，回想一下这些运算中的<a href="4.4.1-arithmetic_addition.html">进位输出</a>位和<a href="4.4.2-arithmetic_subtraction.html">进位输入</a>位。<em>进位输出</em>是计算结果中从最高有效位进出的位。<em>进位输入</em>被置位时，会向算术运算的最低有效位进一，使结果的值加一。只有减法才会把<em>进位输入</em>设为 1，作为取负过程的一部分。</p>
+<blockquote>
+<p>As a shortcut for detecting unsigned overflow for addition and subtraction, recall the <a href="4.4.1-arithmetic_addition.html">carry out</a> and <a href="4.4.2-arithmetic_subtraction.html">carry in</a> bits of those operations. A <em>carry out</em> is a carry from the most significant bit in the result of the computation. When set, a <em>carry in</em> increments the value of the result by carrying one into the least significant bit of the arithmetic operation. The <em>carry in</em> is only set to 1 for subtraction as part of the negation procedure.</p>
+</blockquote>
+<p><strong>无符号运算的快捷判断方法</strong>是：进位输出必须与进位输入相同，否则运算就发生了溢出。直观上，这个快捷方法之所以有效，是因为：</p>
+<blockquote>
+<p>The <strong>shortcut for unsigned arithmetic</strong> is: the carry out must match the carry in, otherwise the operation causes overflow. Intuitively, this shortcut works because:</p>
+</blockquote>
+<ul>
+<li>对于加法（进位输入 &#x3D; 0），结果应当大于（或等于）第一个操作数。然而，如果和需要多一位来存储（进位输出 &#x3D; 1），把多出来的这一位从和中截断，就会得到一个更小的结果（溢出）。例如，在四位无符号数空间中，计算 0b1100（12）+ 0b1101（13）需要<em>五</em>位来存储结果 0b<strong>1</strong>1001（25）。截断到只剩四位后，结果表示的是 0b1001（9），比两个操作数都小（因此溢出）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>For addition (carry in &#x3D; 0), the result should be larger than (or equal to) the first operand. However, if the sum requires an extra bit of storage (carry out &#x3D; 1), truncating that extra bit from the sum yields a smaller result (overflow). For example, in the unsigned four-bit number space, adding 0b1100 (12) + 0b1101 (13) requires <em>five</em> bits to store the result 0b<strong>1</strong>1001 (25). When truncated to only four bits, the result represents 0b1001 (9), which is smaller than the operands (therefore, overflow).</li>
+</ul>
+</blockquote>
+<ul>
+<li>对于减法（进位输入 &#x3D; 1），结果应当小于（或等于）第一个操作数。由于减法是作为加法和取负的组合来执行的，其中的加法子问题应当产生一个更小的结果。加法要得到更小的值，唯一的途径就是截断它的和（进位输出 &#x3D; 1）。如果不需要截断（进位输出 &#x3D; 0），减法就会得出一个更大的结果（溢出）。</li>
+</ul>
+<blockquote>
+<ul>
+<li>For subtraction (carry in &#x3D; 1), the result should be smaller than (or equal to) the first operand. Because subtraction executes as a combination of addition and negation, the addition subproblem should produce a smaller result. The only way addition can end up with a smaller value is by truncating its sum (carry out &#x3D; 1). If it doesn’t require truncation (carry out &#x3D; 0), the subtraction yields a larger result (overflow).</li>
+</ul>
+</blockquote>
+<p>我们来看两个四位减法的例子：一个溢出，一个不溢出。首先，考虑 0b0111（7）- 0b1001（9）。减法过程把这个计算当作：</p>
+<blockquote>
+<p>Let’s examine two examples of four-bit subtraction: one that overflows, and one that doesn’t. First, consider 0b0111 (7) - 0b1001 (9). The subtraction procedure treats this computation as:</p>
+</blockquote>
+<p><strong>题目</strong></p>
+<blockquote>
+<p><strong>Problem Setup</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> </span><br><span class="line">  0111</span><br><span class="line">- 1001</span><br></pre></td></tr></table></figure>
+
+<p><strong>转换为加法</strong></p>
+<blockquote>
+<p><strong>Converted to Addition</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">     1 (carry in)</span><br><span class="line">  0111</span><br><span class="line">+ 0110 (bits flipped)</span><br></pre></td></tr></table></figure>
+
+<p><strong>计算过程</strong></p>
+<blockquote>
+<p><strong>Worked Example</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">                1 (carry in)</span><br><span class="line">             0111</span><br><span class="line">           + 0110 (bits flipped)</span><br><span class="line"></span><br><span class="line">   Result:   1110</span><br><span class="line">Carry out:  0</span><br></pre></td></tr></table></figure>
+
+<p>这次计算<em>没有</em>从 d<sub>3</sub> 进位输出，所以没有发生截断，进位输入（1）与进位输出（0）不相同。结果 0b1110（14）比两个操作数都大，显然不是 7 - 9 的正确结果（溢出）。</p>
+<blockquote>
+<p>The computation <em>did not</em> carry out of d<sub>3</sub>, so no truncation occurs and the carry in (1) fails to match the carry out (0). The result, 0b1110 (14), is larger than either operand and thus clearly incorrect for 7 - 9 (overflow).</p>
+</blockquote>
+<p>接着，考虑 0b0111（7）- 0b0101（5）。减法过程把这个计算当作：</p>
+<blockquote>
+<p>Next, consider 0b0111 (7) - 0b0101 (5). The subtraction procedure treats this computation as:</p>
+</blockquote>
+<p><strong>题目</strong></p>
+<blockquote>
+<p><strong>Problem Setup</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"> </span><br><span class="line">  0111</span><br><span class="line">- 0101</span><br></pre></td></tr></table></figure>
+
+<p><strong>转换为加法</strong></p>
+<blockquote>
+<p><strong>Converted to Addition</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">     1 (carry in)</span><br><span class="line">  0111</span><br><span class="line">+ 1010 (bits flipped)</span><br></pre></td></tr></table></figure>
+
+<p><strong>计算过程</strong></p>
+<blockquote>
+<p><strong>Worked Example</strong></p>
+</blockquote>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">                1 (carry in)</span><br><span class="line">             0111</span><br><span class="line">           + 1010 (bits flipped)</span><br><span class="line"></span><br><span class="line">   Result:   0010</span><br><span class="line">Carry out:  1</span><br></pre></td></tr></table></figure>
+
+<p>这次计算向 d<sub>4</sub> 进位输出了一位，使进位输入（1）与进位输出（1）相同。截断后的结果 0b0010（2）正确地表示了减法运算的预期结果（没有溢出）。</p>
+<blockquote>
+<p>The computation carries out a bit to d<sub>4</sub>, causing the carry in (1) to match the carry out (1). The truncated result, 0b0010 (2), correctly represents the expected outcome of the subtraction operation (no overflow).</p>
+</blockquote>
+<h4 id="有符号溢出"><a href="#有符号溢出" class="headerlink" title="有符号溢出"></a>有符号溢出</h4><p><em>Signed Overflow</em></p>
+<p>溢出背后的同样直觉也适用于<em>有符号</em>二进制解释：模数空间中存在一处不连续。不过，由于有符号解释允许负数，这处不连续并不出现在 0 附近。回想一下，<a href="4.3-signed.html">补码</a>从 -1（0b1111…111）到 0（0b0000…000）是平滑地「翻转」过去的。因此，不连续处位于数空间的<em>另一</em>端，即最大正值与最小负值相接的地方。</p>
+<blockquote>
+<p>The same intuition behind overflow applies to <em>signed</em> binary interpretations: there exists a discontinuity in the modular number space. However, because a signed interpretation allows for negatives, the discontinuity doesn’t occur around 0. Recall that <a href="4.3-signed.html">two’s complement</a> “rolls over” cleanly from -1 (0b1111…​111) to 0 (0b0000…​000). Thus, the discontinuity exists at the <em>other</em> end of the number space, where the largest positive value and smallest negative value meet.</p>
+</blockquote>
+<p><a href="4.5-overflow.html">图 4</a> 展示了四位序列的有符号解释在模空间中的排列方式。注意，一半的值是负数，另一半是非负数，而不连续处位于两者之间最小值与最大值的分界处。</p>
+<blockquote>
+<p><a href="4.5-overflow.html">Figure 4</a> shows an arrangement of the signed interpretations of four-bit sequences into a modular space. Note that half the values are negative, the other half are non-negative, and that the discontinuity lies at the min&#x2F;max divide between them.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/SignedWheel.png" alt="The numbers 0 to 7 are arranged on the right half of a circle, and the numbers -1 to -8 are arranged on the left half. The gap between 7 and -8 (at the bottom of the circle) is labeled as the location where overflow can occur."></p>
+<p><strong>图 4.</strong> 四位有符号值在模空间中的排列。由于有符号解释允许负值，不连续处不再位于零。</p>
+<p><em>Figure 4. An arrangement of four-bit signed values into a modular space. Because a signed interpretation allows for negative values, the discontinuity no longer resides at zero.</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>0 到 7 排在圆的右半边，-1 到 -8 排在左半边；7 和 -8 之间的空隙（在圆的底部）标注为可能发生溢出的位置。</p>
+</div>
+<p>进行有符号运算时，产生一个更靠近零的结果总是安全的。也就是说，任何使结果的绝对值减小的运算都不会溢出，因为溢出的不连续处位于可表示值的绝对值最大的地方。</p>
+<blockquote>
+<p>When performing signed arithmetic, it’s always safe to generate a result that moves closer to zero. That is, any operation that reduces the absolute value of the result cannot overflow, because the overflow discontinuity resides where the magnitude of the representable values is the largest.</p>
+</blockquote>
+<p>因此，系统通过比较操作数的最高有效位与结果的最高有效位，来检测有符号加法和减法中的溢出。对于减法，先把运算改写为加法（例如把 5 - 2 改写为 5 + -2）。</p>
+<blockquote>
+<p>Consequently, systems detect overflow in signed addition and subtraction by comparing the most significant bit of the operands with the most significant bit of the result. For subtraction, first rearrange the arithmetic in terms of addition (e.g., rewrite 5 - 2 as 5 + -2).</p>
+</blockquote>
+<ul>
+<li>如果加法的两个操作数的高位值<em>不同</em>（即一个是负数、一个是正数），就不可能发生有符号溢出，因为结果的绝对值必然小于（或等于）任一操作数，结果是在<em>向</em>零靠近。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If the addition’s operands have <em>different</em> high-order bit values (i.e., one operand is negative and the other is positive), there can be no signed overflow, because the absolute value of the result must be smaller than (or equal to) either operand. The result is moving <em>toward</em> zero.</li>
+</ul>
+</blockquote>
+<ul>
+<li>如果加法的两个操作数的高位值<em>相同</em>（即都是正数或都是负数），那么正确的结果也必然具有相同的高位值。因此，把两个符号相同的操作数相加时，如果结果的符号与操作数的符号不同，就发生了有符号溢出。</li>
+</ul>
+<blockquote>
+<ul>
+<li>If the addition’s operands have the <em>same</em> high-order bit value (i.e., both are positive or both are negative), a correct result must also have the same high-order bit value. Thus, when adding two operands with the same sign, a signed overflow occurs if the result’s sign differs from that of the operands.</li>
+</ul>
+</blockquote>
+<p>看看下面这些四位有符号二进制的例子：</p>
+<blockquote>
+<p>Consider the following four-bit signed binary examples:</p>
+</blockquote>
+<ul>
+<li>5 - 4 等价于 5 + -4。第一个操作数（5）是正数，而第二个（-4）是负数，所以结果必然在向零靠近，<em>不可能溢出</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>5 - 4 is equivalent to 5 + -4. The first operand (5) is positive, whereas the second (-4) is negative, so the result must be moving toward zero where <em>no overflow</em> is possible.</li>
+</ul>
+</blockquote>
+<ul>
+<li>4 + 2（都是正数）得 6（也是正数），所以<em>没有溢出</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>4 + 2 (both positive) yields 6 (also positive), so <em>no overflow</em> occurs.</li>
+</ul>
+</blockquote>
+<ul>
+<li>-5 - 1 等价于 -5 + -1（都是负数），得 -6（也是负数），所以<em>没有溢出</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>-5 - 1 is equivalent to -5 + -1 (both negative) and yields -6 (also negative), so <em>no overflow</em> occurs.</li>
+</ul>
+</blockquote>
+<ul>
+<li>4 + 5（都是正数）得 -7（负数）。由于两个操作数符号相同，且与结果的符号不同，这次运算<em>发生了溢出</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>4 + 5 (both positive) yields -7 (negative). Because the operands have the same sign and it doesn’t match the result’s sign, this operation <em>overflows</em>.</li>
+</ul>
+</blockquote>
+<ul>
+<li>-3 - 8 等价于 -3 + -8（都是负数），得 5（正数）。由于两个操作数符号相同，且与结果的符号不同，这次运算<em>发生了溢出</em>。</li>
+</ul>
+<blockquote>
+<ul>
+<li>-3 - 8 is equivalent to -3 + -8 (both negative) and yields 5 (positive). Because the operands have the same sign and it doesn’t match the result’s sign, this operation <em>overflows</em>.</li>
+</ul>
+</blockquote>
+<h3 id="4-5-3-溢出小结"><a href="#4-5-3-溢出小结" class="headerlink" title="4.5.3. 溢出小结"></a>4.5.3. 溢出小结</h3><p><em>4.5.3. Overflow Summary</em></p>
+<p>一般来说，当算术运算在其结果所能表示的最小值和最大值之间穿越时，就会发生整数溢出。如果你对有符号与无符号溢出的规则拿不准，可以想一想 N 位序列的最小值和最大值：</p>
+<blockquote>
+<p>In general, integer overflow occurs when an arithmetic operation moves between the minimum and maximum values that its result can represent. If you’re ever in doubt about the rules for signed versus unsigned overflow, consider the minimum and maximum values of an N-bit sequence:</p>
+</blockquote>
+<ul>
+<li><em>无符号</em>的最小值是 0（因为无符号编码不能表示负数），最大值是 2<sup>N</sup>-1（因为有一个位序列留给了零）。因此不连续处位于 2<sup>N</sup>-1 和 0 之间。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The minimum <em>unsigned</em> value is 0 (because unsigned encodings can’t represent negative numbers) and the maximum unsigned value is 2<sup>N</sup>-1 (because one bit sequence is reserved for zero). Therefore the discontinuity is between 2<sup>N</sup>-1 and 0.</li>
+</ul>
+</blockquote>
+<ul>
+<li><em>有符号</em>的最小值是 -2<sup>N-1</sup>（因为一半的序列留给了负值），最大值是 2<sup>N-1</sup>-1（因为在另一半中，有一个值留给了零）。因此，不连续处位于 2<sup>N-1</sup>-1 和 -2<sup>N-1</sup> 之间。</li>
+</ul>
+<blockquote>
+<ul>
+<li>The minimum <em>signed</em> value is -2<sup>N-1</sup> (because half of the sequences are reserved for negative values) and the maximum is 2<sup>N-1</sup>-1 (because in the other half, one value is reserved for zero). Therefore, the discontinuity is between 2<sup>N-1</sup>-1 and -2<sup>N-1</sup>.</li>
+</ul>
+</blockquote>
+<div class="callout callout-tip"><p class="callout-title">现代更新（截至 2026-11）· 在 C 里安全地检测溢出</p><p>在 C 中，无符号整数的运算按模 2<sup>N</sup> 回绕，行为是确定的；而<strong>有符号整数溢出是未定义行为</strong>，编译器可以假定它不会发生并据此优化，所以不能靠「算完再检查符号」来判断溢出。C23 为此新增了头文件 <code>&lt;stdckdint.h&gt;</code>，提供 <code>ckd_add</code>、<code>ckd_sub</code>、<code>ckd_mul</code> 三个带检查的运算：它们把结果写入第一个参数，返回值为 <code>true</code> 表示发生了溢出。译者在 macOS 上用 <code>gcc -std=c23</code> 编译 <code>ckd_add(&amp;r, INT_MAX, 1)</code>，返回 1（溢出），<code>r</code> 为回绕后的 -2147483648。<a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/header/stdckdint">cppreference：&lt;stdckdint.h&gt;</a> · <a target="_blank" rel="noopener" href="https://en.cppreference.com/w/c/language/operator_arithmetic">cppreference：Arithmetic operators</a></p>
+</div>
+<h3 id="4-5-4-溢出的后果"><a href="#4-5-4-溢出的后果" class="headerlink" title="4.5.4. 溢出的后果"></a>4.5.4. 溢出的后果</h3><p><em>4.5.4. Overflow Consequences</em></p>
+<p>虽然你可能不会经常遇到整数溢出，但溢出有可能以引人注目（甚至可能是毁灭性）的方式破坏程序。</p>
+<blockquote>
+<p>While you may not run into integer overflow frequently, overflows have the potential to break programs in notable (and potentially devastating) ways.</p>
+</blockquote>
+<p>例如，2014 年，PSY 大热的音乐视频《<a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Gangnam_Style">江南 Style</a>》的播放量眼看就要让 YouTube 用来统计视频播放次数的 32 位计数器溢出。于是，YouTube 改用了 64 位计数器。</p>
+<blockquote>
+<p>For example, in 2014, PSY’s popular <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Gangnam_Style">Gangnam Style</a> music video threatened to overflow the 32-bit counter that YouTube used to track video hits. As a result, YouTube switched to using a 64-bit counter.</p>
+</blockquote>
+<p>另一个相对无害的例子出现在 1980 年的街机游戏《吃豆人》（<em>Pac-Man</em>）中。游戏的开发者用一个无符号的八位值来记录玩家在游戏关卡中的进度。结果，如果高手玩家打过了第 255 关（八位无符号整数的最大值），游戏画面有一半就会出现严重的错乱，如<a href="4.5-overflow.html">图 5</a> 所示。</p>
+<blockquote>
+<p>Another relatively harmless example shows up in the 1980 arcade game <em>Pac-Man</em>. The game’s developers used an unsigned eight-bit value to track the player’s progress through the game’s levels. As a result, if an expert player makes it beyond level 255 (the maximum value of an eight-bit unsigned integer), half of the board ends up glitching significantly, as shown in <a href="4.5-overflow.html">Figure 5</a>.</p>
+</blockquote>
+<p><img src="/dive-into-systems/C4-Binary/images/Pacman.png" alt="The right half of the game board is completely corrupted with nonsense."></p>
+<p><strong>图 5.</strong> <em>Pac-Man</em> 的游戏画面在到达第 256 关时「抓狂」</p>
+<p><em>Figure 5. The <em>Pac-Man</em> game board “freaks out” upon reaching level 256</em></p>
+<div class="callout callout-note"><p class="callout-title">译注 · 图中内容</p><p>游戏画面的右半边完全被乱码破坏。</p>
+</div>
+<p>一个悲惨得多的溢出例子，出现在 1980 年代中期 <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Therac-25">Therac-25</a> 放射治疗机的历史中。Therac-25 存在多个设计问题，其中之一是对一个表示真值的标志变量做递增，而不是把它设为一个常量。使用次数足够多之后，这个标志就会溢出，错误地翻转为零（假），从而绕过安全机制。Therac-25 最终对六名患者造成了严重伤害（其中一些患者因此死亡）。</p>
+<blockquote>
+<p>A much more tragic example of overflow appears in the history of the <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/Therac-25">Therac-25</a> radiation therapy machine of the mid 1980s. The Therac-25 suffered from several design problems, including one that incremented a truth flag variable rather than setting it to a constant. After enough uses, the flag overflowed, causing it to erroneously roll over to zero (false) and bypass safety mechanisms. The Therac-25 ultimately caused serious harm to (and in some cases killed) six patients.</p>
+</blockquote>
+</div>
+
+    <nav class="pager" aria-label="上一篇 / 下一篇">
+      
+        <a class="pager-link pager-prev" href="/dive-into-systems/C4-Binary/4.4.3-arithmetic_mult_div.html" rel="prev">
+          <span class="pager-label">← 上一篇</span><span class="pager-title">4.4.3. 乘法与除法</span>
+        </a>
+      
+      
+        <a class="pager-link pager-next" href="/dive-into-systems/C4-Binary/4.6-bitwise.html" rel="next">
+          <span class="pager-label">下一篇 →</span><span class="pager-title">4.6. 位运算符</span>
+        </a>
+      
+    </nav>
+    
+  <section class="comments" aria-label="评论">
+    <div data-giscus
+         data-repo="wenPKtalk/wenpktalk.github.io"
+         data-repo-id="R_kgDOGqAqSQ"
+         data-category="Announcements"
+         data-category-id="DIC_kwDOGqAqSc4DLBw3"
+         data-lang="zh-CN"></div>
+  </section>
+
+
+  </article>
+
+  
+
+  <aside class="page-toc" aria-label="本页目录">
+    <div class="page-toc-inner">
+      <p class="aside-title">本页目录</p>
+      <ol class="toc"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-1-%E9%87%8C%E7%A8%8B%E8%A1%A8%E7%9A%84%E7%B1%BB%E6%AF%94"><span class="toc-text">4.5.1. 里程表的类比</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-2-%E4%BA%8C%E8%BF%9B%E5%88%B6%E6%95%B4%E6%95%B0%E6%BA%A2%E5%87%BA"><span class="toc-text">4.5.2. 二进制整数溢出</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-3-%E6%BA%A2%E5%87%BA%E5%B0%8F%E7%BB%93"><span class="toc-text">4.5.3. 溢出小结</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-5-4-%E6%BA%A2%E5%87%BA%E7%9A%84%E5%90%8E%E6%9E%9C"><span class="toc-text">4.5.4. 溢出的后果</span></a></li></ol>
+    </div>
+  </aside>
+
+
+</div>
+
+
+
+</main>
+  <footer class="site-footer">
+  <div class="container footer-inner">
+    <span>&copy; 2026 Topsion</span>
+    <span>由 <a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a> 驱动 · codex</span>
+    <a href="/atom.xml">RSS</a>
+  </div>
+</footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M12 19V5M5 12l7-7 7 7"/></svg>
+  </button>
+  <script id="codex-config" type="application/json">{"katex_js":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.js","katex_css":"https://cdn.jsdelivr.net/npm/katex@0.19.1/dist/katex.min.css","mermaid":"https://cdn.jsdelivr.net/npm/mermaid@12.2.0/dist/mermaid.esm.min.mjs"}</script>
+  
+<script src="/js/codex.js"></script>
+
+  
+    <dialog class="search-dialog" data-search-dialog
+        data-index="/search.json"
+        data-empty="没有找到相关内容"
+        data-error="搜索索引加载失败"
+        aria-label="搜索（/）">
+  <form method="dialog" class="search-form">
+    <input type="search" placeholder="搜索文章、专栏……" aria-label="搜索文章、专栏……" autocomplete="off" spellcheck="false">
+    <button type="submit" class="search-close" aria-label="Esc">Esc</button>
+  </form>
+  <ul class="search-results" data-search-results></ul>
+</dialog>
+
+    
+<script src="/js/search.js"></script>
+
+  
+</body>
+</html>
